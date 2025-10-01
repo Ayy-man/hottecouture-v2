@@ -1,0 +1,74 @@
+{
+  "intake": {
+    "title": "Prise de Commande",
+    "steps": {
+      "client": "Informations Client",
+      "garments": "Vêtements",
+      "services": "Services",
+      "notes": "Notes et Mesures",
+      "pricing": "Prix et Date d'Échéance"
+    },
+    "client": {
+      "search": "Rechercher Client",
+      "phone": "Numéro de Téléphone",
+      "email": "Adresse Email",
+      "searchPlaceholder": "Entrez le téléphone ou l'email pour rechercher",
+      "notFound": "Client non trouvé",
+      "createNew": "Créer Nouveau Client",
+      "firstName": "Prénom",
+      "lastName": "Nom de Famille",
+      "language": "Langue",
+      "newsletterConsent": "S'abonner à la Newsletter",
+      "preferredContact": "Méthode de Contact Préférée",
+      "notes": "Notes"
+    },
+    "garments": {
+      "addGarment": "Ajouter Vêtement",
+      "type": "Type de Vêtement",
+      "color": "Couleur",
+      "brand": "Marque",
+      "notes": "Notes",
+      "photo": "Photo",
+      "takePhoto": "Prendre Photo",
+      "retakePhoto": "Reprendre Photo",
+      "removePhoto": "Supprimer Photo",
+      "labelCode": "Code Étiquette"
+    },
+    "services": {
+      "selectServices": "Sélectionner Services",
+      "quantity": "Quantité",
+      "customPrice": "Prix Personnalisé (centimes)",
+      "subtotal": "Sous-total",
+      "noServices": "Aucun service sélectionné"
+    },
+    "notes": {
+      "measurements": "Mesures",
+      "specialInstructions": "Instructions Spéciales",
+      "uploadDocuments": "Télécharger Documents",
+      "uploadPhotos": "Télécharger Photos Supplémentaires"
+    },
+    "pricing": {
+      "rushOrder": "Commande Urgente",
+      "dueDate": "Date d'Échéance",
+      "deposit": "Acompte Requis",
+      "subtotal": "Sous-total",
+      "rushFee": "Frais d'Urgence",
+      "tax": "Taxe",
+      "total": "Total"
+    },
+    "submit": {
+      "submitOrder": "Soumettre Commande",
+      "processing": "Traitement...",
+      "success": "Commande Créée avec Succès",
+      "printLabels": "Imprimer Étiquettes",
+      "viewOrder": "Voir Commande"
+    },
+    "errors": {
+      "required": "Ce champ est requis",
+      "invalidEmail": "Adresse email invalide",
+      "invalidPhone": "Numéro de téléphone invalide",
+      "saveFailed": "Échec de sauvegarde des données",
+      "submitFailed": "Échec de soumission de la commande"
+    }
+  }
+}

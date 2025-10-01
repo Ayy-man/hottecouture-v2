@@ -1,0 +1,74 @@
+{
+  "intake": {
+    "title": "Order Intake",
+    "steps": {
+      "client": "Client Information",
+      "garments": "Garments",
+      "services": "Services",
+      "notes": "Notes & Measurements",
+      "pricing": "Pricing & Due Date"
+    },
+    "client": {
+      "search": "Search Client",
+      "phone": "Phone Number",
+      "email": "Email Address",
+      "searchPlaceholder": "Enter phone or email to search",
+      "notFound": "Client not found",
+      "createNew": "Create New Client",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "language": "Language",
+      "newsletterConsent": "Subscribe to Newsletter",
+      "preferredContact": "Preferred Contact Method",
+      "notes": "Notes"
+    },
+    "garments": {
+      "addGarment": "Add Garment",
+      "type": "Garment Type",
+      "color": "Color",
+      "brand": "Brand",
+      "notes": "Notes",
+      "photo": "Photo",
+      "takePhoto": "Take Photo",
+      "retakePhoto": "Retake Photo",
+      "removePhoto": "Remove Photo",
+      "labelCode": "Label Code"
+    },
+    "services": {
+      "selectServices": "Select Services",
+      "quantity": "Quantity",
+      "customPrice": "Custom Price (cents)",
+      "subtotal": "Subtotal",
+      "noServices": "No services selected"
+    },
+    "notes": {
+      "measurements": "Measurements",
+      "specialInstructions": "Special Instructions",
+      "uploadDocuments": "Upload Documents",
+      "uploadPhotos": "Upload Additional Photos"
+    },
+    "pricing": {
+      "rushOrder": "Rush Order",
+      "dueDate": "Due Date",
+      "deposit": "Deposit Required",
+      "subtotal": "Subtotal",
+      "rushFee": "Rush Fee",
+      "tax": "Tax",
+      "total": "Total"
+    },
+    "submit": {
+      "submitOrder": "Submit Order",
+      "processing": "Processing...",
+      "success": "Order Created Successfully",
+      "printLabels": "Print Labels",
+      "viewOrder": "View Order"
+    },
+    "errors": {
+      "required": "This field is required",
+      "invalidEmail": "Invalid email address",
+      "invalidPhone": "Invalid phone number",
+      "saveFailed": "Failed to save data",
+      "submitFailed": "Failed to submit order"
+    }
+  }
+}
