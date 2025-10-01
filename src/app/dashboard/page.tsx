@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { RoleBasedNav } from '@/components/navigation/role-based-nav'
+import { getCurrentUser } from '@/lib/security/auth'
 
 export default async function DashboardPage() {
   const supabase = createClient()
@@ -14,17 +16,31 @@ export default async function DashboardPage() {
     redirect('/auth/sign-in')
   }
 
+  const session = await getCurrentUser()
+  if (!session) {
+    redirect('/auth/sign-in')
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, {user.email}!
+            Welcome back, {user.email}! (Role: {session.role})
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-4">
+          <div className="lg:col-span-1">
+            <div className="sticky top-4">
+              <h2 className="text-lg font-semibold mb-4">Navigation</h2>
+              <RoleBasedNav userRole={session.role} />
+            </div>
+          </div>
+          
+          <div className="lg:col-span-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
               <CardTitle>Profile</CardTitle>
@@ -93,6 +109,8 @@ export default async function DashboardPage() {
               </form>
             </CardContent>
           </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
