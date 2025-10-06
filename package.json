@@ -47,7 +47,8 @@
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "eslint": "^8.57.0",
-    "@types/qrcode": "^1.5.5"
+    "@types/qrcode": "^1.5.5",
+    "eslint-config-next": "^14.2.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",
@@ -62,7 +63,6 @@
     "@typescript-eslint/parser": "^7.7.0",
     "@vitejs/plugin-react": "^4.2.0",
     "dotenv": "^16.4.0",
-    "eslint-config-next": "^14.2.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.0",
     "eslint-plugin-testing-library": "^6.2.0",
