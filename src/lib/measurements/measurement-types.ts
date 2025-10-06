@@ -1,49 +1,56 @@
 export interface MeasurementPoint {
-  id: string
-  name: string
-  description: string
-  category: 'bust' | 'waist' | 'hip' | 'length' | 'sleeve' | 'shoulder' | 'other'
-  unit: 'inches' | 'centimeters'
-  value?: number
-  notes?: string
-  isRequired: boolean
-  order: number
+  id: string;
+  name: string;
+  description: string;
+  category:
+    | 'bust'
+    | 'waist'
+    | 'hip'
+    | 'length'
+    | 'sleeve'
+    | 'shoulder'
+    | 'other';
+  unit: 'inches' | 'centimeters';
+  value?: number;
+  notes?: string;
+  isRequired: boolean;
+  order: number;
 }
 
 export interface MeasurementSet {
-  id: string
-  name: string
-  description: string
-  garmentType: string
-  points: MeasurementPoint[]
-  createdAt: Date
-  updatedAt: Date
+  id: string;
+  name: string;
+  description: string;
+  garmentType: string;
+  points: MeasurementPoint[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface MeasurementTemplate {
-  id: string
-  name: string
-  description: string
-  garmentTypes: string[]
-  points: Omit<MeasurementPoint, 'value' | 'notes'>[]
-  isDefault: boolean
+  id: string;
+  name: string;
+  description: string;
+  garmentTypes: string[];
+  points: Omit<MeasurementPoint, 'value' | 'notes'>[];
+  isDefault: boolean;
 }
 
 export interface MeasurementSession {
-  id: string
-  orderId: string
-  garmentId: string
-  clientId: string
-  measurements: MeasurementSet
-  takenBy: string
-  takenAt: Date
-  notes?: string
-  photos?: string[]
+  id: string;
+  orderId: string;
+  garmentId: string;
+  clientId: string;
+  measurements: MeasurementSet;
+  takenBy: string;
+  takenAt: Date;
+  notes?: string;
+  photos?: string[];
 }
 
 // Standard measurement templates for different garment types
 export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
-  'dress': {
+  dress: {
     id: 'dress',
     name: 'Dress Measurements',
     description: 'Standard measurements for dresses',
@@ -57,7 +64,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'bust',
         unit: 'inches',
         isRequired: true,
-        order: 1
+        order: 1,
       },
       {
         id: 'waist',
@@ -66,7 +73,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'waist',
         unit: 'inches',
         isRequired: true,
-        order: 2
+        order: 2,
       },
       {
         id: 'hip',
@@ -75,7 +82,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'hip',
         unit: 'inches',
         isRequired: true,
-        order: 3
+        order: 3,
       },
       {
         id: 'length',
@@ -84,7 +91,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'length',
         unit: 'inches',
         isRequired: true,
-        order: 4
+        order: 4,
       },
       {
         id: 'shoulder_width',
@@ -93,7 +100,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'shoulder',
         unit: 'inches',
         isRequired: true,
-        order: 5
+        order: 5,
       },
       {
         id: 'sleeve_length',
@@ -102,11 +109,11 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'sleeve',
         unit: 'inches',
         isRequired: false,
-        order: 6
-      }
-    ]
+        order: 6,
+      },
+    ],
   },
-  'pants': {
+  pants: {
     id: 'pants',
     name: 'Pants Measurements',
     description: 'Standard measurements for pants',
@@ -120,7 +127,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'waist',
         unit: 'inches',
         isRequired: true,
-        order: 1
+        order: 1,
       },
       {
         id: 'hip',
@@ -129,7 +136,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'hip',
         unit: 'inches',
         isRequired: true,
-        order: 2
+        order: 2,
       },
       {
         id: 'inseam',
@@ -138,7 +145,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'length',
         unit: 'inches',
         isRequired: true,
-        order: 3
+        order: 3,
       },
       {
         id: 'outseam',
@@ -147,7 +154,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'length',
         unit: 'inches',
         isRequired: true,
-        order: 4
+        order: 4,
       },
       {
         id: 'thigh',
@@ -156,7 +163,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'other',
         unit: 'inches',
         isRequired: false,
-        order: 5
+        order: 5,
       },
       {
         id: 'knee',
@@ -165,11 +172,11 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'other',
         unit: 'inches',
         isRequired: false,
-        order: 6
-      }
-    ]
+        order: 6,
+      },
+    ],
   },
-  'shirt': {
+  shirt: {
     id: 'shirt',
     name: 'Shirt Measurements',
     description: 'Standard measurements for shirts and blouses',
@@ -183,7 +190,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'bust',
         unit: 'inches',
         isRequired: true,
-        order: 1
+        order: 1,
       },
       {
         id: 'waist',
@@ -192,7 +199,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'waist',
         unit: 'inches',
         isRequired: true,
-        order: 2
+        order: 2,
       },
       {
         id: 'length',
@@ -201,7 +208,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'length',
         unit: 'inches',
         isRequired: true,
-        order: 3
+        order: 3,
       },
       {
         id: 'shoulder_width',
@@ -210,7 +217,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'shoulder',
         unit: 'inches',
         isRequired: true,
-        order: 4
+        order: 4,
       },
       {
         id: 'sleeve_length',
@@ -219,7 +226,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'sleeve',
         unit: 'inches',
         isRequired: true,
-        order: 5
+        order: 5,
       },
       {
         id: 'sleeve_width',
@@ -228,11 +235,11 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'sleeve',
         unit: 'inches',
         isRequired: false,
-        order: 6
-      }
-    ]
+        order: 6,
+      },
+    ],
   },
-  'skirt': {
+  skirt: {
     id: 'skirt',
     name: 'Skirt Measurements',
     description: 'Standard measurements for skirts',
@@ -246,7 +253,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'waist',
         unit: 'inches',
         isRequired: true,
-        order: 1
+        order: 1,
       },
       {
         id: 'hip',
@@ -255,7 +262,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'hip',
         unit: 'inches',
         isRequired: true,
-        order: 2
+        order: 2,
       },
       {
         id: 'length',
@@ -264,7 +271,7 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'length',
         unit: 'inches',
         isRequired: true,
-        order: 3
+        order: 3,
       },
       {
         id: 'hem_width',
@@ -273,39 +280,41 @@ export const MEASUREMENT_TEMPLATES: Record<string, MeasurementTemplate> = {
         category: 'other',
         unit: 'inches',
         isRequired: false,
-        order: 4
-      }
-    ]
-  }
-}
+        order: 4,
+      },
+    ],
+  },
+};
 
-export function getMeasurementTemplate(garmentType: string): MeasurementTemplate {
+export function getMeasurementTemplate(
+  garmentType: string
+): MeasurementTemplate {
   // Find the best matching template
-  const template = Object.values(MEASUREMENT_TEMPLATES).find(t => 
+  const template = Object.values(MEASUREMENT_TEMPLATES).find(t =>
     t.garmentTypes.includes(garmentType.toLowerCase())
-  )
-  
+  );
+
   if (template) {
-    return template
+    return template;
   }
-  
+
   // Default to dress template if no match found
-  return MEASUREMENT_TEMPLATES.dress
+  return MEASUREMENT_TEMPLATES.dress!;
 }
 
 export function createMeasurementSet(
-  garmentType: string, 
+  garmentType: string,
   measurements: Record<string, number>,
   notes?: Record<string, string>
 ): MeasurementSet {
-  const template = getMeasurementTemplate(garmentType)
-  
+  const template = getMeasurementTemplate(garmentType);
+
   const points: MeasurementPoint[] = template.points.map(templatePoint => ({
     ...templatePoint,
-    value: measurements[templatePoint.id],
-    notes: notes?.[templatePoint.id]
-  }))
-  
+    value: measurements[templatePoint.id] ?? 0,
+    notes: notes?.[templatePoint.id] ?? '',
+  }));
+
   return {
     id: crypto.randomUUID(),
     name: `${garmentType} Measurements`,
@@ -313,55 +322,57 @@ export function createMeasurementSet(
     garmentType,
     points,
     createdAt: new Date(),
-    updatedAt: new Date()
-  }
+    updatedAt: new Date(),
+  };
 }
 
 export function validateMeasurements(measurementSet: MeasurementSet): {
-  isValid: boolean
-  errors: string[]
+  isValid: boolean;
+  errors: string[];
 } {
-  const errors: string[] = []
-  
+  const errors: string[] = [];
+
   measurementSet.points.forEach(point => {
     if (point.isRequired && (point.value === undefined || point.value <= 0)) {
-      errors.push(`${point.name} is required`)
+      errors.push(`${point.name} is required`);
     }
-    
+
     if (point.value !== undefined && point.value < 0) {
-      errors.push(`${point.name} cannot be negative`)
+      errors.push(`${point.name} cannot be negative`);
     }
-    
+
     if (point.value !== undefined && point.value > 100) {
-      errors.push(`${point.name} seems unusually large (${point.value} ${point.unit})`)
+      errors.push(
+        `${point.name} seems unusually large (${point.value} ${point.unit})`
+      );
     }
-  })
-  
+  });
+
   return {
     isValid: errors.length === 0,
-    errors
-  }
+    errors,
+  };
 }
 
 export function convertMeasurements(
-  measurementSet: MeasurementSet, 
+  measurementSet: MeasurementSet,
   targetUnit: 'inches' | 'centimeters'
 ): MeasurementSet {
   if (measurementSet.points.every(point => point.unit === targetUnit)) {
-    return measurementSet
+    return measurementSet;
   }
-  
-  const conversionFactor = targetUnit === 'inches' ? 0.393701 : 2.54
-  
+
+  const conversionFactor = targetUnit === 'inches' ? 0.393701 : 2.54;
+
   const convertedPoints = measurementSet.points.map(point => ({
     ...point,
     unit: targetUnit,
-    value: point.value ? point.value * conversionFactor : undefined
-  }))
-  
+    value: point.value ? point.value * conversionFactor : 0,
+  }));
+
   return {
     ...measurementSet,
     points: convertedPoints,
-    updatedAt: new Date()
-  }
+    updatedAt: new Date(),
+  };
 }

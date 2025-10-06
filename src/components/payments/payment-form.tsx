@@ -1,31 +1,42 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CreditCard, Banknote, Check, AlertCircle, Loader2 } from 'lucide-react'
-import { 
-  PaymentMethod, 
+import { useState, useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  CreditCard,
+  Banknote,
+  Check,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
+import {
+  PaymentMethod,
   PaymentProvider,
   PaymentSummary,
   calculatePaymentFees,
-  calculateDepositAmount,
   formatPaymentAmount,
   getEnabledPaymentMethods,
   getEnabledPaymentProviders,
-  DEFAULT_PAYMENT_CONFIG
-} from '@/lib/payments/payment-types'
+  DEFAULT_PAYMENT_CONFIG,
+} from '@/lib/payments/payment-types';
 
 interface PaymentFormProps {
-  orderId: string
-  summary: PaymentSummary
-  onPaymentComplete: (paymentIntentId: string) => void
-  onPaymentError: (error: string) => void
-  className?: string
+  orderId: string;
+  summary: PaymentSummary;
+  onPaymentComplete: (paymentIntentId: string) => void;
+  onPaymentError: (error: string) => void;
+  className?: string;
 }
 
 export function PaymentForm({
@@ -33,44 +44,62 @@ export function PaymentForm({
   summary,
   onPaymentComplete,
   onPaymentError,
-  className = ''
+  className = '',
 }: PaymentFormProps) {
-  const [selectedMethod, setSelectedMethod] = useState<string>('')
-  const [selectedProvider, setSelectedProvider] = useState<string>('')
-  const [paymentAmount, setPaymentAmount] = useState<number>(summary.depositAmount)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
-  const [paymentProviders, setPaymentProviders] = useState<PaymentProvider[]>([])
+  const [selectedMethod, setSelectedMethod] = useState<string>('');
+  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [paymentAmount, setPaymentAmount] = useState<number>(
+    summary.depositAmount
+  );
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentProviders, setPaymentProviders] = useState<PaymentProvider[]>(
+    []
+  );
 
   useEffect(() => {
-    setPaymentMethods(getEnabledPaymentMethods())
-    setPaymentProviders(getEnabledPaymentProviders())
-    
+    const methods = getEnabledPaymentMethods();
+    const providers = getEnabledPaymentProviders();
+
+    setPaymentMethods(methods);
+    setPaymentProviders(providers);
+
     // Set default selections
-    if (paymentMethods.length > 0) {
-      setSelectedMethod(paymentMethods[0].id)
+    if (methods.length > 0 && methods[0]) {
+      setSelectedMethod(methods[0].id);
     }
-    if (paymentProviders.length > 0) {
-      setSelectedProvider(paymentProviders[0].id)
+    if (providers.length > 0 && providers[0]) {
+      setSelectedProvider(providers[0].id);
     }
-  }, [])
+  }, []);
 
-  const selectedMethodData = paymentMethods.find(m => m.id === selectedMethod)
-  const selectedProviderData = paymentProviders.find(p => p.id === selectedProvider)
+  const selectedMethodData = paymentMethods.find(m => m.id === selectedMethod);
+  const selectedProviderData = paymentProviders.find(
+    p => p.id === selectedProvider
+  );
 
-  const paymentFees = selectedMethodData 
-    ? calculatePaymentFees(paymentAmount, selectedMethodData, DEFAULT_PAYMENT_CONFIG.taxRate)
-    : null
+  const paymentFees = selectedMethodData
+    ? calculatePaymentFees(
+        paymentAmount,
+        selectedMethodData,
+        DEFAULT_PAYMENT_CONFIG.taxRate
+      )
+    : null;
 
   const handlePayment = async () => {
-    if (!selectedMethod || !selectedProvider || !selectedMethodData || !selectedProviderData) {
-      setError('Please select a payment method and provider')
-      return
+    if (
+      !selectedMethod ||
+      !selectedProvider ||
+      !selectedMethodData ||
+      !selectedProviderData
+    ) {
+      setError('Please select a payment method and provider');
+      return;
     }
 
-    setIsProcessing(true)
-    setError(null)
+    setIsProcessing(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/payments/create-intent', {
@@ -84,47 +113,49 @@ export function PaymentForm({
           paymentMethodId: selectedMethod,
           providerId: selectedProvider,
           metadata: {
-            paymentType: paymentAmount === summary.totalAmount ? 'full' : 'deposit',
-            originalAmount: summary.totalAmount
-          }
+            paymentType:
+              paymentAmount === summary.totalAmount ? 'full' : 'deposit',
+            originalAmount: summary.totalAmount,
+          },
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Payment failed')
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Payment failed');
       }
 
-      const { paymentIntentId } = await response.json()
-      onPaymentComplete(paymentIntentId)
+      const { paymentIntentId } = await response.json();
+      onPaymentComplete(paymentIntentId);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Payment failed'
-      setError(errorMessage)
-      onPaymentError(errorMessage)
+      const errorMessage =
+        err instanceof Error ? err.message : 'Payment failed';
+      setError(errorMessage);
+      onPaymentError(errorMessage);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   const getPaymentMethodIcon = (method: PaymentMethod) => {
     switch (method.type) {
       case 'card':
-        return <CreditCard className="w-5 h-5" />
+        return <CreditCard className='w-5 h-5' />;
       case 'bank_transfer':
-        return <Banknote className="w-5 h-5" />
+        return <Banknote className='w-5 h-5' />;
       case 'cash':
-        return <Banknote className="w-5 h-5" />
+        return <Banknote className='w-5 h-5' />;
       case 'check':
-        return <Check className="w-5 h-5" />
+        return <Check className='w-5 h-5' />;
       default:
-        return <CreditCard className="w-5 h-5" />
+        return <CreditCard className='w-5 h-5' />;
     }
-  }
+  };
 
   const isPaymentMethodSupported = (method: PaymentMethod) => {
-    if (!selectedProviderData) return false
-    return selectedProviderData.supportedMethods.includes(method.id)
-  }
+    if (!selectedProviderData) return false;
+    return selectedProviderData.supportedMethods.includes(method.id);
+  };
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -132,34 +163,37 @@ export function PaymentForm({
       <Card>
         <CardHeader>
           <CardTitle>Payment Summary</CardTitle>
-          <CardDescription>Review your order total and payment options</CardDescription>
+          <CardDescription>
+            Review your order total and payment options
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex justify-between">
+          <div className='space-y-3'>
+            <div className='flex justify-between'>
               <span>Subtotal:</span>
               <span>{formatPaymentAmount(summary.subtotal)}</span>
             </div>
             {summary.tax > 0 && (
-              <div className="flex justify-between">
+              <div className='flex justify-between'>
                 <span>Tax:</span>
                 <span>{formatPaymentAmount(summary.tax)}</span>
               </div>
             )}
             {summary.rushFee > 0 && (
-              <div className="flex justify-between text-red-600">
+              <div className='flex justify-between text-red-600'>
                 <span>Rush Fee:</span>
                 <span>{formatPaymentAmount(summary.rushFee)}</span>
               </div>
             )}
-            <div className="border-t pt-2">
-              <div className="flex justify-between font-bold text-lg">
+            <div className='border-t pt-2'>
+              <div className='flex justify-between font-bold text-lg'>
                 <span>Total:</span>
                 <span>{formatPaymentAmount(summary.totalAmount)}</span>
               </div>
             </div>
-            <div className="text-sm text-gray-600">
-              Deposit Required: {formatPaymentAmount(summary.depositAmount)} ({DEFAULT_PAYMENT_CONFIG.depositPercentage}%)
+            <div className='text-sm text-gray-600'>
+              Deposit Required: {formatPaymentAmount(summary.depositAmount)} (
+              {DEFAULT_PAYMENT_CONFIG.depositPercentage}%)
             </div>
           </div>
         </CardContent>
@@ -169,10 +203,12 @@ export function PaymentForm({
       <Card>
         <CardHeader>
           <CardTitle>Payment Provider</CardTitle>
-          <CardDescription>Choose how you want to process the payment</CardDescription>
+          <CardDescription>
+            Choose how you want to process the payment
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {paymentProviders.map(provider => (
               <div
                 key={provider.id}
@@ -183,13 +219,13 @@ export function PaymentForm({
                 }`}
                 onClick={() => setSelectedProvider(provider.id)}
               >
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                    <CreditCard className="w-4 h-4 text-primary" />
+                <div className='flex items-center space-x-3'>
+                  <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center'>
+                    <CreditCard className='w-4 h-4 text-primary' />
                   </div>
                   <div>
-                    <h3 className="font-medium">{provider.name}</h3>
-                    <p className="text-sm text-gray-600">{provider.type}</p>
+                    <h3 className='font-medium'>{provider.name}</h3>
+                    <p className='text-sm text-gray-600'>{provider.type}</p>
                   </div>
                 </div>
               </div>
@@ -205,7 +241,7 @@ export function PaymentForm({
           <CardDescription>How would you like to pay?</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {paymentMethods
               .filter(method => isPaymentMethodSupported(method))
               .map(method => (
@@ -218,13 +254,15 @@ export function PaymentForm({
                   }`}
                   onClick={() => setSelectedMethod(method.id)}
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className='flex items-center space-x-3'>
                     {getPaymentMethodIcon(method)}
                     <div>
-                      <h3 className="font-medium">{method.name}</h3>
-                      <p className="text-sm text-gray-600">{method.description}</p>
+                      <h3 className='font-medium'>{method.name}</h3>
+                      <p className='text-sm text-gray-600'>
+                        {method.description}
+                      </p>
                       {method.processingFee > 0 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant='outline' className='text-xs'>
                           {method.processingFee}% fee
                         </Badge>
                       )}
@@ -243,41 +281,53 @@ export function PaymentForm({
           <CardDescription>Choose how much to pay now</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className='space-y-4'>
+            <div className='grid grid-cols-2 gap-4'>
               <Button
-                variant={paymentAmount === summary.depositAmount ? "default" : "outline"}
+                variant={
+                  paymentAmount === summary.depositAmount
+                    ? 'default'
+                    : 'outline'
+                }
                 onClick={() => setPaymentAmount(summary.depositAmount)}
-                className="h-16"
+                className='h-16'
               >
-                <div className="text-center">
-                  <div className="font-bold">Deposit Only</div>
-                  <div className="text-sm">{formatPaymentAmount(summary.depositAmount)}</div>
+                <div className='text-center'>
+                  <div className='font-bold'>Deposit Only</div>
+                  <div className='text-sm'>
+                    {formatPaymentAmount(summary.depositAmount)}
+                  </div>
                 </div>
               </Button>
               <Button
-                variant={paymentAmount === summary.totalAmount ? "default" : "outline"}
+                variant={
+                  paymentAmount === summary.totalAmount ? 'default' : 'outline'
+                }
                 onClick={() => setPaymentAmount(summary.totalAmount)}
-                className="h-16"
+                className='h-16'
               >
-                <div className="text-center">
-                  <div className="font-bold">Pay in Full</div>
-                  <div className="text-sm">{formatPaymentAmount(summary.totalAmount)}</div>
+                <div className='text-center'>
+                  <div className='font-bold'>Pay in Full</div>
+                  <div className='text-sm'>
+                    {formatPaymentAmount(summary.totalAmount)}
+                  </div>
                 </div>
               </Button>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="custom-amount">Custom Amount</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='custom-amount'>Custom Amount</Label>
               <Input
-                id="custom-amount"
-                type="number"
+                id='custom-amount'
+                type='number'
                 min={summary.depositAmount}
                 max={summary.totalAmount}
-                step="0.01"
+                step='0.01'
                 value={paymentAmount / 100}
-                onChange={(e) => setPaymentAmount(Math.round(parseFloat(e.target.value) * 100))}
-                placeholder="Enter amount"
+                onChange={e =>
+                  setPaymentAmount(Math.round(parseFloat(e.target.value) * 100))
+                }
+                placeholder='Enter amount'
               />
             </div>
           </div>
@@ -291,23 +341,23 @@ export function PaymentForm({
             <CardTitle>Payment Fees</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
+            <div className='space-y-2'>
+              <div className='flex justify-between'>
                 <span>Payment Amount:</span>
                 <span>{formatPaymentAmount(paymentFees.subtotal)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className='flex justify-between'>
                 <span>Tax:</span>
                 <span>{formatPaymentAmount(paymentFees.tax)}</span>
               </div>
               {paymentFees.processingFee > 0 && (
-                <div className="flex justify-between">
+                <div className='flex justify-between'>
                   <span>Processing Fee:</span>
                   <span>{formatPaymentAmount(paymentFees.processingFee)}</span>
                 </div>
               )}
-              <div className="border-t pt-2">
-                <div className="flex justify-between font-bold">
+              <div className='border-t pt-2'>
+                <div className='flex justify-between font-bold'>
                   <span>Total to Pay:</span>
                   <span>{formatPaymentAmount(paymentFees.total)}</span>
                 </div>
@@ -319,8 +369,8 @@ export function PaymentForm({
 
       {/* Error Display */}
       {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant='destructive'>
+          <AlertCircle className='h-4 w-4' />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -329,11 +379,11 @@ export function PaymentForm({
       <Button
         onClick={handlePayment}
         disabled={isProcessing || !selectedMethod || !selectedProvider}
-        className="w-full h-12 text-lg"
+        className='w-full h-12 text-lg'
       >
         {isProcessing ? (
-          <div className="flex items-center space-x-2">
-            <Loader2 className="w-5 h-5 animate-spin" />
+          <div className='flex items-center space-x-2'>
+            <Loader2 className='w-5 h-5 animate-spin' />
             <span>Processing Payment...</span>
           </div>
         ) : (
@@ -341,5 +391,5 @@ export function PaymentForm({
         )}
       </Button>
     </div>
-  )
+  );
 }

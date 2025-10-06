@@ -1,11 +1,10 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export async function middleware(req: NextRequest) {
+export async function middleware(_req: NextRequest) {
   // Temporarily disable middleware to fix redirect issues
   // We'll use client-side route protection instead
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
@@ -19,4 +18,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};
