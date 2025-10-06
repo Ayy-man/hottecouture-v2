@@ -64,7 +64,7 @@ export function MeasurementCapture({
   const updateMeasurement = (pointId: string, value: number | undefined, notes?: string) => {
     if (!measurements) return
 
-    const updatedPoints = measurements.points.map(point => 
+    const updatedPoints: MeasurementPoint[] = measurements.points.map(point => 
       point.id === pointId 
         ? { 
             ...point, 
