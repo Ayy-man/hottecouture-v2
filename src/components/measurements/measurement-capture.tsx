@@ -64,15 +64,16 @@ export function MeasurementCapture({
   const updateMeasurement = (pointId: string, value: number | undefined, notes?: string) => {
     if (!measurements) return
 
-    const updatedPoints: MeasurementPoint[] = measurements.points.map(point => 
-      point.id === pointId 
-        ? { 
-            ...point, 
-            value: value !== undefined ? value : point.value,
-            notes: notes !== undefined ? notes : point.notes 
-          }
-        : point
-    )
+    const updatedPoints: MeasurementPoint[] = measurements.points.map(point => {
+      if (point.id === pointId) {
+        return {
+          ...point,
+          value: value !== undefined ? value : point.value,
+          notes: notes !== undefined ? notes : point.notes
+        }
+      }
+      return point
+    })
 
     setMeasurements({
       ...measurements,
