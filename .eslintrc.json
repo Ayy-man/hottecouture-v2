@@ -8,15 +8,5 @@
     "no-debugger": "error",
     "prefer-const": "error",
     "no-var": "error"
-  },
-  "overrides": [
-    {
-      "files": ["**/*.test.{js,jsx,ts,tsx}", "**/*.spec.{js,jsx,ts,tsx}"],
-      "extends": ["plugin:testing-library/react", "plugin:vitest/recommended"],
-      "rules": {
-        "testing-library/no-node-access": "off",
-        "testing-library/no-container": "off"
-      }
-    }
-  ]
+  }
 }
