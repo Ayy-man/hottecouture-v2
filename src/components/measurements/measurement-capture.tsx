@@ -122,7 +122,6 @@ export function MeasurementCapture({
       garmentType,
       points: template.points.map(point => ({
         ...point,
-        value: undefined,
         notes: ''
       })),
       createdAt: measurements?.createdAt || new Date(),
