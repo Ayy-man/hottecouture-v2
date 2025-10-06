@@ -274,13 +274,18 @@ export function MeasurementCapture({
           </Button>
           <Button
             onClick={validateAndSave}
-            disabled={isSaving || completedRequired < totalRequired}
+            disabled={isSaving || isValidating || completedRequired < totalRequired}
             className="min-w-[120px]"
           >
             {isSaving ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 Saving...
+              </div>
+            ) : isValidating ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Validating...
               </div>
             ) : (
               <div className="flex items-center">
