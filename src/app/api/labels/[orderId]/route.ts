@@ -96,7 +96,7 @@ export async function POST(
         })),
         rush: (order as any).rush,
         createdAt: (order as any).created_at,
-        language: 'en',
+        language: 'en' as const,
       };
 
       // Generate HTML
