@@ -107,6 +107,16 @@ export async function POST(
       return NextResponse.json({
         success: true,
         html: html,
+        order: {
+          id: (order as any).id,
+          orderNumber: (order as any).order_number,
+          rush: (order as any).rush,
+          createdAt: (order as any).created_at,
+          status: (order as any).status,
+          dueDate: (order as any).due_date,
+          client: client,
+          garments: garments,
+        },
         orderNumber: (order as any).order_number,
         garmentCount: garments.length,
         message: 'Labels generated successfully (HTML version)',

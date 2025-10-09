@@ -52,8 +52,10 @@ export default function LabelsPage() {
           }
         }
         const data = await response.json();
+        console.log('🔍 Labels page: Received data:', data);
 
         const order = data.order || data;
+        console.log('🔍 Labels page: Processed order:', order);
 
         if (data.html) {
           // Handle HTML response (new approach)
@@ -64,6 +66,12 @@ export default function LabelsPage() {
         }
 
         // Generate QR codes for each garment
+        if (!order.garments || !Array.isArray(order.garments)) {
+          console.error('❌ No garments found in order data:', order);
+          setError('No garments found for this order');
+          return;
+        }
+
         const garmentsWithQRCodes = await Promise.all(
           order.garments.map(async (garment: any) => {
             const qrData = generateGarmentStatusQRValue({
