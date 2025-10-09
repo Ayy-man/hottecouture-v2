@@ -77,38 +77,46 @@ export async function POST(
       );
     }
 
-    // Generate actual PDF using the label template
+    // Generate HTML labels (simplified approach for Vercel)
     try {
-      const { generateLabelSheetPDF } = await import(
-        '@/lib/labels/pdf-generator'
+      const { generateLabelSheetHTML } = await import(
+        '@/lib/labels/label-template'
       );
-      const result = await generateLabelSheetPDF({
+
+      // Prepare label data
+      const labelData = {
         orderNumber: (order as any).order_number,
         clientName: `${(client as any).first_name} ${(client as any).last_name}`,
+        clientInitials: `${(client as any).first_name?.[0] || ''}${(client as any).last_name?.[0] || ''}`,
         garments: garments.map((garment: any) => ({
           id: garment.id,
           labelCode: garment.label_code,
           type: garment.type,
+          qrCode: `data:image/svg+xml;base64,${Buffer.from(`<svg width="100" height="100"><text x="50" y="50" text-anchor="middle">QR-${garment.label_code}</text></svg>`).toString('base64')}`,
         })),
         rush: (order as any).rush,
         createdAt: (order as any).created_at,
-      });
+        language: 'en',
+      };
 
-      console.log('✅ PDF generated successfully:', result.fileName);
+      // Generate HTML
+      const html = generateLabelSheetHTML(labelData);
+
+      console.log('✅ HTML labels generated successfully');
 
       return NextResponse.json({
         success: true,
-        pdfUrl: result.signedUrl,
-        fileName: result.fileName,
+        html: html,
         orderNumber: (order as any).order_number,
         garmentCount: garments.length,
-        message: 'Labels generated successfully',
+        message: 'Labels generated successfully (HTML version)',
       });
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error generating HTML labels:', error);
       return NextResponse.json(
         {
-          error: 'Failed to generate PDF',
+          error: 'Failed to generate labels',
+          details: error instanceof Error ? error.message : 'Unknown error',
         },
         { status: 500 }
       );
