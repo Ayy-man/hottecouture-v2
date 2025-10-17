@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         .from('order')
         .select('id')
         .eq('status', 'delivered')
-        .eq('is_archived', false);
+        .neq('status', 'archived'); // Ensure not already archived
 
       if (fetchError) {
         console.error('Error fetching delivered orders:', fetchError);
@@ -44,14 +44,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Archive the orders
+    // Archive the orders (using status only for now)
     const { data, error } = await supabase
       .from('order')
       .update({
         status: 'archived',
-        is_archived: true,
-        archived_at: new Date().toISOString(),
-      })
+      } as any)
       .in('id', targetOrderIds)
       .select('id, order_number');
 
