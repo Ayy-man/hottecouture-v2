@@ -319,15 +319,33 @@ export function PaymentForm({
               <Label htmlFor='custom-amount'>Custom Amount</Label>
               <Input
                 id='custom-amount'
-                type='number'
-                min={summary.depositAmount}
-                max={summary.totalAmount}
-                step='0.01'
-                value={paymentAmount / 100}
-                onChange={e =>
-                  setPaymentAmount(Math.round(parseFloat(e.target.value) * 100))
-                }
+                type='text'
+                inputMode='decimal'
+                pattern='[0-9]*\.?[0-9]*'
+                defaultValue={paymentAmount / 100}
+                onChange={e => {
+                  // Allow natural typing without immediate formatting
+                  const value = parseFloat(e.target.value);
+                  if (!isNaN(value)) {
+                    setPaymentAmount(Math.round(value * 100));
+                  }
+                }}
+                onBlur={e => {
+                  // Format only on blur to allow natural typing
+                  const value = parseFloat(e.target.value);
+                  if (!isNaN(value) && value > 0) {
+                    e.target.value = value.toFixed(2);
+                    setPaymentAmount(Math.round(value * 100));
+                  } else if (e.target.value.trim() === '') {
+                    setPaymentAmount(0);
+                  }
+                }}
+                onFocus={e => {
+                  // Select all text on focus for easy replacement
+                  e.target.select();
+                }}
                 placeholder='Enter amount'
+                className='text-right'
               />
             </div>
           </div>

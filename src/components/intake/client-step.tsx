@@ -33,6 +33,8 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
     phone: '',
     email: '',
     language: 'fr',
+    preferred_contact: 'email',
+    newsletter_consent: false,
   });
   const [errors, setErrors] = useState<Partial<ClientCreate>>({});
   const [isCreating, setIsCreating] = useState(false);
@@ -100,7 +102,9 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
     try {
       const { data: clients, error } = await supabase
         .from('client')
-        .select('id, first_name, last_name, phone, email, language')
+        .select(
+          'id, first_name, last_name, phone, email, language, preferred_contact, newsletter_consent'
+        )
         .or(
           `phone.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`
         )
@@ -159,6 +163,8 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
               phone: (formData.phone || '').trim(), // Now required, no fallback to null
               email: formData.email?.trim() || null,
               language: formData.language,
+              preferred_contact: formData.preferred_contact,
+              newsletter_consent: formData.newsletter_consent,
             },
           ])
           .select()
@@ -180,6 +186,7 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
             last_name: formData.last_name.trim(),
             email: formData.email?.trim() || '',
             phone: (formData.phone || '').trim(), // Now required
+            preferred_contact: formData.preferred_contact,
           });
 
           const ghlResult = await upsertGHLContact(ghlContactData);
@@ -226,6 +233,8 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
           phone: '',
           email: '',
           language: 'fr',
+          preferred_contact: 'email',
+          newsletter_consent: false,
         });
         setErrors({});
       } catch (err) {
@@ -293,6 +302,13 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
                     <div className='text-sm text-gray-600'>
                       {client.phone} • {client.email}
                     </div>
+                    <div className='text-xs text-gray-500 mt-1'>
+                      Preferred:{' '}
+                      {client.preferred_contact === 'email'
+                        ? '📧 Email'
+                        : '💬 SMS'}{' '}
+                      • Newsletter: {client.newsletter_consent ? '✅' : '❌'}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -302,7 +318,7 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
               <Button
                 variant='outline'
                 onClick={() => setShowCreateForm(true)}
-                className='w-full'
+                className='w-full btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
               >
                 Create New Client
               </Button>
@@ -437,10 +453,54 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
                   </select>
                 </div>
 
+                <div>
+                  <label
+                    htmlFor='preferredContact'
+                    className='block text-sm font-medium mb-1'
+                  >
+                    Preferred Communication Method
+                  </label>
+                  <select
+                    id='preferredContact'
+                    value={formData.preferred_contact}
+                    onChange={e =>
+                      setFormData(prev => ({
+                        ...prev,
+                        preferred_contact: e.target.value as 'email' | 'sms',
+                      }))
+                    }
+                    className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  >
+                    <option value='email'>📧 Email</option>
+                    <option value='sms'>💬 Text Message (SMS)</option>
+                  </select>
+                </div>
+
+                <div className='flex items-center space-x-3'>
+                  <input
+                    id='newsletterConsent'
+                    type='checkbox'
+                    checked={formData.newsletter_consent}
+                    onChange={e =>
+                      setFormData(prev => ({
+                        ...prev,
+                        newsletter_consent: e.target.checked,
+                      }))
+                    }
+                    className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                  />
+                  <label
+                    htmlFor='newsletterConsent'
+                    className='text-sm font-medium text-gray-700'
+                  >
+                    Subscribe to newsletter for updates and promotions
+                  </label>
+                </div>
+
                 <div className='flex gap-3'>
                   <Button
                     type='submit'
-                    className='flex-1'
+                    className='flex-1 btn-press bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
                     disabled={isCreating}
                   >
                     {isCreating ? 'Creating...' : 'Create Client'}
@@ -449,7 +509,7 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
                     type='button'
                     variant='outline'
                     onClick={() => setShowCreateForm(false)}
-                    className='flex-1'
+                    className='flex-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
                     disabled={isCreating}
                   >
                     Cancel
@@ -468,11 +528,20 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
                 <p className='text-sm text-green-600'>
                   {data.phone} • {data.email}
                 </p>
+                <div className='text-xs text-green-600 mt-1'>
+                  Preferred:{' '}
+                  {data.preferred_contact === 'email' ? '📧 Email' : '💬 SMS'} •
+                  Newsletter:{' '}
+                  {data.newsletter_consent
+                    ? '✅ Subscribed'
+                    : '❌ Not subscribed'}
+                </div>
               </div>
               <Button
                 variant='outline'
                 size='sm'
                 onClick={() => setShowCreateForm(true)}
+                className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
               >
                 Change
               </Button>
@@ -480,9 +549,15 @@ export function ClientStep({ data, onUpdate, onNext }: ClientStepProps) {
           </div>
         )}
 
+        {/* Sticky Next Button - iPad 8 Optimized */}
         {data && (
-          <div className='flex justify-end'>
-            <Button onClick={onNext}>Continue to Garments</Button>
+          <div className='sticky top-4 z-10 mb-6'>
+            <Button
+              onClick={onNext}
+              className='w-full ipad:w-auto btn-press bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 py-3 px-8 text-lg'
+            >
+              Continue to Garments →
+            </Button>
           </div>
         )}
       </CardContent>

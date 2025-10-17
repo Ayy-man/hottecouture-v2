@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
+import { TimerButton } from '@/components/timer/timer-button';
 
 interface OrderDetailModalProps {
   order: any;
@@ -369,57 +370,30 @@ export function OrderDetailModal({
               </div>
 
               {/* Time Tracking */}
-              {displayOrder.time_tracking && (
-                <div className='mb-6'>
-                  <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-                    Time Tracking
-                  </h3>
-                  <div className='bg-blue-50 rounded-lg p-4'>
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className='mb-6'>
+                <h3 className='text-lg font-semibold text-gray-900 mb-4'>
+                  Time Tracking
+                </h3>
+                <div className='space-y-4'>
+                  {/* Timer Controls */}
+                  <TimerButton
+                    orderId={displayOrder.id}
+                    orderStatus={displayOrder.status}
+                  />
+
+                  {/* Estimated Time Display */}
+                  {displayOrder.time_tracking && (
+                    <div className='bg-gray-50 rounded-lg p-4'>
                       <div className='flex justify-between items-center'>
                         <span className='text-gray-600'>Estimated Time:</span>
                         <span className='font-medium text-gray-900'>
                           {displayOrder.time_tracking.estimated_time || '0h 0m'}
                         </span>
                       </div>
-                      <div className='flex justify-between items-center'>
-                        <span className='text-gray-600'>Actual Time:</span>
-                        <div className='flex items-center gap-2'>
-                          <span className='font-medium text-blue-600'>
-                            {displayOrder.time_tracking.actual_time || '0h 0m'}
-                          </span>
-                          {displayOrder.time_tracking.is_tracking && (
-                            <div
-                              className='w-2 h-2 bg-green-500 rounded-full animate-pulse'
-                              title='Currently tracking time'
-                            ></div>
-                          )}
-                        </div>
-                      </div>
                     </div>
-                    {displayOrder.work_started_at && (
-                      <div className='mt-3 pt-3 border-t border-blue-200'>
-                        <div className='text-sm text-gray-600'>
-                          <div>
-                            Work Started:{' '}
-                            {new Date(
-                              displayOrder.work_started_at
-                            ).toLocaleString()}
-                          </div>
-                          {displayOrder.work_completed_at && (
-                            <div>
-                              Work Completed:{' '}
-                              {new Date(
-                                displayOrder.work_completed_at
-                              ).toLocaleString()}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Notes & Measurements */}
               {displayOrder.notes && (

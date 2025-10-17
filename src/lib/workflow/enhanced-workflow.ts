@@ -124,7 +124,7 @@ export const WORKFLOW_TRANSITIONS: WorkflowTransition[] = [
     to: 'ready',
     isAllowed: true,
     requiresReason: false,
-    autoAdvance: true, // Auto-advance if all tasks are done
+    autoAdvance: false, // Manual transition - requires quality check and approval
     conditions: ['quality_check_passed', 'solange_approval'],
   },
 

@@ -45,6 +45,10 @@ export async function GET(
         work_started_at,
         work_completed_at,
         actual_work_minutes,
+        is_timer_running,
+        timer_started_at,
+        timer_paused_at,
+        total_work_seconds,
         notes,
         client:client_id (
           first_name,
@@ -189,10 +193,17 @@ export async function GET(
       time_tracking: {
         total_estimated_minutes: totalEstimatedMinutes,
         total_actual_minutes: (order as any).actual_work_minutes || 0,
-        is_tracking:
-          (order as any).status === 'working' && (order as any).work_started_at,
+        is_tracking: (order as any).is_timer_running || false,
         estimated_time: formatTime(totalEstimatedMinutes),
-        actual_time: formatTime((order as any).actual_work_minutes || 0),
+        actual_time: formatTime(
+          Math.floor(((order as any).total_work_seconds || 0) / 60)
+        ),
+        timer_status: {
+          is_running: (order as any).is_timer_running || false,
+          timer_started_at: (order as any).timer_started_at,
+          timer_paused_at: (order as any).timer_paused_at,
+          total_work_seconds: (order as any).total_work_seconds || 0,
+        },
       },
       // Notes (parse if it's JSON string)
       notes:

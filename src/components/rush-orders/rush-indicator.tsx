@@ -83,14 +83,14 @@ export function RushRibbon({
         text-xs
         px-2 py-1
         transform rotate-45
-        translate-x-4 -translate-y-1
+        translate-x-2 -translate-y-1
         shadow-lg
         z-10
         ${animationClass}
         ${className}
       `}
       style={{
-        width: '80px',
+        width: '60px',
         textAlign: 'center',
       }}
     >
@@ -117,15 +117,16 @@ export function RushOrderCard({
   const bgClass = isRush ? 'bg-red-50' : 'bg-white';
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`relative overflow-hidden rounded-lg ${className}`}>
       {isRush && <RushRibbon isRush={isRush} orderType={orderType} />}
       <div
         className={`
-          border-2 rounded-lg p-4
+          border-2 rounded-lg p-3 sm:p-4 ipad:p-3 lg:p-4
           ${borderClass}
           ${bgClass}
           transition-all duration-200
           ${isRush ? 'shadow-md' : 'shadow-sm'}
+          w-full
         `}
       >
         {children}

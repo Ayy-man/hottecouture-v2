@@ -18,6 +18,8 @@ export const clientCreateSchema = z.object({
   phone: phoneSchema, // Now required
   email: emailSchema.optional(),
   language: z.enum(['fr', 'en']).default('fr'),
+  preferred_contact: z.enum(['email', 'sms']).default('email'),
+  newsletter_consent: z.boolean().default(false),
 });
 
 export const clientUpdateSchema = clientCreateSchema.partial();

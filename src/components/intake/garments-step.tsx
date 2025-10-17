@@ -182,7 +182,10 @@ export function GarmentsStep({
       </CardHeader>
       <CardContent className='space-y-6'>
         {!showAddForm ? (
-          <Button onClick={() => setShowAddForm(true)} className='w-full'>
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className='w-full btn-press bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300'
+          >
             Add Garment
           </Button>
         ) : (
@@ -255,8 +258,9 @@ export function GarmentsStep({
               <label className='block text-sm font-medium mb-2'>Photo</label>
               <div className='space-y-3'>
                 {currentGarment.photoPath || currentGarment.photoDataUrl ? (
-                  <div className='flex items-center gap-3'>
-                    <div className='w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden'>
+                  <div className='grid grid-cols-2 gap-4'>
+                    {/* Photo on the left - 50% width */}
+                    <div className='h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden'>
                       {currentGarment.photoDataUrl ? (
                         <img
                           src={currentGarment.photoDataUrl}
@@ -267,24 +271,34 @@ export function GarmentsStep({
                         <span className='text-sm text-gray-600'>📷</span>
                       )}
                     </div>
-                    <div className='flex gap-2'>
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() =>
-                          setCurrentGarment(prev => {
-                            const {
-                              photoPath,
-                              photoDataUrl,
-                              photoFileName,
-                              ...rest
-                            } = prev;
-                            return rest;
-                          })
-                        }
-                      >
-                        Remove Photo
-                      </Button>
+                    {/* Text and button on the right - 50% width */}
+                    <div className='space-y-3'>
+                      <div className='text-sm text-gray-600'>
+                        Photo captured successfully
+                      </div>
+                      <div className='text-xs text-gray-500'>
+                        Click remove to take a new photo
+                      </div>
+                      <div className='flex gap-2'>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={() =>
+                            setCurrentGarment(prev => {
+                              const {
+                                photoPath,
+                                photoDataUrl,
+                                photoFileName,
+                                ...rest
+                              } = prev;
+                              return rest;
+                            })
+                          }
+                          className='btn-press bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 text-red-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-red-300'
+                        >
+                          Remove Photo
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -307,14 +321,14 @@ export function GarmentsStep({
                 disabled={
                   !currentGarment.type || !currentGarment.garment_type_id
                 }
-                className='flex-1'
+                className='flex-1 btn-press bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 Add Garment
               </Button>
               <Button
                 variant='outline'
                 onClick={() => setShowAddForm(false)}
-                className='flex-1'
+                className='flex-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
               >
                 Cancel
               </Button>
@@ -325,51 +339,86 @@ export function GarmentsStep({
         {data.length > 0 && (
           <div className='space-y-3'>
             <h3 className='font-medium'>Added Garments ({data.length})</h3>
-            {data.map((garment, index) => (
-              <div
-                key={index}
-                className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'
-              >
-                <div className='flex items-center gap-3'>
-                  {(garment.photoPath || garment.photoDataUrl) && (
-                    <div className='w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden'>
-                      {garment.photoDataUrl ? (
-                        <img
-                          src={garment.photoDataUrl}
-                          alt='Garment photo'
-                          className='w-full h-full object-cover'
-                        />
+            {data.map((garment, index) => {
+              const isEven = index % 2 === 0;
+              return (
+                <div key={index} className='p-4 bg-gray-50 rounded-lg'>
+                  <div
+                    className={`grid grid-cols-2 gap-4 ${!isEven ? 'grid-flow-col-dense' : ''}`}
+                  >
+                    {/* Photo - 50% width */}
+                    <div
+                      className={`h-24 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden ${!isEven ? 'order-2' : ''}`}
+                    >
+                      {garment.photoPath || garment.photoDataUrl ? (
+                        garment.photoDataUrl ? (
+                          <img
+                            src={garment.photoDataUrl}
+                            alt='Garment photo'
+                            className='w-full h-full object-cover'
+                          />
+                        ) : (
+                          <span className='text-xs text-gray-600'>📷</span>
+                        )
                       ) : (
-                        <span className='text-xs text-gray-600'>📷</span>
+                        <span className='text-xs text-gray-500'>No Photo</span>
                       )}
                     </div>
-                  )}
-                  <div>
-                    <div className='font-medium'>{garment.type}</div>
-                    <div className='text-sm text-gray-600'>
-                      Label: {garment.labelCode}
+
+                    {/* Text content - 50% width */}
+                    <div className={`space-y-2 ${!isEven ? 'order-1' : ''}`}>
+                      <div className='font-medium text-gray-900'>
+                        {garment.type}
+                      </div>
+                      <div className='text-sm text-gray-600'>
+                        Label: {garment.labelCode}
+                      </div>
+                      {garment.color && (
+                        <div className='text-sm text-gray-500'>
+                          Color: {garment.color}
+                        </div>
+                      )}
+                      {garment.brand && (
+                        <div className='text-sm text-gray-500'>
+                          Brand: {garment.brand}
+                        </div>
+                      )}
+                      <div className='pt-2'>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={() => removeGarment(index)}
+                          className='btn-press bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 text-red-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-red-300'
+                        >
+                          Remove
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => removeGarment(index)}
-                >
-                  Remove
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        <div className='flex justify-between pt-4'>
-          <Button variant='outline' onClick={onPrev}>
-            Previous
-          </Button>
-          <Button onClick={onNext} disabled={data.length === 0}>
-            Continue to Services
-          </Button>
+        {/* Sticky Navigation - iPad 8 Optimized */}
+        <div className='sticky bottom-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-gray-200'>
+          <div className='flex justify-between gap-4'>
+            <Button
+              variant='outline'
+              onClick={onPrev}
+              className='btn-press flex-1 ipad:flex-none'
+            >
+              Previous
+            </Button>
+            <Button
+              onClick={onNext}
+              disabled={data.length === 0}
+              className='btn-press bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex-1 ipad:flex-none'
+            >
+              Continue to Services →
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

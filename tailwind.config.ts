@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
@@ -43,12 +43,15 @@ const config: Config = {
         mono: ['var(--font-fira-code)', 'monospace'],
       },
       screens: {
-        'xs': '475px',
-        'sm': '640px',
-        'md': '768px',
-        'lg': '1024px',
-        'xl': '1280px',
+        xs: '475px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
         '2xl': '1536px',
+        ipad: '820px', // iPad 8 landscape width
+        'ipad-landscape': '1024px', // iPad 8 landscape
+        'ipad-portrait': '768px', // iPad 8 portrait
       },
       spacing: {
         '18': '4.5rem',
@@ -77,6 +80,6 @@ const config: Config = {
     },
   },
   plugins: [],
-}
+};
 
-export default config
+export default config;
