@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    if (orderData.is_timer_running) {
+    if ((orderData as any).is_timer_running) {
       return NextResponse.json(
         { error: 'Timer is already running for this order' },
         { status: 400 }
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Resume the timer
     const now = new Date().toISOString();
-    const { error: updateError } = await supabase
+    const { error: updateError } = await (supabase as any)
       .from('order')
       .update({
         is_timer_running: true,

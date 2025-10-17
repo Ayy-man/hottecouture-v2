@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    if (orderData.is_timer_running) {
+    if ((orderData as any).is_timer_running) {
       return NextResponse.json(
         { error: 'Timer is already running for this order' },
         { status: 400 }
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Timer started successfully',
       timer_started_at: now,
-      total_work_seconds: orderData.total_work_seconds || 0,
+      total_work_seconds: (orderData as any).total_work_seconds || 0,
     });
   } catch (error) {
     console.error('Timer start error:', error);

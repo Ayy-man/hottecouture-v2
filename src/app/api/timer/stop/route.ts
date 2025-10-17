@@ -26,11 +26,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    let finalTotalSeconds = orderData.total_work_seconds || 0;
+    let finalTotalSeconds = (orderData as any).total_work_seconds || 0;
 
     // If timer is running, add the current session time
-    if (orderData.is_timer_running) {
-      const startTime = new Date(orderData.timer_started_at);
+    if ((orderData as any).is_timer_running) {
+      const startTime = new Date((orderData as any).timer_started_at);
       const stopTime = new Date();
       const elapsedSeconds = Math.floor(
         (stopTime.getTime() - startTime.getTime()) / 1000
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Stop the timer
     const now = new Date().toISOString();
-    const { error: updateError } = await supabase
+    const { error: updateError } = await (supabase as any)
       .from('order')
       .update({
         is_timer_running: false,
