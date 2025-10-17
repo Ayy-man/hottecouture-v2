@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 
     // Transform the data to match the expected format
     const transformedOrders =
-      orders?.map(order => ({
+      orders?.map((order: any) => ({
         ...order,
         client_name: order.client
           ? `${order.client.first_name} ${order.client.last_name}`
