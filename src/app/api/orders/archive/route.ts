@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      targetOrderIds = deliveredOrders.map(order => order.id);
+      targetOrderIds = (deliveredOrders || []).map((order: any) => order.id);
     } else {
       targetOrderIds = Array.isArray(orderIds) ? orderIds : [orderIds];
     }
