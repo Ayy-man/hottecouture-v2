@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,19 +12,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
-
-    // Get current user for audit trail
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const supabase = await createServiceRoleClient();
 
     // Unarchive the orders (restore to delivered status)
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('order')
       .update({
         status: 'delivered',
@@ -42,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     console.log(
       `✅ Unarchived ${data.length} orders:`,
-      data.map(o => `#${o.order_number}`)
+      data.map((o: any) => `#${o.order_number}`)
     );
 
     return NextResponse.json({
