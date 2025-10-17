@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Timer resumed successfully',
       timer_started_at: now,
-      total_work_seconds: orderData.total_work_seconds || 0,
+      total_work_seconds: (orderData as any).total_work_seconds || 0,
     });
   } catch (error) {
     console.error('Timer resume error:', error);
