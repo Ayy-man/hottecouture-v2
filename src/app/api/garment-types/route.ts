@@ -8,7 +8,10 @@ export async function GET() {
     const { data: garmentTypes, error } = await supabase
       .from('garment_type')
       .select('*')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .order('category', { ascending: true })
+      .order('is_common', { ascending: false })
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('Error fetching garment types:', error);
