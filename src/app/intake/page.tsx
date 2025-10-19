@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { PipelineSelector } from '@/components/intake/pipeline-selector';
 import { ClientStep } from '@/components/intake/client-step';
 import { GarmentsStep } from '@/components/intake/garments-step';
