@@ -211,25 +211,6 @@ export function ServicesStepNew({
     onUpdate(updatedGarments);
   };
 
-  const getServicePrice = (
-    service: Service | undefined,
-    garmentService: any
-  ) => {
-    if (garmentService.customPriceCents !== undefined) {
-      return garmentService.customPriceCents;
-    }
-    return service?.base_price_cents || 0;
-  };
-
-  const getServiceTotal = (
-    service: Service | undefined,
-    garmentService: any
-  ) => {
-    const price =
-      garmentService.customPriceCents || service?.base_price_cents || 0;
-    return price * garmentService.qty;
-  };
-
   const addCustomService = (garmentIndex: number) => {
     if (!customServiceName.trim() || !customServicePrice.trim()) {
       return;
