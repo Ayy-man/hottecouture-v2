@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { CameraCapture } from '@/components/intake/camera-capture';
 import { nanoid } from 'nanoid';
 
