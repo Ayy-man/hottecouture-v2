@@ -211,23 +211,6 @@ export function ServicesStepNew({
     onUpdate(updatedGarments);
   };
 
-  const updateCustomPrice = (
-    garmentIndex: number,
-    serviceId: string,
-    price: number
-  ) => {
-    const updatedGarments = [...data];
-    const garment = updatedGarments[garmentIndex];
-    const serviceIndex = garment.services.findIndex(
-      s => s.serviceId === serviceId
-    );
-
-    if (serviceIndex >= 0) {
-      garment.services[serviceIndex].customPriceCents = price;
-      onUpdate(updatedGarments);
-    }
-  };
-
   const getServicePrice = (
     service: Service | undefined,
     garmentService: any
