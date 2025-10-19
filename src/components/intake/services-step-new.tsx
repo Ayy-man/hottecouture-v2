@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
 import { Service } from '@/lib/types/database';
 import { formatCurrency } from '@/lib/pricing/calcTotal';
