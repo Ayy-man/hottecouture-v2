@@ -660,7 +660,9 @@ export function ServicesStepNew({
                                 </div>
                                 <div className='font-semibold text-gray-900'>
                                   {formatCurrency(
-                                    getServiceTotal(service, garmentService)
+                                    (garmentService.customPriceCents ||
+                                      service.base_price_cents) *
+                                      garmentService.qty
                                   )}
                                 </div>
                               </div>
