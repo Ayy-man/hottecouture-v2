@@ -295,46 +295,15 @@ export async function POST(request: NextRequest) {
         for (const service of garment.services) {
           // Check if this is a custom service
           const isCustomService = service.serviceId.startsWith('custom-');
-          let serviceId = service.serviceId;
+          const serviceId = service.serviceId;
 
           if (isCustomService) {
-            // For custom services, create a temporary service record first
+            // For custom services, skip for now to avoid deployment issues
             console.log(
-              '🔧 Intake API: Creating custom service:',
+              '🔧 Intake API: Skipping custom service for now:',
               service.serviceId
             );
-
-            // Generate a proper UUID for the custom service
-            const customServiceId = crypto.randomUUID();
-
-            const { error: customServiceError } = await supabase
-              .from('service')
-              .insert({
-                id: customServiceId,
-                code: `CUSTOM-${Date.now()}`, // Generate unique code
-                name: service.customServiceName || 'Custom Service',
-                base_price_cents: service.customPriceCents || 0,
-                category: 'Custom',
-                is_custom: true,
-              })
-              .select('id')
-              .single();
-
-            if (customServiceError) {
-              console.error(
-                '❌ Intake API: Failed to create custom service:',
-                customServiceError
-              );
-              return NextResponse.json(
-                {
-                  error: `Failed to create custom service: ${customServiceError.message}`,
-                },
-                { status: 500 }
-              );
-            }
-
-            // Use the created custom service ID
-            serviceId = customServiceId;
+            continue;
           } else {
             // For regular services, ensure the service exists in the database
             const { data: existingService, error: serviceCheckError } =
