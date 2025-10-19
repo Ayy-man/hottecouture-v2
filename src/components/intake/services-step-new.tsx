@@ -446,11 +446,7 @@ export function ServicesStepNew({
                       <h3 className='font-medium text-gray-900 text-xs leading-tight mb-1 line-clamp-2'>
                         {service.name}
                       </h3>
-                      <p className='text-xs text-gray-500 mb-2'>
-                        {service.pricing_model === 'hourly'
-                          ? 'Hourly'
-                          : 'Fixed'}
-                      </p>
+                      <p className='text-xs text-gray-500 mb-2'>Fixed</p>
                       <div className='text-right'>
                         <div className='text-sm font-bold text-green-600'>
                           {formatCurrency(service.base_price_cents)}
