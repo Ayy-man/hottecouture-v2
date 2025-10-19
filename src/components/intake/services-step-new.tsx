@@ -205,6 +205,8 @@ export function ServicesStepNew({
   ) => {
     const updatedGarments = [...data];
     const garment = updatedGarments[garmentIndex];
+    if (!garment) return;
+
     garment.services = garment.services.filter(s => s.serviceId !== serviceId);
     onUpdate(updatedGarments);
   };
