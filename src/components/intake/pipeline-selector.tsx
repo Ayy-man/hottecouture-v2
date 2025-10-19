@@ -62,139 +62,166 @@ export function PipelineSelector({
   };
 
   return (
-    <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <div className='text-center flex-1'>
-          <h2 className='text-xl font-bold mb-1'>Choose Your Service Type</h2>
-          <p className='text-sm text-gray-600'>
-            Select the type of work you need done
-          </p>
-        </div>
+    <div className='h-full flex flex-col overflow-hidden min-h-0'>
+      {/* iOS-style Header */}
+      <div className='flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
+        {/* No Previous button on the first step */}
+        <div className='w-1/3'></div> {/* Placeholder for alignment */}
+        <h2 className='text-lg font-semibold text-gray-900'>
+          Choose Your Service Type
+        </h2>
         <Button
-          type='button'
           onClick={onNext}
-          className='px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300'
+          className='text-blue-600 hover:text-blue-800 p-0'
+          variant='ghost'
         >
-          Next Step →
+          Next
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            className='h-6 w-6 ml-1'
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M9 5l7 7-7 7'
+            />
+          </svg>
         </Button>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-        {pipelines.map(({ type, config, icon: Icon, features }) => {
-          const isSelected = selectedPipeline === type;
-          const estimate = getEstimatedTime(type);
-
-          return (
-            <Card
-              key={type}
-              className={`cursor-pointer transition-all duration-200 ${
-                isSelected
-                  ? 'ring-2 ring-primary shadow-lg scale-105'
-                  : 'hover:shadow-md hover:scale-102'
-              }`}
-              onClick={() => onPipelineChange(type)}
-            >
-              <CardHeader className='text-center pb-2'>
-                <div className='mx-auto mb-2 w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center'>
-                  <Icon className='w-5 h-5 text-primary' />
-                </div>
-                <CardTitle className='text-base'>{config.name}</CardTitle>
-                <CardDescription className='text-xs'>
-                  {config.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className='space-y-2 pt-0'>
-                {/* Features */}
-                <div className='space-y-1'>
-                  {features.map((feature, index) => (
-                    <div key={index} className='flex items-center text-xs'>
-                      <div className='w-1 h-1 rounded-full bg-primary mr-2' />
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Time Estimate */}
-                <div className='bg-gray-50 rounded-lg p-2'>
-                  <div className='flex items-center justify-between mb-1'>
-                    <span className='text-xs font-medium text-gray-600'>
-                      Estimated Time
-                    </span>
-                  </div>
-                  <div className='flex items-center space-x-2'>
-                    <div className='flex items-center text-xs'>
-                      <Clock className='w-3 h-3 mr-1 text-gray-500' />
-                      <span className='font-medium'>{estimate.days} days</span>
-                    </div>
-                    <div className='text-xs text-gray-500'>
-                      ~{estimate.hours} hours
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pricing Info */}
-                <div className='text-center'>
-                  <div className='text-xs text-gray-600 mb-1'>
-                    {type === 'alteration' ? 'Starting at' : 'Consultation'}
-                  </div>
-                  <div className='text-sm font-bold text-primary'>
-                    {type === 'alteration' ? '$15' : 'Free'}
-                  </div>
-                </div>
-
-                {/* Selection Button */}
-                <div className='flex items-center justify-center'>
-                  {isSelected ? (
-                    <div className='w-full py-1.5 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg text-center shadow-lg text-xs'>
-                      ✓ Selected
-                    </div>
-                  ) : (
-                    <div className='w-full py-1.5 px-3 bg-gray-100 text-gray-600 font-medium rounded-lg text-center border border-gray-200 text-xs'>
-                      Select This Option
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Pipeline Comparison - Compact */}
-      <Card>
-        <CardHeader className='pb-2'>
-          <CardTitle className='text-center text-base'>
-            Pipeline Comparison
-          </CardTitle>
-        </CardHeader>
-        <CardContent className='pt-0'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-            {pipelines.map(({ type, config }) => (
-              <div key={type} className='space-y-1'>
-                <div className='flex items-center space-x-2'>
-                  <span className='text-sm'>{config.icon}</span>
-                  <h4 className='font-semibold text-xs'>{config.name}</h4>
-                </div>
-                <div className='space-y-1 text-xs'>
-                  <div className='flex justify-between'>
-                    <span className='text-gray-600'>Timeline:</span>
-                    <span className='font-medium'>
-                      {config.estimatedDays} days
-                    </span>
-                  </div>
-                  <div className='flex justify-between'>
-                    <span className='text-gray-600'>Assignee:</span>
-                    <span className='font-medium capitalize'>
-                      {config.defaultAssignee}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+      {/* Main Content Area */}
+      <div className='flex-1 overflow-y-auto p-4 bg-gray-50 min-h-0'>
+        <div className='max-w-4xl mx-auto space-y-4'>
+          <div className='text-center mb-6'>
+            <p className='text-sm text-gray-600'>
+              Select the type of work you need done
+            </p>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+            {pipelines.map(({ type, config, icon: Icon, features }) => {
+              const isSelected = selectedPipeline === type;
+              const estimate = getEstimatedTime(type);
+
+              return (
+                <Card
+                  key={type}
+                  className={`cursor-pointer transition-all duration-200 ${
+                    isSelected
+                      ? 'ring-2 ring-primary shadow-lg scale-105'
+                      : 'hover:shadow-md hover:scale-102'
+                  }`}
+                  onClick={() => onPipelineChange(type)}
+                >
+                  <CardHeader className='text-center pb-2'>
+                    <div className='mx-auto mb-2 w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center'>
+                      <Icon className='w-5 h-5 text-primary' />
+                    </div>
+                    <CardTitle className='text-base'>{config.name}</CardTitle>
+                    <CardDescription className='text-xs'>
+                      {config.description}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className='space-y-2 pt-0'>
+                    {/* Features */}
+                    <div className='space-y-1'>
+                      {features.map((feature, index) => (
+                        <div key={index} className='flex items-center text-xs'>
+                          <div className='w-1 h-1 rounded-full bg-primary mr-2' />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Time Estimate */}
+                    <div className='bg-gray-50 rounded-lg p-2'>
+                      <div className='flex items-center justify-between mb-1'>
+                        <span className='text-xs font-medium text-gray-600'>
+                          Estimated Time
+                        </span>
+                      </div>
+                      <div className='flex items-center space-x-2'>
+                        <div className='flex items-center text-xs'>
+                          <Clock className='w-3 h-3 mr-1 text-gray-500' />
+                          <span className='font-medium'>
+                            {estimate.days} days
+                          </span>
+                        </div>
+                        <div className='text-xs text-gray-500'>
+                          ~{estimate.hours} hours
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pricing Info */}
+                    <div className='text-center'>
+                      <div className='text-xs text-gray-600 mb-1'>
+                        {type === 'alteration' ? 'Starting at' : 'Consultation'}
+                      </div>
+                      <div className='text-sm font-bold text-primary'>
+                        {type === 'alteration' ? '$15' : 'Free'}
+                      </div>
+                    </div>
+
+                    {/* Selection Button */}
+                    <div className='flex items-center justify-center'>
+                      {isSelected ? (
+                        <div className='w-full py-1.5 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg text-center shadow-lg text-xs'>
+                          ✓ Selected
+                        </div>
+                      ) : (
+                        <div className='w-full py-1.5 px-3 bg-gray-100 text-gray-600 font-medium rounded-lg text-center border border-gray-200 text-xs'>
+                          Select This Option
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Pipeline Comparison - Compact */}
+          <Card>
+            <CardHeader className='pb-2'>
+              <CardTitle className='text-center text-base'>
+                Pipeline Comparison
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='pt-0'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                {pipelines.map(({ type, config }) => (
+                  <div key={type} className='space-y-1'>
+                    <div className='flex items-center space-x-2'>
+                      <span className='text-sm'>{config.icon}</span>
+                      <h4 className='font-semibold text-xs'>{config.name}</h4>
+                    </div>
+                    <div className='space-y-1 text-xs'>
+                      <div className='flex justify-between'>
+                        <span className='text-gray-600'>Timeline:</span>
+                        <span className='font-medium'>
+                          {config.estimatedDays} days
+                        </span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-gray-600'>Assignee:</span>
+                        <span className='font-medium capitalize'>
+                          {config.defaultAssignee}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
