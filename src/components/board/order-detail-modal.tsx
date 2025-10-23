@@ -91,7 +91,7 @@ export function OrderDetailModal({
               <h2 className='text-xl sm:text-2xl font-bold text-gray-900'>
                 Order #{displayOrder.order_number}
                 {displayOrder.rush && (
-                  <span className='ml-2 sm:ml-3 px-2 sm:px-3 py-1 text-xs sm:text-sm font-bold text-white bg-red-500 rounded-full'>
+                  <span className='ml-2 sm:ml-3 px-2 sm:px-3 py-1 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-accent-contrast to-primary-500 rounded-full'>
                     RUSH{' '}
                     {displayOrder.rush_fee_type
                       ? `(${displayOrder.rush_fee_type.toUpperCase()})`
@@ -323,7 +323,9 @@ export function OrderDetailModal({
                                   <div className='flex justify-between items-start'>
                                     <div className='flex-1'>
                                       <h6 className='font-medium text-gray-900'>
-                                        {service.service?.name || 'Service'}
+                                        {service.service?.name ||
+                                          service.custom_service_name ||
+                                          'Service'}
                                       </h6>
                                       {service.service?.description && (
                                         <p className='text-sm text-gray-600 mt-1'>
@@ -459,7 +461,7 @@ export function OrderDetailModal({
                             : ''}
                           :
                         </span>
-                        <span className='font-medium text-red-600'>
+                        <span className='font-medium text-accent-contrast'>
                           {formatCurrency(displayOrder.rush_fee_cents)}
                         </span>
                       </div>

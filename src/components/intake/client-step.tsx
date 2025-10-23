@@ -258,7 +258,7 @@ export function ClientStep({
         <Button
           variant='ghost'
           onClick={onPrev}
-          className='flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all duration-200'
+          className='flex items-center gap-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-3 py-2 rounded-lg transition-all duration-200'
         >
           <svg
             className='w-4 h-4'
@@ -288,7 +288,7 @@ export function ClientStep({
         {data && (
           <Button
             onClick={onNext}
-            className='bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200'
+            className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-6 py-2 rounded-lg font-medium transition-all duration-200'
           >
             Next
           </Button>
@@ -313,13 +313,13 @@ export function ClientStep({
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder='Enter phone number or email'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[40px] text-sm touch-manipulation'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[40px] text-sm touch-manipulation'
                 />
               </div>
 
               {isSearching && (
                 <div className='text-center py-2'>
-                  <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto'></div>
+                  <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500 mx-auto'></div>
                   <p className='mt-1 text-xs text-gray-600'>Searching...</p>
                 </div>
               )}
@@ -355,7 +355,7 @@ export function ClientStep({
                 <Button
                   variant='outline'
                   onClick={() => setShowCreateForm(true)}
-                  className='w-full btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-sm py-2'
+                  className='w-full btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-primary-500 text-sm py-2'
                 >
                   Create New Client
                 </Button>
@@ -379,7 +379,7 @@ export function ClientStep({
                             first_name: e.target.value,
                           }))
                         }
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px] text-sm touch-manipulation ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${
                           errors.first_name
                             ? 'border-red-500'
                             : 'border-gray-300'
@@ -408,7 +408,7 @@ export function ClientStep({
                             last_name: e.target.value,
                           }))
                         }
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px] text-sm touch-manipulation ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${
                           errors.last_name
                             ? 'border-red-500'
                             : 'border-gray-300'
@@ -435,7 +435,7 @@ export function ClientStep({
                         type='tel'
                         value={formData.phone}
                         onChange={e => handlePhoneChange(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px] text-sm touch-manipulation ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${
                           errors.phone ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder='+1 (555) 123-4567'
@@ -458,7 +458,7 @@ export function ClientStep({
                         type='email'
                         value={formData.email}
                         onChange={e => handleEmailChange(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px] text-sm touch-manipulation ${
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${
                           errors.email ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder='client@example.com'
@@ -488,7 +488,7 @@ export function ClientStep({
                             language: e.target.value as 'fr' | 'en',
                           }))
                         }
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px] text-sm touch-manipulation'
+                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation'
                       >
                         <option value='fr'>Français</option>
                         <option value='en'>English</option>
@@ -512,7 +512,7 @@ export function ClientStep({
                               | 'sms',
                           }))
                         }
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px] text-sm touch-manipulation'
+                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation'
                       >
                         <option value='email'>📧 Email</option>
                         <option value='sms'>💬 SMS</option>
@@ -531,7 +531,7 @@ export function ClientStep({
                           newsletter_consent: e.target.checked,
                         }))
                       }
-                      className='h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                      className='h-3 w-3 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'
                     />
                     <label
                       htmlFor='newsletterConsent'
@@ -544,7 +544,7 @@ export function ClientStep({
                   <div className='flex gap-2'>
                     <Button
                       type='submit'
-                      className='flex-1 btn-press bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm py-2'
+                      className='flex-1 btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm py-2'
                       disabled={isCreating}
                     >
                       {isCreating ? 'Creating...' : 'Create Client'}

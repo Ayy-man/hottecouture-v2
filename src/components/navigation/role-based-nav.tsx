@@ -268,7 +268,7 @@ export function RoleBasedNav({ userRole, className }: RoleBasedNavProps) {
               'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
               isActive
                 ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                : 'text-muted-foreground hover:text-text hover:bg-accent'
             )}
           >
             <span className='mr-3 flex-shrink-0'>

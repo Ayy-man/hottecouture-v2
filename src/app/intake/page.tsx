@@ -11,6 +11,7 @@ import { PricingStep } from '@/components/intake/pricing-step';
 import { OrderSummary } from '@/components/intake/order-summary';
 import { IntakeRequest, IntakeResponse } from '@/lib/dto';
 import { usePricing } from '@/lib/pricing/usePricing';
+import { MuralBackground } from '@/components/ui/mural-background';
 
 type IntakeStep =
   | 'pipeline'
@@ -348,35 +349,36 @@ export default function IntakePage() {
   };
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-pink-50 to-purple-50'>
-      <div className='container mx-auto px-4 py-4 md:py-8 max-w-6xl'>
-        <div className='mb-6 md:mb-8 text-center'>
-          <div className='inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mb-4 shadow-lg'>
-            <svg
-              className='w-8 h-8 text-white'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-              />
-            </svg>
+    <MuralBackground useMuralBackground={true} opacity={0.08}>
+      <div className='container mx-auto px-4 py-2 max-w-6xl flex h-full min-h-0 flex-col'>
+        {/* Compact Header */}
+        <div className='mb-2 text-center flex-shrink-0'>
+          <div className='flex items-center justify-center gap-3 mb-2'>
+            <div className='inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-primary-500 to-accent-clay rounded-full shadow-sm'>
+              <svg
+                className='w-4 h-4 text-white'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                />
+              </svg>
+            </div>
+            <h1 className='text-xl font-bold text-gray-900'>Order Intake</h1>
           </div>
-          <h1 className='text-3xl md:text-4xl font-bold text-gray-900 mb-3'>
-            Order Intake
-          </h1>
-          <p className='text-lg text-gray-600 max-w-2xl mx-auto'>
+          <p className='text-sm text-gray-600'>
             Complete order intake in {steps.length} simple steps
           </p>
         </div>
 
         {/* Compact Progress Indicator */}
-        <div className='mb-4'>
-          <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-3'>
+        <div className='mb-2 flex-shrink-0'>
+          <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-2'>
             <div className='flex items-center justify-between'>
               {steps.map((step, index) => {
                 const isActive = step.key === currentStep;
@@ -386,17 +388,17 @@ export default function IntakePage() {
                 return (
                   <div key={step.key} className='flex items-center group'>
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold touch-manipulation transition-all duration-300 ${
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold touch-manipulation transition-all duration-300 ${
                         isActive
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-110'
+                          ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-lg'
                           : isCompleted
-                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white'
+                            ? 'bg-gradient-to-r from-secondary-500 to-accent-olive text-white'
                             : 'bg-gray-100 text-gray-500'
                       }`}
                     >
                       {isCompleted ? (
                         <svg
-                          className='w-4 h-4'
+                          className='w-3 h-3'
                           fill='currentColor'
                           viewBox='0 0 20 20'
                         >
@@ -411,9 +413,9 @@ export default function IntakePage() {
                       )}
                     </div>
                     {index < steps.length - 1 && (
-                      <div className='flex items-center mx-2'>
+                      <div className='flex items-center mx-1'>
                         <div
-                          className={`w-8 h-0.5 ${
+                          className={`w-4 h-0.5 ${
                             isCompleted ? 'bg-green-400' : 'bg-gray-200'
                           }`}
                         />
@@ -423,8 +425,8 @@ export default function IntakePage() {
                 );
               })}
             </div>
-            <div className='mt-2 text-center'>
-              <p className='text-sm font-medium text-gray-900'>
+            <div className='mt-1 text-center'>
+              <p className='text-xs font-medium text-gray-900'>
                 {steps.find(s => s.key === currentStep)?.title}
               </p>
               <p className='text-xs text-gray-500'>
@@ -436,18 +438,18 @@ export default function IntakePage() {
 
         {/* Error display */}
         {error && (
-          <div className='mb-6 p-4 bg-red-50 border border-red-200 rounded-lg'>
-            <p className='text-red-800'>{error}</p>
+          <div className='mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex-shrink-0'>
+            <p className='text-red-800 text-sm'>{error}</p>
           </div>
         )}
 
         {/* Step content - One Page App */}
-        <Card className='shadow-lg border-0 bg-white/95 backdrop-blur-sm'>
-          <CardContent className='p-4 md:p-6 h-[calc(100dvh-300px)] overflow-hidden min-h-0'>
+        <Card className='shadow-lg border-0 bg-white/95 backdrop-blur-sm flex-1 min-h-0'>
+          <CardContent className='p-3 h-full overflow-y-auto'>
             {renderStep()}
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MuralBackground>
   );
 }

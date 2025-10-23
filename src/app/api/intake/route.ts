@@ -5,6 +5,10 @@ import {
   upsertGHLContact,
   formatClientForGHL,
 } from '@/lib/webhooks/ghl-webhook';
+import {
+  calculateOrderPricing,
+  getPricingConfig,
+} from '@/lib/pricing/calcTotal';
 
 export async function POST(request: NextRequest) {
   const correlationId = crypto.randomUUID();
@@ -153,12 +157,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. Calculate pricing
-    let subtotal_cents = 0;
-
-    // Calculate subtotal from garments and services
+    // 2. Calculate pricing using proper pricing function
     console.log('🔍 Intake API: garments data:', garments);
 
+    // Convert garments to pricing items
+    const pricingItems = [];
     for (const garment of garments) {
       console.log(`🔍 Intake API: processing garment: ${garment.type}`);
       for (const service of garment.services) {
@@ -182,19 +185,27 @@ export async function POST(request: NextRequest) {
           `🔍 Intake API: basePrice: ${basePrice}, servicePrice: ${servicePrice}, qty: ${service.qty}`
         );
 
-        subtotal_cents += servicePrice * service.qty;
-        console.log(`🔍 Intake API: running subtotal: ${subtotal_cents}`);
+        pricingItems.push({
+          garment_id: garment.garment_type_id || 'unknown',
+          service_id: service.serviceId,
+          quantity: service.qty,
+          base_price_cents: basePrice,
+          custom_price_cents: service.customPriceCents || null,
+        });
       }
     }
 
-    const rush_fee_cents = order.rush
-      ? order.rush_fee_type === 'large'
-        ? 6000
-        : 3000
-      : 0;
-    const tax_rate = 0.12; // 12% tax
-    const tax_cents = Math.round((subtotal_cents + rush_fee_cents) * tax_rate);
-    const total_cents = subtotal_cents + rush_fee_cents + tax_cents;
+    // Use proper pricing calculation
+    const config = getPricingConfig();
+    const pricingCalculation = calculateOrderPricing({
+      order_id: 'temp', // Will be replaced with actual order ID
+      is_rush: order.rush || false,
+      items: pricingItems,
+      config,
+    });
+
+    const { subtotal_cents, rush_fee_cents, tax_cents, total_cents } =
+      pricingCalculation;
 
     console.log('🔍 Intake API: Calculated pricing:', {
       subtotal_cents,
@@ -298,12 +309,77 @@ export async function POST(request: NextRequest) {
           const serviceId = service.serviceId;
 
           if (isCustomService) {
-            // For custom services, skip for now to avoid deployment issues
+            // For custom services, create them as regular services in the service table
             console.log(
-              '🔧 Intake API: Skipping custom service for now:',
-              service.serviceId
+              '🔧 Intake API: Creating custom service:',
+              service.serviceId,
+              'with name:',
+              service.customServiceName
             );
-            continue;
+
+            try {
+              // First, create the custom service in the service table
+              const { data: newCustomService, error: customServiceError } =
+                await supabase
+                  .from('service')
+                  .insert({
+                    code: `CUSTOM-${Date.now()}`,
+                    name: service.customServiceName,
+                    base_price_cents: service.customPriceCents || 0,
+                    category: 'Custom',
+                    is_custom: true,
+                    pricing_model: 'fixed',
+                    base_unit: 'piece',
+                    min_quantity: 1,
+                    time_increment_minutes: 5,
+                    display_order: 0,
+                    is_active: true,
+                  } as any)
+                  .select('id')
+                  .single();
+
+              if (customServiceError) {
+                console.error(
+                  '❌ Intake API: Error creating custom service:',
+                  customServiceError
+                );
+                throw new Error(
+                  `Failed to create custom service: ${customServiceError.message}`
+                );
+              }
+
+              // Now create the garment_service link with the new custom service ID
+              const { error: garmentServiceError } = await supabase
+                .from('garment_service')
+                .insert({
+                  garment_id: (newGarment as any).id,
+                  service_id: newCustomService.id,
+                  quantity: service.qty || 1,
+                  custom_price_cents: service.customPriceCents || null,
+                  notes: service.notes || null,
+                } as any);
+
+              if (garmentServiceError) {
+                console.error(
+                  '❌ Intake API: Error linking custom service to garment:',
+                  garmentServiceError
+                );
+                throw new Error(
+                  `Failed to link custom service: ${garmentServiceError.message}`
+                );
+              }
+
+              console.log(
+                '✅ Intake API: Custom service created and linked successfully'
+              );
+              continue;
+            } catch (error: any) {
+              console.error(
+                '❌ Intake API: Custom service creation error:',
+                error
+              );
+              throw error;
+            }
           } else {
             // For regular services, ensure the service exists in the database
             const { data: existingService, error: serviceCheckError } =
@@ -328,29 +404,30 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
               );
             }
-          }
 
-          const { error: garmentServiceError } = await supabase
-            .from('garment_service')
-            .insert({
-              garment_id: (newGarment as any).id,
-              service_id: serviceId,
-              quantity: service.qty || 1,
-              custom_price_cents: service.customPriceCents || null,
-              notes: service.notes || null,
-            } as any);
+            // Insert regular service
+            const { error: garmentServiceError } = await supabase
+              .from('garment_service')
+              .insert({
+                garment_id: (newGarment as any).id,
+                service_id: serviceId,
+                quantity: service.qty || 1,
+                custom_price_cents: service.customPriceCents || null,
+                notes: service.notes || null,
+              } as any);
 
-          if (garmentServiceError) {
-            console.error(
-              'Garment service creation error:',
-              garmentServiceError
-            );
-            return NextResponse.json(
-              {
-                error: `Failed to create garment service: ${garmentServiceError.message}`,
-              },
-              { status: 500 }
-            );
+            if (garmentServiceError) {
+              console.error(
+                'Garment service creation error:',
+                garmentServiceError
+              );
+              return NextResponse.json(
+                {
+                  error: `Failed to create garment service: ${garmentServiceError.message}`,
+                },
+                { status: 500 }
+              );
+            }
           }
         }
       }

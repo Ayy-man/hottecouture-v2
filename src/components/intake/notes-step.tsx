@@ -80,13 +80,13 @@ export function NotesStep({
   };
 
   return (
-    <div className='h-[calc(100vh-200px)] flex flex-col overflow-hidden'>
+    <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header with Navigation */}
       <div className='flex items-center justify-between px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
         <Button
           variant='ghost'
           onClick={onPrev}
-          className='flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all duration-200'
+          className='flex items-center gap-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-3 py-2 rounded-lg transition-all duration-200'
         >
           <svg
             className='w-4 h-4'
@@ -115,15 +115,15 @@ export function NotesStep({
 
         <Button
           onClick={onNext}
-          className='bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200'
+          className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-6 py-2 rounded-lg font-medium transition-all duration-200'
         >
           Next: Pricing →
         </Button>
       </div>
 
       {/* Scrollable Content Area */}
-      <div className='flex-1 overflow-y-auto'>
-        <div className='p-3 space-y-3'>
+      <div className='flex-1 overflow-y-auto min-h-0'>
+        <div className='p-3 space-y-3 pb-32'>
           {/* Measurements */}
           <Card>
             <CardHeader className='pb-2'>
@@ -209,7 +209,7 @@ export function NotesStep({
                                 variant='outline'
                                 size='sm'
                                 onClick={() => handleStartMeasurement(garment)}
-                                className='btn-press bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-blue-300 text-xs px-2 py-1 h-6'
+                                className='btn-press bg-gradient-to-r from-primary-100 to-primary-200 hover:from-primary-200 hover:to-primary-300 text-primary-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-primary-300 text-xs px-2 py-1 h-6'
                               >
                                 {existingMeasurement ? 'Edit' : 'Measure'}
                               </Button>

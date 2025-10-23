@@ -47,7 +47,7 @@ export function ArchiveButton({ onArchiveComplete }: ArchiveButtonProps) {
       <Button
         variant='outline'
         size='sm'
-        className='bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
+        className='bg-secondary-50 border-secondary-200 text-secondary-700 hover:bg-secondary-100'
         disabled
       >
         <CheckCircle className='w-4 h-4 mr-2' />
@@ -62,7 +62,7 @@ export function ArchiveButton({ onArchiveComplete }: ArchiveButtonProps) {
       size='sm'
       onClick={handleArchiveDelivered}
       disabled={isArchiving}
-      className='btn-press bg-gradient-to-r from-orange-100 to-orange-200 hover:from-orange-200 hover:to-orange-300 text-orange-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-orange-300'
+      className='btn-press bg-gradient-to-r from-accent-taupe/20 to-accent-taupe/30 hover:from-accent-taupe/30 hover:to-accent-taupe/40 text-accent-contrast font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-accent-taupe/40'
     >
       {isArchiving ? (
         <Loader2 className='w-4 h-4 mr-2 animate-spin' />

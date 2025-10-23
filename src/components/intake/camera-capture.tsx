@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import Webcam from 'react-webcam';
 
 interface CameraCaptureProps {
-  onCapture: (imageDataUrl: string) => void;
-  onCancel: () => void;
+  onCapture: (imageDataUrl: string, fileName: string) => void;
+  onCancel?: () => void;
 }
 
 export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
   const webcamRef = useRef<Webcam>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
 
   const capture = useCallback(() => {
     if (!webcamRef.current) return;
@@ -20,8 +21,10 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
     const imageSrc = webcamRef.current.getScreenshot();
 
     if (imageSrc) {
-      onCapture(imageSrc);
+      const fileName = `garment-${Date.now()}.jpg`;
+      onCapture(imageSrc, fileName);
       setIsCapturing(false);
+      setShowCamera(false);
     }
   }, [onCapture]);
 
@@ -31,8 +34,28 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
     facingMode: 'environment', // Use back camera on mobile
   };
 
+  if (!showCamera) {
+    return (
+      <div className='space-y-3'>
+        <div className='border-2 border-dashed border-gray-300 rounded-lg p-6 text-center'>
+          <div className='text-4xl mb-3'>📷</div>
+          <p className='text-sm text-gray-600 mb-3'>
+            Add a photo of the garment
+          </p>
+          <Button
+            type='button'
+            onClick={() => setShowCamera(true)}
+            className='w-full py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md shadow-sm transition-colors duration-200'
+          >
+            Take Photo
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className='space-y-4'>
+    <div className='space-y-3'>
       <div className='relative'>
         <Webcam
           audio={false}
@@ -48,22 +71,32 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
         )}
       </div>
 
-      <div className='flex space-x-4'>
+      <div className='flex space-x-2'>
+        {onCancel && (
+          <Button
+            type='button'
+            variant='outline'
+            onClick={onCancel}
+            className='flex-1 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-md transition-colors duration-200'
+          >
+            Cancel
+          </Button>
+        )}
         <Button
           type='button'
           variant='outline'
-          onClick={onCancel}
-          className='flex-1 py-3 text-lg btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
+          onClick={() => setShowCamera(false)}
+          className='flex-1 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-md transition-colors duration-200'
         >
-          Cancel
+          Back
         </Button>
         <Button
           type='button'
           onClick={capture}
           disabled={isCapturing}
-          className='flex-1 py-3 text-lg btn-press bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
+          className='flex-1 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md shadow-sm transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          {isCapturing ? 'Capturing...' : 'Take Photo'}
+          {isCapturing ? 'Capturing...' : '📸 Capture'}
         </Button>
       </div>
     </div>

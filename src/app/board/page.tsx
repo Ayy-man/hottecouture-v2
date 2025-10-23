@@ -9,6 +9,8 @@ import { OrderType } from '@/lib/types/database';
 import { useRealtimeOrders } from '@/lib/hooks/useRealtimeOrders';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { LoadingLogo } from '@/components/ui/loading-logo';
+import { MuralBackground } from '@/components/ui/mural-background';
+import { WorkListExport } from '@/components/board/worklist-export';
 import Link from 'next/link';
 
 export default function BoardPage() {
@@ -22,6 +24,7 @@ export default function BoardPage() {
   );
   const [refreshKey] = useState(0);
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
+  const [showWorkListExport, setShowWorkListExport] = useState(false);
 
   // Real-time refresh trigger
   const realtimeTrigger = useRealtimeOrders();
@@ -264,52 +267,90 @@ export default function BoardPage() {
 
   return (
     <AuthGuard>
-      <div className='min-h-screen bg-gradient-to-br from-pink-50 to-purple-50'>
-        <div className='container mx-auto px-4 py-8 ipad-landscape:px-2'>
-          {/* Header */}
-          <div className='mb-6 ipad:mb-8 lg:mb-10 text-center'>
-            <h1 className='text-3xl sm:text-4xl ipad:text-3xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 ipad:mb-3'>
+      <MuralBackground useMuralBackground={true} opacity={0.08}>
+        <div className='w-full max-w-none px-4 py-4 ipad-landscape:px-2 h-full flex flex-col overflow-hidden'>
+          {/* Compact Header */}
+          <div className='mb-3 text-center'>
+            <h1 className='text-2xl sm:text-3xl font-bold bg-gradient-to-r from-secondary-600 to-accent-olive bg-clip-text text-transparent mb-1'>
               Kanban Board
             </h1>
-            <p className='text-sm sm:text-base ipad:text-sm lg:text-lg text-gray-600 max-w-2xl mx-auto'>
+            <p className='text-xs sm:text-sm text-text-secondary max-w-2xl mx-auto'>
               Order Management Dashboard - Drag & Drop to Update Status
             </p>
           </div>
 
-          {/* Pipeline Filter */}
-          <div className='mb-4 ipad:mb-5 lg:mb-6 flex flex-col ipad:flex-row items-start ipad:items-center justify-between gap-3 ipad:gap-4'>
+          {/* Compact Pipeline Filter */}
+          <div className='mb-2 flex flex-col ipad:flex-row items-start ipad:items-center justify-between gap-2'>
             <PipelineFilter
               orders={orders}
               selectedPipeline={selectedPipeline}
               onPipelineChange={setSelectedPipeline}
             />
-            <div className='flex gap-2 ipad:gap-3'>
+            <div className='flex gap-1'>
+              <Button
+                onClick={() => setShowWorkListExport(true)}
+                variant='outline'
+                size='sm'
+                className='btn-press bg-gradient-to-r from-secondary-100 to-secondary-200 hover:from-secondary-200 hover:to-secondary-300 text-secondary-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-secondary-300 px-2 py-1 text-xs'
+              >
+                📊 Export Tasks
+              </Button>
               <ArchiveButton onArchiveComplete={handleRefresh} />
               <Button
                 onClick={() => (window.location.href = '/clients')}
                 variant='outline'
                 size='sm'
-                className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 px-4 py-2'
+                className='btn-press bg-gradient-to-r from-accent-taupe/20 to-accent-taupe/30 hover:from-accent-taupe/30 hover:to-accent-taupe/40 text-accent-contrast font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-accent-taupe/40 px-2 py-1 text-xs'
               >
                 👥 Clients
               </Button>
               <Button
                 asChild
-                className='btn-press bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2'
+                className='btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-2 py-1 text-xs'
               >
                 <Link href='/intake'>Create New Order</Link>
               </Button>
             </div>
           </div>
 
-          {/* Interactive Board */}
-          <InteractiveBoard
-            orders={filteredOrders}
-            onOrderUpdate={handleOrderUpdate}
-            updatingOrders={updatingOrders}
-          />
+          {/* Board area - Same height chain as intake form */}
+          <div className='flex-1 min-h-0 overflow-hidden'>
+            <InteractiveBoard
+              orders={filteredOrders}
+              onOrderUpdate={handleOrderUpdate}
+              updatingOrders={updatingOrders}
+            />
+          </div>
         </div>
-      </div>
+
+        {/* Work List Export Modal */}
+        {showWorkListExport && (
+          <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+            <div className='bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto'>
+              <div className='p-4 border-b border-gray-200'>
+                <div className='flex items-center justify-between'>
+                  <h3 className='text-lg font-semibold text-gray-900'>
+                    Export Work List
+                  </h3>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => setShowWorkListExport(false)}
+                    className='text-gray-400 hover:text-gray-600'
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </div>
+              <div className='p-4'>
+                <WorkListExport
+                  onExportComplete={() => setShowWorkListExport(false)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </MuralBackground>
     </AuthGuard>
   );
 }

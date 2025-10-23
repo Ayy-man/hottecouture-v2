@@ -1,48 +1,57 @@
-import { Database } from '@/lib/types/database'
+import { Database } from '@/lib/types/database';
 
-export type TaskStage = Database['public']['Tables']['task']['Row']['stage']
-export type OrderStatus = Database['public']['Tables']['order']['Row']['status']
-export type OrderType = Database['public']['Tables']['order']['Row']['type']
+export type TaskStage = Database['public']['Tables']['task']['Row']['stage'];
+export type OrderStatus =
+  Database['public']['Tables']['order']['Row']['status'];
+export type OrderType = Database['public']['Tables']['order']['Row']['type'];
 
 export interface BoardOrder {
-  id: string
-  order_number: number
-  type: OrderType
-  status: OrderStatus
-  due_date?: string
-  rush: boolean
-  rack_position?: string
-  client_name: string
+  id: string;
+  order_number: number;
+  type: OrderType;
+  status: OrderStatus;
+  due_date?: string;
+  rush: boolean;
+  rack_position?: string;
+  client_name: string;
   client: {
-    first_name: string
-    last_name: string
-  }
+    first_name: string;
+    last_name: string;
+  };
   garments: Array<{
-    id: string
-    type: string
-  }>
+    id: string;
+    type: string;
+    services: Array<{
+      service?: {
+        name: string;
+      };
+      custom_service_name?: string;
+      custom_price_cents?: number;
+      quantity: number;
+    }>;
+  }>;
   tasks: Array<{
-    id: string
-    stage: TaskStage
-    assignee?: string
-  }>
-  services_count: number
+    id: string;
+    stage: TaskStage;
+    assignee?: string;
+  }>;
+  services_count: number;
 }
 
 export interface BoardFilters {
-  rush: boolean
-  dueToday: boolean
-  assignee?: string
-  pipeline?: OrderType
-  search: string
+  rush: boolean;
+  dueToday: boolean;
+  assignee?: string;
+  pipeline?: OrderType;
+  search: string;
 }
 
 export interface OrderWithTasks {
-  id: string
-  status: OrderStatus
+  id: string;
+  status: OrderStatus;
   tasks: Array<{
-    id: string
-    stage: TaskStage
-    order_id: string
-  }>
+    id: string;
+    stage: TaskStage;
+    order_id: string;
+  }>;
 }

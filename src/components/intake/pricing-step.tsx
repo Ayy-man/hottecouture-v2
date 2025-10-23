@@ -193,7 +193,7 @@ export function PricingStep({
         <Button
           variant='ghost'
           onClick={onPrev}
-          className='flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all duration-200'
+          className='flex items-center gap-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-3 py-2 rounded-lg transition-all duration-200'
         >
           <svg
             className='w-4 h-4'
@@ -221,7 +221,7 @@ export function PricingStep({
         <Button
           onClick={onNext}
           disabled={isSubmitting}
-          className='bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+          className='bg-gradient-to-r from-secondary-500 to-accent-olive hover:from-secondary-600 hover:to-accent-olive text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
         >
           {isSubmitting ? 'Processing...' : 'Submit Order 🚀'}
         </Button>

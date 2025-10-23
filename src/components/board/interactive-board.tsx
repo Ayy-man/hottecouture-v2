@@ -184,17 +184,20 @@ export function InteractiveBoard({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ipad-landscape:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-2 sm:gap-3 md:gap-3 ipad-landscape:gap-4 lg:gap-4 xl:gap-5 w-full min-w-0 px-0 ipad-landscape:px-0'>
-          {COLUMNS.map(column => (
-            <DroppableColumn
-              key={column.id}
-              column={column}
-              orders={ordersByStatus[column.id] || []}
-              onOrderClick={handleOrderClick}
-              justMovedOrder={justMovedOrder}
-              updatingOrders={updatingOrders}
-            />
-          ))}
+        {/* Board content - Grid layout to fit all columns */}
+        <div className='h-full min-h-0 overflow-y-auto'>
+          <div className='grid grid-cols-5 gap-2 md:gap-2 lg:gap-4 w-full'>
+            {COLUMNS.map(column => (
+              <DroppableColumn
+                key={column.id}
+                column={column}
+                orders={ordersByStatus[column.id] || []}
+                onOrderClick={handleOrderClick}
+                justMovedOrder={justMovedOrder}
+                updatingOrders={updatingOrders}
+              />
+            ))}
+          </div>
         </div>
 
         <DragOverlay>

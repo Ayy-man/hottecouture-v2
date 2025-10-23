@@ -167,6 +167,29 @@ export function ServicesStepNew({
         qty: 1,
         customPriceCents: service.base_price_cents,
       });
+
+      // Check if this is a jacket zipper service that needs automatic zip charge
+      const isJacketZipperService =
+        service.name.toLowerCase().includes('changer zip') &&
+        (service.name.toLowerCase().includes('veste') ||
+          service.name.toLowerCase().includes('chandail'));
+
+      if (isJacketZipperService) {
+        // Add automatic $8 zip charge
+        const zipChargeServiceId = 'zip-charge-auto';
+        const existingZipCharge = garment.services.find(
+          s => s.serviceId === zipChargeServiceId
+        );
+
+        if (!existingZipCharge) {
+          garment.services.push({
+            serviceId: zipChargeServiceId,
+            qty: 1,
+            customPriceCents: 800, // $8.00
+            customServiceName: 'Zip Charge (Automatic)',
+          });
+        }
+      }
     }
 
     onUpdate(updatedGarments);
@@ -207,7 +230,24 @@ export function ServicesStepNew({
     const garment = updatedGarments[garmentIndex];
     if (!garment) return;
 
+    // Check if this is a jacket zipper service being removed
+    const service = services.find(s => s.id === serviceId);
+    const isJacketZipperService =
+      service &&
+      service.name.toLowerCase().includes('changer zip') &&
+      (service.name.toLowerCase().includes('veste') ||
+        service.name.toLowerCase().includes('chandail'));
+
+    // Remove the service
     garment.services = garment.services.filter(s => s.serviceId !== serviceId);
+
+    // If this was a jacket zipper service, also remove the automatic zip charge
+    if (isJacketZipperService) {
+      garment.services = garment.services.filter(
+        s => s.serviceId !== 'zip-charge-auto'
+      );
+    }
+
     onUpdate(updatedGarments);
   };
 
@@ -267,7 +307,7 @@ export function ServicesStepNew({
         <Button
           variant='ghost'
           onClick={onPrev}
-          className='flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all duration-200'
+          className='flex items-center gap-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-3 py-2 rounded-lg transition-all duration-200'
         >
           <svg
             className='w-4 h-4'
@@ -295,33 +335,35 @@ export function ServicesStepNew({
         <Button
           onClick={onNext}
           disabled={data.length === 0}
-          className='bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+          className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
         >
           Next
         </Button>
       </div>
 
-      {/* iOS-style Category Tabs */}
-      <div className='bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0'>
-        <div className='flex space-x-1 overflow-x-auto scrollbar-hide'>
+      {/* Ultra Compact Category Tabs */}
+      <div className='bg-white border-b border-gray-200 px-1 py-1 flex-shrink-0'>
+        <div className='grid grid-cols-6 gap-0.5'>
           {categories.map(category => {
             const categoryServices = getServicesByCategory(category.key);
             return (
               <button
                 key={category.key}
                 onClick={() => setActiveTab(category.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                className={`flex flex-col items-center gap-0.5 px-1 py-1 rounded text-xs font-medium transition-all duration-200 ${
                   activeTab === category.key
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-sm'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <span className='text-base'>{category.icon}</span>
-                <span>{category.label}</span>
+                <span className='text-sm'>{category.icon}</span>
+                <span className='text-xs leading-tight text-center'>
+                  {category.label}
+                </span>
                 <span
-                  className={`text-xs px-2 py-1 rounded-full ${
+                  className={`text-xs px-1 py-0.5 rounded-full ${
                     activeTab === category.key
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white'
                       : 'bg-gray-200 text-gray-600'
                   }`}
                 >
@@ -337,7 +379,7 @@ export function ServicesStepNew({
       <div className='flex-1 flex overflow-hidden min-h-0'>
         {/* Services Grid / Custom Card - Now Scrollable */}
         <div className='flex-1 bg-gray-50 overflow-y-auto'>
-          <div className='p-4 pb-24'>
+          <div className='p-4 pb-32'>
             {activeTab === 'custom' ? (
               <div className='bg-white rounded-lg p-6 shadow-sm border border-gray-100 w-full'>
                 {/* Compact Header */}
@@ -406,7 +448,7 @@ export function ServicesStepNew({
                         >
                           <div className='flex items-center justify-between'>
                             <div className='flex items-center gap-4 flex-1 min-w-0'>
-                              <div className='w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0'>
+                              <div className='w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0'>
                                 <span className='text-base'>👕</span>
                               </div>
                               <div className='min-w-0 flex-1'>
@@ -424,7 +466,7 @@ export function ServicesStepNew({
                                 !customServiceName.trim() ||
                                 !customServicePrice.trim()
                               }
-                              className='px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0'
+                              className='px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white text-base font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0'
                             >
                               Add Service
                             </Button>
@@ -436,7 +478,7 @@ export function ServicesStepNew({
                 )}
               </div>
             ) : (
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pb-16'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pb-32'>
                 {getServicesByCategory(activeTab).map(service => (
                   <div
                     key={service.id}
@@ -478,7 +520,7 @@ export function ServicesStepNew({
                               }}
                               className={`w-full px-2 py-1.5 rounded text-xs font-medium transition-all duration-200 ${
                                 isAdded
-                                  ? 'bg-blue-600 text-white shadow-sm'
+                                  ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-sm'
                                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                               }`}
                             >
@@ -535,7 +577,7 @@ export function ServicesStepNew({
                       className='bg-gray-50 rounded-lg p-3'
                     >
                       <div className='flex items-center gap-2 mb-3'>
-                        <div className='w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center'>
+                        <div className='w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center'>
                           <span className='text-sm'>👕</span>
                         </div>
                         <div>

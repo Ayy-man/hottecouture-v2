@@ -40,7 +40,8 @@ export function DroppableColumn({
     <div
       ref={setNodeRef}
       className={`
-        relative bg-white border-2 border-gray-200 rounded-xl p-3 sm:p-4 ipad-landscape:p-2 lg:p-5 h-[75vh] ipad-landscape:h-[75vh] w-full min-w-0 flex flex-col
+        flex min-h-0 flex-col rounded-2xl border bg-white shadow-sm
+        w-full h-full
         transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl
         ${
           isOver
@@ -60,27 +61,18 @@ export function DroppableColumn({
         </div>
       )}
 
-      <div
-        className={`mb-3 ipad-landscape:mb-2 lg:mb-3 flex-shrink-0 transition-colors duration-300 ${isOver ? 'bg-gradient-to-r from-blue-50 to-blue-100' : 'bg-white'} rounded-lg p-2 ipad-landscape:p-1.5`}
-      >
-        <h3
-          className={`text-sm sm:text-base ipad-landscape:text-sm lg:text-lg font-bold transition-colors duration-300 ${isOver ? 'text-blue-800' : 'text-gray-800'}`}
-        >
-          {column.title}
-        </h3>
-        <p
-          className={`text-xs sm:text-sm ipad-landscape:text-xs lg:text-sm transition-colors duration-300 ${isOver ? 'text-blue-600' : 'text-gray-600'} mt-1 ipad-landscape:hidden`}
-        >
-          {column.description}
-        </p>
-        <div
-          className={`mt-1 text-xs sm:text-sm ipad-landscape:text-xs lg:text-sm font-medium transition-colors duration-300 ${isOver ? 'text-blue-500' : 'text-gray-500'}`}
-        >
-          {orders.length} order{orders.length !== 1 ? 's' : ''}
+      {/* Column header - Same as intake form */}
+      <div className='flex-shrink-0 border-b bg-white/90 backdrop-blur p-3 lg:p-4'>
+        <div className='flex items-center justify-between'>
+          <h3 className='text-sm font-semibold'>{column.title}</h3>
+          <span className='text-xs text-zinc-500'>
+            {orders.length} {orders.length === 1 ? 'order' : 'orders'}
+          </span>
         </div>
       </div>
 
-      <div className='flex-1 space-y-1 sm:space-y-2 ipad-landscape:space-y-1 lg:space-y-3 overflow-y-auto min-h-0'>
+      {/* Column list - Same as intake form */}
+      <div className='flex-1 min-h-0 overflow-y-auto p-3 lg:p-4 space-y-3'>
         {orders.map(order => (
           <DraggableOrderCard
             key={order.id}

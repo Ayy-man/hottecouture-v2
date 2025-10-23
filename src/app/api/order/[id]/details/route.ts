@@ -96,19 +96,6 @@ export async function GET(
           name,
           icon,
           category
-        ),
-        garment_service (
-          quantity,
-          custom_price_cents,
-          notes,
-          service (
-            id,
-            name,
-            description,
-            base_price_cents,
-            category,
-            estimated_minutes
-          )
         )
       `
       )
@@ -118,29 +105,57 @@ export async function GET(
       console.error('Error fetching garments:', garmentsError);
     }
 
-    // Tasks removed - garments with services provide all necessary work information
+    // Get garment services for all garments
+    const garmentIds = garments?.map(g => g.id) || [];
+    const { data: garmentServices, error: serviceError } = await supabase
+      .from('garment_service')
+      .select(
+        `
+        *,
+        service (
+          id,
+          name,
+          description,
+          base_price_cents,
+          category,
+          estimated_minutes
+        )
+      `
+      )
+      .in('garment_id', garmentIds);
+
+    if (serviceError) {
+      console.error('Error fetching garment services:', serviceError);
+    }
 
     // Process garments with their services
     const processedGarments =
-      garments?.map((garment: any) => ({
-        id: garment.id,
-        type: garment.type,
-        color: garment.color,
-        brand: garment.brand,
-        notes: garment.notes,
-        label_code: garment.label_code,
-        photo_path: garment.photo_path,
-        measurements: garment.measurements,
-        garment_type: garment.garment_type,
-        services:
-          garment.garment_service?.map((gs: any, index: number) => ({
-            id: `gs-${index}`, // Generate a temporary ID
-            quantity: gs.quantity,
-            custom_price_cents: gs.custom_price_cents,
-            notes: gs.notes,
-            service: gs.service,
-          })) || [],
-      })) || [];
+      garments?.map((garment: any) => {
+        const garmentServicesForThisGarment =
+          garmentServices?.filter(gs => gs.garment_id === garment.id) || [];
+
+        return {
+          id: garment.id,
+          type: garment.type,
+          color: garment.color,
+          brand: garment.brand,
+          notes: garment.notes,
+          label_code: garment.label_code,
+          photo_path: garment.photo_path,
+          measurements: garment.measurements,
+          garment_type: garment.garment_type,
+          services: garmentServicesForThisGarment.map(
+            (gs: any, index: number) => ({
+              id: `gs-${index}`, // Generate a temporary ID
+              quantity: gs.quantity,
+              custom_price_cents: gs.custom_price_cents,
+              custom_service_name: null, // Will be added after migration
+              notes: gs.notes,
+              service: gs.service,
+            })
+          ),
+        };
+      }) || [];
 
     // Flatten all services for easy access
     const allServices = processedGarments.flatMap(garment =>

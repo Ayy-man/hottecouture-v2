@@ -57,12 +57,12 @@ export function PipelineFilter({
   ];
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      {/* Compact Filter Bar */}
+    <div className={`space-y-2 ${className}`}>
+      {/* Ultra Compact Filter Bar */}
       <div className='flex items-center justify-between'>
-        <div className='flex items-center space-x-2'>
-          <span className='text-sm font-medium text-gray-700'>Pipeline:</span>
-          <div className='flex items-center space-x-2'>
+        <div className='flex items-center space-x-1'>
+          <span className='text-xs font-medium text-gray-700'>Pipeline:</span>
+          <div className='flex items-center space-x-1'>
             {pipelines.map(pipeline => {
               const Icon = pipeline.icon;
               const isSelected = selectedPipeline === pipeline.type;
@@ -73,13 +73,13 @@ export function PipelineFilter({
                   variant={isSelected ? 'default' : 'outline'}
                   size='sm'
                   onClick={() => onPipelineChange(pipeline.type)}
-                  className={`btn-press flex items-center space-x-2 font-semibold shadow-md hover:shadow-lg transition-all duration-300 ${
+                  className={`btn-press flex items-center space-x-1 font-semibold shadow-md hover:shadow-lg transition-all duration-300 px-2 py-1 text-xs ${
                     isSelected
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
+                      ? 'bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white'
                       : 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 border-gray-300'
                   }`}
                 >
-                  <Icon className='w-4 h-4' />
+                  <Icon className='w-3 h-3' />
                   <span>{pipeline.name}</span>
                   <Badge
                     variant='secondary'
@@ -101,12 +101,12 @@ export function PipelineFilter({
           variant='ghost'
           size='sm'
           onClick={() => setIsExpanded(!isExpanded)}
-          className='text-gray-500 hover:text-gray-700'
+          className='text-gray-500 hover:text-gray-700 p-1 h-6 w-6'
         >
           {isExpanded ? (
-            <X className='w-4 h-4' />
+            <X className='w-3 h-3' />
           ) : (
-            <Filter className='w-4 h-4' />
+            <Filter className='w-3 h-3' />
           )}
         </Button>
       </div>

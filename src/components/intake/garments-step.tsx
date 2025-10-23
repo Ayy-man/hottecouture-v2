@@ -128,16 +128,9 @@ export function GarmentsStep({
     setCurrentGarment(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoCapture = async (imageDataUrl: string) => {
+  const handlePhotoCapture = async (imageDataUrl: string, fileName: string) => {
     try {
-      console.log('Storing photo locally...');
-
-      // Convert data URL to file
-      const response = await fetch(imageDataUrl);
-      const blob = await response.blob();
-      const fileName = `garment-${nanoid()}.jpg`;
-
-      console.log('Photo stored locally:', fileName, 'Size:', blob.size);
+      console.log('Storing photo locally...', fileName);
 
       // Store locally for now - will upload when order is submitted
       setCurrentGarment(prev => ({
@@ -163,7 +156,7 @@ export function GarmentsStep({
           <Button
             variant='ghost'
             onClick={onPrev}
-            className='flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all duration-200'
+            className='flex items-center gap-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-3 py-2 rounded-lg transition-all duration-200'
           >
             <svg
               className='w-4 h-4'
@@ -196,7 +189,7 @@ export function GarmentsStep({
         </div>
         <div className='flex-1 overflow-y-auto min-h-0 flex items-center justify-center'>
           <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4'></div>
             <p className='text-gray-600'>Loading garment types...</p>
           </div>
         </div>
@@ -239,7 +232,7 @@ export function GarmentsStep({
         <Button
           onClick={onNext}
           disabled={data.length === 0}
-          className='bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+          className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
         >
           Next
         </Button>
@@ -251,7 +244,7 @@ export function GarmentsStep({
           {!showAddForm ? (
             <Button
               onClick={() => setShowAddForm(true)}
-              className='w-full btn-press bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-sm py-2'
+              className='w-full btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-sm py-2'
             >
               Add Garment
             </Button>
@@ -269,7 +262,7 @@ export function GarmentsStep({
                     id='garmentType'
                     value={currentGarment.garment_type_id || ''}
                     onChange={e => handleGarmentTypeChange(e.target.value)}
-                    className='w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white appearance-none cursor-pointer transition-all duration-200 hover:border-gray-400 touch-manipulation min-h-[40px]'
+                    className='w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white appearance-none cursor-pointer transition-all duration-200 hover:border-gray-400 touch-manipulation min-h-[40px]'
                     required
                   >
                     <option value=''>Choose a garment type...</option>
@@ -363,7 +356,7 @@ export function GarmentsStep({
                   value={currentGarment.notes}
                   onChange={e => updateGarmentField('notes', e.target.value)}
                   rows={2}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[60px] text-sm touch-manipulation'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[60px] text-sm touch-manipulation'
                   placeholder='Special instructions, damage notes, etc.'
                 />
               </div>
@@ -372,9 +365,8 @@ export function GarmentsStep({
                 <label className='block text-xs font-medium mb-1'>Photo</label>
                 <div className='space-y-2'>
                   {currentGarment.photoPath || currentGarment.photoDataUrl ? (
-                    <div className='grid grid-cols-2 gap-3'>
-                      {/* Photo on the left - 50% width */}
-                      <div className='h-24 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden'>
+                    <div className='space-y-3'>
+                      <div className='h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden'>
                         {currentGarment.photoDataUrl ? (
                           <img
                             src={currentGarment.photoDataUrl}
@@ -382,46 +374,35 @@ export function GarmentsStep({
                             className='w-full h-full object-cover'
                           />
                         ) : (
-                          <span className='text-xs text-gray-600'>📷</span>
+                          <span className='text-2xl text-gray-600'>📷</span>
                         )}
                       </div>
-                      {/* Text and button on the right - 50% width */}
-                      <div className='space-y-2'>
-                        <div className='text-xs text-gray-600'>
+                      <div className='text-center'>
+                        <p className='text-xs text-gray-600 mb-2'>
                           Photo captured successfully
-                        </div>
-                        <div className='text-xs text-gray-500'>
-                          Click remove to take a new photo
-                        </div>
-                        <div className='flex gap-2'>
-                          <Button
-                            variant='outline'
-                            size='sm'
-                            onClick={() =>
-                              setCurrentGarment(prev => {
-                                const {
-                                  photoPath,
-                                  photoDataUrl,
-                                  photoFileName,
-                                  ...rest
-                                } = prev;
-                                return rest;
-                              })
-                            }
-                            className='btn-press bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 text-red-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-red-300 text-xs px-2 py-1'
-                          >
-                            Remove Photo
-                          </Button>
-                        </div>
+                        </p>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={() =>
+                            setCurrentGarment(prev => {
+                              const {
+                                photoPath,
+                                photoDataUrl,
+                                photoFileName,
+                                ...rest
+                              } = prev;
+                              return rest;
+                            })
+                          }
+                          className='text-xs px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 border-red-300'
+                        >
+                          Remove Photo
+                        </Button>
                       </div>
                     </div>
                   ) : (
-                    <div className='border-2 border-dashed border-gray-300 rounded-lg p-4'>
-                      <CameraCapture
-                        onCapture={handlePhotoCapture}
-                        onCancel={() => {}}
-                      />
-                    </div>
+                    <CameraCapture onCapture={handlePhotoCapture} />
                   )}
                   {uploadError && (
                     <div className='text-red-600 text-xs'>{uploadError}</div>
@@ -435,7 +416,7 @@ export function GarmentsStep({
                   disabled={
                     !currentGarment.type || !currentGarment.garment_type_id
                   }
-                  className='flex-1 btn-press bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm py-2'
+                  className='flex-1 btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm py-2'
                 >
                   Add Garment
                 </Button>

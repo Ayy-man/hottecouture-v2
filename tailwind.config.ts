@@ -9,33 +9,59 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
+        // Mural-inspired color palette
+        background: '#F4EFE9',
+        surface: '#FFFFFF',
+        muted: '#E9E4DF',
+        text: '#2C2C2C',
+        'text-secondary': '#6B6B6B',
+
+        // Accent colors
+        'accent-clay': '#B57C6C',
+        'accent-olive': '#7B8360',
+        'accent-taupe': '#D5B9A0',
+        'accent-contrast': '#4E3B31',
+
+        // Primary (Clay-based)
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
+          50: '#FDF7F4',
+          100: '#F9EDE7',
+          200: '#F2D5C7',
+          300: '#E8B8A3',
+          400: '#D5B9A0',
+          500: '#B57C6C',
+          600: '#A66B5A',
+          700: '#8B5A4A',
+          800: '#70483C',
+          900: '#4E3B31',
         },
+
+        // Secondary (Olive-based)
         secondary: {
-          50: '#fafafa',
-          100: '#f4f4f5',
-          200: '#e4e4e7',
-          300: '#d4d4d8',
-          400: '#a1a1aa',
-          500: '#71717a',
-          600: '#52525b',
-          700: '#3f3f46',
-          800: '#27272a',
-          900: '#18181b',
-          950: '#09090b',
+          50: '#F7F8F4',
+          100: '#EEF0E8',
+          200: '#DDE2D1',
+          300: '#C7D0B8',
+          400: '#A8B592',
+          500: '#7B8360',
+          600: '#6B7049',
+          700: '#5A5E3D',
+          800: '#4A4D32',
+          900: '#3A3C27',
+        },
+
+        // Neutral (Muted-based)
+        neutral: {
+          50: '#F4EFE9',
+          100: '#E9E4DF',
+          200: '#D5D0CB',
+          300: '#C1BCB7',
+          400: '#9A9590',
+          500: '#6B6B6B',
+          600: '#5A5A5A',
+          700: '#4A4A4A',
+          800: '#3A3A3A',
+          900: '#2C2C2C',
         },
       },
       fontFamily: {

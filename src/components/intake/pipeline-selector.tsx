@@ -72,7 +72,7 @@ export function PipelineSelector({
         </h2>
         <Button
           onClick={onNext}
-          className='text-blue-600 hover:text-blue-800 p-0'
+          className='text-primary-600 hover:text-primary-800 p-0'
           variant='ghost'
         >
           Next
@@ -171,7 +171,7 @@ export function PipelineSelector({
                     {/* Selection Button */}
                     <div className='flex items-center justify-center'>
                       {isSelected ? (
-                        <div className='w-full py-1.5 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg text-center shadow-lg text-xs'>
+                        <div className='w-full py-1.5 px-3 bg-gradient-to-r from-primary-500 to-accent-clay text-white font-semibold rounded-lg text-center shadow-lg text-xs'>
                           ✓ Selected
                         </div>
                       ) : (

@@ -50,6 +50,16 @@ export function OrderCard({
     new Set(order.tasks.map(t => t.assignee).filter(Boolean))
   );
 
+  // Extract service names from garments
+  const serviceNames = order.garments
+    .flatMap(garment => garment.services || [])
+    .map(
+      service =>
+        service.service?.name || service.custom_service_name || 'Custom Service'
+    )
+    .filter((name, index, array) => array.indexOf(name) === index) // Remove duplicates
+    .slice(0, 3); // Show max 3 services
+
   return (
     <Card
       ref={setNodeRef}
@@ -66,7 +76,7 @@ export function OrderCard({
           <div className='flex items-center space-x-2'>
             <h4 className='font-semibold text-lg'>#{order.order_number}</h4>
             {order.rush && (
-              <span className='px-2 py-1 text-xs font-bold text-white bg-red-500 rounded'>
+              <span className='px-2 py-1 text-xs font-bold text-white bg-gradient-to-r from-accent-contrast to-primary-500 rounded'>
                 Rush
               </span>
             )}
@@ -92,11 +102,19 @@ export function OrderCard({
           </p>
         </div>
 
-        {/* Services count */}
+        {/* Services */}
         <div className='mb-2'>
           <p className='text-sm text-gray-600'>
             <span className='font-medium'>Services:</span>{' '}
-            {order.services_count}
+            {serviceNames.length > 0 ? (
+              <span>
+                {serviceNames.join(', ')}
+                {order.services_count > serviceNames.length &&
+                  ` (+${order.services_count - serviceNames.length} more)`}
+              </span>
+            ) : (
+              order.services_count
+            )}
           </p>
         </div>
 

@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent global page scrolling - force all scrolling to containers */
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 /* Custom loading animations */
 @keyframes logo-float {
   0%,
@@ -64,25 +73,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Mural-inspired color palette - HSL format for Tailwind */
+    --background: 45 25% 95%;
+    --foreground: 0 0% 17%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 17%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --popover-foreground: 0 0% 17%;
+    --primary: 15 35% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 60 15% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 45 15% 90%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 30 25% 75%;
+    --accent-foreground: 0 0% 17%;
+    --destructive: 15 35% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 45 10% 85%;
+    --input: 45 10% 85%;
+    --ring: 15 35% 55%;
     --radius: 0.5rem;
   }
 
@@ -114,7 +124,7 @@
     @apply border-gray-200;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-text;
   }
 }
 

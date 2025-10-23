@@ -100,13 +100,25 @@ export async function GET() {
       console.error('❌ Error fetching garment services:', serviceError);
     }
 
-    // Group services by garment_id
+    // Group services by garment_id and process them
     const servicesByGarment = new Map();
     garmentServices?.forEach(gs => {
       if (!servicesByGarment.has(gs.garment_id)) {
         servicesByGarment.set(gs.garment_id, []);
       }
-      servicesByGarment.get(gs.garment_id).push(gs);
+
+      // Process the service data
+      const processedService = {
+        id: gs.id,
+        quantity: gs.quantity,
+        custom_price_cents: gs.custom_price_cents,
+        custom_service_name: null, // Will be added after migration
+        notes: gs.notes,
+        service: gs.service,
+        service_id: gs.service_id,
+      };
+
+      servicesByGarment.get(gs.garment_id).push(processedService);
     });
 
     // Step 5: Combine everything
