@@ -291,22 +291,6 @@ export function OrderDetailModal({
                         </div>
                       )}
 
-                      {/* Detailed Measurements */}
-                      {garment.measurements && (
-                        <div className='mb-3'>
-                          <h5 className='text-sm font-medium text-gray-700 mb-2'>
-                            Detailed Measurements:
-                          </h5>
-                          <div className='bg-blue-50 rounded-lg p-3 text-sm'>
-                            <pre className='whitespace-pre-wrap text-gray-700'>
-                              {typeof garment.measurements === 'string'
-                                ? garment.measurements
-                                : JSON.stringify(garment.measurements, null, 2)}
-                            </pre>
-                          </div>
-                        </div>
-                      )}
-
                       {/* Services for this garment */}
                       {garment.services && garment.services.length > 0 && (
                         <div className='mt-3 pt-3 border-t border-gray-100'>

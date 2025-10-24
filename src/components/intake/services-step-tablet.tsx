@@ -29,9 +29,6 @@ interface Garment {
   color?: string;
   brand?: string;
   notes?: string;
-  photoPath?: string;
-  photoDataUrl?: string;
-  photoFileName?: string;
   labelCode: string;
   services: GarmentService[];
 }

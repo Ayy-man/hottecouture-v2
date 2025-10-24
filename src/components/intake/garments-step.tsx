@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CameraCapture } from '@/components/intake/camera-capture';
 import { nanoid } from 'nanoid';
 
 interface GarmentType {
@@ -21,9 +20,6 @@ interface Garment {
   color?: string;
   brand?: string;
   notes?: string;
-  photoPath?: string;
-  photoDataUrl?: string; // Local data URL for immediate display
-  photoFileName?: string; // Intended filename for upload
   labelCode: string;
   services: Array<{
     serviceId: string;
@@ -57,7 +53,6 @@ export function GarmentsStep({
     services: [],
   });
   const [showAddForm, setShowAddForm] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Load garment types from API
   useEffect(() => {
@@ -87,13 +82,6 @@ export function GarmentsStep({
       type: currentGarment.type,
       garment_type_id: currentGarment.garment_type_id,
       notes: currentGarment.notes || '',
-      ...(currentGarment.photoPath && { photoPath: currentGarment.photoPath }),
-      ...(currentGarment.photoDataUrl && {
-        photoDataUrl: currentGarment.photoDataUrl,
-      }),
-      ...(currentGarment.photoFileName && {
-        photoFileName: currentGarment.photoFileName,
-      }),
       labelCode: currentGarment.labelCode || nanoid(8).toUpperCase(),
       services: [],
     };
@@ -126,27 +114,6 @@ export function GarmentsStep({
 
   const updateGarmentField = (field: keyof Garment, value: any) => {
     setCurrentGarment(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handlePhotoCapture = async (imageDataUrl: string, fileName: string) => {
-    try {
-      console.log('Storing photo locally...', fileName);
-
-      // Store locally for now - will upload when order is submitted
-      setCurrentGarment(prev => ({
-        ...prev,
-        photoDataUrl: imageDataUrl, // Store the data URL locally
-        photoFileName: fileName, // Store the intended filename
-        // photoPath will be set after upload
-      }));
-
-      console.log('Photo stored locally successfully');
-    } catch (error) {
-      console.error('Photo capture failed:', error);
-      setUploadError(
-        `Photo capture failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
   };
 
   if (loading) {
@@ -204,7 +171,7 @@ export function GarmentsStep({
         <Button
           variant='ghost'
           onClick={onPrev}
-          className='flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-all duration-200'
+          className='flex items-center gap-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-3 py-2 rounded-lg transition-all duration-200'
         >
           <svg
             className='w-4 h-4'
@@ -361,55 +328,6 @@ export function GarmentsStep({
                 />
               </div>
 
-              <div>
-                <label className='block text-xs font-medium mb-1'>Photo</label>
-                <div className='space-y-2'>
-                  {currentGarment.photoPath || currentGarment.photoDataUrl ? (
-                    <div className='space-y-3'>
-                      <div className='h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden'>
-                        {currentGarment.photoDataUrl ? (
-                          <img
-                            src={currentGarment.photoDataUrl}
-                            alt='Garment photo'
-                            className='w-full h-full object-cover'
-                          />
-                        ) : (
-                          <span className='text-2xl text-gray-600'>📷</span>
-                        )}
-                      </div>
-                      <div className='text-center'>
-                        <p className='text-xs text-gray-600 mb-2'>
-                          Photo captured successfully
-                        </p>
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={() =>
-                            setCurrentGarment(prev => {
-                              const {
-                                photoPath,
-                                photoDataUrl,
-                                photoFileName,
-                                ...rest
-                              } = prev;
-                              return rest;
-                            })
-                          }
-                          className='text-xs px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 border-red-300'
-                        >
-                          Remove Photo
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <CameraCapture onCapture={handlePhotoCapture} />
-                  )}
-                  {uploadError && (
-                    <div className='text-red-600 text-xs'>{uploadError}</div>
-                  )}
-                </div>
-              </div>
-
               <div className='flex gap-2'>
                 <Button
                   onClick={addGarment}
@@ -437,78 +355,51 @@ export function GarmentsStep({
                 Added Garments ({data.length})
               </h3>
               {data.map((garment, index) => {
-                const isEven = index % 2 === 0;
                 return (
                   <div key={index} className='p-3 bg-gray-50 rounded-lg'>
-                    <div
-                      className={`grid grid-cols-2 gap-3 ${!isEven ? 'grid-flow-col-dense' : ''}`}
-                    >
-                      {/* Photo - 50% width */}
-                      <div
-                        className={`h-20 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden ${!isEven ? 'order-2' : ''}`}
-                      >
-                        {garment.photoPath || garment.photoDataUrl ? (
-                          garment.photoDataUrl ? (
-                            <img
-                              src={garment.photoDataUrl}
-                              alt='Garment photo'
-                              className='w-full h-full object-cover'
-                            />
-                          ) : (
-                            <span className='text-xs text-gray-600'>📷</span>
-                          )
-                        ) : (
-                          <span className='text-xs text-gray-500'>
-                            No Photo
+                    <div className='space-y-1'>
+                      <div className='flex items-center space-x-2'>
+                        {garment.garment_type_id && (
+                          <span className='text-sm'>
+                            {garmentTypes.find(
+                              gt => gt.id === garment.garment_type_id
+                            )?.icon || '👕'}
                           </span>
                         )}
+                        <div className='font-medium text-gray-900 text-sm'>
+                          {garment.type}
+                        </div>
                       </div>
-
-                      {/* Text content - 50% width */}
-                      <div className={`space-y-1 ${!isEven ? 'order-1' : ''}`}>
-                        <div className='flex items-center space-x-2'>
-                          {garment.garment_type_id && (
-                            <span className='text-sm'>
-                              {garmentTypes.find(
-                                gt => gt.id === garment.garment_type_id
-                              )?.icon || '👕'}
-                            </span>
-                          )}
-                          <div className='font-medium text-gray-900 text-sm'>
-                            {garment.type}
-                          </div>
+                      <div className='text-xs text-gray-600 font-mono bg-gray-100 px-2 py-1 rounded'>
+                        #{garment.labelCode}
+                      </div>
+                      {garment.color && (
+                        <div className='text-xs text-gray-500'>
+                          <span className='font-medium'>Color:</span>{' '}
+                          {garment.color}
                         </div>
-                        <div className='text-xs text-gray-600 font-mono bg-gray-100 px-2 py-1 rounded'>
-                          #{garment.labelCode}
+                      )}
+                      {garment.brand && (
+                        <div className='text-xs text-gray-500'>
+                          <span className='font-medium'>Brand:</span>{' '}
+                          {garment.brand}
                         </div>
-                        {garment.color && (
-                          <div className='text-xs text-gray-500'>
-                            <span className='font-medium'>Color:</span>{' '}
-                            {garment.color}
-                          </div>
-                        )}
-                        {garment.brand && (
-                          <div className='text-xs text-gray-500'>
-                            <span className='font-medium'>Brand:</span>{' '}
-                            {garment.brand}
-                          </div>
-                        )}
-                        {garment.notes && (
-                          <div className='text-xs text-gray-500 italic'>
-                            <span className='font-medium'>Notes:</span>{' '}
-                            {garment.notes}
-                          </div>
-                        )}
-                        <div className='pt-1'>
-                          <Button
-                            variant='outline'
-                            size='sm'
-                            onClick={() => removeGarment(index)}
-                            className='btn-press bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 text-red-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-red-300 text-xs px-2 py-1'
-                          >
-                            Remove
-                          </Button>
+                      )}
+                      {garment.notes && (
+                        <div className='text-xs text-gray-500 italic'>
+                          <span className='font-medium'>Notes:</span>{' '}
+                          {garment.notes}
                         </div>
+                      )}
+                      <div className='pt-1'>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={() => removeGarment(index)}
+                          className='btn-press bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 text-red-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-red-300 text-xs px-2 py-1'
+                        >
+                          Remove
+                        </Button>
                       </div>
                     </div>
                   </div>

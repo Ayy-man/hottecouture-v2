@@ -35,12 +35,10 @@ interface IntakeFormData {
   } | null;
   garments: Array<{
     type: string;
+    garment_type_id?: string;
     color?: string;
     brand?: string;
     notes?: string;
-    photoPath?: string;
-    photoDataUrl?: string; // Local data URL for immediate display
-    photoFileName?: string; // Intended filename for upload
     labelCode: string;
     services: Array<{
       serviceId: string;
@@ -147,36 +145,6 @@ export default function IntakePage() {
     }
   }, [currentStep, steps]);
 
-  const uploadPhoto = async (
-    photoDataUrl: string,
-    fileName: string
-  ): Promise<string> => {
-    try {
-      console.log('📸 Uploading photo:', fileName);
-      // Upload to Supabase Storage
-      const uploadResponse = await fetch('/api/upload-photo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName,
-          dataUrl: photoDataUrl,
-        }),
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload photo');
-      }
-
-      const { path } = await uploadResponse.json();
-      return path;
-    } catch (error) {
-      console.error('Photo upload failed:', error);
-      throw error;
-    }
-  };
-
   const handleSubmit = async () => {
     if (!formData.client) {
       setError('Client information is required');
@@ -192,34 +160,6 @@ export default function IntakePage() {
     setError(null);
 
     try {
-      // Upload photos first
-      console.log(
-        '📸 Processing garments for photo upload:',
-        formData.garments.length
-      );
-      const garmentsWithUploadedPhotos = await Promise.all(
-        formData.garments.map(async garment => {
-          console.log('📸 Garment photo data:', {
-            hasPhotoDataUrl: !!garment.photoDataUrl,
-            hasPhotoFileName: !!garment.photoFileName,
-            fileName: garment.photoFileName,
-          });
-          if (garment.photoDataUrl && garment.photoFileName) {
-            const photoPath = await uploadPhoto(
-              garment.photoDataUrl,
-              garment.photoFileName
-            );
-            console.log('📸 Photo uploaded successfully:', photoPath);
-            return {
-              ...garment,
-              photoPath,
-            };
-          }
-          console.log('📸 No photo to upload for garment:', garment.type);
-          return garment;
-        })
-      );
-
       // Convert form data to API format
       const intakeRequest: IntakeRequest = {
         client: formData.client,
@@ -230,12 +170,12 @@ export default function IntakePage() {
           rush: formData.order.rush,
           rush_fee_type: formData.order.rush_fee_type,
         },
-        garments: garmentsWithUploadedPhotos.map(garment => ({
+        garments: formData.garments.map(garment => ({
           type: garment.type,
+          garment_type_id: garment.garment_type_id,
           color: garment.color,
           brand: garment.brand,
           notes: garment.notes,
-          photo_path: garment.photoPath,
           services: garment.services,
         })),
         notes: formData.notes,
@@ -310,10 +250,6 @@ export default function IntakePage() {
             onUpdate={notes => updateFormData({ notes })}
             onNext={nextStep}
             onPrev={prevStep}
-            garments={formData.garments.map((g, index) => ({
-              type: g.type,
-              id: g.labelCode || `garment-${index}`,
-            }))}
           />
         );
       case 'pricing':

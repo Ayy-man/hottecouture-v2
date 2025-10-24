@@ -19,7 +19,6 @@ interface Garment {
   color?: string;
   brand?: string;
   notes?: string;
-  photoPath?: string;
   labelCode: string;
   services: Array<{
     serviceId: string;
