@@ -12,6 +12,7 @@ interface GarmentType {
   icon: string;
   is_common: boolean;
   is_active?: boolean;
+  is_custom?: boolean;
 }
 
 interface Garment {
@@ -54,26 +55,56 @@ export function GarmentsStep({
   });
   const [showAddForm, setShowAddForm] = useState(false);
 
+  // Custom dropdown states
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [contextMenuId, setContextMenuId] = useState<string | null>(null);
+  const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [showAddCustomForm, setShowAddCustomForm] = useState(false);
+  const [customTypeName, setCustomTypeName] = useState('');
+  const [customTypeCategory, setCustomTypeCategory] = useState('other');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [usageCount, setUsageCount] = useState<number | null>(null);
+
   // Load garment types from API
-  useEffect(() => {
-    const loadGarmentTypes = async () => {
-      try {
-        const response = await fetch('/api/garment-types');
-        if (response.ok) {
-          const data = await response.json();
-          setGarmentTypes(data.garmentTypes || []);
-          setGroupedTypes(data.groupedTypes || {});
-        } else {
-          console.error('Failed to load garment types');
-        }
-      } catch (error) {
-        console.error('Error loading garment types:', error);
-      } finally {
-        setLoading(false);
+  const loadGarmentTypes = async () => {
+    try {
+      const response = await fetch('/api/garment-types');
+      if (response.ok) {
+        const data = await response.json();
+        setGarmentTypes(data.garmentTypes || []);
+        setGroupedTypes(data.groupedTypes || {});
+      } else {
+        console.error('Failed to load garment types');
       }
-    };
+    } catch (error) {
+      console.error('Error loading garment types:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadGarmentTypes();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.garment-type-dropdown')) {
+        setIsDropdownOpen(false);
+        setContextMenuId(null);
+        setShowAddCustomForm(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isDropdownOpen]);
 
   const addGarment = () => {
     if (!currentGarment.type || !currentGarment.garment_type_id) return;
@@ -115,6 +146,165 @@ export function GarmentsStep({
   const updateGarmentField = (field: keyof Garment, value: any) => {
     setCurrentGarment(prev => ({ ...prev, [field]: value }));
   };
+
+  // Handle creating custom garment type
+  const handleCreateCustomType = async () => {
+    if (!customTypeName.trim()) return;
+
+    try {
+      const response = await fetch('/api/admin/garment-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: customTypeName.trim(),
+          category: customTypeCategory,
+          icon: '📝',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        alert(result.error || 'Failed to create custom garment type');
+        return;
+      }
+
+      // Reload garment types
+      await loadGarmentTypes();
+
+      // Select the newly created type
+      if (result.garmentType) {
+        handleGarmentTypeChange(result.garmentType.id);
+      }
+
+      // Reset form
+      setCustomTypeName('');
+      setCustomTypeCategory('other');
+      setShowAddCustomForm(false);
+    } catch (error) {
+      console.error('Error creating custom type:', error);
+      alert('Failed to create custom garment type');
+    }
+  };
+
+  // Handle editing garment type
+  const handleStartEdit = (typeId: string) => {
+    const type = garmentTypes.find(t => t.id === typeId);
+    if (type) {
+      setEditingTypeId(typeId);
+      setEditName(type.name);
+      setContextMenuId(null);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTypeId || !editName.trim()) return;
+
+    try {
+      const response = await fetch('/api/admin/garment-types', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingTypeId,
+          name: editName.trim(),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        alert(result.error || 'Failed to update garment type');
+        return;
+      }
+
+      // Reload garment types
+      await loadGarmentTypes();
+
+      // Update current selection if it was the edited type
+      if (currentGarment.garment_type_id === editingTypeId) {
+        setCurrentGarment(prev => ({
+          ...prev,
+          type: editName.trim(),
+        }));
+      }
+
+      setEditingTypeId(null);
+      setEditName('');
+    } catch (error) {
+      console.error('Error updating type:', error);
+      alert('Failed to update garment type');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTypeId(null);
+    setEditName('');
+  };
+
+  // Handle deleting garment type
+  const handleCheckUsage = async (typeId: string) => {
+    try {
+      const response = await fetch(
+        `/api/admin/garment-types?usage=true&id=${typeId}`
+      );
+      const result = await response.json();
+
+      if (response.ok) {
+        setUsageCount(result.usageCount || 0);
+        setDeleteConfirmId(typeId);
+        setContextMenuId(null);
+      }
+    } catch (error) {
+      console.error('Error checking usage:', error);
+    }
+  };
+
+  const handleDeleteType = async () => {
+    if (!deleteConfirmId) return;
+
+    try {
+      const response = await fetch(
+        `/api/admin/garment-types?id=${deleteConfirmId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        alert(
+          result.message || result.error || 'Failed to delete garment type'
+        );
+        setDeleteConfirmId(null);
+        setUsageCount(null);
+        return;
+      }
+
+      // Reload garment types
+      await loadGarmentTypes();
+
+      // Clear selection if deleted type was selected
+      if (currentGarment.garment_type_id === deleteConfirmId) {
+        setCurrentGarment(prev => ({
+          ...prev,
+          type: '',
+          garment_type_id: undefined,
+        }));
+      }
+
+      setDeleteConfirmId(null);
+      setUsageCount(null);
+    } catch (error) {
+      console.error('Error deleting type:', error);
+      alert('Failed to delete garment type');
+    }
+  };
+
+  // Get custom types count
+  const customTypesCount = garmentTypes.filter(
+    t => t.is_custom && t.is_active !== false
+  ).length;
 
   if (loading) {
     return (
@@ -217,7 +407,7 @@ export function GarmentsStep({
             </Button>
           ) : (
             <div className='space-y-3 p-3 border border-gray-200 rounded-lg'>
-              <div>
+              <div className='garment-type-dropdown'>
                 <label
                   htmlFor='garmentType'
                   className='block text-sm font-medium mb-1'
@@ -225,41 +415,19 @@ export function GarmentsStep({
                   Garment Type *
                 </label>
                 <div className='relative'>
-                  <select
-                    id='garmentType'
-                    value={currentGarment.garment_type_id || ''}
-                    onChange={e => handleGarmentTypeChange(e.target.value)}
-                    className='w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white appearance-none cursor-pointer transition-all duration-200 hover:border-gray-400 touch-manipulation min-h-[40px]'
-                    required
+                  {/* Custom Dropdown Button */}
+                  <button
+                    type='button'
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className='w-full px-3 py-3 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-left transition-all duration-200 hover:border-gray-400 touch-manipulation min-h-[44px] flex items-center justify-between'
                   >
-                    <option value=''>Choose a garment type...</option>
-                    {Object.entries(groupedTypes).map(([category, types]) => (
-                      <optgroup
-                        key={category}
-                        label={
-                          category.charAt(0).toUpperCase() +
-                          category.slice(1).replace('_', ' ')
-                        }
-                        className='font-semibold text-gray-700'
-                      >
-                        {types
-                          .filter(type => type.is_active !== false)
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map(type => (
-                            <option
-                              key={type.id}
-                              value={type.id}
-                              className='py-2'
-                            >
-                              {type.icon} {type.name}
-                            </option>
-                          ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                  <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
+                    <span className='truncate'>
+                      {currentGarment.garment_type_id
+                        ? `${garmentTypes.find(gt => gt.id === currentGarment.garment_type_id)?.icon || ''} ${currentGarment.type || 'Choose a garment type...'}`
+                        : 'Choose a garment type...'}
+                    </span>
                     <svg
-                      className='w-5 h-5 text-gray-400'
+                      className={`w-5 h-5 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                       fill='none'
                       stroke='currentColor'
                       viewBox='0 0 24 24'
@@ -271,7 +439,293 @@ export function GarmentsStep({
                         d='M19 9l-7 7-7-7'
                       />
                     </svg>
-                  </div>
+                  </button>
+
+                  {/* Custom Dropdown Menu */}
+                  {isDropdownOpen && (
+                    <div className='absolute z-50 w-full mt-1 bg-white border-2 border-gray-300 rounded-lg shadow-lg max-h-[400px] overflow-y-auto overflow-x-visible'>
+                      {/* Garment Types List */}
+                      {Object.entries(groupedTypes).map(([category, types]) => {
+                        const activeTypes = types
+                          .filter(type => type.is_active !== false)
+                          .sort((a, b) => a.name.localeCompare(b.name));
+
+                        if (activeTypes.length === 0) return null;
+
+                        return (
+                          <div key={category}>
+                            {/* Category Header */}
+                            <div className='px-3 py-2 bg-gray-100 text-xs font-semibold text-gray-700 sticky top-0'>
+                              {category.charAt(0).toUpperCase() +
+                                category.slice(1).replace('_', ' ')}
+                            </div>
+
+                            {/* Types in Category */}
+                            {activeTypes.map((type, typeIndex) => {
+                              const isEditing = editingTypeId === type.id;
+                              const isSelected =
+                                currentGarment.garment_type_id === type.id;
+                              const isFirstItem = typeIndex === 0;
+
+                              return (
+                                <div
+                                  key={type.id}
+                                  className={`relative group hover:bg-gray-50 ${
+                                    isSelected ? 'bg-primary-50' : ''
+                                  }`}
+                                  style={{
+                                    position: 'relative',
+                                    zIndex:
+                                      contextMenuId === type.id ? 60 : 'auto',
+                                  }}
+                                >
+                                  {isEditing ? (
+                                    // Inline Edit Mode
+                                    <div className='px-3 py-3 flex items-center gap-2'>
+                                      <input
+                                        type='text'
+                                        value={editName}
+                                        onChange={e =>
+                                          setEditName(e.target.value)
+                                        }
+                                        className='flex-1 px-2 py-2 border border-gray-300 rounded text-sm min-h-[44px]'
+                                        autoFocus
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter')
+                                            handleSaveEdit();
+                                          if (e.key === 'Escape')
+                                            handleCancelEdit();
+                                        }}
+                                      />
+                                      <button
+                                        onClick={handleSaveEdit}
+                                        className='px-3 py-2 bg-green-500 text-white rounded text-sm min-h-[44px] touch-manipulation'
+                                        disabled={!editName.trim()}
+                                      >
+                                        Save
+                                      </button>
+                                      <button
+                                        onClick={handleCancelEdit}
+                                        className='px-3 py-2 bg-gray-300 text-gray-700 rounded text-sm min-h-[44px] touch-manipulation'
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    // Normal Display Mode
+                                    <div className='flex items-center justify-between px-3 py-3 min-h-[44px]'>
+                                      <button
+                                        type='button'
+                                        onClick={() => {
+                                          handleGarmentTypeChange(type.id);
+                                          setIsDropdownOpen(false);
+                                        }}
+                                        className='flex-1 text-left flex items-center gap-2'
+                                      >
+                                        <span>{type.icon}</span>
+                                        <span className='text-sm'>
+                                          {type.name}
+                                          {type.is_custom && (
+                                            <span className='ml-1 text-xs text-gray-500'>
+                                              ✨
+                                            </span>
+                                          )}
+                                        </span>
+                                      </button>
+
+                                      {/* Context Menu Button */}
+                                      <button
+                                        type='button'
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          setContextMenuId(
+                                            contextMenuId === type.id
+                                              ? null
+                                              : type.id
+                                          );
+                                        }}
+                                        className='p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 touch-manipulation'
+                                      >
+                                        <svg
+                                          className='w-5 h-5'
+                                          fill='currentColor'
+                                          viewBox='0 0 20 20'
+                                        >
+                                          <path d='M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z' />
+                                        </svg>
+                                      </button>
+
+                                      {/* Context Menu */}
+                                      {contextMenuId === type.id && (
+                                        <div
+                                          className={`absolute right-0 bg-white border border-gray-300 rounded-lg shadow-xl z-[60] min-w-[180px] ${
+                                            isFirstItem
+                                              ? 'top-full mt-1'
+                                              : 'bottom-full mb-1'
+                                          }`}
+                                          style={{ position: 'absolute' }}
+                                        >
+                                          <button
+                                            type='button'
+                                            onClick={e => {
+                                              e.stopPropagation();
+                                              handleStartEdit(type.id);
+                                            }}
+                                            className='w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-2 min-h-[44px] touch-manipulation'
+                                          >
+                                            <span>✏️</span>
+                                            <span>Edit Name</span>
+                                          </button>
+                                          <button
+                                            type='button'
+                                            onClick={e => {
+                                              e.stopPropagation();
+                                              handleCheckUsage(type.id);
+                                            }}
+                                            className='w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-2 min-h-[44px] touch-manipulation text-red-600'
+                                          >
+                                            <span>🗑️</span>
+                                            <span>Delete</span>
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+
+                      {/* Add Custom Type Section */}
+                      <div className='border-t border-gray-200'>
+                        {showAddCustomForm ? (
+                          <div className='p-3 space-y-2 bg-gray-50'>
+                            <input
+                              type='text'
+                              value={customTypeName}
+                              onChange={e => setCustomTypeName(e.target.value)}
+                              placeholder='Custom garment type name...'
+                              className='w-full px-3 py-2 border border-gray-300 rounded text-sm min-h-[44px]'
+                              autoFocus
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') handleCreateCustomType();
+                                if (e.key === 'Escape') {
+                                  setShowAddCustomForm(false);
+                                  setCustomTypeName('');
+                                }
+                              }}
+                            />
+                            <select
+                              value={customTypeCategory}
+                              onChange={e =>
+                                setCustomTypeCategory(e.target.value)
+                              }
+                              className='w-full px-3 py-2 border border-gray-300 rounded text-sm min-h-[44px]'
+                            >
+                              <option value='other'>Other</option>
+                              <option value='home'>Home</option>
+                              <option value='outdoor'>Outdoor</option>
+                              <option value='womens'>Women's</option>
+                              <option value='mens'>Men's</option>
+                              <option value='outerwear'>Outerwear</option>
+                              <option value='formal'>Formal</option>
+                              <option value='activewear'>Activewear</option>
+                            </select>
+                            <div className='flex gap-2'>
+                              <button
+                                onClick={() => {
+                                  setShowAddCustomForm(false);
+                                  setCustomTypeName('');
+                                }}
+                                className='flex-1 px-3 py-2 bg-gray-300 text-gray-700 rounded text-sm min-h-[44px] touch-manipulation'
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleCreateCustomType}
+                                disabled={
+                                  !customTypeName.trim() ||
+                                  customTypesCount >= 10
+                                }
+                                className='flex-1 px-3 py-2 bg-primary-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50'
+                              >
+                                Create
+                              </button>
+                            </div>
+                            {customTypesCount >= 10 && (
+                              <p className='text-xs text-red-600'>
+                                Maximum 10 custom types reached
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            type='button'
+                            onClick={() => setShowAddCustomForm(true)}
+                            disabled={customTypesCount >= 10}
+                            className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-gray-50 flex items-center gap-2 min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
+                          >
+                            <span>+</span>
+                            <span>Add Custom Type...</span>
+                            {customTypesCount >= 10 && (
+                              <span className='ml-auto text-xs text-red-600'>
+                                (Limit reached)
+                              </span>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Delete Confirmation Modal */}
+                  {deleteConfirmId && (
+                    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+                      <div className='bg-white rounded-lg p-6 max-w-md w-full mx-4'>
+                        <h3 className='text-lg font-semibold mb-4'>
+                          Delete Garment Type?
+                        </h3>
+                        <p className='text-sm text-gray-600 mb-2'>
+                          Are you sure you want to delete this garment type?
+                        </p>
+                        {usageCount !== null && (
+                          <p className='text-sm text-gray-600 mb-4'>
+                            {usageCount > 0 ? (
+                              <span className='text-red-600 font-semibold'>
+                                This type is used in {usageCount} order(s).
+                                Cannot delete.
+                              </span>
+                            ) : (
+                              <span className='text-green-600'>
+                                This type is not used in any orders. Safe to
+                                delete.
+                              </span>
+                            )}
+                          </p>
+                        )}
+                        <div className='flex gap-2'>
+                          <button
+                            onClick={() => {
+                              setDeleteConfirmId(null);
+                              setUsageCount(null);
+                            }}
+                            className='flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded text-sm min-h-[44px] touch-manipulation'
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleDeleteType}
+                            disabled={usageCount !== null && usageCount > 0}
+                            className='flex-1 px-4 py-2 bg-red-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {currentGarment.garment_type_id && (
                   <div className='mt-1 text-xs text-green-600 flex items-center'>
@@ -330,6 +784,13 @@ export function GarmentsStep({
 
               <div className='flex gap-2'>
                 <Button
+                  variant='outline'
+                  onClick={() => setShowAddForm(false)}
+                  className='flex-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-sm py-2'
+                >
+                  Cancel
+                </Button>
+                <Button
                   onClick={addGarment}
                   disabled={
                     !currentGarment.type || !currentGarment.garment_type_id
@@ -337,13 +798,6 @@ export function GarmentsStep({
                   className='flex-1 btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm py-2'
                 >
                   Add Garment
-                </Button>
-                <Button
-                  variant='outline'
-                  onClick={() => setShowAddForm(false)}
-                  className='flex-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-sm py-2'
-                >
-                  Cancel
                 </Button>
               </div>
             </div>

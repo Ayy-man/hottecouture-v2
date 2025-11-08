@@ -241,6 +241,7 @@ export default function IntakePage() {
             onUpdate={garments => updateFormData({ garments })}
             onNext={nextStep}
             onPrev={prevStep}
+            orderType={formData.order.type}
           />
         );
       case 'notes':
@@ -286,45 +287,42 @@ export default function IntakePage() {
 
   return (
     <MuralBackground useMuralBackground={true} opacity={0.08}>
-      <div className='container mx-auto px-4 py-2 max-w-6xl flex h-full min-h-0 flex-col'>
-        {/* Compact Header */}
-        <div className='mb-2 text-center flex-shrink-0'>
-          <div className='flex items-center justify-center gap-3 mb-2'>
-            <div className='inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-primary-500 to-accent-clay rounded-full shadow-sm'>
-              <svg
-                className='w-4 h-4 text-white'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-                />
-              </svg>
+      <div className='container mx-auto px-4 py-2 max-w-7xl flex h-full min-h-0 flex-col lg:flex-row gap-3'>
+        {/* Left Sidebar - Compact Steps Bar */}
+        <div className='flex-shrink-0 lg:w-16'>
+          {/* Compact Header */}
+          <div className='mb-2 text-center lg:text-center flex-shrink-0'>
+            <div className='flex items-center justify-center gap-2 mb-1'>
+              <div className='inline-flex items-center justify-center w-6 h-6 bg-gradient-to-r from-primary-500 to-accent-clay rounded-full shadow-sm'>
+                <svg
+                  className='w-3 h-3 text-white'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                  />
+                </svg>
+              </div>
             </div>
-            <h1 className='text-xl font-bold text-gray-900'>Order Intake</h1>
           </div>
-          <p className='text-sm text-gray-600'>
-            Complete order intake in {steps.length} simple steps
-          </p>
-        </div>
 
-        {/* Compact Progress Indicator */}
-        <div className='mb-2 flex-shrink-0'>
+          {/* Compact Vertical Progress Indicator */}
           <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-2'>
-            <div className='flex items-center justify-between'>
+            <div className='flex flex-col items-center gap-2'>
               {steps.map((step, index) => {
                 const isActive = step.key === currentStep;
                 const isCompleted =
                   steps.findIndex(s => s.key === currentStep) > index;
 
                 return (
-                  <div key={step.key} className='flex items-center group'>
+                  <div key={step.key} className='flex flex-col items-center'>
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold touch-manipulation transition-all duration-300 ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold touch-manipulation transition-all duration-300 flex-shrink-0 ${
                         isActive
                           ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-lg'
                           : isCompleted
@@ -334,7 +332,7 @@ export default function IntakePage() {
                     >
                       {isCompleted ? (
                         <svg
-                          className='w-3 h-3'
+                          className='w-4 h-4'
                           fill='currentColor'
                           viewBox='0 0 20 20'
                         >
@@ -349,9 +347,9 @@ export default function IntakePage() {
                       )}
                     </div>
                     {index < steps.length - 1 && (
-                      <div className='flex items-center mx-1'>
+                      <div className='flex items-center mt-1 mb-1'>
                         <div
-                          className={`w-4 h-0.5 ${
+                          className={`w-0.5 h-6 ${
                             isCompleted ? 'bg-green-400' : 'bg-gray-200'
                           }`}
                         />
@@ -361,30 +359,25 @@ export default function IntakePage() {
                 );
               })}
             </div>
-            <div className='mt-1 text-center'>
-              <p className='text-xs font-medium text-gray-900'>
-                {steps.find(s => s.key === currentStep)?.title}
-              </p>
-              <p className='text-xs text-gray-500'>
-                {steps.find(s => s.key === currentStep)?.description}
-              </p>
-            </div>
           </div>
         </div>
 
-        {/* Error display */}
-        {error && (
-          <div className='mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex-shrink-0'>
-            <p className='text-red-800 text-sm'>{error}</p>
-          </div>
-        )}
+        {/* Main Content Area */}
+        <div className='flex-1 min-w-0 flex flex-col'>
+          {/* Error display */}
+          {error && (
+            <div className='mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex-shrink-0'>
+              <p className='text-red-800 text-sm'>{error}</p>
+            </div>
+          )}
 
-        {/* Step content - One Page App */}
-        <Card className='shadow-lg border-0 bg-white/95 backdrop-blur-sm flex-1 min-h-0'>
-          <CardContent className='p-3 h-full overflow-y-auto'>
-            {renderStep()}
-          </CardContent>
-        </Card>
+          {/* Step content - One Page App */}
+          <Card className='shadow-lg border-0 bg-white/95 backdrop-blur-sm flex-1 min-h-0'>
+            <CardContent className='p-3 h-full overflow-y-auto'>
+              {renderStep()}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </MuralBackground>
   );

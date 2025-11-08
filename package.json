@@ -39,7 +39,7 @@
     "html-pdf-node": "^1.0.8",
     "lucide-react": "^0.544.0",
     "nanoid": "^5.0.0",
-    "next": "^14.2.0",
+    "next": "^14.2.33",
     "next-intl": "^3.0.0",
     "postcss": "^8.4.38",
     "puppeteer": "^21.0.0",
@@ -53,6 +53,7 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@next/swc-darwin-arm64": "^16.0.1",
     "@playwright/test": "^1.45.0",
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^14.2.0",
