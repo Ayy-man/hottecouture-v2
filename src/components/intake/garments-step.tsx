@@ -70,7 +70,14 @@ export function GarmentsStep({
   // Load garment types from API
   const loadGarmentTypes = async () => {
     try {
-      const response = await fetch('/api/garment-types');
+      // Add cache-busting to prevent stale data in production
+      const response = await fetch('/api/garment-types', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setGarmentTypes(data.garmentTypes || []);
@@ -220,15 +227,35 @@ export function GarmentsStep({
         return;
       }
 
-      // Reload garment types
-      await loadGarmentTypes();
+      // Update state directly with the updated garment type
+      if (result.garmentType) {
+        setGarmentTypes(prevTypes =>
+          prevTypes.map(type =>
+            type.id === editingTypeId ? result.garmentType : type
+          )
+        );
 
-      // Update current selection if it was the edited type
-      if (currentGarment.garment_type_id === editingTypeId) {
-        setCurrentGarment(prev => ({
-          ...prev,
-          type: editName.trim(),
-        }));
+        // Update groupedTypes
+        setGroupedTypes(prevGrouped => {
+          const newGrouped = { ...prevGrouped };
+          Object.keys(newGrouped).forEach(category => {
+            newGrouped[category] = newGrouped[category]!.map(type =>
+              type.id === editingTypeId ? result.garmentType : type
+            );
+          });
+          return newGrouped;
+        });
+
+        // Update current selection if it was the edited type
+        if (currentGarment.garment_type_id === editingTypeId) {
+          setCurrentGarment(prev => ({
+            ...prev,
+            type: editName.trim(),
+          }));
+        }
+      } else {
+        // Fallback: reload if response doesn't include garmentType
+        await loadGarmentTypes();
       }
 
       setEditingTypeId(null);
@@ -284,8 +311,23 @@ export function GarmentsStep({
         return;
       }
 
-      // Reload garment types
-      await loadGarmentTypes();
+      // Remove the deleted garment type from state directly
+      const deletedType = garmentTypes.find(t => t.id === deleteConfirmId);
+
+      setGarmentTypes(prevTypes =>
+        prevTypes.filter(type => type.id !== deleteConfirmId)
+      );
+
+      // Update groupedTypes
+      setGroupedTypes(prevGrouped => {
+        const newGrouped = { ...prevGrouped };
+        Object.keys(newGrouped).forEach(category => {
+          newGrouped[category] = newGrouped[category]!.filter(
+            type => type.id !== deleteConfirmId
+          );
+        });
+        return newGrouped;
+      });
 
       // Clear selection if deleted type was selected
       if (currentGarment.garment_type_id === deleteConfirmId) {
