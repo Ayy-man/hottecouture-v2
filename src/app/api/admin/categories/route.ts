@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
+// Disable caching for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Maximum number of categories allowed
 const MAX_CATEGORIES = 8;
 
@@ -120,10 +124,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      categories: categories || [],
-    });
+    // Add cache-control headers to prevent caching in production
+    return NextResponse.json(
+      {
+        success: true,
+        categories: categories || [],
+      },
+      {
+        headers: {
+          'Cache-Control':
+            'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error in categories API:', error);
     return NextResponse.json(

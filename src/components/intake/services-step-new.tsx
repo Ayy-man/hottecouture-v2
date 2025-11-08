@@ -117,7 +117,14 @@ export function ServicesStepNew({
   // Load categories from API
   const loadCategories = async () => {
     try {
-      const response = await fetch('/api/admin/categories');
+      // Add cache-busting to prevent stale data in production
+      const response = await fetch('/api/admin/categories', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+        },
+      });
       if (response.ok) {
         const result = await response.json();
         setCategories(result.categories || []);
