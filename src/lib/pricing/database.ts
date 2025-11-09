@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
-import { PricingItem, PricingConfig } from './types'
-import { calculateOrderPricing, getPricingConfig } from './calcTotal'
+import { createClient } from '@/lib/supabase/server';
+import { PricingItem, PricingConfig } from './types';
+import { calculateOrderPricing, getPricingConfig } from './calcTotal';
 
 /**
  * Update order pricing in the database
@@ -11,45 +11,47 @@ export async function updateOrderPricing(
   isRush: boolean,
   config?: Partial<PricingConfig>
 ) {
-  const supabase = createClient()
-  const fullConfig = { ...getPricingConfig(), ...config }
-  
+  const supabase = createClient();
+  const fullConfig = { ...getPricingConfig(), ...config };
+
   const orderPricing = {
     order_id: orderId,
     is_rush: isRush,
     items,
     config: fullConfig,
-  }
+  };
 
-  const calculation = calculateOrderPricing(orderPricing)
+  const calculation = calculateOrderPricing(orderPricing);
 
-  const { error } = await (await supabase as any)
+  const { error } = await ((await supabase) as any)
     .from('order')
     .update({
       subtotal_cents: calculation.subtotal_cents,
       tax_cents: calculation.tax_cents,
+      tps_cents: calculation.tps_cents,
+      tvq_cents: calculation.tvq_cents,
       total_cents: calculation.total_cents,
       rush_fee_cents: calculation.rush_fee_cents,
     })
-    .eq('id', orderId)
+    .eq('id', orderId);
 
   if (error) {
-    throw new Error(`Failed to update order pricing: ${error.message}`)
+    throw new Error(`Failed to update order pricing: ${error.message}`);
   }
 
-  return calculation
+  return calculation;
 }
 
 /**
  * Recalculate and update pricing for all orders
  */
 export async function recalculateAllOrderPricing() {
-  const supabase = createClient()
-  
+  const supabase = createClient();
+
   // Get all orders with their garments and services
-  const { data: orders, error: ordersError } = await (await supabase as any)
-    .from('order')
-    .select(`
+  const { data: orders, error: ordersError } = await (
+    (await supabase) as any
+  ).from('order').select(`
       id,
       rush,
       garments (
@@ -64,20 +66,20 @@ export async function recalculateAllOrderPricing() {
           )
         )
       )
-    `)
+    `);
 
   if (ordersError) {
-    throw new Error(`Failed to fetch orders: ${ordersError.message}`)
+    throw new Error(`Failed to fetch orders: ${ordersError.message}`);
   }
 
-  const results = []
-  const config = getPricingConfig()
+  const results = [];
+  const config = getPricingConfig();
 
   for (const order of orders || []) {
     try {
       // Flatten garment services into pricing items
-      const items: PricingItem[] = []
-      
+      const items: PricingItem[] = [];
+
       for (const garment of order.garments || []) {
         for (const garmentService of garment.garment_service || []) {
           items.push({
@@ -86,7 +88,7 @@ export async function recalculateAllOrderPricing() {
             quantity: garmentService.quantity,
             custom_price_cents: garmentService.custom_price_cents,
             base_price_cents: garmentService.service?.base_price_cents || 0,
-          })
+          });
         }
       }
 
@@ -95,34 +97,35 @@ export async function recalculateAllOrderPricing() {
         items,
         order.rush,
         config
-      )
+      );
 
       results.push({
         order_id: order.id,
         success: true,
         calculation,
-      })
+      });
     } catch (error) {
       results.push({
         order_id: order.id,
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-      })
+      });
     }
   }
 
-  return results
+  return results;
 }
 
 /**
  * Get pricing breakdown for an order
  */
 export async function getOrderPricingBreakdown(orderId: string) {
-  const supabase = createClient()
-  
-  const { data: order, error } = await (await supabase as any)
+  const supabase = createClient();
+
+  const { data: order, error } = await ((await supabase) as any)
     .from('order')
-    .select(`
+    .select(
+      `
       id,
       rush,
       subtotal_cents,
@@ -148,16 +151,17 @@ export async function getOrderPricingBreakdown(orderId: string) {
           )
         )
       )
-    `)
+    `
+    )
     .eq('id', orderId)
-    .single()
+    .single();
 
   if (error) {
-    throw new Error(`Failed to fetch order: ${error.message}`)
+    throw new Error(`Failed to fetch order: ${error.message}`);
   }
 
   if (!order) {
-    throw new Error('Order not found')
+    throw new Error('Order not found');
   }
 
   return {
@@ -167,23 +171,28 @@ export async function getOrderPricingBreakdown(orderId: string) {
     tax_cents: order.tax_cents,
     total_cents: order.total_cents,
     rush_fee_cents: order.rush_fee_cents,
-    garments: order.garments?.map((garment: any) => ({
-      id: garment.id,
-      type: garment.type,
-      color: garment.color,
-      brand: garment.brand,
-      services: garment.garment_service?.map((gs: any) => ({
-        service_id: gs.service_id,
-        quantity: gs.quantity,
-        custom_price_cents: gs.custom_price_cents,
-        notes: gs.notes,
-        service: gs.service,
-        unit_price_cents: gs.custom_price_cents ?? gs.service?.base_price_cents ?? 0,
-        total_price_cents: (gs.custom_price_cents ?? gs.service?.base_price_cents ?? 0) * gs.quantity,
-        is_custom: gs.custom_price_cents !== null,
+    garments:
+      order.garments?.map((garment: any) => ({
+        id: garment.id,
+        type: garment.type,
+        color: garment.color,
+        brand: garment.brand,
+        services:
+          garment.garment_service?.map((gs: any) => ({
+            service_id: gs.service_id,
+            quantity: gs.quantity,
+            custom_price_cents: gs.custom_price_cents,
+            notes: gs.notes,
+            service: gs.service,
+            unit_price_cents:
+              gs.custom_price_cents ?? gs.service?.base_price_cents ?? 0,
+            total_price_cents:
+              (gs.custom_price_cents ?? gs.service?.base_price_cents ?? 0) *
+              gs.quantity,
+            is_custom: gs.custom_price_cents !== null,
+          })) || [],
       })) || [],
-    })) || [],
-  }
+  };
 }
 
 /**
@@ -194,59 +203,65 @@ export async function validateOrderPricing(
   items: PricingItem[],
   _isRush: boolean
 ) {
-  const supabase = createClient()
-  
+  const supabase = createClient();
+
   // Check if order exists
-  const { data: order, error: orderError } = await (await supabase as any)
+  const { data: order, error: orderError } = await ((await supabase) as any)
     .from('order')
     .select('id, status')
     .eq('id', orderId)
-    .single()
+    .single();
 
   if (orderError || !order) {
-    throw new Error('Order not found')
+    throw new Error('Order not found');
   }
 
   // Validate all services exist
-  const serviceIds = [...new Set(items.map(item => item.service_id))]
-  const { data: services, error: servicesError } = await (await supabase as any)
+  const serviceIds = [...new Set(items.map(item => item.service_id))];
+  const { data: services, error: servicesError } = await (
+    (await supabase) as any
+  )
     .from('service')
     .select('id, code, name, base_price_cents')
-    .in('id', serviceIds)
+    .in('id', serviceIds);
 
   if (servicesError) {
-    throw new Error(`Failed to validate services: ${servicesError.message}`)
+    throw new Error(`Failed to validate services: ${servicesError.message}`);
   }
 
-  const foundServiceIds = new Set(services?.map((s: any) => s.id) || [])
-  const missingServices = serviceIds.filter(id => !foundServiceIds.has(id))
+  const foundServiceIds = new Set(services?.map((s: any) => s.id) || []);
+  const missingServices = serviceIds.filter(id => !foundServiceIds.has(id));
 
   if (missingServices.length > 0) {
-    throw new Error(`Services not found: ${missingServices.join(', ')}`)
+    throw new Error(`Services not found: ${missingServices.join(', ')}`);
   }
 
   // Validate all garments exist and belong to the order
-  const garmentIds = [...new Set(items.map(item => item.garment_id))]
-  const { data: garments, error: garmentsError } = await (await supabase as any)
+  const garmentIds = [...new Set(items.map(item => item.garment_id))];
+  const { data: garments, error: garmentsError } = await (
+    (await supabase) as any
+  )
     .from('garment')
     .select('id, order_id')
     .in('id', garmentIds)
-    .eq('order_id', orderId)
+    .eq('order_id', orderId);
 
   if (garmentsError) {
-    throw new Error(`Failed to validate garments: ${garmentsError.message}`)
+    throw new Error(`Failed to validate garments: ${garmentsError.message}`);
   }
 
-  const foundGarmentIds = new Set(garments?.map((g: any) => g.id) || [])
-  const missingGarments = garmentIds.filter(id => !foundGarmentIds.has(id))
+  const foundGarmentIds = new Set(garments?.map((g: any) => g.id) || []);
+  const missingGarments = garmentIds.filter(id => !foundGarmentIds.has(id));
 
   if (missingGarments.length > 0) {
-    throw new Error(`Garments not found or don't belong to order: ${missingGarments.join(', ')}`)
+    throw new Error(
+      `Garments not found or don't belong to order: ${missingGarments.join(', ')}`
+    );
   }
 
   return {
     order,
     services: services || [],
     garments: garments || [],
-  }
+  };
 }

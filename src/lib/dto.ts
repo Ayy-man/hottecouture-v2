@@ -86,6 +86,8 @@ export const intakeResponseSchema = z.object({
   totals: z.object({
     subtotal_cents: z.number().int().min(0),
     tax_cents: z.number().int().min(0),
+    tps_cents: z.number().int().min(0).optional(),
+    tvq_cents: z.number().int().min(0).optional(),
     total_cents: z.number().int().min(0),
     rush_fee_cents: z.number().int().min(0),
   }),

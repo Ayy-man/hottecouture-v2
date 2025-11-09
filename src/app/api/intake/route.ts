@@ -204,13 +204,21 @@ export async function POST(request: NextRequest) {
       config,
     });
 
-    const { subtotal_cents, rush_fee_cents, tax_cents, total_cents } =
-      pricingCalculation;
+    const {
+      subtotal_cents,
+      rush_fee_cents,
+      tax_cents,
+      tps_cents,
+      tvq_cents,
+      total_cents,
+    } = pricingCalculation;
 
     console.log('🔍 Intake API: Calculated pricing:', {
       subtotal_cents,
       rush_fee_cents,
       tax_cents,
+      tps_cents,
+      tvq_cents,
       total_cents,
     });
 
@@ -235,6 +243,8 @@ export async function POST(request: NextRequest) {
         rush: order.rush || false,
         subtotal_cents: subtotal_cents,
         tax_cents: tax_cents,
+        tps_cents: tps_cents,
+        tvq_cents: tvq_cents,
         total_cents: total_cents,
         rush_fee_cents: rush_fee_cents,
         notes: JSON.stringify(notes || {}), // Save notes as JSON
@@ -460,6 +470,8 @@ export async function POST(request: NextRequest) {
       totals: {
         subtotal_cents: subtotal_cents,
         tax_cents: tax_cents,
+        tps_cents: tps_cents,
+        tvq_cents: tvq_cents,
         total_cents: total_cents,
         rush_fee_cents: rush_fee_cents,
       },

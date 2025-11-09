@@ -6,7 +6,6 @@ import { PipelineSelector } from '@/components/intake/pipeline-selector';
 import { ClientStep } from '@/components/intake/client-step';
 import { GarmentsStep } from '@/components/intake/garments-step';
 import { ServicesStepNew } from '@/components/intake/services-step-new';
-import { NotesStep } from '@/components/intake/notes-step';
 import { PricingStep } from '@/components/intake/pricing-step';
 import { OrderSummary } from '@/components/intake/order-summary';
 import { IntakeRequest, IntakeResponse } from '@/lib/dto';
@@ -18,7 +17,6 @@ type IntakeStep =
   | 'client'
   | 'garments'
   | 'services'
-  | 'notes'
   | 'pricing'
   | 'summary';
 
@@ -46,10 +44,6 @@ interface IntakeFormData {
       customPriceCents?: number;
     }>;
   }>;
-  notes: {
-    measurements?: string;
-    specialInstructions?: string;
-  };
   order: {
     type: 'alteration' | 'custom';
     due_date?: string;
@@ -61,10 +55,6 @@ interface IntakeFormData {
 const initialFormData: IntakeFormData = {
   client: null,
   garments: [],
-  notes: {
-    measurements: '',
-    specialInstructions: '',
-  },
   order: {
     type: 'alteration',
     rush: false,
@@ -106,11 +96,6 @@ export default function IntakePage() {
           key: 'services',
           title: 'Services',
           description: 'Select services and pricing',
-        },
-        {
-          key: 'notes',
-          title: 'Notes & Measurements',
-          description: 'Measurements and special instructions',
         },
         {
           key: 'pricing',
@@ -178,7 +163,6 @@ export default function IntakePage() {
           notes: garment.notes,
           services: garment.services,
         })),
-        notes: formData.notes,
       };
 
       const response = await fetch('/api/intake', {
@@ -242,15 +226,6 @@ export default function IntakePage() {
             onNext={nextStep}
             onPrev={prevStep}
             orderType={formData.order.type}
-          />
-        );
-      case 'notes':
-        return (
-          <NotesStep
-            data={formData.notes}
-            onUpdate={notes => updateFormData({ notes })}
-            onNext={nextStep}
-            onPrev={prevStep}
           />
         );
       case 'pricing':

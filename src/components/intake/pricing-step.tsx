@@ -131,16 +131,27 @@ export function PricingStep({
           ? 6000
           : 3000
         : 0; // $30 or $60 if rush
-      const tax_rate = 0.12; // 12% tax
-      const tax_cents = Math.round(
-        (subtotal_cents + rush_fee_cents) * tax_rate
-      );
+
+      // Calculate taxable amount (subtotal + rush fee)
+      const taxable_amount = subtotal_cents + rush_fee_cents;
+
+      // Calculate TPS (GST) - 5% on subtotal + rush fee
+      const tps_cents = Math.round(taxable_amount * 0.05);
+
+      // Calculate TVQ (QST) - 9.975% on subtotal + rush fee
+      const tvq_cents = Math.round(taxable_amount * 0.09975);
+
+      // Calculate total tax (TPS + TVQ) for backward compatibility
+      const tax_cents = tps_cents + tvq_cents;
+
       const total_cents = subtotal_cents + rush_fee_cents + tax_cents;
 
       return {
         subtotal_cents,
         rush_fee_cents,
         tax_cents,
+        tps_cents,
+        tvq_cents,
         total_cents,
       };
     };
@@ -425,9 +436,16 @@ export function PricingStep({
                   )}
 
                   <div className='flex justify-between'>
-                    <span className='text-sm'>Tax:</span>
+                    <span className='text-sm'>TPS: Canada tax</span>
                     <span className='text-sm font-medium'>
-                      {formatCurrency(calculation.tax_cents)}
+                      {formatCurrency(calculation.tps_cents || 0)}
+                    </span>
+                  </div>
+
+                  <div className='flex justify-between'>
+                    <span className='text-sm'>TVQ: Québec tax</span>
+                    <span className='text-sm font-medium'>
+                      {formatCurrency(calculation.tvq_cents || 0)}
                     </span>
                   </div>
 

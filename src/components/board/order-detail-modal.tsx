@@ -392,37 +392,6 @@ export function OrderDetailModal({
                 </div>
               </div>
 
-              {/* Notes & Measurements */}
-              {displayOrder.notes && (
-                <div className='mb-6'>
-                  <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-                    Notes & Measurements
-                  </h3>
-                  <div className='bg-yellow-50 rounded-lg p-4'>
-                    {displayOrder.notes.measurements && (
-                      <div className='mb-4'>
-                        <h4 className='font-medium text-gray-900 mb-2'>
-                          Measurements:
-                        </h4>
-                        <div className='text-sm text-gray-700 whitespace-pre-wrap'>
-                          {displayOrder.notes.measurements}
-                        </div>
-                      </div>
-                    )}
-                    {displayOrder.notes.specialInstructions && (
-                      <div>
-                        <h4 className='font-medium text-gray-900 mb-2'>
-                          Special Instructions:
-                        </h4>
-                        <div className='text-sm text-gray-700 whitespace-pre-wrap'>
-                          {displayOrder.notes.specialInstructions}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* Pricing */}
               <div className='mb-6'>
                 <h3 className='text-lg font-semibold text-gray-900 mb-4'>
@@ -450,12 +419,30 @@ export function OrderDetailModal({
                         </span>
                       </div>
                     )}
-                    <div className='flex justify-between'>
-                      <span className='text-gray-600'>Tax:</span>
-                      <span className='font-medium'>
-                        {formatCurrency(displayOrder.tax_cents || 0)}
-                      </span>
-                    </div>
+                    {displayOrder.tps_cents !== undefined &&
+                    displayOrder.tvq_cents !== undefined ? (
+                      <>
+                        <div className='flex justify-between'>
+                          <span className='text-gray-600'>TPS: Canada tax</span>
+                          <span className='font-medium'>
+                            {formatCurrency(displayOrder.tps_cents || 0)}
+                          </span>
+                        </div>
+                        <div className='flex justify-between'>
+                          <span className='text-gray-600'>TVQ: Québec tax</span>
+                          <span className='font-medium'>
+                            {formatCurrency(displayOrder.tvq_cents || 0)}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className='flex justify-between'>
+                        <span className='text-gray-600'>Tax:</span>
+                        <span className='font-medium'>
+                          {formatCurrency(displayOrder.tax_cents || 0)}
+                        </span>
+                      </div>
+                    )}
                     <div className='flex justify-between border-t border-gray-300 pt-2'>
                       <span className='text-lg font-semibold text-gray-900'>
                         Total:

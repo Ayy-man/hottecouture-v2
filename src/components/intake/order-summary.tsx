@@ -139,12 +139,34 @@ export function OrderSummary({
                         </span>
                       </div>
                     )}
-                    <div className='flex justify-between'>
-                      <span className='text-xs text-gray-600'>Tax:</span>
-                      <span className='text-xs font-medium'>
-                        {formatCurrency(order.totals.tax_cents)}
-                      </span>
-                    </div>
+                    {order.totals.tps_cents !== undefined &&
+                    order.totals.tvq_cents !== undefined ? (
+                      <>
+                        <div className='flex justify-between'>
+                          <span className='text-xs text-gray-600'>
+                            TPS: Canada tax
+                          </span>
+                          <span className='text-xs font-medium'>
+                            {formatCurrency(order.totals.tps_cents)}
+                          </span>
+                        </div>
+                        <div className='flex justify-between'>
+                          <span className='text-xs text-gray-600'>
+                            TVQ: Québec tax
+                          </span>
+                          <span className='text-xs font-medium'>
+                            {formatCurrency(order.totals.tvq_cents)}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className='flex justify-between'>
+                        <span className='text-xs text-gray-600'>Tax:</span>
+                        <span className='text-xs font-medium'>
+                          {formatCurrency(order.totals.tax_cents)}
+                        </span>
+                      </div>
+                    )}
                     <div className='flex justify-between text-sm font-bold border-t pt-1'>
                       <span>Total:</span>
                       <span className='text-primary'>

@@ -189,6 +189,8 @@ export type Database = {
           rush_fee_cents: number;
           subtotal_cents: number;
           tax_cents: number;
+          tps_cents: number;
+          tvq_cents: number;
           total_cents: number;
           deposit_cents: number;
           balance_due_cents: number;
@@ -215,6 +217,8 @@ export type Database = {
           rush_fee_cents?: number;
           subtotal_cents?: number;
           tax_cents?: number;
+          tps_cents?: number;
+          tvq_cents?: number;
           total_cents?: number;
           deposit_cents?: number;
           qrcode?: string | null;
@@ -240,6 +244,8 @@ export type Database = {
           rush_fee_cents?: number;
           subtotal_cents?: number;
           tax_cents?: number;
+          tps_cents?: number;
+          tvq_cents?: number;
           total_cents?: number;
           deposit_cents?: number;
           qrcode?: string | null;
