@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
 import { TimerButton } from '@/components/timer/timer-button';
 import { LoadingLogo } from '@/components/ui/loading-logo';
@@ -21,6 +22,9 @@ export function OrderDetailModal({
 }: OrderDetailModalProps) {
   const [detailedOrder, setDetailedOrder] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [editingGarmentId, setEditingGarmentId] = useState<string | null>(null);
+  const [editingNotes, setEditingNotes] = useState<string>('');
+  const [savingNotes, setSavingNotes] = useState<string | null>(null);
 
   const fetchOrderDetails = useCallback(async () => {
     if (!order?.id) return;
@@ -56,6 +60,66 @@ export function OrderDetailModal({
       fetchOrderDetails();
     }
   }, [isOpen, order?.id, order?.status, fetchOrderDetails]);
+
+  // Reset editing state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setEditingGarmentId(null);
+      setEditingNotes('');
+      setSavingNotes(null);
+    }
+  }, [isOpen]);
+
+  const handleStartEditNotes = (
+    garmentId: string,
+    currentNotes: string | null
+  ) => {
+    setEditingGarmentId(garmentId);
+    setEditingNotes(currentNotes || '');
+  };
+
+  const handleCancelEditNotes = () => {
+    setEditingGarmentId(null);
+    setEditingNotes('');
+  };
+
+  const handleSaveNotes = async (garmentId: string) => {
+    setSavingNotes(garmentId);
+    try {
+      const response = await fetch(`/api/garment/${garmentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notes: editingNotes }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to save notes');
+      }
+
+      const result = await response.json();
+
+      // Update local state
+      if (detailedOrder && detailedOrder.garments) {
+        setDetailedOrder({
+          ...detailedOrder,
+          garments: detailedOrder.garments.map((g: any) =>
+            g.id === garmentId ? { ...g, notes: result.garment.notes } : g
+          ),
+        });
+      }
+
+      setEditingGarmentId(null);
+      setEditingNotes('');
+    } catch (error) {
+      console.error('Error saving garment notes:', error);
+      alert(error instanceof Error ? error.message : 'Failed to save notes');
+    } finally {
+      setSavingNotes(null);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -282,14 +346,64 @@ export function OrderDetailModal({
                         </div>
                       </div>
 
-                      {garment.notes && (
-                        <div className='mb-3 text-sm'>
-                          <span className='text-gray-600 font-medium'>
-                            Notes:
-                          </span>
-                          <span className='ml-2'>{garment.notes}</span>
-                        </div>
-                      )}
+                      {/* Notes Section - Always Visible */}
+                      <div className='mb-3'>
+                        <label className='block text-sm font-medium text-gray-700 mb-2'>
+                          Notes:
+                        </label>
+                        {editingGarmentId === garment.id ? (
+                          <div className='space-y-2'>
+                            <Textarea
+                              value={editingNotes}
+                              onChange={e => setEditingNotes(e.target.value)}
+                              rows={4}
+                              className='w-full min-h-[100px] text-sm'
+                              placeholder='Special instructions, damage notes, etc.'
+                              disabled={savingNotes === garment.id}
+                            />
+                            <div className='flex gap-2'>
+                              <Button
+                                size='sm'
+                                onClick={() => handleSaveNotes(garment.id)}
+                                disabled={savingNotes === garment.id}
+                                className='bg-primary hover:bg-primary-600'
+                              >
+                                {savingNotes === garment.id
+                                  ? 'Saving...'
+                                  : 'Save'}
+                              </Button>
+                              <Button
+                                size='sm'
+                                variant='outline'
+                                onClick={handleCancelEditNotes}
+                                disabled={savingNotes === garment.id}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className='space-y-2'>
+                            <Textarea
+                              value={garment.notes || ''}
+                              readOnly
+                              rows={4}
+                              className='w-full min-h-[100px] text-sm bg-gray-50 cursor-not-allowed'
+                              placeholder='No notes added yet. Click "Edit Notes" to add notes.'
+                            />
+                            <Button
+                              size='sm'
+                              variant='outline'
+                              onClick={() =>
+                                handleStartEditNotes(garment.id, garment.notes)
+                              }
+                              className='mt-1'
+                            >
+                              Edit Notes
+                            </Button>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Services for this garment */}
                       {garment.services && garment.services.length > 0 && (
