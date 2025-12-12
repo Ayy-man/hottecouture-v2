@@ -222,12 +222,24 @@ export async function POST(request: NextRequest) {
       total_cents,
     });
 
+    // Calculate due date if not provided (10 days for alteration, 28 days for custom)
+    let dueDate = order.due_date;
+    if (!dueDate) {
+      const today = new Date();
+      const orderType = order.type || 'alteration';
+      const daysToAdd = orderType === 'custom' ? 28 : 10;
+      const calculatedDueDate = new Date(today);
+      calculatedDueDate.setDate(today.getDate() + daysToAdd);
+      dueDate = calculatedDueDate.toISOString().split('T')[0];
+      console.log(`📅 Intake API: Auto-calculated due date for ${orderType} order: ${dueDate} (+${daysToAdd} days)`);
+    }
+
     // 3. Create order
     console.log('📝 Intake API: Creating order', {
       correlationId,
       clientId,
       orderType: order.type || 'alteration',
-      dueDate: order.due_date,
+      dueDate: dueDate,
       rush: order.rush || false,
       subtotalCents: subtotal_cents,
       totalCents: total_cents,
@@ -239,7 +251,7 @@ export async function POST(request: NextRequest) {
         client_id: clientId,
         type: order.type || 'alteration',
         priority: order.priority || 'normal',
-        due_date: order.due_date,
+        due_date: dueDate,
         rush: order.rush || false,
         subtotal_cents: subtotal_cents,
         tax_cents: tax_cents,

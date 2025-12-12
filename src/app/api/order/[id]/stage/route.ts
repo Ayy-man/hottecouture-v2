@@ -52,16 +52,27 @@ async function handleOrderStage(
   const orderId = params.id;
   const newStage = validatedData.stage;
 
-  // Get current order status and client info for SMS notifications
+  // Get current order with full details for webhooks and SMS notifications
   const { data: order, error: orderError } = await supabase
     .from('order')
     .select(
       `
       id, 
-      status, 
+      order_number,
+      status,
+      type,
+      subtotal_cents,
+      tps_cents,
+      tvq_cents,
+      total_cents,
       client_id,
       client:client_id (
         id,
+        first_name,
+        last_name,
+        phone,
+        email,
+        language,
         ghl_contact_id
       )
     `
@@ -170,6 +181,81 @@ async function handleOrderStage(
     console.log(
       `ℹ️ No GHL contact ID found for order ${orderId}, skipping SMS notification`
     );
+  }
+
+  // Trigger order-status webhook for integrations (Agent B: QuickBooks, etc.)
+  if (newStage === 'ready' || newStage === 'delivered') {
+    try {
+      const orderData = order as any;
+      const clientData = orderData.client;
+
+      // Fetch garments with services for webhook payload
+      const { data: garments } = await supabase
+        .from('garment')
+        .select(`
+          id,
+          type,
+          garment_service (
+            quantity,
+            custom_price_cents,
+            service (
+              name,
+              base_price_cents
+            )
+          )
+        `)
+        .eq('order_id', orderId);
+
+      const items = (garments || []).map((g: any) => ({
+        garment_type: g.type,
+        services: (g.garment_service || []).map((gs: any) => gs.service?.name || 'Custom'),
+        total_cents: (g.garment_service || []).reduce((sum: number, gs: any) => {
+          const price = gs.custom_price_cents || gs.service?.base_price_cents || 0;
+          return sum + (price * (gs.quantity || 1));
+        }, 0),
+      }));
+
+      const webhookPayload = {
+        event: 'order.status_changed',
+        order_id: orderId,
+        order_number: orderData.order_number,
+        new_status: newStage,
+        client: {
+          id: clientData?.id,
+          name: clientData ? `${clientData.first_name || ''} ${clientData.last_name || ''}`.trim() : 'Unknown',
+          phone: clientData?.phone || null,
+          email: clientData?.email || null,
+          language: clientData?.language || 'fr',
+        },
+        items,
+        totals: {
+          subtotal_cents: orderData.subtotal_cents || 0,
+          tps_cents: orderData.tps_cents || 0,
+          tvq_cents: orderData.tvq_cents || 0,
+          total_cents: orderData.total_cents || 0,
+        },
+        timestamp: new Date().toISOString(),
+      };
+
+      // Call internal webhook endpoint (Agent B will handle Make.com integration)
+      const webhookResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/order-status`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(webhookPayload),
+        }
+      );
+
+      if (webhookResponse.ok) {
+        console.log(`✅ Order status webhook triggered for order ${orderId} (${newStage})`);
+      } else {
+        console.warn(`⚠️ Order status webhook failed for order ${orderId}:`, await webhookResponse.text());
+      }
+    } catch (webhookError) {
+      console.warn(`⚠️ Order status webhook error for order ${orderId}:`, webhookError);
+      // Don't fail the order update if webhook fails
+    }
   }
 
   // Log the event

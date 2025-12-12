@@ -197,6 +197,9 @@ export type Database = {
           qrcode: string | null;
           rack_position: string | null;
           ghl_opportunity_id: string | null;
+          is_archived: boolean;
+          archived_at: string | null;
+          archived_by: string | null;
         };
         Insert: {
           id?: string;
@@ -224,6 +227,9 @@ export type Database = {
           qrcode?: string | null;
           rack_position?: string | null;
           ghl_opportunity_id?: string | null;
+          is_archived?: boolean;
+          archived_at?: string | null;
+          archived_by?: string | null;
         };
         Update: {
           id?: string;
@@ -251,6 +257,9 @@ export type Database = {
           qrcode?: string | null;
           rack_position?: string | null;
           ghl_opportunity_id?: string | null;
+          is_archived?: boolean;
+          archived_at?: string | null;
+          archived_by?: string | null;
         };
       };
       price_list: {

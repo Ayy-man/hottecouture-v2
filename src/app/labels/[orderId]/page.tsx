@@ -144,12 +144,12 @@ export default function LabelsPage() {
           )}
         </div>
 
-        {/* Labels Grid */}
-        <div className='grid grid-cols-2 gap-6 print:grid-cols-3 print:gap-4'>
+        {/* Labels Grid - 2 per page for printing */}
+        <div className='grid grid-cols-2 gap-6 print:grid-cols-2 print:gap-8'>
           {garmentsWithQR.map(garment => (
             <div
               key={garment.id}
-              className='border-2 border-gray-300 rounded-lg p-4 print:border-black print:break-inside-avoid'
+              className='border-2 border-gray-300 rounded-lg p-4 print:border-black print:break-inside-avoid print:min-h-[45vh]'
             >
               {/* QR Code with Status */}
               <div className='w-24 h-24 mx-auto mb-3 border-2 border-gray-300 rounded print:border-black'>
@@ -205,9 +205,13 @@ export default function LabelsPage() {
         </div>
       </div>
 
-      {/* Print Styles */}
+      {/* Print Styles - 2 labels per page */}
       <style jsx global>{`
         @media print {
+          @page {
+            size: letter;
+            margin: 0.5in;
+          }
           body {
             margin: 0;
             padding: 0;
@@ -215,17 +219,20 @@ export default function LabelsPage() {
           .print\\:hidden {
             display: none !important;
           }
-          .print\\:grid-cols-3 {
-            grid-template-columns: repeat(3, 1fr) !important;
+          .print\\:grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr) !important;
           }
-          .print\\:gap-4 {
-            gap: 1rem !important;
+          .print\\:gap-8 {
+            gap: 2rem !important;
           }
           .print\\:border-black {
             border-color: black !important;
           }
           .print\\:break-inside-avoid {
             break-inside: avoid !important;
+          }
+          .print\\:min-h-\\[45vh\\] {
+            min-height: 45vh !important;
           }
         }
       `}</style>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Search, User, Phone, Mail, Package, ArrowLeft } from 'lucide-react'
+import { Search, User, Phone, Mail, Package, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
 interface Client {
@@ -19,11 +19,40 @@ interface Client {
   total_value?: number
 }
 
+function maskPhone(phone: string): string {
+  if (phone.length <= 4) return '****'
+  return phone.slice(0, -4).replace(/./g, '*') + phone.slice(-4)
+}
+
+function maskEmail(email: string): string {
+  const parts = email.split('@')
+  const local = parts[0]
+  const domain = parts[1]
+  if (!local || !domain) return '****@****'
+  const maskedLocal = local.length > 2 
+    ? local[0] + '*'.repeat(local.length - 2) + local[local.length - 1]
+    : '*'.repeat(local.length)
+  return `${maskedLocal}@${domain}`
+}
+
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [revealedClients, setRevealedClients] = useState<Set<string>>(new Set())
+
+  const toggleReveal = (clientId: string) => {
+    setRevealedClients(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(clientId)) {
+        newSet.delete(clientId)
+      } else {
+        newSet.add(clientId)
+      }
+      return newSet
+    })
+  }
 
   // Load all clients
   useEffect(() => {
@@ -162,16 +191,40 @@ export default function ClientsPage() {
                     </div>
                     
                     <div className="space-y-1 text-sm text-gray-600">
+                      {(client.phone || client.email) && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <button
+                            onClick={() => toggleReveal(client.id)}
+                            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            {revealedClients.has(client.id) ? (
+                              <>
+                                <EyeOff className="w-3 h-3" />
+                                Hide Contact Info
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="w-3 h-3" />
+                                Show Contact Info
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
                       {client.phone && (
                         <div className="flex items-center gap-2">
                           <Phone className="w-4 h-4" />
-                          <span>{client.phone}</span>
+                          <span className="font-mono">
+                            {revealedClients.has(client.id) ? client.phone : maskPhone(client.phone)}
+                          </span>
                         </div>
                       )}
                       {client.email && (
                         <div className="flex items-center gap-2">
                           <Mail className="w-4 h-4" />
-                          <span>{client.email}</span>
+                          <span className="font-mono">
+                            {revealedClients.has(client.id) ? client.email : maskEmail(client.email)}
+                          </span>
                         </div>
                       )}
                     </div>
