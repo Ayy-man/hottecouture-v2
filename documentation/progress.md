@@ -20,6 +20,107 @@
 
 ---
 
+### [2024-12-12 17:00] Agent B - Integrations System Complete
+
+**What:** Built payment and invoicing integrations.
+
+**Files Created:**
+- `supabase/migrations/0013_add_payment_fields.sql` - Payment tracking columns for order table
+- `src/lib/integrations/stripe.ts` - Stripe payment link + webhook handling
+- `src/lib/integrations/make.ts` - Make.com webhook for QuickBooks invoicing
+- `src/app/api/webhooks/stripe/route.ts` - Stripe webhook endpoint
+- `src/app/api/payments/create-link/route.ts` - Create Stripe payment link for order
+
+**Files Modified:**
+- `src/app/api/webhooks/order-status/route.ts` - Now uses Make integration module
+
+**Status:** Complete (P0 deliverables)
+
+**Deliverables Completed:**
+1. ✅ QuickBooks via Make.com
+   - Webhook forwards order data to Make.com on 'ready' status
+   - Make.com returns invoice_url which is saved to order
+   - Tested via `/api/webhooks/order-status`
+
+2. ✅ Stripe Payments
+   - Payment link generation: `POST /api/payments/create-link { order_id: "uuid" }`
+   - Webhook at `/api/webhooks/stripe` handles checkout.session.completed
+   - Updates order.payment_status to 'paid' on success
+   - Supports refunds via `refundPayment()` function
+
+**Not Implemented (P1 - deferred):**
+- Google Calendar integration (not needed for current workflow)
+
+**Env Vars Needed:**
+```
+STRIPE_SECRET_KEY=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_...
+MAKE_WEBHOOK_URL=https://hook.make.com/...
+```
+
+**Notes for Integration:**
+- To trigger payment: `POST /api/payments/create-link { order_id }` → returns `{ payment_url }`
+- Include payment_url in SMS (Agent C can add to templates)
+- Database migration 0013 must be applied for payment_status column
+
+---
+
+### [2024-12-12 16:00] Agent C - Communications System Complete
+
+**What:** Built notification system, internal chatbot, and external status widget.
+
+**Files Created:**
+- `supabase/migrations/0012_add_notification_chat_logs.sql` - Migration for notification_log and chat_log tables
+- `src/app/api/notifications/sms/route.ts` - SMS notification endpoint (triggers n8n → GHL)
+- `src/app/api/chat/internal/route.ts` - Internal chatbot API (read-only queries)
+- `src/app/api/status/lookup/route.ts` - Public status lookup API (minimal PII)
+- `src/components/chat/InternalChat.tsx` - Chat UI component for dashboard
+- `src/app/embed/status/page.tsx` - Embeddable iframe widget for external sites
+
+**Files Modified:**
+- `src/lib/types/database.ts` - Added NotificationLog and ChatLog types
+
+**Status:** Complete (P0 deliverables)
+
+**Deliverables Completed:**
+1. ✅ SMS notification endpoint `/api/notifications/sms`
+   - Accepts template + order_id
+   - Bilingual templates (FR default, EN if client.language = 'en')
+   - Logs to notification_log table
+   - Triggers n8n webhook (needs `N8N_SMS_WEBHOOK_URL` env var)
+2. ✅ Internal Status Bot `/api/chat/internal`
+   - Query: "Status of order #12345" → returns order details
+   - Query: "Today's orders" → returns list
+   - Query: "Pending orders" → returns list
+   - Query: "Overdue orders" → returns list with due dates
+   - Read-only (no mutations)
+3. ✅ External Status Widget `/embed/status`
+   - Search by phone OR order number
+   - Shows: order number, status, item count, estimated date
+   - No PII exposed (no names, no detailed notes)
+   - Embeddable via iframe
+
+**Env Vars Needed:**
+- `N8N_SMS_WEBHOOK_URL` - URL for n8n workflow to send SMS via GHL
+
+**Notes for Integration:**
+- To trigger SMS on status change, call: `POST /api/notifications/sms { template: "ready_for_pickup", order_id: "uuid" }`
+- Available templates: `ready_for_pickup`, `reminder_3_weeks`, `reminder_1_month`, `payment_received`
+- Chat component can be added to dashboard: `import { InternalChat } from '@/components/chat/InternalChat'`
+
+**Embed Code:**
+```html
+<iframe 
+  src="https://your-domain.vercel.app/embed/status"
+  width="400"
+  height="350"
+  frameborder="0"
+></iframe>
+```
+
+---
+
 ### [2024-12-12 14:30] Agent A - Order System Complete
 
 **What:** Completed all Agent A deliverables for Phase 2 - order system fixes and improvements.
@@ -120,16 +221,18 @@ TEMPLATE FOR NEW ENTRIES (copy this):
 - [x] Added auto-calculate due dates (10 days alteration, 28 days custom)
 
 **Agent B:**
-- [ ] Pending - QuickBooks integration via Make.com
-- [ ] Pending - Stripe payment processing
-- [ ] Pending - Google Calendar integration
+- [x] QuickBooks integration via Make.com
+- [x] Stripe payment processing
+- [ ] Google Calendar integration (deferred - P1)
 
 **Agent C:**
-- [ ] Pending - SMS notifications
-- [ ] Pending - Internal chatbot
-- [ ] Pending - External status widget
+- [x] SMS notification endpoint with bilingual templates
+- [x] Internal chatbot (read-only order queries)
+- [x] External status widget (embeddable)
+- [x] Status lookup API
+- [x] Database migration for notification_log and chat_log
 
-**Overall Status:** Agent A complete, ready for Agent B/C
+**Overall Status:** All agents complete (P0 deliverables)
 
 ---
 

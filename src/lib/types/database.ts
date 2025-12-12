@@ -507,6 +507,42 @@ export type DocumentUpdate = Database['public']['Tables']['document']['Update'];
 export type EventLogUpdate =
   Database['public']['Tables']['event_log']['Update'];
 
+// Notification and Chat Log types (Agent C)
+export type NotificationLog = {
+  id: string;
+  order_id: string | null;
+  client_id: string | null;
+  type: 'sms' | 'email' | 'push';
+  template: string;
+  status: 'pending' | 'sent' | 'delivered' | 'failed';
+  external_id: string | null;
+  error_message: string | null;
+  sent_at: string | null;
+  delivered_at: string | null;
+  created_at: string;
+};
+
+export type NotificationLogInsert = Omit<NotificationLog, 'id' | 'created_at'> & {
+  id?: string;
+  created_at?: string;
+};
+
+export type ChatLog = {
+  id: string;
+  session_id: string;
+  type: 'internal' | 'external';
+  query: string;
+  response: string;
+  tokens_used: number | null;
+  latency_ms: number | null;
+  created_at: string;
+};
+
+export type ChatLogInsert = Omit<ChatLog, 'id' | 'created_at'> & {
+  id?: string;
+  created_at?: string;
+};
+
 // Enum types
 export type Language = Enums<'language'>;
 export type OrderStatus = Enums<'order_status'>;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sendToMake, updateOrderWithInvoice, MakeWebhookPayload } from '@/lib/integrations/make';
 
 interface OrderStatusWebhookPayload {
   event: 'order.status_changed';
@@ -38,7 +39,6 @@ export async function POST(request: NextRequest) {
       timestamp: payload.timestamp,
     });
 
-    // Only process ready_for_pickup and delivered status changes
     if (!['ready', 'delivered'].includes(payload.new_status)) {
       return NextResponse.json({
         success: true,
@@ -46,32 +46,39 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Agent B: Forward to Make.com for QuickBooks invoice creation
-    if (process.env.MAKE_WEBHOOK_URL && payload.new_status === 'ready') {
-      try {
-        const makeResponse = await fetch(process.env.MAKE_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+    let invoiceResult = null;
 
-        if (makeResponse.ok) {
-          const makeResult = await makeResponse.json();
-          console.log('✅ Make.com webhook successful:', makeResult);
+    if (payload.new_status === 'ready') {
+      const makePayload: MakeWebhookPayload = {
+        event: 'order.status_changed',
+        order_id: payload.order_id,
+        order_number: payload.order_number,
+        new_status: payload.new_status,
+        client: payload.client,
+        items: payload.items,
+        totals: payload.totals,
+        timestamp: payload.timestamp,
+      };
 
-          // If Make.com returns invoice URL, we could update the order here
-          // This will be implemented by Agent B
-        } else {
-          console.warn('⚠️ Make.com webhook failed:', await makeResponse.text());
-        }
-      } catch (makeError) {
-        console.warn('⚠️ Make.com webhook error:', makeError);
+      const result = await sendToMake(makePayload);
+
+      if (result.success && result.invoice_url) {
+        await updateOrderWithInvoice(
+          payload.order_id,
+          result.invoice_url,
+          result.invoice_number || ''
+        );
+        invoiceResult = {
+          invoice_url: result.invoice_url,
+          invoice_number: result.invoice_number,
+        };
       }
     }
 
     return NextResponse.json({
       success: true,
       message: `Order ${payload.order_number} status webhook processed`,
+      invoice: invoiceResult,
     });
   } catch (error) {
     console.error('❌ Order status webhook error:', error);

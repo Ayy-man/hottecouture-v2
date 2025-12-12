@@ -110,23 +110,31 @@ POST /api/webhooks/stripe
 ```
 POST /api/chat/internal
 ```
-**Owner:** Agent C
+**Owner:** Agent C  
+**Status:** ✅ IMPLEMENTED (2024-12-12)
 
 **Request:**
 ```json
 {
   "query": "What's the status of order 12345?",
-  "user_id": "uuid"
+  "session_id": "optional-session-id"
 }
 ```
+
+**Supported Queries:**
+- `"Status of order #12345"` - Get specific order
+- `"Today's orders"` - Orders created today
+- `"Pending orders"` - Orders with status=pending
+- `"Overdue orders"` - Orders past due date
+- `"5141234567"` - Orders by phone number
 
 **Response:**
 ```json
 {
-  "response": "Order #12345 for Jean Tremblay is currently In Progress. It contains 2 items: pants hemming and jacket repair. Estimated completion: Dec 15.",
-  "sources": [
-    { "type": "order", "id": "uuid" }
-  ]
+  "response": "**Commande #12345**\n• Client: Jean Tremblay\n• Téléphone: +15141234567\n• Statut: 🔧 En cours / In Progress\n• Date limite: 2024-12-15\n• Total: $51.74",
+  "type": "order_status",
+  "data": { /* order object */ },
+  "latency_ms": 45
 }
 ```
 
@@ -134,10 +142,16 @@ POST /api/chat/internal
 
 #### External Status Lookup
 ```
-GET /api/status/lookup?phone=+15141234567
-GET /api/status/lookup?order=12345
+GET /api/status/lookup?phone=+15141234567&lang=fr
+GET /api/status/lookup?order=12345&lang=en
 ```
-**Owner:** Agent C
+**Owner:** Agent C  
+**Status:** ✅ IMPLEMENTED (2024-12-12)
+
+**Query Parameters:**
+- `phone` - Client phone number (last 10 digits matched)
+- `order` - Order number
+- `lang` - Response language (`fr` | `en`, default: `fr`)
 
 **Response:**
 ```json
@@ -146,17 +160,44 @@ GET /api/status/lookup?order=12345
   "orders": [
     {
       "order_number": 12345,
-      "status": "in_progress",
+      "status": "working",
       "status_label": "En cours",
       "items_count": 2,
-      "created_at": "2024-12-10",
-      "estimated_completion": "2024-12-15"
+      "estimated_completion": "2024-12-15",
+      "created_at": "2024-12-10"
     }
   ]
 }
 ```
 
-**Privacy Note:** Only returns order numbers and status, no PII.
+**Privacy Note:** Only returns order numbers and status, no PII (names, notes, etc).
+
+---
+
+#### Embeddable Status Widget
+```
+/embed/status
+```
+**Owner:** Agent C  
+**Status:** ✅ IMPLEMENTED (2024-12-12)
+
+**Description:** Standalone page for embedding in external websites via iframe.
+
+**Features:**
+- Search by phone or order number
+- Auto-detects input type (digits only = order number)
+- Minimal UI, no external dependencies
+- Bilingual (FR default)
+
+**Embed Code:**
+```html
+<iframe 
+  src="https://your-domain.vercel.app/embed/status"
+  width="400"
+  height="350"
+  frameborder="0"
+></iframe>
+```
 
 ---
 
@@ -166,7 +207,10 @@ GET /api/status/lookup?order=12345
 ```
 POST /api/notifications/sms
 ```
-**Owner:** Agent C
+**Owner:** Agent C  
+**Status:** ✅ IMPLEMENTED (2024-12-12)
+
+**Environment Variable:** `N8N_SMS_WEBHOOK_URL` - URL for n8n workflow
 
 **Request:**
 ```json
@@ -178,18 +222,31 @@ POST /api/notifications/sms
 ```
 
 **Templates:**
-- `ready_for_pickup`
-- `reminder_3_weeks`
-- `reminder_1_month`
-- `payment_received`
+| Template | Description |
+|----------|-------------|
+| `ready_for_pickup` | Order ready for customer pickup |
+| `reminder_3_weeks` | Reminder after 3 weeks unclaimed |
+| `reminder_1_month` | Final reminder before donation |
+| `payment_received` | Payment confirmation |
 
-**Response:**
+**Response (Success):**
 ```json
 {
   "success": true,
-  "message_id": "n8n-execution-id"
+  "message_id": "n8n-execution-id",
+  "log_id": "notification-log-uuid"
 }
 ```
+
+**Response (Error):**
+```json
+{
+  "error": "SMS webhook not configured",
+  "status": 500
+}
+```
+
+**Note:** SMS is sent via n8n → GHL. Logs are stored in `notification_log` table.
 
 ---
 

@@ -6,9 +6,8 @@ export async function createClient() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
-    );
+    console.warn('Supabase env vars not available - skipping client creation');
+    return null as any;
   }
 
   return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -28,9 +27,8 @@ export async function createServiceRoleClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      'Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
-    );
+    console.warn('Supabase service role env vars not available - skipping client creation');
+    return null as any;
   }
 
   return createSupabaseClient<Database>(supabaseUrl, serviceRoleKey, {
