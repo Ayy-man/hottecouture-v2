@@ -101,11 +101,33 @@ async function handleOrderStage(
     );
   }
 
-  // B4: Require final hours when moving to 'done'
-  const totalWorkSeconds = (order as any).total_work_seconds || 0;
-  if (newStage === 'done' && totalWorkSeconds === 0) {
+  // B4: Require final hours when moving to 'ready' or 'done'
+  const legacyTotalSeconds = (order as any).total_work_seconds || 0;
+
+  // Calculate time from per-garment tasks
+  let taskTotalSeconds = 0;
+  const { data: validationGarments } = await supabase
+    .from('garment')
+    .select('id')
+    .eq('order_id', orderId);
+
+  if (validationGarments && validationGarments.length > 0) {
+    const vGarmentIds = validationGarments.map((g: any) => g.id);
+    const { data: validationTasks } = await supabase
+      .from('task')
+      .select('actual_minutes')
+      .in('garment_id', vGarmentIds);
+
+    if (validationTasks) {
+      taskTotalSeconds = validationTasks.reduce((sum: number, t: any) => sum + ((t.actual_minutes || 0) * 60), 0);
+    }
+  }
+
+  const totalRecordedSeconds = legacyTotalSeconds + taskTotalSeconds;
+
+  if ((newStage === 'done' || newStage === 'ready') && totalRecordedSeconds === 0) {
     throw new ConflictError(
-      'Cannot mark order as done without recording work time. Please use the timer to track hours.',
+      `Cannot mark order as ${newStage} without recording work time. Please use the timer to track hours.`,
       correlationId
     );
   }

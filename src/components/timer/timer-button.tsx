@@ -11,6 +11,7 @@ interface TimerButtonProps {
   orderId: string;
   orderStatus: string;
   onTimeUpdate?: (totalSeconds: number) => void;
+  garmentId?: string; // Optional: if provided, tracks time for specific garment task
 }
 
 interface TimerStatus {
@@ -29,6 +30,7 @@ export function TimerButton({
   orderId,
   orderStatus,
   onTimeUpdate,
+  garmentId,
 }: TimerButtonProps) {
   const [timerStatus, setTimerStatus] = useState<TimerStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,12 +40,14 @@ export function TimerButton({
   const [editMinutes, setEditMinutes] = useState('0');
   const [savingEdit, setSavingEdit] = useState(false);
 
-  // Only show timer for orders in working status
-  const shouldShowTimer = orderStatus === 'working';
+  // Always show timer now (Persist visibility)
+  // const shouldShowTimer = orderStatus === 'working';
+  const shouldShowTimer = true;
 
   // Debug logging
   console.log('🕐 TimerButton Debug:', {
     orderId,
+    garmentId,
     orderStatus,
     shouldShowTimer,
     timerStatus: timerStatus ? 'loaded' : 'not loaded',
@@ -68,7 +72,10 @@ export function TimerButton({
   // Fetch timer status
   const fetchTimerStatus = async () => {
     try {
-      const response = await fetch(`/api/timer/status?orderId=${orderId}`);
+      const url = garmentId
+        ? `/api/timer/status?orderId=${orderId}&garmentId=${garmentId}`
+        : `/api/timer/status?orderId=${orderId}`;
+      const response = await fetch(url);
       const result = await response.json();
 
       if (result.success) {
@@ -86,15 +93,15 @@ export function TimerButton({
     if (shouldShowTimer) {
       fetchTimerStatus();
     }
-  }, [orderId, shouldShowTimer]);
+  }, [orderId, garmentId, shouldShowTimer]);
 
   // Get timer state
   const timerState = timerStatus
     ? getTimerState(
-        timerStatus.is_running,
-        timerStatus.is_paused,
-        timerStatus.is_completed
-      )
+      timerStatus.is_running,
+      timerStatus.is_paused,
+      timerStatus.is_completed
+    )
     : 'idle';
 
   // Timer actions
@@ -104,7 +111,7 @@ export function TimerButton({
       const response = await fetch('/api/timer/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId }),
+        body: JSON.stringify({ orderId, garmentId }),
       });
 
       const result = await response.json();
@@ -124,7 +131,7 @@ export function TimerButton({
       const response = await fetch('/api/timer/pause', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId }),
+        body: JSON.stringify({ orderId, garmentId }),
       });
 
       const result = await response.json();
@@ -144,7 +151,7 @@ export function TimerButton({
       const response = await fetch('/api/timer/resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId }),
+        body: JSON.stringify({ orderId, garmentId }),
       });
 
       const result = await response.json();
@@ -164,7 +171,7 @@ export function TimerButton({
       const response = await fetch('/api/timer/stop', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId }),
+        body: JSON.stringify({ orderId, garmentId }),
       });
 
       const result = await response.json();
@@ -202,7 +209,7 @@ export function TimerButton({
       const response = await fetch('/api/timer/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, hours, minutes }),
+        body: JSON.stringify({ orderId, garmentId, hours, minutes }),
       });
 
       const result = await response.json();

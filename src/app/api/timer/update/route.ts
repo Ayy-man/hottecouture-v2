@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 const updateSchema = z.object({
   orderId: z.string().uuid(),
+  garmentId: z.string().uuid().optional(),
   hours: z.number().min(0).max(999),
   minutes: z.number().min(0).max(59),
 });
@@ -21,46 +22,76 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { orderId, hours, minutes } = parsed.data;
+    const { orderId, garmentId, hours, minutes } = parsed.data;
     const totalSeconds = hours * 3600 + minutes * 60;
 
-    const { data: order, error: fetchError } = await supabase
-      .from('order')
-      .select('status, is_timer_running')
-      .eq('id', orderId)
-      .single();
+    if (garmentId) {
+      // Garment Task Logic
+      const { data: task, error: fetchError } = await supabase
+        .from('task')
+        .select('*')
+        .eq('garment_id', garmentId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
-    if (fetchError || !order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-    }
+      if (fetchError || !task) {
+        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      }
 
-    if ((order as any).status !== 'working') {
-      return NextResponse.json(
-        { error: 'Can only edit time for orders in progress' },
-        { status: 400 }
-      );
-    }
+      if (task.is_active) {
+        return NextResponse.json({ error: 'Please pause timer before editing' }, { status: 400 });
+      }
 
-    if ((order as any).is_timer_running) {
-      return NextResponse.json(
-        { error: 'Please pause the timer before editing time' },
-        { status: 400 }
-      );
-    }
+      const { error: updateError } = await supabase
+        .from('task')
+        .update({
+          actual_minutes: totalSeconds / 60
+        })
+        .eq('id', task.id);
 
-    const { error: updateError } = await supabase
-      .from('order')
-      .update({
-        total_work_seconds: totalSeconds,
-      })
-      .eq('id', orderId);
+      if (updateError) throw updateError;
 
-    if (updateError) {
-      console.error('Error updating timer:', updateError);
-      return NextResponse.json(
-        { error: 'Failed to update timer' },
-        { status: 500 }
-      );
+    } else {
+      // Legacy Order Logic
+      const { data: order, error: fetchError } = await supabase
+        .from('order')
+        .select('status, is_timer_running')
+        .eq('id', orderId)
+        .single();
+
+      if (fetchError || !order) {
+        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      }
+
+      if ((order as any).status !== 'working') {
+        return NextResponse.json(
+          { error: 'Can only edit time for orders in progress' },
+          { status: 400 }
+        );
+      }
+
+      if ((order as any).is_timer_running) {
+        return NextResponse.json(
+          { error: 'Please pause the timer before editing time' },
+          { status: 400 }
+        );
+      }
+
+      const { error: updateError } = await supabase
+        .from('order')
+        .update({
+          total_work_seconds: totalSeconds,
+        })
+        .eq('id', orderId);
+
+      if (updateError) {
+        console.error('Error updating timer:', updateError);
+        return NextResponse.json(
+          { error: 'Failed to update timer' },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({

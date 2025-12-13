@@ -479,7 +479,7 @@ export function OrderDetailModal({
                                           Est:{' '}
                                           {Math.floor(
                                             service.service.estimated_minutes /
-                                              60
+                                            60
                                           )}
                                           h{' '}
                                           {service.service.estimated_minutes %
@@ -497,46 +497,20 @@ export function OrderDetailModal({
                           </div>
                         </div>
                       )}
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Time Tracking */}
-              <div className='mb-6'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-                  Time Tracking
-                </h3>
-                <div className='space-y-4'>
-                  {/* Timer Controls */}
-                  <TimerButton
-                    orderId={displayOrder.id}
-                    orderStatus={displayOrder.status}
-                  />
-
-                  {/* Estimated Time from Services */}
-                  {displayOrder.garments && displayOrder.garments.length > 0 && (
-                    <div className='bg-purple-50 rounded-lg p-4'>
-                      <div className='flex justify-between items-center'>
-                        <span className='text-purple-700 font-medium'>Total Estimated Time:</span>
-                        <span className='font-semibold text-purple-900'>
-                          {(() => {
-                            let totalMinutes = 0;
-                            (displayOrder.garments || []).forEach((g: any) => {
-                              (g.services || []).forEach((s: any) => {
-                                const mins = s.service?.estimated_minutes || 0;
-                                totalMinutes += mins * (s.quantity || 1);
-                              });
-                            });
-                            if (totalMinutes === 0) return 'TBD';
-                            const h = Math.floor(totalMinutes / 60);
-                            const m = totalMinutes % 60;
-                            return h > 0 ? `${h}h ${m}m` : `${m}m`;
-                          })()}
-                        </span>
+                      {/* Timer Button for Garment */}
+                      <div className='mt-4 pt-3 border-t border-gray-100 flex justify-between items-center'>
+                        <div className='text-xs text-gray-500'>
+                          {/* Optional: Show task status here if needed, but TimerButton handles it */}
+                        </div>
+                        <TimerButton
+                          orderId={displayOrder.id}
+                          garmentId={garment.id}
+                          orderStatus={displayOrder.status}
+                        />
                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
 
@@ -568,7 +542,7 @@ export function OrderDetailModal({
                       </div>
                     )}
                     {displayOrder.tps_cents !== undefined &&
-                    displayOrder.tvq_cents !== undefined ? (
+                      displayOrder.tvq_cents !== undefined ? (
                       <>
                         <div className='flex justify-between'>
                           <span className='text-gray-600'>TPS: Canada tax</span>
@@ -612,8 +586,8 @@ export function OrderDetailModal({
                       <span className='font-medium'>
                         {formatCurrency(
                           displayOrder.balance_due_cents ||
-                            displayOrder.total_cents ||
-                            0
+                          displayOrder.total_cents ||
+                          0
                         )}
                       </span>
                     </div>
