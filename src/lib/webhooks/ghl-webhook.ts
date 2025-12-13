@@ -3,6 +3,8 @@ interface GHLContactData {
   email: string;
   phone: string;
   preference: 'Text Messages' | 'Email';
+  tags?: string[];
+  source?: string;
 }
 
 export async function upsertGHLContact(contactData: GHLContactData) {
@@ -52,14 +54,19 @@ export async function upsertGHLContact(contactData: GHLContactData) {
   }
 }
 
-export function formatClientForGHL(client: {
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  preferred_contact?: 'email' | 'sms';
-}): GHLContactData {
-  // Map our preferred_contact to GHL preference
+export function formatClientForGHL(
+  client: {
+    first_name: string;
+    last_name: string;
+    email?: string;
+    phone?: string;
+    preferred_contact?: 'email' | 'sms';
+  },
+  options?: {
+    isNewClient?: boolean;
+    enrollInNurture?: boolean;
+  }
+): GHLContactData {
   const getGHLPreference = (
     preferredContact?: string
   ): 'Text Messages' | 'Email' => {
@@ -69,14 +76,29 @@ export function formatClientForGHL(client: {
       case 'email':
         return 'Email';
       default:
-        return 'Email'; // Default to email
+        return 'Email';
     }
   };
 
-  return {
+  const tags: string[] = [];
+  if (options?.isNewClient) {
+    tags.push('new_client');
+  }
+  if (options?.enrollInNurture !== false) {
+    tags.push('nurture_sequence');
+  }
+
+  const result: GHLContactData = {
     name: `${client.first_name} ${client.last_name}`.trim(),
     email: client.email || '',
     phone: client.phone || '',
     preference: getGHLPreference(client.preferred_contact),
+    source: 'hotte_couture_app',
   };
+
+  if (tags.length > 0) {
+    result.tags = tags;
+  }
+
+  return result;
 }

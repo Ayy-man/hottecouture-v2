@@ -110,15 +110,18 @@ export async function POST(request: NextRequest) {
       clientId = (newClient as any).id;
       console.log('Created new client:', clientId);
 
-      // Send new client to GHL webhook
+      // Send new client to GHL webhook with nurture sequence enrollment
       let ghlContactId = null;
       try {
-        const ghlContactData = formatClientForGHL({
-          first_name: client.first_name,
-          last_name: client.last_name,
-          email: client.email,
-          phone: client.phone,
-        });
+        const ghlContactData = formatClientForGHL(
+          {
+            first_name: client.first_name,
+            last_name: client.last_name,
+            email: client.email,
+            phone: client.phone,
+          },
+          { isNewClient: true, enrollInNurture: true }
+        );
 
         const ghlResult = await upsertGHLContact(ghlContactData);
         if (ghlResult.success) {
