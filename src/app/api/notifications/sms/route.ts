@@ -29,15 +29,6 @@ interface OrderWithClient {
   } | null;
 }
 
-interface NotificationLogEntry {
-  id: string;
-  order_id: string | null;
-  client_id: string | null;
-  type: string;
-  template: string;
-  status: string;
-}
-
 const TEMPLATES = {
   fr: {
     ready_for_pickup: `Bonjour {name}, ici Hotte Design & Couture 🧵
@@ -93,6 +84,12 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createServiceRoleClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 500 }
+      );
+    }
 
     const { data: orderData, error: orderError } = await supabase
       .from('order')
@@ -136,44 +133,11 @@ export async function POST(request: NextRequest) {
       .replace('{order_number}', String(order.order_number))
       .replace('{amount}', `$${((order.total_cents || 0) / 100).toFixed(2)}`);
 
-    let logEntry: NotificationLogEntry | null = null;
-    
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error: logError } = await (supabase as any)
-        .from('notification_log')
-        .insert({
-          order_id: order.id,
-          client_id: client.id,
-          type: 'sms',
-          template,
-          status: 'pending',
-        })
-        .select()
-        .single();
-
-      if (!logError && data) {
-        logEntry = data as NotificationLogEntry;
-      }
-    } catch {
-      console.error('Failed to create notification log');
-    }
-
     const n8nWebhookUrl = process.env.N8N_SMS_WEBHOOK_URL;
     
     if (!n8nWebhookUrl) {
-      if (logEntry) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
-          .from('notification_log')
-          .update({ 
-            status: 'failed', 
-            error_message: 'N8N_SMS_WEBHOOK_URL not configured' 
-          })
-          .eq('id', logEntry.id);
-      }
       return NextResponse.json(
-        { error: 'SMS webhook not configured' },
+        { error: 'SMS webhook not configured (N8N_SMS_WEBHOOK_URL)' },
         { status: 500 }
       );
     }
@@ -188,73 +152,22 @@ export async function POST(request: NextRequest) {
       language: lang,
     };
 
-    try {
-      const n8nResponse = await fetch(n8nWebhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(n8nPayload),
+    const n8nResponse = await fetch(n8nWebhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(n8nPayload),
+    });
+
+    const n8nResult = await n8nResponse.json().catch(() => ({}));
+
+    if (n8nResponse.ok) {
+      return NextResponse.json({
+        success: true,
+        message_id: n8nResult.message_id || n8nResult.execution_id || 'sent',
       });
-
-      const n8nResult = await n8nResponse.json().catch(() => ({}));
-
-      if (n8nResponse.ok) {
-        if (logEntry) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase as any)
-            .from('notification_log')
-            .update({
-              status: 'sent',
-              external_id: n8nResult.message_id || n8nResult.execution_id || null,
-              sent_at: new Date().toISOString(),
-            })
-            .eq('id', logEntry.id);
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
-          .from('order')
-          .update({
-            last_notification_sent_at: new Date().toISOString(),
-            notification_count: (order.notification_count || 0) + 1,
-          })
-          .eq('id', order_id);
-
-        return NextResponse.json({
-          success: true,
-          message_id: n8nResult.message_id || logEntry?.id,
-          log_id: logEntry?.id,
-        });
-      } else {
-        if (logEntry) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase as any)
-            .from('notification_log')
-            .update({
-              status: 'failed',
-              error_message: n8nResult.error || `HTTP ${n8nResponse.status}`,
-            })
-            .eq('id', logEntry.id);
-        }
-
-        return NextResponse.json(
-          { error: 'Failed to send SMS via n8n', details: n8nResult },
-          { status: 502 }
-        );
-      }
-    } catch (n8nError) {
-      if (logEntry) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
-          .from('notification_log')
-          .update({
-            status: 'failed',
-            error_message: n8nError instanceof Error ? n8nError.message : 'Unknown error',
-          })
-          .eq('id', logEntry.id);
-      }
-
+    } else {
       return NextResponse.json(
-        { error: 'Failed to reach n8n webhook', details: String(n8nError) },
+        { error: 'Failed to send SMS via n8n', details: n8nResult },
         { status: 502 }
       );
     }

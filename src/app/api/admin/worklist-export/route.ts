@@ -68,13 +68,32 @@ export async function GET(request: NextRequest) {
       orderNumbers: (orders as any[])?.map(o => o.order_number) || [],
     });
 
+    interface WorklistOrder {
+      order_number: number;
+      status: string;
+      due_date: string | null;
+      client: { first_name: string; last_name: string; phone: string | null; email: string | null } | null;
+      garments: Array<{
+        type: string;
+        color: string | null;
+        brand: string | null;
+        notes: string | null;
+        services: Array<{
+          quantity: number;
+          custom_price_cents: number | null;
+          notes: string | null;
+          service: { name: string; category: string | null; base_price_cents: number } | null;
+        }>;
+      }>;
+    }
+
     // Filter by category if specified
-    let filteredOrders = orders || [];
+    let filteredOrders = (orders || []) as WorklistOrder[];
     if (category && category !== 'all') {
-      filteredOrders = filteredOrders.filter(order =>
-        (order as any).garments?.some((garment: any) =>
+      filteredOrders = filteredOrders.filter((order: WorklistOrder) =>
+        order.garments?.some((garment) =>
           garment.services?.some(
-            (service: any) => service.service?.category === category
+            (service) => service.service?.category === category
           )
         )
       );

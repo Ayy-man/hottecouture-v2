@@ -81,7 +81,7 @@ export async function GET() {
 
     // Get full order data
     const orders = await Promise.all(
-      bestResult.data.map(async order => {
+      bestResult.data.map(async (order: { id: string; order_number: number; status: string; created_at: string }) => {
         const { data: fullOrder, error: fullError } = await supabase1
           .from('order')
           .select(
@@ -116,8 +116,16 @@ export async function GET() {
       console.error('Error fetching clients:', clientError);
     }
 
-    const clientMap = new Map(
-      clients?.map((client: any) => [client.id, client])
+    interface ClientData {
+      id: string;
+      first_name: string;
+      last_name: string;
+      phone: string | null;
+      email: string | null;
+      language: string | null;
+    }
+    const clientMap = new Map<string, ClientData>(
+      clients?.map((client: ClientData) => [client.id, client])
     );
 
     // Get garment data
@@ -187,7 +195,7 @@ export async function GET() {
               })) || [],
           })) || [];
 
-        const allServices = processedGarments.flatMap(garment =>
+        const allServices = processedGarments.flatMap((garment: { type: string; label_code: string | null; services: Array<{ id: string; quantity: number; custom_price_cents: number | null; notes: string | null; service: unknown }> }) =>
           garment.services.map((service: any) => ({
             ...service,
             garment_type: garment.type,
@@ -195,7 +203,7 @@ export async function GET() {
           }))
         );
 
-        const client = clientMap.get(order.client_id);
+        const client = clientMap.get(order.client_id) as ClientData | undefined;
         let client_name = 'Unknown Client';
         if (client && client.first_name && client.last_name) {
           client_name = `${client.first_name} ${client.last_name}`;
@@ -255,12 +263,12 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       source: 'nuclear-option',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('🚀 NUCLEAR: Error:', error);
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error.message || 'Unknown error',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

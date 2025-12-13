@@ -253,8 +253,9 @@ export async function getTimeTrackingStats(
   }
 
   const sessions = data || [];
+  interface SessionData { duration_minutes?: number; start_time: string }
   const totalTimeMinutes = sessions.reduce(
-    (sum, session) => sum + ((session as any).duration_minutes || 0),
+    (sum: number, session: SessionData) => sum + (session.duration_minutes || 0),
     0
   );
   const totalSessions = sessions.length;
@@ -264,30 +265,30 @@ export async function getTimeTrackingStats(
   // Calculate today's time
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const todaySessions = sessions.filter(
-    (session: any) => new Date(session.start_time) >= todayStart
+    (session: SessionData) => new Date(session.start_time) >= todayStart
   );
   const todayTimeMinutes = todaySessions.reduce(
-    (sum, session) => sum + ((session as any).duration_minutes || 0),
+    (sum: number, session: SessionData) => sum + (session.duration_minutes || 0),
     0
   );
 
   // Calculate this week's time
   const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const weekSessions = sessions.filter(
-    (session: any) => new Date(session.start_time) >= weekStart
+    (session: SessionData) => new Date(session.start_time) >= weekStart
   );
   const weekTimeMinutes = weekSessions.reduce(
-    (sum, session) => sum + ((session as any).duration_minutes || 0),
+    (sum: number, session: SessionData) => sum + (session.duration_minutes || 0),
     0
   );
 
   // Calculate this month's time
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthSessions = sessions.filter(
-    (session: any) => new Date(session.start_time) >= monthStart
+    (session: SessionData) => new Date(session.start_time) >= monthStart
   );
   const monthTimeMinutes = monthSessions.reduce(
-    (sum, session) => sum + ((session as any).duration_minutes || 0),
+    (sum: number, session: SessionData) => sum + (session.duration_minutes || 0),
     0
   );
 

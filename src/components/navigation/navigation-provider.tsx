@@ -73,7 +73,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
     const supabase = createClient()
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
+    } = supabase.auth.onAuthStateChange((event: string) => {
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
         refreshUser()
       }

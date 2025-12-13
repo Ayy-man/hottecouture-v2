@@ -288,22 +288,8 @@ export async function POST(request: NextRequest) {
 
     const latencyMs = Date.now() - startTime;
 
-    if (session_id) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
-          .from('chat_log')
-          .insert({
-            session_id,
-            type: 'internal',
-            query,
-            response,
-            latency_ms: latencyMs,
-          });
-      } catch {
-        // Silently fail - table may not exist yet
-      }
-    }
+    // Chat logging disabled until migration 0012 is applied
+    void session_id;
 
     return NextResponse.json({
       response,
