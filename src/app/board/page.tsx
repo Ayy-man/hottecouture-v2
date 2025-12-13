@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { InteractiveBoard } from '@/components/board/interactive-board';
+import { OrderListView } from '@/components/board/order-list-view';
 import { PipelineFilter } from '@/components/board/pipeline-filter';
 import { ArchiveButton } from '@/components/board/archive-button';
 import { OrderType } from '@/lib/types/database';
@@ -12,6 +13,7 @@ import { LoadingLogo } from '@/components/ui/loading-logo';
 import { MuralBackground } from '@/components/ui/mural-background';
 import { WorkListExport } from '@/components/board/worklist-export';
 import { SmsConfirmationModal } from '@/components/board/sms-confirmation-modal';
+import { LayoutGrid, List } from 'lucide-react';
 import Link from 'next/link';
 
 interface PendingSmsConfirmation {
@@ -34,6 +36,7 @@ export default function BoardPage() {
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
   const [showWorkListExport, setShowWorkListExport] = useState(false);
   const [pendingSmsConfirmation, setPendingSmsConfirmation] = useState<PendingSmsConfirmation | null>(null);
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
   // Real-time refresh trigger
   const realtimeTrigger = useRealtimeOrders();
@@ -321,10 +324,12 @@ export default function BoardPage() {
           {/* Compact Header */}
           <div className='mb-3 text-center'>
             <h1 className='text-2xl sm:text-3xl font-bold bg-gradient-to-r from-secondary-600 to-accent-olive bg-clip-text text-transparent mb-1'>
-              Kanban Board
+              {viewMode === 'kanban' ? 'Kanban Board' : 'Order List'}
             </h1>
             <p className='text-xs sm:text-sm text-text-secondary max-w-2xl mx-auto'>
-              Order Management Dashboard - Drag & Drop to Update Status
+              {viewMode === 'kanban'
+                ? 'Drag & Drop to Update Status'
+                : 'View and manage all orders'}
             </p>
           </div>
 
@@ -336,6 +341,26 @@ export default function BoardPage() {
               onPipelineChange={setSelectedPipeline}
             />
             <div className='flex gap-1'>
+              <div className='flex border rounded-md overflow-hidden mr-1'>
+                <Button
+                  variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                  size='sm'
+                  onClick={() => setViewMode('kanban')}
+                  className='rounded-none h-7 px-2'
+                  title='Kanban View'
+                >
+                  <LayoutGrid className='w-4 h-4' />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size='sm'
+                  onClick={() => setViewMode('list')}
+                  className='rounded-none h-7 px-2'
+                  title='List View'
+                >
+                  <List className='w-4 h-4' />
+                </Button>
+              </div>
               <Button
                 onClick={() => setShowWorkListExport(true)}
                 variant='outline'
@@ -363,12 +388,20 @@ export default function BoardPage() {
           </div>
 
           {/* Board area - Same height chain as intake form */}
-          <div className='flex-1 min-h-0 overflow-hidden'>
-            <InteractiveBoard
-              orders={filteredOrders}
-              onOrderUpdate={handleOrderUpdate}
-              updatingOrders={updatingOrders}
-            />
+          <div className='flex-1 min-h-0 overflow-hidden overflow-y-auto'>
+            {viewMode === 'kanban' ? (
+              <InteractiveBoard
+                orders={filteredOrders}
+                onOrderUpdate={handleOrderUpdate}
+                updatingOrders={updatingOrders}
+              />
+            ) : (
+              <OrderListView
+                orders={filteredOrders}
+                onOrderUpdate={handleOrderUpdate}
+                updatingOrders={updatingOrders}
+              />
+            )}
           </div>
         </div>
 
