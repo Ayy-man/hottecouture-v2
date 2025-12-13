@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
- * PATCH - Update garment notes
+ * PATCH - Update garment notes and/or estimated_minutes
  */
 export async function PATCH(
   request: NextRequest,
@@ -15,7 +15,7 @@ export async function PATCH(
     const supabase = await createServiceRoleClient();
     const garmentId = params.id;
     const body = await request.json();
-    const { notes } = body;
+    const { notes, estimated_minutes } = body;
 
     if (!garmentId) {
       return NextResponse.json(
@@ -24,7 +24,6 @@ export async function PATCH(
       );
     }
 
-    // Validate notes is a string (can be empty)
     if (notes !== undefined && typeof notes !== 'string') {
       return NextResponse.json(
         { error: 'Notes must be a string' },
@@ -32,7 +31,13 @@ export async function PATCH(
       );
     }
 
-    // Check if garment exists
+    if (estimated_minutes !== undefined && (typeof estimated_minutes !== 'number' || estimated_minutes < 0)) {
+      return NextResponse.json(
+        { error: 'Estimated minutes must be a non-negative number' },
+        { status: 400 }
+      );
+    }
+
     const { data: existingGarment, error: checkError } = await (
       supabase.from('garment') as any
     )
@@ -44,22 +49,27 @@ export async function PATCH(
       return NextResponse.json({ error: 'Garment not found' }, { status: 404 });
     }
 
-    // Update garment notes
+    const updateData: Record<string, any> = {};
+    if (notes !== undefined) {
+      updateData.notes = notes || null;
+    }
+    if (estimated_minutes !== undefined) {
+      updateData.estimated_minutes = estimated_minutes;
+    }
+
     const { data: updatedGarment, error: updateError } = await (
       supabase.from('garment') as any
     )
-      .update({
-        notes: notes || null, // Allow empty string, convert to null for consistency
-      })
+      .update(updateData)
       .eq('id', garmentId)
-      .select('id, notes, type, color, brand, label_code')
+      .select('id, notes, type, color, brand, label_code, estimated_minutes')
       .single();
 
     if (updateError) {
-      console.error('Error updating garment notes:', updateError);
+      console.error('Error updating garment:', updateError);
       return NextResponse.json(
         {
-          error: 'Failed to update garment notes',
+          error: 'Failed to update garment',
           details: updateError.message,
         },
         { status: 500 }
@@ -70,7 +80,7 @@ export async function PATCH(
       {
         success: true,
         garment: updatedGarment,
-        message: 'Garment notes updated successfully',
+        message: 'Garment updated successfully',
       },
       {
         headers: {

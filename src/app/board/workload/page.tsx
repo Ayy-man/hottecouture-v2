@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { addDays, startOfDay, endOfDay, format } from 'date-fns';
 
 const HOURS_PER_DAY = 8;
-const SEAMSTRESSES = ['Marie', 'Sophie', 'Unassigned'];
+const SEAMSTRESSES = ['Audrey', 'Solange', 'Unassigned'];
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#f59e0b',
@@ -358,17 +358,23 @@ export default function WorkloadPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Order Timeline</CardTitle>
             </CardHeader>
-            <CardContent className="h-[400px] overflow-hidden">
-              <Gantt
-                features={ganttFeatures}
-                markers={[todayMarker]}
-                range={ganttRange}
-                zoom={100}
-                showSidebar={true}
-                onSelectFeature={(id) => {
-                  console.log('Selected order:', id);
-                }}
-              />
+            <CardContent className="h-[400px] overflow-auto">
+              {ganttFeatures.length > 0 ? (
+                <Gantt
+                  features={ganttFeatures}
+                  markers={[todayMarker]}
+                  range={ganttRange}
+                  zoom={100}
+                  showSidebar={true}
+                  onSelectFeature={(id) => {
+                    console.log('Selected order:', id);
+                  }}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  No active orders with due dates to display
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -390,7 +396,7 @@ export default function WorkloadPage() {
                       {name}&apos;s Schedule ({workload.orders.length} orders)
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="h-[200px] overflow-hidden">
+                  <CardContent className="h-[200px] overflow-auto">
                     <Gantt
                       features={seamstressFeatures}
                       markers={[todayMarker]}

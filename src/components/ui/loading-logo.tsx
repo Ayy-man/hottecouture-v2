@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { HLogo } from './h-logo';
 
 interface LoadingLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -22,6 +23,13 @@ export function LoadingLogo({
     xl: 'h-20 w-20',
   };
 
+  const hLogoSizeMap = {
+    sm: 'sm' as const,
+    md: 'md' as const,
+    lg: 'lg' as const,
+    xl: 'xl' as const,
+  };
+
   const textSizeClasses = {
     sm: 'text-sm',
     md: 'text-base',
@@ -39,19 +47,15 @@ export function LoadingLogo({
       {/* Animated Logo Container */}
       <div className={cn('relative', sizeClasses[size])}>
         {/* Rotating Background Circle */}
-        <div className='absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-spin'></div>
+        <div className='absolute inset-0 rounded-full bg-gradient-to-r from-primary-500/20 to-accent-clay/20 animate-spin' style={{ animationDuration: '3s' }}></div>
 
-        {/* Pulsing Logo */}
-        <div className='relative z-10 flex items-center justify-center h-full w-full'>
-          <img
-            src='/logo.jpg'
-            alt="Hotte Design D'Intérieur & Couture"
-            className='h-full w-full object-contain animate-logo-pulse-slow animate-logo-float'
-          />
+        {/* H Logo */}
+        <div className='relative z-10 flex items-center justify-center h-full w-full animate-pulse'>
+          <HLogo size={hLogoSizeMap[size]} className='w-full h-full' />
         </div>
 
         {/* Rotating Ring */}
-        <div className='absolute inset-0 rounded-full border-2 border-transparent border-t-blue-500 border-r-purple-500 animate-spin'></div>
+        <div className='absolute inset-0 rounded-full border-2 border-transparent border-t-primary-500 border-r-accent-clay animate-spin' style={{ animationDuration: '2s' }}></div>
       </div>
 
       {/* Loading Text */}
@@ -67,13 +71,13 @@ export function LoadingLogo({
           </p>
           {/* Animated Dots */}
           <div className='flex justify-center space-x-1 mt-2'>
-            <div className='w-1 h-1 bg-blue-500 rounded-full animate-bounce'></div>
+            <div className='w-1 h-1 bg-primary-500 rounded-full animate-bounce'></div>
             <div
-              className='w-1 h-1 bg-blue-500 rounded-full animate-bounce'
+              className='w-1 h-1 bg-primary-500 rounded-full animate-bounce'
               style={{ animationDelay: '0.1s' }}
             ></div>
             <div
-              className='w-1 h-1 bg-blue-500 rounded-full animate-bounce'
+              className='w-1 h-1 bg-primary-500 rounded-full animate-bounce'
               style={{ animationDelay: '0.2s' }}
             ></div>
           </div>
@@ -91,7 +95,7 @@ export function FullScreenLoading({ text = 'Loading...' }: { text?: string }) {
         <LoadingLogo size='xl' text={text} />
         <div className='mt-8'>
           <div className='w-32 h-1 bg-gray-200 rounded-full overflow-hidden'>
-            <div className='h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse'></div>
+            <div className='h-full bg-gradient-to-r from-primary-500 to-accent-clay rounded-full animate-pulse'></div>
           </div>
         </div>
       </div>

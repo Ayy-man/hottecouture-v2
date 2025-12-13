@@ -11,6 +11,7 @@ import {
 import { ProtectedPage } from '@/components/auth/protected-page';
 import { createHapticButtonProps } from '@/lib/utils/haptic-feedback';
 import { MuralBackground } from '@/components/ui/mural-background';
+import { HLogo } from '@/components/ui/h-logo';
 
 export default function HomePage() {
   const isMockMode =
@@ -55,11 +56,7 @@ export default function HomePage() {
           {/* Compact Hero Section */}
           <div className='text-center mb-4 flex-shrink-0'>
             <div className='inline-flex items-center justify-center w-16 h-16 bg-white/90 backdrop-blur-sm rounded-2xl mb-3 shadow-lg animate-fade-in-up p-2'>
-              <img
-                src='/logo.jpg'
-                alt="Hotte Design D'Intérieur & Couture"
-                className='w-full h-full object-contain'
-              />
+              <HLogo size='lg' className='w-full h-full' />
             </div>
             <h1 className='text-3xl md:text-4xl font-bold bg-gradient-to-r from-accent-clay via-primary-500 to-accent-contrast bg-clip-text text-transparent mb-1 leading-tight animate-fade-in-up-delay-1'>
               Hotte Couture

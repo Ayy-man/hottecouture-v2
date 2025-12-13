@@ -364,7 +364,7 @@ export const GanttTimeline: FC<GanttTimelineProps> = ({
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative" style={{ minHeight: features.length > 0 ? features.length * 40 + 16 : 128 }}>
           {days.map((day) => (
             <div
               key={day.toISOString()}

@@ -1,6 +1,5 @@
 'use client';
 
-// import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { IntakeResponse } from '@/lib/dto';
 import { formatCurrency } from '@/lib/pricing/client';
+import { HLogo } from '@/components/ui/h-logo';
 
 interface OrderSummaryProps {
   order: IntakeResponse | null;
@@ -39,11 +39,7 @@ export function OrderSummary({
       <div className='flex items-center justify-center px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
         <div className='text-center'>
           <div className='flex items-center justify-center mb-2'>
-            <img
-              src='/logo.jpg'
-              alt="Hotte Design D'Intérieur & Couture"
-              className='h-8 w-auto object-contain'
-            />
+            <HLogo size='sm' />
           </div>
           <h2 className='text-lg font-semibold text-gray-900'>
             Order Confirmation

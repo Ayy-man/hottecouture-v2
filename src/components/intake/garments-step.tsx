@@ -135,6 +135,9 @@ export function GarmentsStep({
       services: [],
     });
     setShowAddForm(false);
+    if (data.length === 0) {
+      setTimeout(() => onNext(), 300);
+    }
   };
 
   const handleGarmentTypeChange = (garmentTypeId: string) => {

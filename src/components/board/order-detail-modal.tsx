@@ -25,6 +25,11 @@ export function OrderDetailModal({
   const [editingGarmentId, setEditingGarmentId] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState<string>('');
   const [savingNotes, setSavingNotes] = useState<string | null>(null);
+  const [editingTimeGarmentId, setEditingTimeGarmentId] = useState<string | null>(null);
+  const [editingTimeMinutes, setEditingTimeMinutes] = useState<number>(0);
+  const [savingTime, setSavingTime] = useState<string | null>(null);
+  const [generatingPaymentLink, setGeneratingPaymentLink] = useState(false);
+  const [paymentLinkUrl, setPaymentLinkUrl] = useState<string | null>(null);
 
   const fetchOrderDetails = useCallback(async () => {
     if (!order?.id) return;
@@ -67,6 +72,10 @@ export function OrderDetailModal({
       setEditingGarmentId(null);
       setEditingNotes('');
       setSavingNotes(null);
+      setEditingTimeGarmentId(null);
+      setEditingTimeMinutes(0);
+      setSavingTime(null);
+      setPaymentLinkUrl(null);
     }
   }, [isOpen]);
 
@@ -101,7 +110,6 @@ export function OrderDetailModal({
 
       const result = await response.json();
 
-      // Update local state
       if (detailedOrder && detailedOrder.garments) {
         setDetailedOrder({
           ...detailedOrder,
@@ -118,6 +126,91 @@ export function OrderDetailModal({
       alert(error instanceof Error ? error.message : 'Failed to save notes');
     } finally {
       setSavingNotes(null);
+    }
+  };
+
+  const handleStartEditTime = (garmentId: string, currentMinutes: number) => {
+    setEditingTimeGarmentId(garmentId);
+    setEditingTimeMinutes(currentMinutes);
+  };
+
+  const handleCancelEditTime = () => {
+    setEditingTimeGarmentId(null);
+    setEditingTimeMinutes(0);
+  };
+
+  const handleSaveTime = async (garmentId: string) => {
+    setSavingTime(garmentId);
+    try {
+      const response = await fetch(`/api/garment/${garmentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estimated_minutes: editingTimeMinutes }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to save time estimate');
+      }
+
+      const result = await response.json();
+
+      if (detailedOrder && detailedOrder.garments) {
+        setDetailedOrder({
+          ...detailedOrder,
+          garments: detailedOrder.garments.map((g: any) =>
+            g.id === garmentId ? { ...g, estimated_minutes: result.garment.estimated_minutes } : g
+          ),
+        });
+      }
+
+      setEditingTimeGarmentId(null);
+      setEditingTimeMinutes(0);
+    } catch (error) {
+      console.error('Error saving time estimate:', error);
+      alert(error instanceof Error ? error.message : 'Failed to save time estimate');
+    } finally {
+      setSavingTime(null);
+    }
+  };
+
+  const handleGeneratePaymentLink = async () => {
+    if (!displayOrder?.id) return;
+    
+    setGeneratingPaymentLink(true);
+    setPaymentLinkUrl(null);
+    
+    try {
+      const response = await fetch('/api/payments/create-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: displayOrder.id }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate payment link');
+      }
+      
+      setPaymentLinkUrl(data.payment_url);
+    } catch (error) {
+      console.error('Error generating payment link:', error);
+      alert(error instanceof Error ? error.message : 'Failed to generate payment link');
+    } finally {
+      setGeneratingPaymentLink(false);
+    }
+  };
+
+  const handleCopyPaymentLink = async () => {
+    if (!paymentLinkUrl) return;
+    try {
+      await navigator.clipboard.writeText(paymentLinkUrl);
+      alert('Payment link copied to clipboard!');
+    } catch {
+      alert('Failed to copy. Link: ' + paymentLinkUrl);
     }
   };
 
@@ -405,27 +498,88 @@ export function OrderDetailModal({
                         )}
                       </div>
 
-                      {/* Garment Time Estimate */}
-                      {garment.services && garment.services.length > 0 && (
-                        <div className='mb-2 p-2 bg-purple-50 rounded'>
-                          <span className='text-xs font-medium text-purple-700'>
-                            Est. Time:{' '}
-                            {(() => {
-                              const totalMinutes = garment.services.reduce(
-                                (sum: number, s: any) => {
-                                  const mins = s.service?.estimated_minutes || 0;
-                                  return sum + mins * (s.quantity || 1);
-                                },
-                                0
-                              );
-                              if (totalMinutes === 0) return 'TBD';
-                              const h = Math.floor(totalMinutes / 60);
-                              const m = totalMinutes % 60;
-                              return h > 0 ? `${h}h ${m}m` : `${m}m`;
-                            })()}
-                          </span>
-                        </div>
-                      )}
+                      {/* Garment Time Estimate - Editable */}
+                      <div className='mb-2 p-2 bg-purple-50 rounded'>
+                        {editingTimeGarmentId === garment.id ? (
+                          <div className='space-y-2'>
+                            <label className='block text-xs font-medium text-purple-700'>
+                              Estimated Time (minutes)
+                            </label>
+                            <div className='flex items-center gap-2'>
+                              <input
+                                type='number'
+                                min='0'
+                                value={editingTimeMinutes}
+                                onChange={e => setEditingTimeMinutes(parseInt(e.target.value) || 0)}
+                                className='w-24 px-2 py-1 text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500'
+                                disabled={savingTime === garment.id}
+                              />
+                              <span className='text-xs text-purple-600'>
+                                = {Math.floor(editingTimeMinutes / 60)}h {editingTimeMinutes % 60}m
+                              </span>
+                            </div>
+                            <div className='flex gap-2'>
+                              <Button
+                                size='sm'
+                                onClick={() => handleSaveTime(garment.id)}
+                                disabled={savingTime === garment.id}
+                                className='bg-purple-600 hover:bg-purple-700 text-xs'
+                              >
+                                {savingTime === garment.id ? 'Saving...' : 'Save'}
+                              </Button>
+                              <Button
+                                size='sm'
+                                variant='outline'
+                                onClick={handleCancelEditTime}
+                                disabled={savingTime === garment.id}
+                                className='text-xs'
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className='flex items-center justify-between'>
+                            <span className='text-xs font-medium text-purple-700'>
+                              Est. Time:{' '}
+                              {(() => {
+                                const customMinutes = garment.estimated_minutes;
+                                if (customMinutes && customMinutes > 0) {
+                                  const h = Math.floor(customMinutes / 60);
+                                  const m = customMinutes % 60;
+                                  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+                                }
+                                const totalMinutes = garment.services?.reduce(
+                                  (sum: number, s: any) => {
+                                    const mins = s.service?.estimated_minutes || 0;
+                                    return sum + mins * (s.quantity || 1);
+                                  },
+                                  0
+                                ) || 0;
+                                if (totalMinutes === 0) return 'TBD';
+                                const h = Math.floor(totalMinutes / 60);
+                                const m = totalMinutes % 60;
+                                return h > 0 ? `${h}h ${m}m` : `${m}m`;
+                              })()}
+                            </span>
+                            <Button
+                              size='sm'
+                              variant='ghost'
+                              onClick={() => {
+                                const currentMinutes = garment.estimated_minutes || 
+                                  garment.services?.reduce(
+                                    (sum: number, s: any) => sum + (s.service?.estimated_minutes || 0) * (s.quantity || 1),
+                                    0
+                                  ) || 0;
+                                handleStartEditTime(garment.id, currentMinutes);
+                              }}
+                              className='text-xs text-purple-600 hover:text-purple-800 h-6 px-2'
+                            >
+                              Edit
+                            </Button>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Services for this garment */}
                       {garment.services && garment.services.length > 0 && (
@@ -593,6 +747,58 @@ export function OrderDetailModal({
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Payment Link Section */}
+              <div className='mb-6 p-4 bg-green-50 border border-green-200 rounded-lg'>
+                <h3 className='text-lg font-semibold text-green-800 mb-3'>Payment</h3>
+                {paymentLinkUrl ? (
+                  <div className='space-y-2'>
+                    <div className='flex items-center gap-2'>
+                      <input
+                        type='text'
+                        value={paymentLinkUrl}
+                        readOnly
+                        className='flex-1 px-3 py-2 text-sm border border-green-300 rounded bg-white truncate'
+                      />
+                      <Button
+                        size='sm'
+                        onClick={handleCopyPaymentLink}
+                        className='bg-green-600 hover:bg-green-700 text-white'
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                    <div className='flex gap-2'>
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        asChild
+                        className='text-green-700 border-green-300'
+                      >
+                        <a href={paymentLinkUrl} target='_blank' rel='noopener noreferrer'>
+                          Open Payment Page
+                        </a>
+                      </Button>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        onClick={() => setPaymentLinkUrl(null)}
+                        className='text-gray-500'
+                      >
+                        Generate New Link
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={handleGeneratePaymentLink}
+                    disabled={generatingPaymentLink}
+                    className='bg-green-600 hover:bg-green-700 text-white'
+                  >
+                    {generatingPaymentLink ? 'Generating...' : '💳 Generate Payment Link'}
+                  </Button>
+                )}
               </div>
 
               {/* Actions */}

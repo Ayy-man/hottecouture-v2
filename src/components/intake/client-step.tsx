@@ -236,6 +236,7 @@ export function ClientStep({
           newsletter_consent: false,
         });
         setErrors({});
+        setTimeout(() => onNext(), 300);
       } catch (err) {
         console.error('Error creating client:', err);
         setErrors({ first_name: 'Failed to create client. Please try again.' });
@@ -249,6 +250,7 @@ export function ClientStep({
     onUpdate(client);
     setSearchQuery('');
     setSearchResults([]);
+    setTimeout(() => onNext(), 300);
   };
 
   return (

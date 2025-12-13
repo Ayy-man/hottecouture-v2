@@ -4,6 +4,7 @@ import './globals.css';
 import { NavigationProvider } from '@/components/navigation/navigation-provider';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { AuthButton } from '@/components/auth/auth-button';
+import { HLogo } from '@/components/ui/h-logo';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -95,11 +96,7 @@ export default function RootLayout({
               <header className='row-start-1 row-end-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
                 <div className='container flex h-16 items-center justify-between'>
                   <div className='flex items-center space-x-3'>
-                    <img
-                      src='/logo.jpg'
-                      alt="Hotte Design D'Intérieur & Couture"
-                      className='h-10 w-auto object-contain'
-                    />
+                    <HLogo size='md' />
                     <h1 className='text-xl font-bold text-gray-900'>
                       Hotte Couture
                     </h1>

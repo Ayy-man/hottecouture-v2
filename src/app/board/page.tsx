@@ -13,6 +13,7 @@ import { LoadingLogo } from '@/components/ui/loading-logo';
 import { MuralBackground } from '@/components/ui/mural-background';
 import { WorkListExport } from '@/components/board/worklist-export';
 import { SmsConfirmationModal } from '@/components/board/sms-confirmation-modal';
+import { InternalChat } from '@/components/chat/internal-chat';
 import { LayoutGrid, List, Users } from 'lucide-react';
 import Link from 'next/link';
 
@@ -452,6 +453,9 @@ export default function BoardPage() {
           onConfirm={handleSmsConfirm}
           onCancel={handleSmsCancel}
         />
+
+        {/* Internal Chat Assistant */}
+        <InternalChat />
       </MuralBackground>
     </AuthGuard>
   );
