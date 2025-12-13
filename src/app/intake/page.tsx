@@ -230,9 +230,11 @@ export default function IntakePage() {
         return (
           <ServicesStepNew
             data={formData.garments}
+            client={formData.client}
             onUpdate={garments => updateFormData({ garments })}
             onNext={nextStep}
             onPrev={prevStep}
+            onChangeCustomer={() => setCurrentStep('client')}
             orderType={formData.order.type}
           />
         );
@@ -317,13 +319,12 @@ export default function IntakePage() {
                 return (
                   <div key={step.key} className='flex flex-col items-center'>
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold touch-manipulation transition-all duration-300 flex-shrink-0 ${
-                        isActive
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold touch-manipulation transition-all duration-300 flex-shrink-0 ${isActive
                           ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-lg'
                           : isCompleted
                             ? 'bg-gradient-to-r from-secondary-500 to-accent-olive text-white'
                             : 'bg-gray-100 text-gray-500'
-                      }`}
+                        }`}
                     >
                       {isCompleted ? (
                         <svg
@@ -344,9 +345,8 @@ export default function IntakePage() {
                     {index < steps.length - 1 && (
                       <div className='flex items-center mt-1 mb-1'>
                         <div
-                          className={`w-0.5 h-6 ${
-                            isCompleted ? 'bg-green-400' : 'bg-gray-200'
-                          }`}
+                          className={`w-0.5 h-6 ${isCompleted ? 'bg-green-400' : 'bg-gray-200'
+                            }`}
                         />
                       </div>
                     )}

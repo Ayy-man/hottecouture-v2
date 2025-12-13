@@ -13,30 +13,36 @@ body {
 
 /* Custom loading animations */
 @keyframes logo-float {
+
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
 }
 
 @keyframes logo-glow {
+
   0%,
   100% {
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
+
   50% {
     box-shadow: 0 0 30px rgba(147, 51, 234, 0.5);
   }
 }
 
 @keyframes logo-pulse-slow {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -59,6 +65,7 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -94,6 +101,8 @@ body {
     --input: 45 10% 85%;
     --ring: 15 35% 55%;
     --radius: 0.5rem;
+    --success: 142 76% 36%;
+    --success-foreground: 144 100% 97%;
   }
 
   .dark {
@@ -116,6 +125,8 @@ body {
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 94.1%;
+    --success: 142 70% 45%;
+    --success-foreground: 144 100% 97%;
   }
 }
 
@@ -123,6 +134,7 @@ body {
   * {
     @apply border-gray-200;
   }
+
   body {
     @apply bg-background text-text;
   }
@@ -264,6 +276,7 @@ body {
       transform: scale(0);
       opacity: 1;
     }
+
     100% {
       transform: scale(1);
       opacity: 0;
@@ -320,6 +333,7 @@ body {
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -331,6 +345,7 @@ body {
       opacity: 1;
       transform: translateY(0);
     }
+
     to {
       opacity: 0;
       transform: translateY(-10px);
@@ -342,6 +357,7 @@ body {
       opacity: 0;
       transform: translateY(30px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -349,10 +365,12 @@ body {
   }
 
   @keyframes float {
+
     0%,
     100% {
       transform: translateY(0px);
     }
+
     50% {
       transform: translateY(-20px);
     }
@@ -363,6 +381,7 @@ body {
       transform: scale(0);
       opacity: 1;
     }
+
     100% {
       transform: scale(1);
       opacity: 0;
@@ -373,9 +392,11 @@ body {
     0% {
       transform: scale(0.9);
     }
+
     50% {
       transform: scale(1.05);
     }
+
     100% {
       transform: scale(1);
     }
@@ -385,10 +406,12 @@ body {
     0% {
       transform: scale(1);
     }
+
     50% {
       transform: scale(1.1);
       box-shadow: 0 0 0 10px rgba(59, 130, 246, 0.1);
     }
+
     100% {
       transform: scale(1);
       box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
@@ -399,6 +422,7 @@ body {
     0% {
       box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
     }
+
     100% {
       box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
     }
@@ -408,9 +432,11 @@ body {
     0% {
       transform: scale(1);
     }
+
     50% {
       transform: scale(0.98);
     }
+
     100% {
       transform: scale(1);
     }

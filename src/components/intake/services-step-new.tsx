@@ -36,6 +36,8 @@ interface ServicesStepProps {
   onNext: () => void;
   onPrev: () => void;
   orderType?: 'alteration' | 'custom'; // Order type from step 1
+  client?: any; // Added client prop
+  onChangeCustomer?: () => void; // Added callback to change client
 }
 
 export function ServicesStepNew({
@@ -44,6 +46,8 @@ export function ServicesStepNew({
   onNext,
   onPrev,
   orderType = 'alteration', // Default to alteration
+  client,
+  onChangeCustomer,
 }: ServicesStepProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -51,6 +55,7 @@ export function ServicesStepNew({
   const [activeTab, setActiveTab] = useState<string>('');
   const [subtotal, setSubtotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeGarmentIndex, setActiveGarmentIndex] = useState(0); // Added active garment state
 
   // Category CRUD states
   const [contextMenuId, setContextMenuId] = useState<string | null>(null);
@@ -134,9 +139,9 @@ export function ServicesStepNew({
           const filtered =
             orderType === 'alteration'
               ? result.categories.filter(
-                  (cat: Category) =>
-                    cat.key !== 'curtains' && cat.key !== 'custom'
-                )
+                (cat: Category) =>
+                  cat.key !== 'curtains' && cat.key !== 'custom'
+              )
               : result.categories;
           if (filtered.length > 0) {
             setActiveTab(filtered[0].key);
@@ -458,8 +463,8 @@ export function ServicesStepNew({
         const filtered =
           orderType === 'alteration'
             ? remainingCategories.filter(
-                cat => cat.key !== 'curtains' && cat.key !== 'custom'
-              )
+              cat => cat.key !== 'curtains' && cat.key !== 'custom'
+            )
             : remainingCategories;
 
         const sorted = filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -815,7 +820,21 @@ export function ServicesStepNew({
           <h2 className='text-lg font-semibold text-gray-900'>
             Select Services
           </h2>
-          <p className='text-sm text-gray-500'>Choose what you need</p>
+          {client ? (
+            <p className='text-sm text-gray-500'>
+              Client: {client.first_name} {client.last_name}{' '}
+              {onChangeCustomer && (
+                <button
+                  onClick={onChangeCustomer}
+                  className='text-primary-600 hover:underline font-medium ml-1'
+                >
+                  (Change)
+                </button>
+              )}
+            </p>
+          ) : (
+            <p className='text-sm text-gray-500'>Choose what you need</p>
+          )}
         </div>
 
         <Button
@@ -826,6 +845,48 @@ export function ServicesStepNew({
           Next
         </Button>
       </div>
+
+      {/* Garment Selector Tabs (Only if multiple garments) */}
+      {data.length > 1 && (
+        <div className='bg-white px-4 py-2 border-b border-gray-200 overflow-x-auto whitespace-nowrap shadow-sm'>
+          <div className='flex space-x-2'>
+            {data.map((garment, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveGarmentIndex(index)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${activeGarmentIndex === index
+                  ? 'bg-primary-500 text-white shadow-md transform scale-105'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+              >
+                <span>
+                  #{index + 1} {garment.labelCode}
+                </span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeGarmentIndex === index
+                    ? 'bg-white/20 text-white'
+                    : 'bg-gray-300 text-gray-700'
+                    }`}
+                >
+                  {garment.services.length}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Single Garment Indicator (if only 1 garment) */}
+      {data.length === 1 && (
+        <div className='bg-primary-50 px-4 py-2 border-b border-primary-100 flex items-center justify-center'>
+          <span className='text-primary-800 text-sm font-medium flex items-center gap-2'>
+            Adding services to:
+            <span className='bg-white px-2 py-0.5 rounded-md shadow-sm border border-primary-100'>
+              #{1} {data[0]?.labelCode}
+            </span>
+          </span>
+        </div>
+      )}
 
       {/* Ultra Compact Category Tabs */}
       <div className='bg-white border-b border-gray-200 px-1 py-1 flex-shrink-0'>
@@ -881,22 +942,20 @@ export function ServicesStepNew({
                   <div className='relative group'>
                     <button
                       onClick={() => setActiveTab(category.key)}
-                      className={`w-full flex flex-col items-center gap-0.5 px-1 py-1 rounded text-xs font-medium transition-all duration-200 relative ${
-                        activeTab === category.key
-                          ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-sm'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                      className={`w-full flex flex-col items-center gap-0.5 px-1 py-1 rounded text-xs font-medium transition-all duration-200 relative ${activeTab === category.key
+                        ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
                     >
                       <span className='text-sm'>{category.icon}</span>
                       <span className='text-[10px] leading-tight text-center line-clamp-1'>
                         {category.name}
                       </span>
                       <span
-                        className={`text-[10px] px-1 py-0.5 rounded-full ${
-                          activeTab === category.key
-                            ? 'bg-white/20 text-white'
-                            : 'bg-gray-200 text-gray-600'
-                        }`}
+                        className={`text-[10px] px-1 py-0.5 rounded-full ${activeTab === category.key
+                          ? 'bg-white/20 text-white'
+                          : 'bg-gray-200 text-gray-600'
+                          }`}
                       >
                         {categoryServices.length}
                       </span>
@@ -925,9 +984,8 @@ export function ServicesStepNew({
                     {/* Context Menu */}
                     {contextMenuId === category.id && (
                       <div
-                        className={`absolute right-0 bg-white border border-gray-300 rounded-lg shadow-xl z-[60] min-w-[160px] animate-[fadeIn_0.2s_ease-out,zoomIn_0.2s_ease-out] ${
-                          isFirstItem ? 'top-full mt-1' : 'bottom-full mb-1'
-                        }`}
+                        className={`absolute right-0 bg-white border border-gray-300 rounded-lg shadow-xl z-[60] min-w-[160px] animate-[fadeIn_0.2s_ease-out,zoomIn_0.2s_ease-out] ${isFirstItem ? 'top-full mt-1' : 'bottom-full mb-1'
+                          }`}
                         style={{ position: 'absolute' }}
                       >
                         <button
@@ -1396,11 +1454,10 @@ export function ServicesStepNew({
                             {/* Context Menu */}
                             {serviceContextMenuId === service.id && (
                               <div
-                                className={`absolute right-0 bg-white border border-gray-300 rounded-lg shadow-xl z-[60] min-w-[160px] animate-[fadeIn_0.2s_ease-out,zoomIn_0.2s_ease-out] ${
-                                  isFirstService
-                                    ? 'top-full mt-1'
-                                    : 'bottom-full mb-1'
-                                }`}
+                                className={`absolute right-0 bg-white border border-gray-300 rounded-lg shadow-xl z-[60] min-w-[160px] animate-[fadeIn_0.2s_ease-out,zoomIn_0.2s_ease-out] ${isFirstService
+                                  ? 'top-full mt-1'
+                                  : 'bottom-full mb-1'
+                                  }`}
                                 style={{ position: 'absolute' }}
                               >
                                 <button
@@ -1430,7 +1487,11 @@ export function ServicesStepNew({
 
                             {data.length > 0 && (
                               <div className='mt-auto pt-2'>
-                                {data.map((garment, garmentIndex) => {
+                                {(() => {
+                                  // Only show button for the active garment
+                                  const garment = data[activeGarmentIndex];
+                                  if (!garment) return null;
+
                                   const garmentService = garment.services.find(
                                     s => s.serviceId === service.id
                                   );
@@ -1438,33 +1499,31 @@ export function ServicesStepNew({
 
                                   return (
                                     <button
-                                      key={garmentIndex}
                                       onClick={() => {
                                         if (isAdded) {
                                           updateServiceQuantity(
-                                            garmentIndex,
+                                            activeGarmentIndex,
                                             service.id,
                                             (garmentService?.qty || 0) + 1
                                           );
                                         } else {
                                           addServiceToGarment(
-                                            garmentIndex,
+                                            activeGarmentIndex,
                                             service.id
                                           );
                                         }
                                       }}
-                                      className={`w-full px-2 py-1.5 rounded text-xs font-medium transition-all duration-200 ${
-                                        isAdded
-                                          ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-sm'
-                                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                      }`}
+                                      className={`w-full px-2 py-1.5 rounded text-xs font-medium transition-all duration-200 ${isAdded
+                                        ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-sm'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
                                     >
                                       {isAdded
-                                        ? `✓ Add (${garmentService?.qty || 0})`
-                                        : `+ Add`}
+                                        ? `✓ Add to #${activeGarmentIndex + 1} (${garmentService?.qty || 0})`
+                                        : `+ Add to #${activeGarmentIndex + 1}`}
                                     </button>
                                   );
-                                })}
+                                })()}
                               </div>
                             )}
                           </div>
@@ -1584,11 +1643,10 @@ export function ServicesStepNew({
                                   : zipService.id
                               )
                             }
-                            className={`w-full p-3 rounded-lg border-2 text-left transition-all duration-200 ${
-                              selectedZipService === zipService.id
-                                ? 'border-primary-500 bg-primary-50'
-                                : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                            }`}
+                            className={`w-full p-3 rounded-lg border-2 text-left transition-all duration-200 ${selectedZipService === zipService.id
+                              ? 'border-primary-500 bg-primary-50'
+                              : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                              }`}
                           >
                             <div className='flex items-center justify-between'>
                               <div className='flex-1 min-w-0'>
@@ -1724,8 +1782,8 @@ export function ServicesStepNew({
                                   <p className='text-xs text-gray-500'>
                                     {formatCurrency(
                                       garmentService.customPriceCents ||
-                                        service?.base_price_cents ||
-                                        0
+                                      service?.base_price_cents ||
+                                      0
                                     )}{' '}
                                     each
                                   </p>
