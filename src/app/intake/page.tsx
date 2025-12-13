@@ -7,6 +7,7 @@ import { ClientStep } from '@/components/intake/client-step';
 import { GarmentsStep } from '@/components/intake/garments-step';
 import { ServicesStepNew } from '@/components/intake/services-step-new';
 import { PricingStep } from '@/components/intake/pricing-step';
+import { AssignmentStep } from '@/components/intake/assignment-step';
 import { OrderSummary } from '@/components/intake/order-summary';
 import { IntakeRequest, IntakeResponse } from '@/lib/dto';
 import { usePricing } from '@/lib/pricing/usePricing';
@@ -18,6 +19,7 @@ type IntakeStep =
   | 'garments'
   | 'services'
   | 'pricing'
+  | 'assignment'
   | 'summary';
 
 interface IntakeFormData {
@@ -49,6 +51,7 @@ interface IntakeFormData {
     due_date?: string;
     rush: boolean;
     rush_fee_type?: 'small' | 'large';
+    assigned_to?: string;
   };
 }
 
@@ -101,6 +104,11 @@ export default function IntakePage() {
           key: 'pricing',
           title: 'Pricing & Due Date',
           description: 'Final pricing and due date',
+        },
+        {
+          key: 'assignment',
+          title: 'Assignment',
+          description: 'Assign to seamstress',
         },
       ],
       []
@@ -234,6 +242,18 @@ export default function IntakePage() {
             data={formData.order}
             garments={formData.garments}
             onUpdate={order => updateFormData({ order })}
+            onNext={nextStep}
+            onPrev={prevStep}
+            isSubmitting={false}
+          />
+        );
+      case 'assignment':
+        return (
+          <AssignmentStep
+            selectedAssignee={formData.order.assigned_to || null}
+            onAssigneeChange={assignee =>
+              updateFormData({ order: { ...formData.order, assigned_to: assignee } })
+            }
             onNext={handleSubmit}
             onPrev={prevStep}
             isSubmitting={isSubmitting}

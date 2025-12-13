@@ -44,6 +44,7 @@ export const orderCreateSchema = z.object({
   rush: z.boolean().default(false),
   rush_fee_type: z.enum(['small', 'large']).optional(),
   ghl_opportunity_id: z.string().max(100).optional(),
+  assigned_to: z.string().max(100).optional(),
 });
 
 // Garment schemas

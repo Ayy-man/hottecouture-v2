@@ -259,7 +259,8 @@ export async function POST(request: NextRequest) {
         tvq_cents: tvq_cents,
         total_cents: total_cents,
         rush_fee_cents: rush_fee_cents,
-        notes: JSON.stringify(notes || {}), // Save notes as JSON
+        notes: JSON.stringify(notes || {}),
+        assigned_to: order.assigned_to || null,
       } as any)
       .select('id, order_number')
       .single();

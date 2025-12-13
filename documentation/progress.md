@@ -7,12 +7,29 @@
 
 ## CURRENT TASK
 
-**Task:** B2 - Seamstress Assignment at Step 5
+**Task:** B3 - Editable Hours When In Progress
 **Status:** Starting
 
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-13] Task B2 - Seamstress Assignment at Step 5
+
+**What:** Added assignment step to intake wizard for selecting seamstress
+
+**Files:**
+- `src/components/intake/assignment-step.tsx` - New component for seamstress selection (Audrey/Solange)
+- `src/app/intake/page.tsx` - Added assignment step between pricing and summary
+- `src/lib/dto.ts` - Added assigned_to to orderCreateSchema
+- `src/lib/types/database.ts` - Added assigned_to to order table types
+- `src/app/api/intake/route.ts` - Save assigned_to when creating order
+- `supabase/migrations/0014_add_order_assigned_to.sql` - Database migration
+
+**Test Result:** Build passes
+**Notes:** Assignment is now step 6. Order creation button moved from pricing to assignment step.
+
+---
 
 ### [2025-12-13] Task B1 - Auto-Advance on Card Click
 

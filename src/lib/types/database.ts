@@ -200,6 +200,7 @@ export type Database = {
           is_archived: boolean;
           archived_at: string | null;
           archived_by: string | null;
+          assigned_to: string | null;
         };
         Insert: {
           id?: string;
@@ -230,6 +231,7 @@ export type Database = {
           is_archived?: boolean;
           archived_at?: string | null;
           archived_by?: string | null;
+          assigned_to?: string | null;
         };
         Update: {
           id?: string;
@@ -260,6 +262,7 @@ export type Database = {
           is_archived?: boolean;
           archived_at?: string | null;
           archived_by?: string | null;
+          assigned_to?: string | null;
         };
       };
       price_list: {
