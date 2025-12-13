@@ -7,12 +7,24 @@
 
 ## CURRENT TASK
 
-**Task:** A2 - Fix "Change Customer" Bug
+**Task:** A3 - Prevent Accidental SMS on Kanban Drag
 **Status:** Starting
 
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-13] Task A2 - Fix "Change Customer" Bug
+
+**What:** Fixed the "Change Client" button to actually clear client selection
+
+**Files:**
+- `src/components/intake/client-step.tsx` - Fixed Change button to call `onUpdate(null)` and updated header to conditionally show back button
+
+**Test Result:** Build passes
+**Notes:** Change Client button now properly clears selection and returns to search/create view
+
+---
 
 ### [2025-12-13] Task A1 - Customer Step First
 

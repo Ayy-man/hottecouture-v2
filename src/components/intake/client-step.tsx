@@ -255,26 +255,30 @@ export function ClientStep({
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header with Navigation */}
       <div className='flex items-center justify-between px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
-        <Button
-          variant='ghost'
-          onClick={onPrev}
-          className='flex items-center gap-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-3 py-2 rounded-lg transition-all duration-200'
-        >
-          <svg
-            className='w-4 h-4'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M15 19l-7-7 7-7'
-            />
-          </svg>
-          <span className='font-medium'>Previous</span>
-        </Button>
+        <div className='w-1/4'>
+          {onPrev && (
+            <Button
+              variant='ghost'
+              onClick={onPrev}
+              className='flex items-center gap-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-3 py-2 rounded-lg transition-all duration-200'
+            >
+              <svg
+                className='w-4 h-4'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M15 19l-7-7 7-7'
+                />
+              </svg>
+              <span className='font-medium'>Back</span>
+            </Button>
+          )}
+        </div>
 
         <div className='flex-1 text-center'>
           <h2 className='text-lg font-semibold text-gray-900'>
@@ -585,14 +589,14 @@ export function ClientStep({
                   variant='outline'
                   size='sm'
                   onClick={() => {
-                    // Reset form without updating client
+                    onUpdate(null as any);
                     setShowCreateForm(false);
                     setSearchQuery('');
                     setSearchResults([]);
                   }}
                   className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-xs px-2 py-1'
                 >
-                  Change
+                  Change Client
                 </Button>
               </div>
             </div>
