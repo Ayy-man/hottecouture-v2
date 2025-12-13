@@ -116,6 +116,7 @@ export const orderStageSchema = z.object({
   stage: orderStatusSchema,
   correlationId: correlationIdSchema,
   notes: z.string().max(1000).optional(),
+  sendNotification: z.boolean().optional().default(false),
 });
 
 export const orderStageResponseSchema = z.object({

@@ -7,12 +7,27 @@
 
 ## CURRENT TASK
 
-**Task:** A3 - Prevent Accidental SMS on Kanban Drag
+**Task:** A4 - Remove "Starting at" Text
 **Status:** Starting
 
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-13] Task A3 - Prevent Accidental SMS on Kanban Drag
+
+**What:** Added confirmation modal before sending SMS when moving order to "ready" status
+
+**Files:**
+- `src/components/board/sms-confirmation-modal.tsx` - New confirmation modal component
+- `src/app/board/page.tsx` - Added modal state, split handleOrderUpdate into two functions
+- `src/app/api/order/[id]/stage/route.ts` - SMS only sent when sendNotification: true
+- `src/lib/dto.ts` - Added sendNotification field to orderStageSchema
+
+**Test Result:** Build passes
+**Notes:** Dragging to "ready" now shows modal. "Send SMS" sends notification, "Skip SMS" moves order without SMS.
+
+---
 
 ### [2025-12-13] Task A2 - Fix "Change Customer" Bug
 

@@ -147,11 +147,12 @@ async function handleOrderStage(
   // Orders should stay in 'done' status until manually moved to 'ready'
   // This allows for proper quality control and review process
 
-  // Send SMS notifications for ready/delivered status changes
+  // Send SMS notifications only when explicitly requested AND for ready/delivered status changes
   const client = (order as any).client;
   const ghlContactId = client?.ghl_contact_id;
+  const shouldSendNotification = validatedData.sendNotification === true;
 
-  if (ghlContactId && (newStage === 'ready' || newStage === 'delivered')) {
+  if (shouldSendNotification && ghlContactId && (newStage === 'ready' || newStage === 'delivered')) {
     try {
       const smsData = {
         contactId: ghlContactId,
@@ -175,12 +176,17 @@ async function handleOrderStage(
         `⚠️ SMS notification error for order ${orderId} (${newStage}):`,
         smsError
       );
-      // Don't fail the order update if SMS fails
     }
   } else if (newStage === 'ready' || newStage === 'delivered') {
-    console.log(
-      `ℹ️ No GHL contact ID found for order ${orderId}, skipping SMS notification`
-    );
+    if (!shouldSendNotification) {
+      console.log(
+        `ℹ️ SMS notification skipped for order ${orderId} (sendNotification: false)`
+      );
+    } else if (!ghlContactId) {
+      console.log(
+        `ℹ️ No GHL contact ID found for order ${orderId}, skipping SMS notification`
+      );
+    }
   }
 
   // Trigger order-status webhook for integrations (Agent B: QuickBooks, etc.)
