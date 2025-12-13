@@ -184,11 +184,8 @@ export function PipelineSelector({
 
                     {/* Pricing Info */}
                     <div className='text-center'>
-                      <div className='text-xs text-gray-600 mb-1'>
-                        {type === 'alteration' ? 'Starting at' : 'Consultation'}
-                      </div>
                       <div className='text-sm font-bold text-primary'>
-                        {type === 'alteration' ? '$15' : 'Free'}
+                        {type === 'alteration' ? '$15+' : 'Gratuit'}
                       </div>
                     </div>
 

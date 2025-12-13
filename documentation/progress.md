@@ -7,12 +7,24 @@
 
 ## CURRENT TASK
 
-**Task:** A4 - Remove "Starting at" Text
+**Task:** B1 - Auto-Advance on Card Click
 **Status:** Starting
 
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-13] Task A4 - Remove "Starting at" Text
+
+**What:** Simplified pricing display on pipeline selector
+
+**Files:**
+- `src/components/intake/pipeline-selector.tsx` - Removed "Starting at" label, now shows "$15+" for alteration and "Gratuit" for custom consultation
+
+**Test Result:** Build passes
+**Notes:** Cleaner, more direct pricing display
+
+---
 
 ### [2025-12-13] Task A3 - Prevent Accidental SMS on Kanban Drag
 
