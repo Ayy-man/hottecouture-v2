@@ -7,12 +7,24 @@
 
 ## CURRENT TASK
 
-**Task:** B1 - Auto-Advance on Card Click
+**Task:** B2 - Seamstress Assignment at Step 5
 **Status:** Starting
 
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-13] Task B1 - Auto-Advance on Card Click
+
+**What:** Clicking pipeline card now auto-advances to next step after 300ms delay
+
+**Files:**
+- `src/components/intake/pipeline-selector.tsx` - Added setTimeout to auto-advance after card selection
+
+**Test Result:** Build passes
+**Notes:** Provides faster flow - select pipeline and automatically move to garments step
+
+---
 
 ### [2025-12-13] Task A4 - Remove "Starting at" Text
 

@@ -139,7 +139,10 @@ export function PipelineSelector({
                       ? 'ring-2 ring-primary shadow-lg scale-105'
                       : 'hover:shadow-md hover:scale-102'
                   }`}
-                  onClick={() => onPipelineChange(type)}
+                  onClick={() => {
+                    onPipelineChange(type);
+                    setTimeout(() => onNext(), 300);
+                  }}
                 >
                   <CardHeader className='text-center pb-2'>
                     <div className='mx-auto mb-2 w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center'>
