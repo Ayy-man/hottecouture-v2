@@ -6,6 +6,10 @@ import {
   formatClientForGHL,
 } from '@/lib/webhooks/ghl-webhook';
 import {
+  createCalendarEvent,
+  formatOrderForCalendar,
+} from '@/lib/webhooks/calendar-webhook';
+import {
   calculateOrderPricing,
   getPricingConfig,
 } from '@/lib/pricing/calcTotal';
@@ -479,6 +483,34 @@ export async function POST(request: NextRequest) {
       clientName: client.first_name,
       totalCents: total_cents,
     });
+
+    // Push to calendar if assigned
+    if (order.assigned_to && dueDate) {
+      try {
+        const calendarData = formatOrderForCalendar({
+          id: (newOrder as any).id,
+          order_number: (newOrder as any).order_number,
+          due_date: dueDate,
+          assigned_to: order.assigned_to,
+          type: order.type || 'alteration',
+          client: {
+            first_name: client.first_name,
+            last_name: client.last_name,
+          },
+        });
+
+        if (calendarData) {
+          const calendarResult = await createCalendarEvent(calendarData);
+          if (calendarResult.success) {
+            console.log('✅ Calendar event created for order:', (newOrder as any).id);
+          } else {
+            console.warn('⚠️ Calendar webhook failed (non-blocking):', calendarResult.error);
+          }
+        }
+      } catch (calendarError) {
+        console.warn('⚠️ Calendar webhook error (non-blocking):', calendarError);
+      }
+    }
 
     return NextResponse.json({
       orderId: (newOrder as any).id,
