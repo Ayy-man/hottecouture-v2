@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const updateSchema = z.object({
@@ -11,7 +11,7 @@ const updateSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createServiceRoleClient();
     const body = await request.json();
 
     const parsed = updateSchema.safeParse(body);

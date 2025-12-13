@@ -71,6 +71,7 @@ export default function IntakePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderResult, setOrderResult] = useState<IntakeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [autoPrint, setAutoPrint] = useState(true);
 
   usePricing({
     initialItems: [],
@@ -189,6 +190,11 @@ export default function IntakePage() {
       const result: IntakeResponse = await response.json();
       setOrderResult(result);
       setCurrentStep('summary');
+
+      // Auto-print labels if enabled
+      if (autoPrint && result.orderId) {
+        window.open(`/labels/${result.orderId}`, '_blank');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit order');
     } finally {
@@ -247,6 +253,8 @@ export default function IntakePage() {
             onNext={nextStep}
             onPrev={prevStep}
             isSubmitting={false}
+            autoPrint={autoPrint}
+            onAutoPrintChange={setAutoPrint}
           />
         );
       case 'assignment':

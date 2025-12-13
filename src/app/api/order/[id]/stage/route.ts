@@ -106,17 +106,25 @@ async function handleOrderStage(
 
   // Calculate time from per-garment tasks
   let taskTotalSeconds = 0;
-  const { data: validationGarments } = await supabase
+  const { data: validationGarments, error: valGarError } = await supabase
     .from('garment')
     .select('id')
     .eq('order_id', orderId);
 
+  if (valGarError) {
+    console.error('Error fetching garments for validation:', valGarError);
+  }
+
   if (validationGarments && validationGarments.length > 0) {
     const vGarmentIds = validationGarments.map((g: any) => g.id);
-    const { data: validationTasks } = await supabase
+    const { data: validationTasks, error: valTaskError } = await supabase
       .from('task')
       .select('actual_minutes')
       .in('garment_id', vGarmentIds);
+
+    if (valTaskError) {
+      console.error('Error fetching tasks for validation:', valTaskError);
+    }
 
     if (validationTasks) {
       taskTotalSeconds = validationTasks.reduce((sum: number, t: any) => sum + ((t.actual_minutes || 0) * 60), 0);
@@ -124,8 +132,10 @@ async function handleOrderStage(
   }
 
   const totalRecordedSeconds = legacyTotalSeconds + taskTotalSeconds;
+  console.log(`⏱️ Validation Check: Order ${orderId} -> ${newStage}. Time: ${totalRecordedSeconds}s (Legacy: ${legacyTotalSeconds}s, Tasks: ${taskTotalSeconds}s)`);
 
-  if ((newStage === 'done' || newStage === 'ready') && totalRecordedSeconds === 0) {
+  if ((newStage === 'done' || newStage === 'ready') && totalRecordedSeconds <= 1) { // Allow 1s margin of error, basically 0
+    console.warn(`⛔️ Validation Failed: blocked moving to ${newStage} with 0s time.`);
     throw new ConflictError(
       `Cannot mark order as ${newStage} without recording work time. Please use the timer to track hours.`,
       correlationId

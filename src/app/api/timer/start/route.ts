@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createServiceRoleClient();
     const { orderId, garmentId } = await request.json();
 
     if (!orderId) {
@@ -45,9 +45,13 @@ export async function POST(request: NextRequest) {
           })
           .eq('id', existingTask.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Task update error:', updateError);
+          throw updateError;
+        }
       } else {
         // Create new task
+        console.log('Creating new task for garment:', garmentId);
         const { error: insertError } = await supabase
           .from('task')
           .insert({
@@ -60,7 +64,10 @@ export async function POST(request: NextRequest) {
             planned_minutes: 60 // Default, can be updated later
           });
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('Task insert error:', insertError);
+          throw insertError;
+        }
       }
 
       return NextResponse.json({

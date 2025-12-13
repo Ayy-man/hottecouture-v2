@@ -38,6 +38,8 @@ interface PricingStepProps {
   onNext: () => void;
   onPrev: () => void;
   isSubmitting: boolean;
+  autoPrint?: boolean;
+  onAutoPrintChange?: (enabled: boolean) => void;
 }
 
 export function PricingStep({
@@ -47,6 +49,8 @@ export function PricingStep({
   onNext,
   onPrev,
   isSubmitting,
+  autoPrint = true,
+  onAutoPrintChange,
 }: PricingStepProps) {
   // const t = useTranslations('intake.pricing')
   const [calculation, setCalculation] = useState<any>(null);
@@ -457,6 +461,31 @@ export function PricingStep({
                       </span>
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Auto-Print Toggle */}
+          {onAutoPrintChange && (
+            <Card>
+              <CardContent className='py-4'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <span className='text-sm font-medium'>Auto-Print Labels</span>
+                    <p className='text-xs text-gray-500'>
+                      Automatically open label printing when order is created
+                    </p>
+                  </div>
+                  <label className='relative inline-flex items-center cursor-pointer'>
+                    <input
+                      type='checkbox'
+                      checked={autoPrint}
+                      onChange={e => onAutoPrintChange(e.target.checked)}
+                      className='sr-only peer'
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
                 </div>
               </CardContent>
             </Card>
