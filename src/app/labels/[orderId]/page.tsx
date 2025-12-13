@@ -129,8 +129,19 @@ export default function LabelsPage() {
   return (
     <div className='min-h-screen bg-white p-8'>
       <div className='max-w-4xl mx-auto'>
+        {/* Print Button - iPad friendly */}
+        <div className='no-print mb-6 flex justify-center'>
+          <button
+            onClick={() => window.print()}
+            className='bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-xl font-semibold shadow-lg active:scale-95 transition-transform flex items-center gap-3'
+          >
+            <span className='text-2xl'>🖨️</span>
+            Print Labels
+          </button>
+        </div>
+
         {/* Header */}
-        <div className='text-center mb-8'>
+        <div className='text-center mb-8 no-print'>
           <h1 className='text-3xl font-bold text-gray-900 mb-2'>
             Order #{orderData.orderNumber} - Labels
           </h1>
@@ -199,9 +210,8 @@ export default function LabelsPage() {
         </div>
 
         {/* Print Instructions */}
-        <div className='mt-8 text-center text-sm text-gray-500 print:hidden'>
-          <p>Press Ctrl+P (or Cmd+P on Mac) to print these labels</p>
-          <p className='mt-1'>Use sticker paper for best results</p>
+        <div className='mt-8 text-center text-sm text-gray-500 no-print'>
+          <p>Use sticker paper for best results</p>
         </div>
       </div>
 
@@ -216,7 +226,8 @@ export default function LabelsPage() {
             margin: 0;
             padding: 0;
           }
-          .print\\:hidden {
+          .print\\:hidden,
+          .no-print {
             display: none !important;
           }
           .print\\:grid-cols-2 {
