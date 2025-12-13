@@ -405,6 +405,28 @@ export function OrderDetailModal({
                         )}
                       </div>
 
+                      {/* Garment Time Estimate */}
+                      {garment.services && garment.services.length > 0 && (
+                        <div className='mb-2 p-2 bg-purple-50 rounded'>
+                          <span className='text-xs font-medium text-purple-700'>
+                            Est. Time:{' '}
+                            {(() => {
+                              const totalMinutes = garment.services.reduce(
+                                (sum: number, s: any) => {
+                                  const mins = s.service?.estimated_minutes || 0;
+                                  return sum + mins * (s.quantity || 1);
+                                },
+                                0
+                              );
+                              if (totalMinutes === 0) return 'TBD';
+                              const h = Math.floor(totalMinutes / 60);
+                              const m = totalMinutes % 60;
+                              return h > 0 ? `${h}h ${m}m` : `${m}m`;
+                            })()}
+                          </span>
+                        </div>
+                      )}
+
                       {/* Services for this garment */}
                       {garment.services && garment.services.length > 0 && (
                         <div className='mt-3 pt-3 border-t border-gray-100'>
@@ -492,13 +514,25 @@ export function OrderDetailModal({
                     orderStatus={displayOrder.status}
                   />
 
-                  {/* Estimated Time Display */}
-                  {displayOrder.time_tracking && (
-                    <div className='bg-gray-50 rounded-lg p-4'>
+                  {/* Estimated Time from Services */}
+                  {displayOrder.garments && displayOrder.garments.length > 0 && (
+                    <div className='bg-purple-50 rounded-lg p-4'>
                       <div className='flex justify-between items-center'>
-                        <span className='text-gray-600'>Estimated Time:</span>
-                        <span className='font-medium text-gray-900'>
-                          {displayOrder.time_tracking.estimated_time || '0h 0m'}
+                        <span className='text-purple-700 font-medium'>Total Estimated Time:</span>
+                        <span className='font-semibold text-purple-900'>
+                          {(() => {
+                            let totalMinutes = 0;
+                            (displayOrder.garments || []).forEach((g: any) => {
+                              (g.services || []).forEach((s: any) => {
+                                const mins = s.service?.estimated_minutes || 0;
+                                totalMinutes += mins * (s.quantity || 1);
+                              });
+                            });
+                            if (totalMinutes === 0) return 'TBD';
+                            const h = Math.floor(totalMinutes / 60);
+                            const m = totalMinutes % 60;
+                            return h > 0 ? `${h}h ${m}m` : `${m}m`;
+                          })()}
                         </span>
                       </div>
                     </div>
