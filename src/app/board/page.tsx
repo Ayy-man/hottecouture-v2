@@ -242,10 +242,15 @@ export default function BoardPage() {
         )
       );
 
-      // You could add a toast notification here to inform the user
-      console.log(
-        `🔄 Reverted order ${orderId} to original status due to API error`
-      );
+      // Parse error message for user-friendly display
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (errorMessage.includes('work time') || errorMessage.includes('timer')) {
+        alert('Cannot mark as done: Please record work hours using the timer first.');
+      } else {
+        console.log(
+          `🔄 Reverted order ${orderId} to original status due to API error`
+        );
+      }
     } finally {
       // Remove order from updating set
       setUpdatingOrders(prev => {

@@ -65,6 +65,7 @@ async function handleOrderStage(
       tps_cents,
       tvq_cents,
       total_cents,
+      total_work_seconds,
       client_id,
       client:client_id (
         id,
@@ -96,6 +97,15 @@ async function handleOrderStage(
   if (!allowedTransitions.includes(newStage)) {
     throw new ConflictError(
       `Invalid status transition from ${currentStatus} to ${newStage}. Allowed transitions: ${allowedTransitions.join(', ')}`,
+      correlationId
+    );
+  }
+
+  // B4: Require final hours when moving to 'done'
+  const totalWorkSeconds = (order as any).total_work_seconds || 0;
+  if (newStage === 'done' && totalWorkSeconds === 0) {
+    throw new ConflictError(
+      'Cannot mark order as done without recording work time. Please use the timer to track hours.',
       correlationId
     );
   }
