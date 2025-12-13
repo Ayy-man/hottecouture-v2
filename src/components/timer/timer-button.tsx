@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Square } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Play, Pause, Square, Pencil, Check, X } from 'lucide-react';
 import { formatDetailedTime, getTimerState } from '@/lib/timer/timer-utils';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 
@@ -32,6 +33,10 @@ export function TimerButton({
   const [timerStatus, setTimerStatus] = useState<TimerStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editHours, setEditHours] = useState('0');
+  const [editMinutes, setEditMinutes] = useState('0');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Only show timer for orders in working status
   const shouldShowTimer = orderStatus === 'working';
@@ -173,6 +178,48 @@ export function TimerButton({
     }
   };
 
+  const handleStartEdit = () => {
+    const totalSeconds = timerStatus?.total_work_seconds || 0;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    setEditHours(String(hours));
+    setEditMinutes(String(minutes));
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditHours('0');
+    setEditMinutes('0');
+  };
+
+  const handleSaveEdit = async () => {
+    setSavingEdit(true);
+    try {
+      const hours = parseInt(editHours, 10) || 0;
+      const minutes = parseInt(editMinutes, 10) || 0;
+
+      const response = await fetch('/api/timer/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, hours, minutes }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        await fetchTimerStatus();
+        setIsEditing(false);
+      } else {
+        alert(result.error || 'Failed to update time');
+      }
+    } catch (error) {
+      console.error('Error updating time:', error);
+      alert('Failed to update time');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   // Don't show timer if not in working status
   if (!shouldShowTimer) {
     return null;
@@ -202,7 +249,57 @@ export function TimerButton({
   // Show timer controls (ensure non-negative display)
   const baseTime = Math.max(0, timerStatus?.total_work_seconds || 0);
   const displayTime =
-    timerState === 'running' ? baseTime + Math.max(0, currentTime) : baseTime; // When paused/completed, show the accumulated time from total_work_seconds
+    timerState === 'running' ? baseTime + Math.max(0, currentTime) : baseTime;
+
+  const canEdit = timerState === 'paused' || timerState === 'idle';
+
+  if (isEditing) {
+    return (
+      <div className='flex items-center gap-2 p-2 bg-yellow-50 rounded-lg'>
+        <div className='flex items-center gap-1'>
+          <Input
+            type='number'
+            min='0'
+            max='999'
+            value={editHours}
+            onChange={e => setEditHours(e.target.value)}
+            className='w-16 h-8 text-center text-sm'
+            disabled={savingEdit}
+          />
+          <span className='text-sm text-gray-600'>h</span>
+          <Input
+            type='number'
+            min='0'
+            max='59'
+            value={editMinutes}
+            onChange={e => setEditMinutes(e.target.value)}
+            className='w-16 h-8 text-center text-sm'
+            disabled={savingEdit}
+          />
+          <span className='text-sm text-gray-600'>m</span>
+        </div>
+        <div className='flex gap-1'>
+          <Button
+            size='sm'
+            onClick={handleSaveEdit}
+            disabled={savingEdit}
+            className='btn-press bg-green-600 hover:bg-green-700 text-white h-8 px-2'
+          >
+            <Check className='w-3 h-3' />
+          </Button>
+          <Button
+            size='sm'
+            variant='outline'
+            onClick={handleCancelEdit}
+            disabled={savingEdit}
+            className='h-8 px-2'
+          >
+            <X className='w-3 h-3' />
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex items-center gap-2 p-2 bg-blue-50 rounded-lg'>
@@ -216,6 +313,18 @@ export function TimerButton({
       </div>
 
       <div className='flex gap-1'>
+        {canEdit && (
+          <Button
+            size='sm'
+            variant='ghost'
+            onClick={handleStartEdit}
+            disabled={loading}
+            className='h-8 px-2 text-gray-500 hover:text-gray-700'
+            title='Edit time'
+          >
+            <Pencil className='w-3 h-3' />
+          </Button>
+        )}
         {timerState === 'idle' ? (
           <Button
             size='sm'

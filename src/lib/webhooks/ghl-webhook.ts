@@ -6,8 +6,15 @@ interface GHLContactData {
 }
 
 export async function upsertGHLContact(contactData: GHLContactData) {
-  const webhookUrl =
-    'https://otomato456321.app.n8n.cloud/webhook/upsert-contact';
+  const webhookUrl = process.env.N8N_CRM_WEBHOOK_URL;
+
+  if (!webhookUrl) {
+    console.warn('⚠️ N8N_CRM_WEBHOOK_URL not configured');
+    return {
+      success: false,
+      error: 'CRM webhook not configured (N8N_CRM_WEBHOOK_URL)',
+    };
+  }
 
   try {
     console.log('🔄 Sending contact to GHL:', contactData);
@@ -29,7 +36,6 @@ export async function upsertGHLContact(contactData: GHLContactData) {
     const result = await response.json();
     console.log('✅ GHL contact upserted successfully:', result);
 
-    // Extract contactId from the response
     const contactId = result.contactId || result.contact_id || null;
 
     return {

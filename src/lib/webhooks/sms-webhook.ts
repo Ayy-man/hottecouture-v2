@@ -4,7 +4,15 @@ interface SMSNotificationData {
 }
 
 export async function sendSMSNotification(notificationData: SMSNotificationData) {
-  const webhookUrl = 'https://otomato456321.app.n8n.cloud/webhook/sms-notification'
+  const webhookUrl = process.env.N8N_SMS_WEBHOOK_URL
+  
+  if (!webhookUrl) {
+    console.warn('⚠️ N8N_SMS_WEBHOOK_URL not configured')
+    return { 
+      success: false, 
+      error: 'SMS webhook not configured (N8N_SMS_WEBHOOK_URL)' 
+    }
+  }
   
   try {
     console.log('📱 Sending SMS notification:', notificationData)
