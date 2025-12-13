@@ -281,9 +281,9 @@ export function generateSamplePricingData(): PricingItem[] {
     {
       name: 'Custom Design Consultation',
       category: 'custom',
-      base_price_cents: 10000,
-      description: 'Custom design consultation',
-      estimated_minutes: 120,
+      base_price_cents: 0,
+      description: 'Free consultation for custom design',
+      estimated_minutes: 30,
       icon: '✨',
       is_custom: true,
     },

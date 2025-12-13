@@ -76,7 +76,7 @@ export default function PricingManagementPage() {
       'Pants Waist In,waist,25.00,Take in pants waist,30,false,👖',
       'Sleeve Shorten,sleeves,18.00,Shorten sleeves,25,false,👕',
       'Zipper Repair,repairs,25.00,Replace or repair zipper,45,false,🔧',
-      'Custom Design Consultation,custom,100.00,Custom design consultation,120,true,✨',
+      'Custom Design Consultation,custom,0.00,Free consultation for custom design,30,true,✨',
     ].join('\n');
 
     const blob = new Blob([sampleData], { type: 'text/csv' });
