@@ -13,7 +13,7 @@ import { LoadingLogo } from '@/components/ui/loading-logo';
 import { MuralBackground } from '@/components/ui/mural-background';
 import { WorkListExport } from '@/components/board/worklist-export';
 import { SmsConfirmationModal } from '@/components/board/sms-confirmation-modal';
-import { LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, Users } from 'lucide-react';
 import Link from 'next/link';
 
 interface PendingSmsConfirmation {
@@ -377,6 +377,17 @@ export default function BoardPage() {
                 className='btn-press bg-gradient-to-r from-accent-taupe/20 to-accent-taupe/30 hover:from-accent-taupe/30 hover:to-accent-taupe/40 text-accent-contrast font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-accent-taupe/40 px-2 py-1 text-xs'
               >
                 👥 Clients
+              </Button>
+              <Button
+                asChild
+                variant='outline'
+                size='sm'
+                className='btn-press bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-blue-300 px-2 py-1 text-xs'
+              >
+                <Link href='/board/workload'>
+                  <Users className='w-3 h-3 mr-1' />
+                  Workload
+                </Link>
               </Button>
               <Button
                 asChild
