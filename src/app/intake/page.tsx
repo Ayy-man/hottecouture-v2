@@ -63,7 +63,7 @@ const initialFormData: IntakeFormData = {
 };
 
 export default function IntakePage() {
-  const [currentStep, setCurrentStep] = useState<IntakeStep>('pipeline');
+  const [currentStep, setCurrentStep] = useState<IntakeStep>('client');
   const [formData, setFormData] = useState<IntakeFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderResult, setOrderResult] = useState<IntakeResponse | null>(null);
@@ -78,14 +78,14 @@ export default function IntakePage() {
     useMemo(
       () => [
         {
+          key: 'client',
+          title: 'Client',
+          description: 'Client information and contact details',
+        },
+        {
           key: 'pipeline',
           title: 'Service Type',
           description: 'Choose alteration or custom design',
-        },
-        {
-          key: 'client',
-          title: 'Client Information',
-          description: 'Client information and contact details',
         },
         {
           key: 'garments',
@@ -190,6 +190,14 @@ export default function IntakePage() {
 
   const renderStep = () => {
     switch (currentStep) {
+      case 'client':
+        return (
+          <ClientStep
+            data={formData.client as any}
+            onUpdate={client => updateFormData({ client: client as any })}
+            onNext={nextStep}
+          />
+        );
       case 'pipeline':
         return (
           <PipelineSelector
@@ -197,14 +205,6 @@ export default function IntakePage() {
             onPipelineChange={type =>
               updateFormData({ order: { ...formData.order, type } })
             }
-            onNext={nextStep}
-          />
-        );
-      case 'client':
-        return (
-          <ClientStep
-            data={formData.client as any}
-            onUpdate={client => updateFormData({ client: client as any })}
             onNext={nextStep}
             onPrev={prevStep}
           />

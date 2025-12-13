@@ -26,6 +26,7 @@ export function PipelineSelector({
   selectedPipeline,
   onPipelineChange,
   onNext,
+  onPrev,
 }: PipelineSelectorProps) {
   const pipelines = [
     {
@@ -65,8 +66,31 @@ export function PipelineSelector({
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header */}
       <div className='flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
-        {/* No Previous button on the first step */}
-        <div className='w-1/3'></div> {/* Placeholder for alignment */}
+        <div className='w-1/3'>
+          {onPrev && (
+            <Button
+              onClick={onPrev}
+              variant='ghost'
+              className='text-primary-600 hover:text-primary-800 p-0'
+            >
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-5 w-5 mr-1'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M15 19l-7-7 7-7'
+                />
+              </svg>
+              Back
+            </Button>
+          )}
+        </div>
         <h2 className='text-lg font-semibold text-gray-900'>
           Choose Your Service Type
         </h2>
