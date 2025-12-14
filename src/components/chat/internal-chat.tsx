@@ -19,12 +19,15 @@ export function InternalChat() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: `Bonjour! Je peux vous aider avec:
-• "Order #12345" - voir le statut d'une commande
-• "Today's orders" - commandes du jour
-• "Pending orders" - en attente
-• "Overdue orders" - en retard
-• Un numéro de téléphone - commandes d'un client`,
+      content: `Bonjour! 👋 Je suis l'assistant de Hotte Couture. Posez-moi vos questions:
+
+• "Commandes du jour" ou "today"
+• "Commandes en retard"
+• "Prêt pour ramassage"
+• "Commande #123"
+• "Cherche client Martin"
+• "Stats" ou "combien de commandes"
+• Questions sur les prix, délais, etc.`,
       timestamp: new Date(),
     },
   ]);
@@ -62,10 +65,18 @@ export function InternalChat() {
     setIsLoading(true);
 
     try {
+      const history = messages
+        .filter(m => m.id !== 'welcome')
+        .slice(-6)
+        .map(m => ({ role: m.role, content: m.content }));
+
       const response = await fetch('/api/chat/internal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userMessage.content }),
+        body: JSON.stringify({ 
+          query: userMessage.content,
+          history,
+        }),
       });
 
       const data = await response.json();

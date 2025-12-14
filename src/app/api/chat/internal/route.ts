@@ -3,126 +3,259 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
+interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
 interface ChatRequest {
   query: string;
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>;
   session_id?: string;
 }
 
-type IntentType = 
-  | 'order_status'
-  | 'orders_today'
-  | 'orders_pending'
-  | 'orders_overdue'
-  | 'client_orders'
-  | 'unknown';
+const SYSTEM_PROMPT = `Tu es l'assistant intelligent de Hotte Couture, une boutique de couture sur mesure et retouches.
 
-interface OrderResult {
-  id: string;
-  order_number: number;
-  status: string;
-  due_date: string | null;
-  total_cents: number;
-  created_at: string;
-  client: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    phone: string | null;
-    email: string | null;
-    language: 'fr' | 'en';
-  } | null;
-}
+## Informations de l'entreprise
+- **Nom:** Hotte Couture / Hotte Design
+- **Adresse:** 1278, rue de Saint-Jovite, Mont-Tremblant (QC) J8E 3J9
+- **Téléphone:** (819) 717-1424
+- **Courriel:** info@hottecouture.ca
+- **Heures:** Lundi-Vendredi 9h-17h
 
-interface ClientResult {
-  id: string;
-}
+## Équipe
+- **Audrey Hotte** - Propriétaire, gère les prises de commandes et la facturation
+- **Solange** - Couturière, effectue les retouches et confections
 
-function parseIntent(query: string): { intent: IntentType; params: Record<string, string> } {
-  const lowerQuery = query.toLowerCase().trim();
+## Tarification
+- **Retouches:** 15$-60$ selon la complexité, délai 10 jours ouvrables
+- **Création sur mesure:** 750$-1500$ en moyenne, délai 4 semaines, dépôt 50% requis
+- **Service express:** +30$ (simple) ou +60$ (complet/robe de soirée)
+- **Consultation:** Gratuite
+- **Taxes:** TPS 5% + TVQ 9.975%
+
+## Exemples de prix retouches
+- Ourlet pantalon: 15$-20$
+- Raccourcir manches: 20$-35$
+- Ajuster taille: 25$-40$
+- Fermeture éclair: 20$-45$
+- Doublure: 35$-60$
+
+## Statuts des commandes
+- **pending** = En attente
+- **working** = En cours
+- **done** = Terminé
+- **ready** = Prêt pour ramassage
+- **delivered** = Livré
+
+## Instructions
+1. Réponds TOUJOURS en français québécois professionnel
+2. Sois concis - Audrey et Solange ont besoin de réponses rapides
+3. Quand on te donne des données de la base de données, utilise-les pour répondre
+4. Pour les questions de prix, donne une fourchette réaliste
+5. Si tu ne sais pas, dis-le honnêtement
+6. Utilise des emojis avec modération pour rendre les réponses plus lisibles`;
+
+async function queryDatabase(query: string, supabase: any): Promise<string | null> {
+  const lowerQuery = query.toLowerCase();
   
-  const orderNumberMatch = lowerQuery.match(/(?:order|commande|#)\s*#?(\d+)/i) 
-    ?? lowerQuery.match(/^#?(\d+)$/);
+  const orderNumberMatch = lowerQuery.match(/(?:commande|order|#)\s*#?(\d+)/i) 
+    ?? lowerQuery.match(/^#?(\d{1,5})$/);
+  
   if (orderNumberMatch && orderNumberMatch[1]) {
-    return { intent: 'order_status', params: { order_number: orderNumberMatch[1] } };
+    const orderNumber = parseInt(orderNumberMatch[1]);
+    const { data: order, error } = await supabase
+      .from('order')
+      .select(`
+        *,
+        client:client_id (first_name, last_name, phone, email),
+        garments:garment (
+          type,
+          garment_services:garment_service (
+            quantity,
+            service:service_id (name, base_price_cents)
+          )
+        )
+      `)
+      .eq('order_number', orderNumber)
+      .single();
+
+    if (error || !order) {
+      return `[DB] Commande #${orderNumber} non trouvée.`;
+    }
+
+    const client = order.client;
+    const clientName = client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : 'Inconnu';
+    const services = order.garments?.flatMap((g: any) => 
+      g.garment_services?.map((gs: any) => gs.service?.name) || []
+    ).filter(Boolean).join(', ') || 'Aucun service';
+
+    return `[DB] Commande #${order.order_number}:
+- Client: ${clientName}
+- Téléphone: ${client?.phone || 'N/A'}
+- Statut: ${order.status}
+- Date limite: ${order.due_date || 'Non définie'}
+- Services: ${services}
+- Total: ${((order.total_cents || 0) / 100).toFixed(2)}$
+- Dépôt: ${((order.deposit_cents || 0) / 100).toFixed(2)}$`;
   }
 
-  if (lowerQuery.includes('status') || lowerQuery.includes('statut')) {
-    const numMatch = lowerQuery.match(/(\d+)/);
-    if (numMatch && numMatch[1]) {
-      return { intent: 'order_status', params: { order_number: numMatch[1] } };
+  if (lowerQuery.includes('aujourd') || lowerQuery.includes('today') || 
+      (lowerQuery.includes('commande') && lowerQuery.includes('jour'))) {
+    const today = new Date().toISOString().split('T')[0];
+    const { data: orders, error } = await supabase
+      .from('order')
+      .select(`*, client:client_id (first_name, last_name)`)
+      .or(`due_date.eq.${today},and(created_at.gte.${today}T00:00:00,created_at.lt.${today}T23:59:59)`)
+      .in('status', ['pending', 'working'])
+      .eq('is_archived', false)
+      .order('due_date', { ascending: true })
+      .limit(15);
+
+    if (error) return '[DB] Erreur de requête.';
+    
+    if (!orders || orders.length === 0) {
+      return '[DB] Aucune commande active pour aujourd\'hui.';
+    }
+
+    const list = orders.map((o: any) => {
+      const name = o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Inconnu';
+      return `- #${o.order_number}: ${name} (${o.status})`;
+    }).join('\n');
+
+    return `[DB] ${orders.length} commande(s) du jour:\n${list}`;
+  }
+
+  if (lowerQuery.includes('retard') || lowerQuery.includes('overdue') || lowerQuery.includes('late')) {
+    const today = new Date().toISOString().split('T')[0];
+    const { data: orders, error } = await supabase
+      .from('order')
+      .select(`*, client:client_id (first_name, last_name, phone)`)
+      .lt('due_date', today)
+      .not('status', 'in', '("delivered","archived")')
+      .eq('is_archived', false)
+      .order('due_date', { ascending: true })
+      .limit(15);
+
+    if (error) return '[DB] Erreur de requête.';
+    
+    if (!orders || orders.length === 0) {
+      return '[DB] Aucune commande en retard! 🎉';
+    }
+
+    const list = orders.map((o: any) => {
+      const name = o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Inconnu';
+      const phone = o.client?.phone || 'N/A';
+      return `- #${o.order_number}: ${name} (${phone}) - dû: ${o.due_date}`;
+    }).join('\n');
+
+    return `[DB] ⚠️ ${orders.length} commande(s) en retard:\n${list}`;
+  }
+
+  if (lowerQuery.includes('prêt') || lowerQuery.includes('ready') || lowerQuery.includes('ramassage') || lowerQuery.includes('pickup')) {
+    const { data: orders, error } = await supabase
+      .from('order')
+      .select(`*, client:client_id (first_name, last_name, phone)`)
+      .eq('status', 'ready')
+      .eq('is_archived', false)
+      .order('due_date', { ascending: true })
+      .limit(15);
+
+    if (error) return '[DB] Erreur de requête.';
+    
+    if (!orders || orders.length === 0) {
+      return '[DB] Aucune commande prête pour ramassage.';
+    }
+
+    const list = orders.map((o: any) => {
+      const name = o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Inconnu';
+      const phone = o.client?.phone || 'N/A';
+      return `- #${o.order_number}: ${name} (${phone})`;
+    }).join('\n');
+
+    return `[DB] 📦 ${orders.length} commande(s) prête(s) pour ramassage:\n${list}`;
+  }
+
+  if (lowerQuery.includes('attente') || lowerQuery.includes('pending')) {
+    const { data: orders, error } = await supabase
+      .from('order')
+      .select(`*, client:client_id (first_name, last_name)`)
+      .eq('status', 'pending')
+      .eq('is_archived', false)
+      .order('due_date', { ascending: true })
+      .limit(15);
+
+    if (error) return '[DB] Erreur de requête.';
+    
+    if (!orders || orders.length === 0) {
+      return '[DB] Aucune commande en attente.';
+    }
+
+    const list = orders.map((o: any) => {
+      const name = o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Inconnu';
+      return `- #${o.order_number}: ${name} - dû: ${o.due_date || 'N/A'}`;
+    }).join('\n');
+
+    return `[DB] ⏳ ${orders.length} commande(s) en attente:\n${list}`;
+  }
+
+  if ((lowerQuery.includes('cherche') || lowerQuery.includes('client') || lowerQuery.includes('search')) && 
+      !lowerQuery.includes('commande')) {
+    const nameMatch = lowerQuery.match(/(?:cherche|client|search)\s+(.+)/i);
+    if (nameMatch && nameMatch[1]) {
+      const searchTerm = nameMatch[1].trim();
+      const { data: clients, error } = await supabase
+        .from('client')
+        .select('id, first_name, last_name, phone, email')
+        .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`)
+        .limit(5);
+
+      if (error || !clients || clients.length === 0) {
+        return `[DB] Aucun client trouvé pour "${searchTerm}".`;
+      }
+
+      const list = clients.map((c: any) => 
+        `- ${c.first_name || ''} ${c.last_name || ''}: ${c.phone || 'N/A'} / ${c.email || 'N/A'}`
+      ).join('\n');
+
+      return `[DB] ${clients.length} client(s) trouvé(s):\n${list}`;
     }
   }
 
-  if (lowerQuery.includes('today') || lowerQuery.includes("aujourd'hui") || lowerQuery.includes('aujourdhui')) {
-    return { intent: 'orders_today', params: {} };
+  if (lowerQuery.includes('stats') || lowerQuery.includes('statistique') || 
+      (lowerQuery.includes('combien') && lowerQuery.includes('commande'))) {
+    const { data: statusCounts } = await supabase
+      .from('order')
+      .select('status')
+      .eq('is_archived', false);
+
+    if (!statusCounts) return '[DB] Erreur de requête.';
+
+    const counts: Record<string, number> = {};
+    statusCounts.forEach((o: any) => {
+      counts[o.status] = (counts[o.status] || 0) + 1;
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+    const { data: todayOrders } = await supabase
+      .from('order')
+      .select('total_cents')
+      .gte('created_at', `${today}T00:00:00`)
+      .lt('created_at', `${today}T23:59:59`);
+
+    const todayRevenue = todayOrders?.reduce((sum: number, o: any) => sum + (o.total_cents || 0), 0) || 0;
+
+    return `[DB] 📊 Statistiques:
+- En attente: ${counts['pending'] || 0}
+- En cours: ${counts['working'] || 0}
+- Terminé: ${counts['done'] || 0}
+- Prêt: ${counts['ready'] || 0}
+- Livré: ${counts['delivered'] || 0}
+- Total actif: ${statusCounts.length}
+- Revenus aujourd'hui: ${(todayRevenue / 100).toFixed(2)}$`;
   }
 
-  if (lowerQuery.includes('pending') || lowerQuery.includes('en attente') || lowerQuery.includes('attente')) {
-    return { intent: 'orders_pending', params: {} };
-  }
-
-  if (lowerQuery.includes('overdue') || lowerQuery.includes('retard') || lowerQuery.includes('late')) {
-    return { intent: 'orders_overdue', params: {} };
-  }
-
-  const phoneMatch = lowerQuery.match(/(\+?\d[\d\s-]{8,})/);
-  if (phoneMatch && phoneMatch[1]) {
-    return { intent: 'client_orders', params: { phone: phoneMatch[1].replace(/[\s-]/g, '') } };
-  }
-
-  return { intent: 'unknown', params: {} };
-}
-
-function formatOrderResponse(order: OrderResult): string {
-  const status = order.status;
-  const statusLabels: Record<string, string> = {
-    pending: '⏳ En attente / Pending',
-    working: '🔧 En cours / In Progress',
-    done: '✅ Terminé / Done',
-    ready: '📦 Prêt / Ready for Pickup',
-    delivered: '🎉 Livré / Delivered',
-    archived: '📁 Archivé / Archived',
-  };
-
-  const client = order.client;
-  const clientName = client 
-    ? `${client.first_name || ''} ${client.last_name || ''}`.trim() 
-    : 'Unknown';
-  const clientPhone = client?.phone || 'N/A';
-  
-  const dueDate = order.due_date 
-    ? new Date(order.due_date).toLocaleDateString('fr-CA') 
-    : 'Non défini';
-
-  return `**Commande #${order.order_number}**
-• Client: ${clientName}
-• Téléphone: ${clientPhone}
-• Statut: ${statusLabels[status] || status}
-• Date limite: ${dueDate}
-• Total: $${((order.total_cents || 0) / 100).toFixed(2)}`;
-}
-
-function formatOrderList(orders: OrderResult[], title: string): string {
-  if (orders.length === 0) {
-    return `${title}\n\nAucune commande trouvée / No orders found.`;
-  }
-
-  const lines = orders.slice(0, 10).map(o => {
-    const client = o.client;
-    const clientName = client 
-      ? `${client.first_name || ''} ${client.last_name || ''}`.trim() 
-      : 'Unknown';
-    const dueDate = o.due_date 
-      ? new Date(o.due_date).toLocaleDateString('fr-CA') 
-      : 'N/A';
-    return `• #${o.order_number} - ${clientName} - ${o.status} - Due: ${dueDate}`;
-  });
-
-  const countNote = orders.length > 10 
-    ? `\n\n... et ${orders.length - 10} autres commandes` 
-    : '';
-
-  return `${title}\n\n${lines.join('\n')}${countNote}`;
+  return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -130,7 +263,7 @@ export async function POST(request: NextRequest) {
   
   try {
     const body: ChatRequest = await request.json();
-    const { query, session_id } = body;
+    const { query, history = [] } = body;
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json(
@@ -139,162 +272,80 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { intent, params } = parseIntent(query);
     const supabase = await createServiceRoleClient();
+    
+    const dbContext = await queryDatabase(query, supabase);
 
-    let response = '';
-    let data: unknown = null;
+    const messages: ChatMessage[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
+    ];
 
-    switch (intent) {
-      case 'order_status': {
-        const orderNumber = parseInt(params.order_number || '0');
-        const { data: orderData, error } = await supabase
-          .from('order')
-          .select(`
-            *,
-            client:client_id (id, first_name, last_name, phone, email, language)
-          `)
-          .eq('order_number', orderNumber)
-          .single() as { data: OrderResult | null; error: unknown };
-
-        if (error || !orderData) {
-          response = `Commande #${params.order_number} non trouvée.\nOrder #${params.order_number} not found.`;
-        } else {
-          response = formatOrderResponse(orderData);
-          data = orderData;
-        }
-        break;
-      }
-
-      case 'orders_today': {
-        const today = new Date().toISOString().split('T')[0];
-        const { data: orders, error } = await supabase
-          .from('order')
-          .select(`
-            *,
-            client:client_id (id, first_name, last_name, phone)
-          `)
-          .gte('created_at', `${today}T00:00:00`)
-          .lt('created_at', `${today}T23:59:59`)
-          .eq('is_archived', false)
-          .order('created_at', { ascending: false }) as { data: OrderResult[] | null; error: unknown };
-
-        if (error) {
-          response = 'Erreur lors de la recherche / Error searching orders.';
-        } else {
-          response = formatOrderList(
-            orders || [], 
-            `📅 Commandes aujourd'hui / Today's Orders (${orders?.length || 0})`
-          );
-          data = orders;
-        }
-        break;
-      }
-
-      case 'orders_pending': {
-        const { data: orders, error } = await supabase
-          .from('order')
-          .select(`
-            *,
-            client:client_id (id, first_name, last_name, phone)
-          `)
-          .eq('status', 'pending')
-          .eq('is_archived', false)
-          .order('due_date', { ascending: true }) as { data: OrderResult[] | null; error: unknown };
-
-        if (error) {
-          response = 'Erreur lors de la recherche / Error searching orders.';
-        } else {
-          response = formatOrderList(
-            orders || [], 
-            `⏳ Commandes en attente / Pending Orders (${orders?.length || 0})`
-          );
-          data = orders;
-        }
-        break;
-      }
-
-      case 'orders_overdue': {
-        const today = new Date().toISOString().split('T')[0];
-        const { data: orders, error } = await supabase
-          .from('order')
-          .select(`
-            *,
-            client:client_id (id, first_name, last_name, phone)
-          `)
-          .lt('due_date', today)
-          .not('status', 'in', '("delivered","archived")')
-          .eq('is_archived', false)
-          .order('due_date', { ascending: true }) as { data: OrderResult[] | null; error: unknown };
-
-        if (error) {
-          response = 'Erreur lors de la recherche / Error searching orders.';
-        } else {
-          response = formatOrderList(
-            orders || [], 
-            `🚨 Commandes en retard / Overdue Orders (${orders?.length || 0})`
-          );
-          data = orders;
-        }
-        break;
-      }
-
-      case 'client_orders': {
-        const phone = params.phone || '';
-        
-        const { data: clients } = await supabase
-          .from('client')
-          .select('id')
-          .ilike('phone', `%${phone.slice(-10)}%`) as { data: ClientResult[] | null; error: unknown };
-
-        if (!clients || clients.length === 0) {
-          response = `Aucune commande trouvée pour ce numéro.\nNo orders found for this phone number.`;
-          break;
-        }
-
-        const clientIds = clients.map(c => c.id);
-        
-        const { data: orders, error } = await supabase
-          .from('order')
-          .select(`
-            *,
-            client:client_id (id, first_name, last_name, phone)
-          `)
-          .in('client_id', clientIds)
-          .eq('is_archived', false)
-          .order('created_at', { ascending: false })
-          .limit(5) as { data: OrderResult[] | null; error: unknown };
-
-        if (error || !orders || orders.length === 0) {
-          response = `Aucune commande trouvée pour ce numéro.\nNo orders found for this phone number.`;
-        } else {
-          response = formatOrderList(
-            orders, 
-            `📱 Commandes pour ${phone} (${orders.length})`
-          );
-          data = orders;
-        }
-        break;
-      }
-
-      default:
-        response = `Je ne comprends pas votre demande. Essayez:
-• "Status of order #12345" - voir une commande
-• "Today's orders" - commandes du jour
-• "Pending orders" - commandes en attente
-• "Overdue orders" - commandes en retard
-• Un numéro de téléphone - voir commandes d'un client`;
+    const recentHistory = history.slice(-6);
+    for (const msg of recentHistory) {
+      messages.push({ role: msg.role, content: msg.content });
     }
+
+    let userContent = query;
+    if (dbContext) {
+      userContent = `${query}\n\n---\nDonnées de la base de données:\n${dbContext}`;
+    }
+    messages.push({ role: 'user', content: userContent });
+
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    
+    if (!OPENROUTER_API_KEY) {
+      console.error('OPENROUTER_API_KEY not configured');
+      return NextResponse.json({
+        response: dbContext || 'Configuration manquante. Contactez l\'administrateur.',
+        type: 'error',
+        latency_ms: Date.now() - startTime,
+      });
+    }
+
+    const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://hottecouture.ca',
+        'X-Title': 'Hotte Couture Assistant',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3.5-sonnet',
+        messages,
+        max_tokens: 500,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!openRouterResponse.ok) {
+      const errorText = await openRouterResponse.text();
+      console.error('OpenRouter error:', errorText);
+      
+      if (dbContext) {
+        return NextResponse.json({
+          response: dbContext.replace('[DB] ', ''),
+          type: 'db_fallback',
+          latency_ms: Date.now() - startTime,
+        });
+      }
+      
+      return NextResponse.json({
+        response: 'Désolé, je rencontre des difficultés techniques. Réessayez dans un moment.',
+        type: 'error',
+        latency_ms: Date.now() - startTime,
+      });
+    }
+
+    const aiResult = await openRouterResponse.json();
+    const assistantResponse = aiResult.choices?.[0]?.message?.content || 
+      'Désolé, je n\'ai pas pu générer une réponse.';
 
     const latencyMs = Date.now() - startTime;
 
-    // Chat logging disabled until migration 0012 is applied
-    void session_id;
-
     return NextResponse.json({
-      response,
-      type: intent,
-      data,
+      response: assistantResponse,
+      type: 'ai',
       latency_ms: latencyMs,
     });
   } catch (error) {
