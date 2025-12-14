@@ -69,11 +69,11 @@ export async function getRevenueMetrics(): Promise<RevenueMetrics> {
       .from('order')
       .select('total')
       .gte('created_at', startDate.toISOString())
-      .lt('endDate ?= endDate.toISOString() : undefined)
+      .lt(endDate ? endDate.toISOString() : undefined)
       .eq('status', 'delivered')
 
     if (error) throw error
-    return data?.reduce((sum, order) => sum + (order.total || 0), 0) || 0
+    return data?.reduce((sum: number, order: any) => sum + (order.total || 0), 0) || 0
   }
 
   const [todayRevenue, thisWeekRevenue, thisMonthRevenue, lastMonthRevenue, yearToDateRevenue] = await Promise.all([
