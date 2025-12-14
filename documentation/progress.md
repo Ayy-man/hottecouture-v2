@@ -7,8 +7,17 @@
 
 ## CURRENT TASK
 
-**Task:** None - Phase 3A Complete
+**Task:** None - Phase 3A Complete ✅
 **Status:** Only QuickBooks integration remaining
+
+---
+
+## VERIFICATION STATUS (2025-12-14)
+
+### Phase 3A Features - All Verified ✅
+- [x] Today's Tasks View (`/board/today`) - Working
+- [x] Deposit Entry UI (custom orders) - Working (fixed `deposit_cents` column)
+- [x] Photo Upload (garments step) - Working
 
 ---
 
@@ -29,6 +38,15 @@
 - Today's Tasks shows orders due within 3 days with drag-to-reorder
 - Deposit UI appears for custom orders only, shows remaining balance
 - Photo capture uses device camera, uploads to Supabase storage
+
+### [2025-12-14] Fix Deposit Column Name
+
+**What:** Fixed 500 error on order submission with deposit
+
+**Files:**
+- `src/app/api/intake/route.ts` - Changed `deposit_amount_cents` to `deposit_cents` (matching DB schema)
+
+**Test Result:** Verified working in production
 
 ---
 

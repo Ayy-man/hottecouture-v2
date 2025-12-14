@@ -2,7 +2,7 @@
 
 **Project:** Custom Fashion Management System  
 **Client:** Hotte Couture (Audrey - Owner, Solange - Seamstress)  
-**Status:** ~97% Complete  
+**Status:** ~98% Complete (Phase 3A Done)  
 **Last Updated:** 2025-12-14
 
 ---
@@ -33,6 +33,11 @@
 - ✅ CRM integration (GHL contact sync)
 - ✅ Google Calendar integration
 - ✅ Stripe payment integration
+
+### Phase 3A Features (Complete)
+- ✅ Today's Tasks View (`/board/today`) with drag reordering
+- ✅ Deposit Entry UI for custom orders
+- ✅ Photo Upload in garments step
 
 ### What's Missing
 - ❌ QuickBooks invoice sync (only remaining item)
