@@ -16,7 +16,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
   useEffect(() => {
     if (!isLoading && !user) {
       console.log('🔒 No user found, redirecting to login...');
-      router.push('/login');
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?redirectTo=${returnUrl}`);
     }
   }, [user, isLoading, router]);
 
