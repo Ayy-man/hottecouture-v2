@@ -397,12 +397,15 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
 
     case 'update_order_status': {
       const { order_number, new_status } = args;
+      console.log('🔧 update_order_status called:', { order_number, new_status });
       
       const { data: order, error: fetchError } = await supabase
         .from('order')
         .select('id, status')
         .eq('order_number', order_number)
         .single();
+
+      console.log('🔧 Order lookup result:', { order, fetchError });
 
       if (fetchError || !order) {
         return JSON.stringify({ error: `Order #${order_number} not found` });
@@ -413,6 +416,8 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         .from('order')
         .update({ status: new_status, updated_at: new Date().toISOString() })
         .eq('id', order.id);
+
+      console.log('🔧 Update result:', { updateError });
 
       if (updateError) {
         return JSON.stringify({ error: `Failed to update: ${updateError.message}` });
