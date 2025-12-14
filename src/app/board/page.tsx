@@ -185,7 +185,7 @@ export default function BoardPage() {
         throw new Error(`Failed to update order: ${response.status} - ${errorText}`);
       }
 
-      const result = await response.json();
+      await response.json();
       setOrders(prevOrders =>
         prevOrders.map(order =>
           order.id === orderId ? { ...order, status: newStatus } : order

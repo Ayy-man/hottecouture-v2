@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Check if tasks already exist
-    const garmentIds = garments.map(g => g.id);
+    const garmentIds = garments.map((g: any) => g.id);
     const { data: existingTasks, error: tasksError } = await supabase
       .from('task')
       .select('garment_id, service_id')
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     // Create a Set of existing (garment_id, service_id) pairs
     const existingTaskPairs = new Set(
-      (existingTasks || []).map(t => `${t.garment_id}-${t.service_id}`)
+      (existingTasks || []).map((t: any) => `${t.garment_id}-${t.service_id}`)
     );
 
     // 3. Create tasks for each garment-service combination

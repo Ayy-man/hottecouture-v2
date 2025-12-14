@@ -5,7 +5,7 @@ import { TimerButton } from '@/components/timer/timer-button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle, PlayCircle, PauseCircle } from 'lucide-react';
+import { PlayCircle } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -156,7 +156,6 @@ export function GarmentTaskSummary({
               <TimerButton
                 orderId={orderId}
                 garmentId={garmentId}
-                serviceId={task.service_id || undefined}
                 orderStatus={orderStatus}
                 size="sm"
                 showLabel={false}

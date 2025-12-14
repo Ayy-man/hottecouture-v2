@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { orderId: string } }
 ) {
   try {
@@ -62,7 +62,7 @@ export async function GET(
     // Group tasks by garment for easier consumption
     const tasksByGarment: Record<string, any[]> = {};
 
-    (tasks || []).forEach(task => {
+    (tasks || []).forEach((task: any) => {
       const garmentId = task.garment_id;
       if (!tasksByGarment[garmentId]) {
         tasksByGarment[garmentId] = [];
@@ -76,15 +76,15 @@ export async function GET(
 
     // Calculate summary statistics
     const totalPlannedMinutes = (tasks || []).reduce(
-      (sum, task) => sum + (task.planned_minutes || 0),
+      (sum: number, task: any) => sum + (task.planned_minutes || 0),
       0
     );
     const totalActualMinutes = (tasks || []).reduce(
-      (sum, task) => sum + (task.actual_minutes || 0),
+      (sum: number, task: any) => sum + (task.actual_minutes || 0),
       0
     );
     const completedTasks = (tasks || []).filter(
-      task => task.stage === 'done'
+      (task: any) => task.stage === 'done'
     ).length;
     const totalTasks = (tasks || []).length;
 

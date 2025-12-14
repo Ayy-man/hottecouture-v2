@@ -107,24 +107,24 @@ export async function getOrderMetrics(): Promise<OrderMetrics> {
 
   if (error) throw error
 
-  const statusCounts = orders?.reduce((acc, order) => {
+  const statusCounts = orders?.reduce((acc: any, order: any) => {
     acc[order.status] = (acc[order.status] || 0) + 1
     return acc
   }, {} as Record<string, number>) || {}
 
   // Calculate average turnaround time
-  const deliveredOrders = orders?.filter(o => o.status === 'delivered' && o.created_at && o.delivered_at) || []
-  const turnaroundTimes = deliveredOrders.map(order => {
+  const deliveredOrders = orders?.filter((o: any) => o.status === 'delivered' && o.created_at && o.delivered_at) || []
+  const turnaroundTimes = deliveredOrders.map((order: any) => {
     const created = new Date(order.created_at!)
     const delivered = new Date(order.delivered_at!)
     return (delivered.getTime() - created.getTime()) / (1000 * 60 * 60 * 24) // days
   })
   const averageTurnaroundTime = turnaroundTimes.length > 0
-    ? turnaroundTimes.reduce((sum, time) => sum + time, 0) / turnaroundTimes.length
+    ? turnaroundTimes.reduce((sum: number, time: number) => sum + time, 0) / turnaroundTimes.length
     : 0
 
   // Calculate on-time completion rate
-  const onTimeOrders = deliveredOrders.filter(order => {
+  const onTimeOrders = deliveredOrders.filter((order: any) => {
     if (!order.due_date || !order.delivered_at) return false
     return new Date(order.delivered_at!) <= new Date(order.due_date!)
   })
@@ -171,23 +171,23 @@ export async function getCustomerMetrics(): Promise<CustomerMetrics> {
   const totalCustomers = clients?.length || 0
 
   // Calculate new customers this month
-  const newCustomersThisMonth = clients?.filter(client =>
-    client.order?.some(order => new Date(order.created_at!) >= thisMonthStart)
+  const newCustomersThisMonth = clients?.filter((client: any) =>
+    client.order?.some((order: any) => new Date(order.created_at!) >= thisMonthStart)
   ).length || 0
 
   // Calculate returning customers (more than 1 order)
-  const returningCustomers = clients?.filter(client =>
+  const returningCustomers = clients?.filter((client: any) =>
     (client.order?.length || 0) > 1
   ).length || 0
 
   // Calculate top customers by revenue
-  const topCustomers = clients?.map(client => ({
+  const topCustomers = clients?.map((client: any) => ({
     id: client.id,
     name: `${client.first_name} ${client.last_name}`,
     orderCount: client.order?.length || 0,
-    totalSpent: client.order?.reduce((sum, order) => sum + (order.total || 0), 0) || 0
+    totalSpent: client.order?.reduce((sum: number, order: any) => sum + (order.total || 0), 0) || 0
   }))
-  .sort((a, b) => b.totalSpent - a.totalSpent)
+  .sort((a: any, b: any) => b.totalSpent - a.totalSpent)
   .slice(0, 10) || []
 
   return {
@@ -216,7 +216,7 @@ export async function getServiceAnalytics(): Promise<ServiceAnalytics> {
   // Count services and calculate revenue
   const serviceMap = new Map<string, { count: number; revenue: number; name: string }>()
 
-  services?.forEach(gs => {
+  services?.forEach((gs: any) => {
     if (gs.service) {
       const existing = serviceMap.get(gs.service.id) || { count: 0, revenue: 0, name: gs.service.name }
       serviceMap.set(gs.service.id, {
@@ -269,7 +269,7 @@ export async function getDailyMetrics(days: number = 30): Promise<DailyMetrics[]
   }
 
   // Populate with actual data
-  data?.forEach(order => {
+  data?.forEach((order: any) => {
     const dateStr = new Date(order.created_at!).toISOString().split('T')[0]
     const existing = dailyMap.get(dateStr) || { revenue: 0, orderCount: 0 }
     dailyMap.set(dateStr, {

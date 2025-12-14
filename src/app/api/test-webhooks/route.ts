@@ -3,7 +3,7 @@ import { upsertGHLContact, formatClientForGHL } from '@/lib/webhooks/ghl-webhook
 import { sendSMSNotification } from '@/lib/webhooks/sms-webhook';
 import { createCalendarEvent } from '@/lib/webhooks/calendar-webhook';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const results = [];
 
   // Test 1: GHL CRM Webhook

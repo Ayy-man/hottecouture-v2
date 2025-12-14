@@ -91,7 +91,7 @@ export function TaskManagementModal({
     setEditForm({
       planned_minutes: task.planned_minutes,
       actual_minutes: task.actual_minutes,
-      assignee: task.assignee || undefined,
+      assignee: task.assignee || null,
       stage: task.stage,
       notes: task.notes || '',
     });
@@ -194,7 +194,7 @@ export function TaskManagementModal({
                             Stage
                           </label>
                           <Select
-                            value={editForm.stage}
+                            value={editForm.stage || ''}
                             onValueChange={(value) =>
                               setEditForm({ ...editForm, stage: value as Task['stage'] })
                             }
@@ -334,7 +334,6 @@ export function TaskManagementModal({
                           <TimerButton
                             orderId={orderId}
                             garmentId={task.garment_id}
-                            serviceId={task.service_id || undefined}
                             orderStatus="working" // Assuming we're in working context
                             size="sm"
                             showLabel={false}

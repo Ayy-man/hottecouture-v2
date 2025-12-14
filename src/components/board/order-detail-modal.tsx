@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
-import { TimerButton } from '@/components/timer/timer-button';
 import { GarmentTaskSummary } from '@/components/tasks/garment-task-summary';
 import { TaskManagementModal } from '@/components/tasks/task-management-modal';
 import { LoadingLogo } from '@/components/ui/loading-logo';
