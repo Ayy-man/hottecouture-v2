@@ -7,12 +7,17 @@
 
 ## CURRENT TASK
 
-**Task:** None - Phase 3A + AI Chat Complete ✅
+**Task:** None - Phase 3A + AI Chat + Realtime Complete ✅
 **Status:** Only QuickBooks integration remaining
 
 ---
 
 ## VERIFICATION STATUS (2025-12-14)
+
+### Supabase Realtime - Implemented ✅
+- [x] DB triggers (`broadcast_changes_filter`) on `order` and `task` tables
+- [x] Frontend hook updated to use broadcast with private channels
+- [x] Subscribes to both `order` and `task` channels with auth
 
 ### Phase 3A Features - All Verified ✅
 - [x] Today's Tasks View (`/board/today`) - Working
@@ -23,6 +28,25 @@
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-14] Supabase Realtime with Broadcast
+
+**What:** Implemented realtime updates using Supabase broadcast triggers
+
+**Files:**
+- `src/lib/hooks/useRealtimeOrders.ts` - Switched from `postgres_changes` to `broadcast` events with private channels
+- DB: `broadcast_changes_filter()` function + triggers on `order` and `task` tables
+
+**Features:**
+- Private channels with `setAuth()` authentication
+- Subscribes to both `order` and `task` broadcast channels
+- Triggers fire on status, assigned_to, stage, timer changes (started_at/stopped_at)
+- RLS policies on `realtime.messages` for authenticated users
+
+**Test Result:** Build passes
+**Notes:** Requires DB triggers to be deployed via Supabase SQL editor
+
+---
 
 ### [2025-12-14] Phase 3A - Today's Tasks, Deposit Entry, Photo Upload
 
