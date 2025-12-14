@@ -74,3 +74,15 @@ The verification process has identified that most core features are implemented,
 ### 6. Integrations
 *   **Stripe:** The button is located in the `OrderDetailModal`. It generates a link and offers "Copy" or "Open" actions.
 *   **Chat:** The `InternalChat` component is mounted on the board and functional.
+
+---
+
+## Phase 3B Verification (2025-12-14)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Productivity Stats** | **PASSED** | Tool `get_productivity_stats` works for ranges and employee filters. |
+| **Manual Note Editing** | **PASSED** | Fixed 500 error by adding `estimated_minutes` column (Migration 0018). |
+| **Note Persistence** | **PASSED** | Fixed "disappearing notes" by fetching `estimated_minutes` in API. |
+| **Chatbot Context** | **PASSED** | Chatbot now writes/reads notes correctly and knows the year is 2025. |
+| **Order Mutations** | **PASSED** | Moving status and assigning staff works (Migration 0017). |

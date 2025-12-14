@@ -58,6 +58,28 @@
 
 **Test Result:** Build passes
 **Notes:** Requires `OPENROUTER_API_KEY` env var in Vercel
+**Test Result:** Build passes
+
+---
+
+### [2025-12-14] Phase 3B - Productivity Stats & Critical Fixes
+
+**What:** Added productivity analytics and resolved 4 critical bugs (Mutations, Notes 500, Disappearing Data, 2023 Date)
+
+**Files:**
+- `src/app/api/chat/internal/route.ts` - Added `get_productivity_stats` tool, Fixed `get_order` to read notes, Injected current date
+- `src/app/api/garment/[id]/route.ts` - Fixed 500 error on manual note edit
+- `src/app/api/order/[id]/details/route.ts` - Fixed "disappearing on refresh" bug (added estimated_minutes to fetch)
+- `supabase/migrations/0017_add_updated_at.sql` - Added updated_at column (enables mutation tools)
+- `supabase/migrations/0018_add_garment_estimated_minutes.sql` - Added estimated_minutes column (fixes 500 error)
+
+**Features:**
+- **Productivity Stats:** "How is Audrey doing?", "Stats for this week"
+- **Robust Notes:** Manual edits now work and persist. Chatbot now sees and adds notes correctly.
+- **Accurate Date:** Chatbot now knows today's date (2025 context).
+- **Mutations:** Moving orders and assigning staff now works.
+
+**Test Result:** All Verified ✅
 
 ---
 
