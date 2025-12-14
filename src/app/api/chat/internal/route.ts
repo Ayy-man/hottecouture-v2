@@ -4,35 +4,45 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string | null;
+  tool_calls?: ToolCall[];
+  tool_call_id?: string;
+}
+
+interface ToolCall {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
 }
 
 interface ChatRequest {
   query: string;
   history?: Array<{ role: 'user' | 'assistant'; content: string }>;
-  session_id?: string;
 }
 
-const SYSTEM_PROMPT = `Tu es l'assistant intelligent de Hotte Couture, une boutique de couture sur mesure et retouches.
+const SYSTEM_PROMPT = `Tu es l'assistant intelligent de Hotte Couture, une boutique de couture sur mesure et retouches à Mont-Tremblant.
 
 ## Informations de l'entreprise
-- **Nom:** Hotte Couture / Hotte Design
-- **Adresse:** 1278, rue de Saint-Jovite, Mont-Tremblant (QC) J8E 3J9
-- **Téléphone:** (819) 717-1424
-- **Courriel:** info@hottecouture.ca
-- **Heures:** Lundi-Vendredi 9h-17h
+- Nom: Hotte Couture / Hotte Design
+- Adresse: 1278, rue de Saint-Jovite, Mont-Tremblant (QC) J8E 3J9
+- Téléphone: (819) 717-1424
+- Courriel: info@hottecouture.ca
+- Heures: Lundi-Vendredi 9h-17h
 
 ## Équipe
-- **Audrey Hotte** - Propriétaire, gère les prises de commandes et la facturation
-- **Solange** - Couturière, effectue les retouches et confections
+- Audrey Hotte - Propriétaire, gère les prises de commandes et la facturation
+- Solange - Couturière, effectue les retouches et confections
 
 ## Tarification
-- **Retouches:** 15$-60$ selon la complexité, délai 10 jours ouvrables
-- **Création sur mesure:** 750$-1500$ en moyenne, délai 4 semaines, dépôt 50% requis
-- **Service express:** +30$ (simple) ou +60$ (complet/robe de soirée)
-- **Consultation:** Gratuite
-- **Taxes:** TPS 5% + TVQ 9.975%
+- Retouches: 15$-60$ selon la complexité, délai 10 jours ouvrables
+- Création sur mesure: 750$-1500$ en moyenne, délai 4 semaines, dépôt 50% requis
+- Service express: +30$ (simple) ou +60$ (complet/robe de soirée)
+- Consultation: Gratuite
+- Taxes: TPS 5% + TVQ 9.975%
 
 ## Exemples de prix retouches
 - Ourlet pantalon: 15$-20$
@@ -41,223 +51,274 @@ const SYSTEM_PROMPT = `Tu es l'assistant intelligent de Hotte Couture, une bouti
 - Fermeture éclair: 20$-45$
 - Doublure: 35$-60$
 
-## Statuts des commandes
-- **pending** = En attente
-- **working** = En cours
-- **done** = Terminé
-- **ready** = Prêt pour ramassage
-- **delivered** = Livré
-
 ## Instructions
 1. Réponds dans la MÊME LANGUE que l'utilisateur (français ou anglais)
 2. Sois concis - Audrey et Solange ont besoin de réponses rapides
-3. Quand on te donne des données de la base de données, utilise-les pour répondre
-4. Pour les questions de prix, donne une fourchette réaliste
-5. Si tu ne sais pas, dis-le honnêtement
-6. Utilise des emojis avec modération pour rendre les réponses plus lisibles`;
+3. Utilise les outils disponibles pour consulter la base de données quand nécessaire
+4. Pour les questions de prix, donne une fourchette réaliste basée sur tes connaissances
+5. Utilise des emojis avec modération`;
 
-async function queryDatabase(query: string, supabase: any): Promise<string | null> {
-  const lowerQuery = query.toLowerCase();
-  
-  const orderNumberMatch = lowerQuery.match(/(?:commande|order|#)\s*#?(\d+)/i) 
-    ?? lowerQuery.match(/^#?(\d{1,5})$/);
-  
-  if (orderNumberMatch && orderNumberMatch[1]) {
-    const orderNumber = parseInt(orderNumberMatch[1]);
-    const { data: order, error } = await supabase
-      .from('order')
-      .select(`
-        *,
-        client:client_id (first_name, last_name, phone, email),
-        garments:garment (
-          type,
-          garment_services:garment_service (
-            quantity,
-            service:service_id (name, base_price_cents)
+const TOOLS = [
+  {
+    type: 'function' as const,
+    function: {
+      name: 'get_order',
+      description: 'Get details of a specific order by order number. Use this when user asks about a specific order like "order #65" or "commande 72".',
+      parameters: {
+        type: 'object',
+        properties: {
+          order_number: {
+            type: 'integer',
+            description: 'The order number to look up'
+          }
+        },
+        required: ['order_number']
+      }
+    }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'get_overdue_orders',
+      description: 'Get all orders that are past their due date and not yet delivered. Use this when user asks about late orders, overdue orders, or orders behind schedule.',
+      parameters: {
+        type: 'object',
+        properties: {}
+      }
+    }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'get_orders_by_status',
+      description: 'Get orders filtered by status. Statuses are: pending (waiting to start), working (in progress), done (completed), ready (ready for pickup), delivered.',
+      parameters: {
+        type: 'object',
+        properties: {
+          status: {
+            type: 'string',
+            enum: ['pending', 'working', 'done', 'ready', 'delivered'],
+            description: 'The status to filter by'
+          }
+        },
+        required: ['status']
+      }
+    }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'get_todays_orders',
+      description: 'Get orders that are due today or were created today. Use this when user asks about today\'s work or today\'s orders.',
+      parameters: {
+        type: 'object',
+        properties: {}
+      }
+    }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'search_clients',
+      description: 'Search for clients by name or phone number.',
+      parameters: {
+        type: 'object',
+        properties: {
+          search_term: {
+            type: 'string',
+            description: 'Name or phone number to search for'
+          }
+        },
+        required: ['search_term']
+      }
+    }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'get_stats',
+      description: 'Get order statistics including counts by status and today\'s revenue. Use this when user asks how many orders, stats, or summary.',
+      parameters: {
+        type: 'object',
+        properties: {}
+      }
+    }
+  }
+];
+
+async function executeToolCall(name: string, args: Record<string, any>, supabase: any): Promise<string> {
+  switch (name) {
+    case 'get_order': {
+      const { order_number } = args;
+      const { data: order, error } = await supabase
+        .from('order')
+        .select(`
+          *,
+          client:client_id (first_name, last_name, phone, email),
+          garments:garment (
+            type,
+            garment_services:garment_service (
+              quantity,
+              service:service_id (name)
+            )
           )
-        )
-      `)
-      .eq('order_number', orderNumber)
-      .single();
+        `)
+        .eq('order_number', order_number)
+        .single();
 
-    if (error || !order) {
-      return `[DB] Commande #${orderNumber} non trouvée.`;
+      if (error || !order) {
+        return JSON.stringify({ error: `Order #${order_number} not found` });
+      }
+
+      const client = order.client;
+      const services = order.garments?.flatMap((g: any) => 
+        g.garment_services?.map((gs: any) => gs.service?.name) || []
+      ).filter(Boolean) || [];
+
+      return JSON.stringify({
+        order_number: order.order_number,
+        client_name: client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : 'Unknown',
+        client_phone: client?.phone || 'N/A',
+        client_email: client?.email || 'N/A',
+        status: order.status,
+        due_date: order.due_date,
+        services: services,
+        total: `$${((order.total_cents || 0) / 100).toFixed(2)}`,
+        deposit: `$${((order.deposit_cents || 0) / 100).toFixed(2)}`,
+        assigned_to: order.assigned_to || 'Unassigned'
+      });
     }
 
-    const client = order.client;
-    const clientName = client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : 'Inconnu';
-    const services = order.garments?.flatMap((g: any) => 
-      g.garment_services?.map((gs: any) => gs.service?.name) || []
-    ).filter(Boolean).join(', ') || 'Aucun service';
+    case 'get_overdue_orders': {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: orders, error } = await supabase
+        .from('order')
+        .select(`*, client:client_id (first_name, last_name, phone)`)
+        .lt('due_date', today)
+        .not('status', 'in', '("delivered","archived")')
+        .eq('is_archived', false)
+        .order('due_date', { ascending: true })
+        .limit(20);
 
-    return `[DB] Commande #${order.order_number}:
-- Client: ${clientName}
-- Téléphone: ${client?.phone || 'N/A'}
-- Statut: ${order.status}
-- Date limite: ${order.due_date || 'Non définie'}
-- Services: ${services}
-- Total: ${((order.total_cents || 0) / 100).toFixed(2)}$
-- Dépôt: ${((order.deposit_cents || 0) / 100).toFixed(2)}$`;
-  }
-
-  if (lowerQuery.includes('aujourd') || lowerQuery.includes('today') || 
-      (lowerQuery.includes('commande') && lowerQuery.includes('jour'))) {
-    const today = new Date().toISOString().split('T')[0];
-    const { data: orders, error } = await supabase
-      .from('order')
-      .select(`*, client:client_id (first_name, last_name)`)
-      .or(`due_date.eq.${today},and(created_at.gte.${today}T00:00:00,created_at.lt.${today}T23:59:59)`)
-      .in('status', ['pending', 'working'])
-      .eq('is_archived', false)
-      .order('due_date', { ascending: true })
-      .limit(15);
-
-    if (error) return '[DB] Erreur de requête.';
-    
-    if (!orders || orders.length === 0) {
-      return '[DB] Aucune commande active pour aujourd\'hui.';
+      if (error) return JSON.stringify({ error: 'Database query failed' });
+      
+      return JSON.stringify({
+        count: orders?.length || 0,
+        orders: (orders || []).map((o: any) => ({
+          order_number: o.order_number,
+          client: o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Unknown',
+          phone: o.client?.phone || 'N/A',
+          due_date: o.due_date,
+          status: o.status
+        }))
+      });
     }
 
-    const list = orders.map((o: any) => {
-      const name = o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Inconnu';
-      return `- #${o.order_number}: ${name} (${o.status})`;
-    }).join('\n');
+    case 'get_orders_by_status': {
+      const { status } = args;
+      const { data: orders, error } = await supabase
+        .from('order')
+        .select(`*, client:client_id (first_name, last_name)`)
+        .eq('status', status)
+        .eq('is_archived', false)
+        .order('due_date', { ascending: true })
+        .limit(20);
 
-    return `[DB] ${orders.length} commande(s) du jour:\n${list}`;
-  }
-
-  if (lowerQuery.includes('retard') || lowerQuery.includes('overdue') || lowerQuery.includes('late')) {
-    const today = new Date().toISOString().split('T')[0];
-    const { data: orders, error } = await supabase
-      .from('order')
-      .select(`*, client:client_id (first_name, last_name, phone)`)
-      .lt('due_date', today)
-      .not('status', 'in', '("delivered","archived")')
-      .eq('is_archived', false)
-      .order('due_date', { ascending: true })
-      .limit(15);
-
-    if (error) return '[DB] Erreur de requête.';
-    
-    if (!orders || orders.length === 0) {
-      return '[DB] Aucune commande en retard! 🎉';
+      if (error) return JSON.stringify({ error: 'Database query failed' });
+      
+      return JSON.stringify({
+        status,
+        count: orders?.length || 0,
+        orders: (orders || []).map((o: any) => ({
+          order_number: o.order_number,
+          client: o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Unknown',
+          due_date: o.due_date
+        }))
+      });
     }
 
-    const list = orders.map((o: any) => {
-      const name = o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Inconnu';
-      const phone = o.client?.phone || 'N/A';
-      return `- #${o.order_number}: ${name} (${phone}) - dû: ${o.due_date}`;
-    }).join('\n');
+    case 'get_todays_orders': {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: orders, error } = await supabase
+        .from('order')
+        .select(`*, client:client_id (first_name, last_name)`)
+        .or(`due_date.eq.${today},and(created_at.gte.${today}T00:00:00,created_at.lt.${today}T23:59:59)`)
+        .eq('is_archived', false)
+        .order('due_date', { ascending: true })
+        .limit(20);
 
-    return `[DB] ⚠️ ${orders.length} commande(s) en retard:\n${list}`;
-  }
-
-  if (lowerQuery.includes('prêt') || lowerQuery.includes('ready') || lowerQuery.includes('ramassage') || lowerQuery.includes('pickup')) {
-    const { data: orders, error } = await supabase
-      .from('order')
-      .select(`*, client:client_id (first_name, last_name, phone)`)
-      .eq('status', 'ready')
-      .eq('is_archived', false)
-      .order('due_date', { ascending: true })
-      .limit(15);
-
-    if (error) return '[DB] Erreur de requête.';
-    
-    if (!orders || orders.length === 0) {
-      return '[DB] Aucune commande prête pour ramassage.';
+      if (error) return JSON.stringify({ error: 'Database query failed' });
+      
+      return JSON.stringify({
+        date: today,
+        count: orders?.length || 0,
+        orders: (orders || []).map((o: any) => ({
+          order_number: o.order_number,
+          client: o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Unknown',
+          status: o.status,
+          due_date: o.due_date
+        }))
+      });
     }
 
-    const list = orders.map((o: any) => {
-      const name = o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Inconnu';
-      const phone = o.client?.phone || 'N/A';
-      return `- #${o.order_number}: ${name} (${phone})`;
-    }).join('\n');
-
-    return `[DB] 📦 ${orders.length} commande(s) prête(s) pour ramassage:\n${list}`;
-  }
-
-  if (lowerQuery.includes('attente') || lowerQuery.includes('pending')) {
-    const { data: orders, error } = await supabase
-      .from('order')
-      .select(`*, client:client_id (first_name, last_name)`)
-      .eq('status', 'pending')
-      .eq('is_archived', false)
-      .order('due_date', { ascending: true })
-      .limit(15);
-
-    if (error) return '[DB] Erreur de requête.';
-    
-    if (!orders || orders.length === 0) {
-      return '[DB] Aucune commande en attente.';
-    }
-
-    const list = orders.map((o: any) => {
-      const name = o.client ? `${o.client.first_name || ''} ${o.client.last_name || ''}`.trim() : 'Inconnu';
-      return `- #${o.order_number}: ${name} - dû: ${o.due_date || 'N/A'}`;
-    }).join('\n');
-
-    return `[DB] ⏳ ${orders.length} commande(s) en attente:\n${list}`;
-  }
-
-  if ((lowerQuery.includes('cherche') || lowerQuery.includes('search')) && 
-      !lowerQuery.includes('commande')) {
-    const nameMatch = lowerQuery.match(/(?:cherche|search)\s+(.+)/i);
-    if (nameMatch && nameMatch[1]) {
-      const searchTerm = nameMatch[1]
-        .replace(/^client\s*/i, '')
-        .trim();
+    case 'search_clients': {
+      const { search_term } = args;
       const { data: clients, error } = await supabase
         .from('client')
         .select('id, first_name, last_name, phone, email')
-        .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`)
-        .limit(5);
+        .or(`first_name.ilike.%${search_term}%,last_name.ilike.%${search_term}%,phone.ilike.%${search_term}%`)
+        .limit(10);
 
-      if (error || !clients || clients.length === 0) {
-        return `[DB] Aucun client trouvé pour "${searchTerm}".`;
+      if (error) return JSON.stringify({ error: 'Database query failed' });
+      
+      if (!clients || clients.length === 0) {
+        return JSON.stringify({ error: `No clients found matching "${search_term}"` });
       }
 
-      const list = clients.map((c: any) => 
-        `- ${c.first_name || ''} ${c.last_name || ''}: ${c.phone || 'N/A'} / ${c.email || 'N/A'}`
-      ).join('\n');
-
-      return `[DB] ${clients.length} client(s) trouvé(s):\n${list}`;
+      return JSON.stringify({
+        count: clients.length,
+        clients: clients.map((c: any) => ({
+          name: `${c.first_name || ''} ${c.last_name || ''}`.trim(),
+          phone: c.phone || 'N/A',
+          email: c.email || 'N/A'
+        }))
+      });
     }
+
+    case 'get_stats': {
+      const { data: orders } = await supabase
+        .from('order')
+        .select('status, total_cents, created_at')
+        .eq('is_archived', false);
+
+      if (!orders) return JSON.stringify({ error: 'Database query failed' });
+
+      const counts: Record<string, number> = {};
+      orders.forEach((o: any) => {
+        counts[o.status] = (counts[o.status] || 0) + 1;
+      });
+
+      const today = new Date().toISOString().split('T')[0];
+      const todayRevenue = orders
+        .filter((o: any) => o.created_at?.startsWith(today))
+        .reduce((sum: number, o: any) => sum + (o.total_cents || 0), 0);
+
+      return JSON.stringify({
+        by_status: {
+          pending: counts['pending'] || 0,
+          working: counts['working'] || 0,
+          done: counts['done'] || 0,
+          ready: counts['ready'] || 0,
+          delivered: counts['delivered'] || 0
+        },
+        total_active: orders.length,
+        today_revenue: `$${(todayRevenue / 100).toFixed(2)}`
+      });
+    }
+
+    default:
+      return JSON.stringify({ error: `Unknown tool: ${name}` });
   }
-
-  if (lowerQuery.includes('stats') || lowerQuery.includes('statistique') || 
-      (lowerQuery.includes('combien') && lowerQuery.includes('commande'))) {
-    const { data: statusCounts } = await supabase
-      .from('order')
-      .select('status')
-      .eq('is_archived', false);
-
-    if (!statusCounts) return '[DB] Erreur de requête.';
-
-    const counts: Record<string, number> = {};
-    statusCounts.forEach((o: any) => {
-      counts[o.status] = (counts[o.status] || 0) + 1;
-    });
-
-    const today = new Date().toISOString().split('T')[0];
-    const { data: todayOrders } = await supabase
-      .from('order')
-      .select('total_cents')
-      .gte('created_at', `${today}T00:00:00`)
-      .lt('created_at', `${today}T23:59:59`);
-
-    const todayRevenue = todayOrders?.reduce((sum: number, o: any) => sum + (o.total_cents || 0), 0) || 0;
-
-    return `[DB] 📊 Statistiques:
-- En attente: ${counts['pending'] || 0}
-- En cours: ${counts['working'] || 0}
-- Terminé: ${counts['done'] || 0}
-- Prêt: ${counts['ready'] || 0}
-- Livré: ${counts['delivered'] || 0}
-- Total actif: ${statusCounts.length}
-- Revenus aujourd'hui: ${(todayRevenue / 100).toFixed(2)}$`;
-  }
-
-  return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -268,80 +329,110 @@ export async function POST(request: NextRequest) {
     const { query, history = [] } = body;
 
     if (!query || typeof query !== 'string') {
-      return NextResponse.json(
-        { error: 'Missing or invalid query' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing or invalid query' }, { status: 400 });
+    }
+
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    if (!OPENROUTER_API_KEY) {
+      return NextResponse.json({
+        response: 'API key not configured. Contact administrator.',
+        type: 'error',
+        latency_ms: Date.now() - startTime,
+      });
     }
 
     const supabase = await createServiceRoleClient();
     
-    const dbContext = await queryDatabase(query, supabase);
-
     const messages: ChatMessage[] = [
       { role: 'system', content: SYSTEM_PROMPT },
     ];
 
-    const recentHistory = history.slice(-6);
-    for (const msg of recentHistory) {
+    for (const msg of history.slice(-6)) {
       messages.push({ role: msg.role, content: msg.content });
     }
+    messages.push({ role: 'user', content: query });
 
-    let userContent = query;
-    if (dbContext) {
-      userContent = `${query}\n\n---\nDonnées de la base de données:\n${dbContext}`;
-    }
-    messages.push({ role: 'user', content: userContent });
+    const MAX_ITERATIONS = 5;
+    let iterations = 0;
 
-    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-    
-    if (!OPENROUTER_API_KEY) {
-      console.error('OPENROUTER_API_KEY not configured');
-      return NextResponse.json({
-        response: dbContext || 'Configuration manquante. Contactez l\'administrateur.',
-        type: 'error',
-        latency_ms: Date.now() - startTime,
+    while (iterations < MAX_ITERATIONS) {
+      iterations++;
+
+      const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://hottecouture.ca',
+          'X-Title': 'Hotte Couture Assistant',
+        },
+        body: JSON.stringify({
+          model: 'openai/gpt-4o-mini',
+          messages,
+          tools: TOOLS,
+          max_tokens: 1000,
+          temperature: 0.7,
+        }),
       });
-    }
 
-    const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://hottecouture.ca',
-        'X-Title': 'Hotte Couture Assistant',
-      },
-      body: JSON.stringify({
-        model: 'openai/gpt-4o-mini',
-        messages,
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
-    });
+      if (!openRouterResponse.ok) {
+        const errorText = await openRouterResponse.text();
+        console.error('OpenRouter error:', openRouterResponse.status, errorText);
+        return NextResponse.json({
+          response: `API Error (${openRouterResponse.status}): ${errorText.slice(0, 200)}`,
+          type: 'error',
+          latency_ms: Date.now() - startTime,
+        });
+      }
 
-    if (!openRouterResponse.ok) {
-      const errorText = await openRouterResponse.text();
-      console.error('OpenRouter error:', openRouterResponse.status, errorText);
+      const result = await openRouterResponse.json();
+      const choice = result.choices?.[0];
       
-      return NextResponse.json({
-        response: `Erreur API (${openRouterResponse.status}): ${errorText.slice(0, 200)}`,
-        type: 'error',
-        latency_ms: Date.now() - startTime,
-      });
+      if (!choice) {
+        return NextResponse.json({
+          response: 'No response from AI',
+          type: 'error',
+          latency_ms: Date.now() - startTime,
+        });
+      }
+
+      const message = choice.message;
+
+      if (message.tool_calls && message.tool_calls.length > 0) {
+        messages.push({
+          role: 'assistant',
+          content: message.content,
+          tool_calls: message.tool_calls,
+        });
+
+        for (const toolCall of message.tool_calls) {
+          const toolName = toolCall.function.name;
+          const toolArgs = JSON.parse(toolCall.function.arguments || '{}');
+          
+          console.log(`Executing tool: ${toolName}`, toolArgs);
+          const toolResult = await executeToolCall(toolName, toolArgs, supabase);
+          
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: toolResult,
+          });
+        }
+      } else {
+        return NextResponse.json({
+          response: message.content || 'No response generated',
+          type: 'ai',
+          latency_ms: Date.now() - startTime,
+        });
+      }
     }
-
-    const aiResult = await openRouterResponse.json();
-    const assistantResponse = aiResult.choices?.[0]?.message?.content || 
-      'Désolé, je n\'ai pas pu générer une réponse.';
-
-    const latencyMs = Date.now() - startTime;
 
     return NextResponse.json({
-      response: assistantResponse,
-      type: 'ai',
-      latency_ms: latencyMs,
+      response: 'Max iterations reached. Please try a simpler question.',
+      type: 'error',
+      latency_ms: Date.now() - startTime,
     });
+
   } catch (error) {
     console.error('Internal chat error:', error);
     return NextResponse.json(
