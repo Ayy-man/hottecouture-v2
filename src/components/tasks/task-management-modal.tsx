@@ -335,8 +335,6 @@ export function TaskManagementModal({
                             orderId={orderId}
                             garmentId={task.garment_id}
                             orderStatus="working" // Assuming we're in working context
-                            size="sm"
-                            showLabel={false}
                           />
                           <Button
                             size="sm"

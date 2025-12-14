@@ -265,17 +265,21 @@ export async function getDailyMetrics(days: number = 30): Promise<DailyMetrics[]
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
     const dateStr = date.toISOString().split('T')[0]
-    dailyMap.set(dateStr, { revenue: 0, orderCount: 0 })
+    if (dateStr) {
+      dailyMap.set(dateStr, { revenue: 0, orderCount: 0 })
+    }
   }
 
   // Populate with actual data
   data?.forEach((order: any) => {
     const dateStr = new Date(order.created_at!).toISOString().split('T')[0]
-    const existing = dailyMap.get(dateStr) || { revenue: 0, orderCount: 0 }
-    dailyMap.set(dateStr, {
+    if (dateStr) {
+      const existing = dailyMap.get(dateStr) || { revenue: 0, orderCount: 0 }
+      dailyMap.set(dateStr, {
       revenue: existing.revenue + (order.total || 0),
       orderCount: existing.orderCount + 1
-    })
+        })
+    }
   })
 
   // Convert to array

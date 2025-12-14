@@ -157,8 +157,6 @@ export function GarmentTaskSummary({
                 orderId={orderId}
                 garmentId={garmentId}
                 orderStatus={orderStatus}
-                size="sm"
-                showLabel={false}
               />
             </div>
           ))}
