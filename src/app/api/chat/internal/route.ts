@@ -576,7 +576,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
     case 'get_productivity_stats': {
       const { time_range = 'week', employee } = args;
       const now = new Date();
-      let startDate = new Date();
+      const startDate = new Date();
 
       switch (time_range) {
         case 'today':
