@@ -3,7 +3,7 @@ import QRCode from 'qrcode'
 export async function generateQRCode(data: string): Promise<string> {
   try {
     const qrCodeDataURL = await QRCode.toDataURL(data, {
-      width: 200,
+      width: 600,
       margin: 2,
       color: {
         dark: '#000000',
@@ -11,7 +11,7 @@ export async function generateQRCode(data: string): Promise<string> {
       },
       errorCorrectionLevel: 'M',
     })
-    
+
     return qrCodeDataURL
   } catch (error) {
     console.error('Failed to generate QR code:', error)
@@ -22,7 +22,7 @@ export async function generateQRCode(data: string): Promise<string> {
 export async function generateQRCodeBuffer(data: string): Promise<Buffer> {
   try {
     const qrCodeBuffer = await QRCode.toBuffer(data, {
-      width: 200,
+      width: 600,
       margin: 2,
       color: {
         dark: '#000000',
@@ -30,7 +30,7 @@ export async function generateQRCodeBuffer(data: string): Promise<Buffer> {
       },
       errorCorrectionLevel: 'M',
     })
-    
+
     return qrCodeBuffer
   } catch (error) {
     console.error('Failed to generate QR code buffer:', error)
@@ -62,7 +62,7 @@ export function generateOrderStatusQRValue(orderData: {
     client: orderData.clientName,
     timestamp: new Date().toISOString()
   }
-  
+
   return JSON.stringify(qrData)
 }
 
@@ -82,6 +82,6 @@ export function generateGarmentStatusQRValue(garmentData: {
     status: garmentData.status,
     timestamp: new Date().toISOString()
   }
-  
+
   return JSON.stringify(qrData)
 }

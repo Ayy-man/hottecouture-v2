@@ -111,8 +111,9 @@ export default function LabelsPage() {
   const downloadAsImage = async () => {
     if (!labelsRef.current || !orderData) return;
     setDownloading(true);
-    
+
     try {
+      const scale = 4;
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
@@ -123,97 +124,101 @@ export default function LabelsPage() {
       const totalLabels = garmentsWithQR.length * LABEL_CONFIG.copyCount;
       const rows = Math.ceil(totalLabels / cols);
       const padding = 20;
-      
-      canvas.width = cols * labelWidth + padding * 3;
-      canvas.height = rows * labelHeight + padding * (rows + 1) + 80;
-      
+
+      canvas.width = (cols * labelWidth + padding * 3) * scale;
+      canvas.height = (rows * labelHeight + padding * (rows + 1) + 80) * scale;
+
+      ctx.scale(scale, scale);
+
       const allLabels: Array<{ garment: GarmentWithQR; copyNumber: number }> = [];
       for (const garment of garmentsWithQR) {
         for (let copy = 1; copy <= LABEL_CONFIG.copyCount; copy++) {
           allLabels.push({ garment, copyNumber: copy });
         }
       }
-      
+
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
+
       ctx.fillStyle = '#000000';
       ctx.font = 'bold 24px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(`Commande #${orderData.orderNumber} - ${orderData.client.first_name} ${orderData.client.last_name}`, canvas.width / 2, 40);
-      
+      ctx.fillText(`Commande #${orderData.orderNumber} - ${orderData.client.first_name} ${orderData.client.last_name}`, (cols * labelWidth + padding * 3) / 2, 40);
+
       for (let i = 0; i < allLabels.length; i++) {
         const { garment, copyNumber } = allLabels[i]!;
         const col = i % cols;
         const row = Math.floor(i / cols);
         const x = padding + col * (labelWidth + padding);
         const y = 60 + padding + row * (labelHeight + padding);
-        
+
         ctx.strokeStyle = '#333333';
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, labelWidth, labelHeight);
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(x + 1, y + 1, labelWidth - 2, labelHeight - 2);
-        
+
         if (LABEL_CONFIG.showCopyIndicator && LABEL_CONFIG.copyCount > 1) {
           ctx.font = '10px Arial';
           ctx.fillStyle = '#999999';
           ctx.textAlign = 'right';
           ctx.fillText(LABEL_CONFIG.copyIndicatorFormat(copyNumber, LABEL_CONFIG.copyCount), x + labelWidth - 8, y + 14);
         }
-        
+
         const qrImg = new Image();
         qrImg.src = garment.qrCode;
         await new Promise(resolve => { qrImg.onload = resolve; });
-        const qrSize = 100;
-        ctx.drawImage(qrImg, x + (labelWidth - qrSize) / 2, y + 15, qrSize, qrSize);
-        
+        const qrSize = 120;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(qrImg, x + (labelWidth - qrSize) / 2, y + 10, qrSize, qrSize);
+
         ctx.fillStyle = '#000000';
         ctx.font = 'bold 28px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(`#${orderData.orderNumber}`, x + labelWidth / 2, y + 140);
-        
+        ctx.fillText(`#${orderData.orderNumber}`, x + labelWidth / 2, y + 150);
+
         ctx.font = '18px Arial';
         ctx.fillStyle = '#555555';
-        ctx.fillText(garment.type, x + labelWidth / 2, y + 165);
-        
+        ctx.fillText(garment.type, x + labelWidth / 2, y + 175);
+
         ctx.font = '14px Arial';
         ctx.fillStyle = '#888888';
-        ctx.fillText(garment.label_code, x + labelWidth / 2, y + 185);
-        
+        ctx.fillText(garment.label_code, x + labelWidth / 2, y + 195);
+
         ctx.font = '16px Arial';
         ctx.fillStyle = '#000000';
-        ctx.fillText(`${orderData.client.first_name} ${orderData.client.last_name}`, x + labelWidth / 2, y + 210);
-        
+        ctx.fillText(`${orderData.client.first_name} ${orderData.client.last_name}`, x + labelWidth / 2, y + 218);
+
         if (orderData.rush) {
           ctx.font = 'bold 14px Arial';
           ctx.fillStyle = '#dc2626';
-          ctx.fillText('RUSH', x + labelWidth / 2, y + 230);
+          ctx.fillText('RUSH', x + labelWidth / 2, y + 238);
         }
-        
+
         ctx.strokeStyle = '#cccccc';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(x + 20, y + 245);
-        ctx.lineTo(x + labelWidth - 20, y + 245);
+        ctx.moveTo(x + 20, y + 250);
+        ctx.lineTo(x + labelWidth - 20, y + 250);
         ctx.stroke();
-        
+
         ctx.font = '12px Arial';
         ctx.fillStyle = '#000000';
         ctx.textAlign = 'left';
-        ctx.fillText('Statut:', x + 25, y + 265);
+        ctx.fillText('Statut:', x + 25, y + 270);
         ctx.textAlign = 'right';
-        ctx.fillText(orderData.status || 'Pending', x + labelWidth - 25, y + 265);
-        
+        ctx.fillText(orderData.status || 'Pending', x + labelWidth - 25, y + 270);
+
         ctx.textAlign = 'left';
-        ctx.fillText('Échéance:', x + 25, y + 285);
+        ctx.fillText('Échéance:', x + 25, y + 288);
         ctx.textAlign = 'right';
         ctx.fillText(
           orderData.dueDate ? new Date(orderData.dueDate).toLocaleDateString('fr-CA') : 'TBD',
-          x + labelWidth - 25, y + 285
+          x + labelWidth - 25, y + 288
         );
       }
-      
+
       const link = document.createElement('a');
       link.download = `labels-order-${orderData.orderNumber}.png`;
       link.href = canvas.toDataURL('image/png');
@@ -298,7 +303,7 @@ export default function LabelsPage() {
                     {LABEL_CONFIG.copyIndicatorFormat(copyIndex + 1, LABEL_CONFIG.copyCount)}
                   </div>
                 )}
-                
+
                 {/* QR Code with Status */}
                 <div className='w-24 h-24 mx-auto mb-3 border-2 border-gray-300 rounded print:border-black'>
                   <img
