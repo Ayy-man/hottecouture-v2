@@ -157,7 +157,7 @@ const TOOLS = [
     type: 'function' as const,
     function: {
       name: 'update_order_status',
-      description: 'Update the status of an order. Use when user wants to move an order to a different stage like "mets commande 65 en cours" or "mark order 72 as ready".',
+      description: 'REQUIRED: Update order status. Call this tool when user says "move X to Y", "mets X en Y", "change status", "mark as". Maps: working=en cours, ready=prêt, done=terminé, pending=en attente, delivered=livré.',
       parameters: {
         type: 'object',
         properties: {
@@ -214,7 +214,7 @@ const TOOLS = [
     type: 'function' as const,
     function: {
       name: 'add_order_note',
-      description: 'Add a note to an order. Use when user wants to add a comment or note to an order.',
+      description: 'REQUIRED: Add note to order. Call this when user says "add note", "ajoute note", "note to order".',
       parameters: {
         type: 'object',
         properties: {
