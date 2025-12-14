@@ -37,6 +37,33 @@ export function ClientStep({
   });
   const [errors, setErrors] = useState<Partial<ClientCreate>>({});
   const [isCreating, setIsCreating] = useState(false);
+  const [revealedClients, setRevealedClients] = useState<Set<string>>(new Set());
+
+  const maskPhone = (phone: string): string => {
+    if (!phone) return '';
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length <= 4) return '***';
+    return '***-***-' + digits.slice(-4);
+  };
+
+  const maskEmail = (email: string): string => {
+    if (!email) return '';
+    const parts = email.split('@');
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return '***';
+    return parts[0].charAt(0) + '***@' + parts[1];
+  };
+
+  const toggleReveal = (clientId: string) => {
+    setRevealedClients(prev => {
+      const next = new Set(prev);
+      if (next.has(clientId)) {
+        next.delete(clientId);
+      } else {
+        next.add(clientId);
+      }
+      return next;
+    });
+  };
 
   const supabase = createClient();
 
@@ -342,8 +369,17 @@ export function ClientStep({
                       <div className='font-medium text-sm'>
                         {client.first_name} {client.last_name}
                       </div>
-                      <div className='text-xs text-gray-600'>
-                        {client.phone} • {client.email}
+                      <div
+                        className='text-xs text-gray-600 cursor-pointer hover:text-gray-800'
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleReveal(client.phone + client.email);
+                        }}
+                        title='Tap to reveal/hide'
+                      >
+                        {revealedClients.has(client.phone + client.email)
+                          ? `${client.phone} • ${client.email}`
+                          : `${maskPhone(client.phone || '')} • ${maskEmail(client.email || '')}`}
                       </div>
                       <div className='text-xs text-gray-500 mt-1'>
                         Preferred:{' '}
@@ -575,8 +611,14 @@ export function ClientStep({
                   <h3 className='font-medium text-green-800 text-sm'>
                     {data.first_name} {data.last_name}
                   </h3>
-                  <p className='text-xs text-green-600'>
-                    {data.phone} • {data.email}
+                  <p
+                    className='text-xs text-green-600 cursor-pointer hover:text-green-800'
+                    onClick={() => toggleReveal('selected-' + data.phone)}
+                    title='Tap to reveal/hide'
+                  >
+                    {revealedClients.has('selected-' + data.phone)
+                      ? `${data.phone} • ${data.email}`
+                      : `${maskPhone(data.phone || '')} • ${maskEmail(data.email || '')}`}
                   </p>
                   <div className='text-xs text-green-600 mt-1'>
                     Preferred:{' '}
