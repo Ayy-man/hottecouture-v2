@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Clock, Users, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { addDays, startOfDay, endOfDay, format } from 'date-fns';
-import type { GanttFeature } from '@/components/ui/gantt';
+
 
 const HOURS_PER_DAY = 8;
 const SEAMSTRESSES = ['Audrey', 'Solange', 'Unassigned'];
@@ -56,7 +56,7 @@ function calculateEstimatedHours(order: Order): number {
   if (order.total_estimated_minutes) {
     return order.total_estimated_minutes / 60;
   }
-  
+
   let totalMinutes = 0;
   if (order.garments) {
     for (const garment of order.garments) {
@@ -65,7 +65,7 @@ function calculateEstimatedHours(order: Order): number {
       }
     }
   }
-  
+
   return totalMinutes > 0 ? totalMinutes / 60 : 2;
 }
 
@@ -81,11 +81,11 @@ export default function WorkloadPage() {
         const response = await fetch(`/api/orders?ts=${Date.now()}`, {
           cache: 'no-store',
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const result = await response.json();
         setOrders(result.orders || []);
       } catch (err) {
@@ -95,29 +95,29 @@ export default function WorkloadPage() {
         setLoading(false);
       }
     };
-    
+
     fetchOrders();
   }, []);
 
   const handleUpdateFeature = async (feature: GanttFeature) => {
     const orderId = feature.id;
     const newDueDate = feature.endAt;
-    
+
     setUpdatingOrder(orderId);
-    
+
     try {
       const response = await fetch(`/api/order/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ due_date: newDueDate.toISOString() }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to update due date');
       }
-      
-      setOrders(prev => prev.map(o => 
-        o.id === orderId 
+
+      setOrders(prev => prev.map(o =>
+        o.id === orderId
           ? { ...o, due_date: newDueDate.toISOString() }
           : o
       ));
@@ -130,15 +130,15 @@ export default function WorkloadPage() {
   };
 
   const activeOrders = useMemo(() => {
-    return orders.filter(o => 
-      !['delivered', 'archived'].includes(o.status) && 
+    return orders.filter(o =>
+      !['delivered', 'archived'].includes(o.status) &&
       o.due_date
     );
   }, [orders]);
 
   const workloadBySeamstress = useMemo((): Record<string, SeamstressWorkload> => {
     const workloads: Record<string, SeamstressWorkload> = {};
-    
+
     for (const name of SEAMSTRESSES) {
       workloads[name] = {
         name,
@@ -147,48 +147,48 @@ export default function WorkloadPage() {
         dailyHours: {},
       };
     }
-    
+
     for (const order of activeOrders) {
       const assignee = order.assigned_to || 'Unassigned';
       const seamstress = SEAMSTRESSES.includes(assignee) ? assignee : 'Unassigned';
       const hours = calculateEstimatedHours(order);
-      
+
       const workload = workloads[seamstress];
       if (workload) {
         workload.orders.push(order);
         workload.totalHours += hours;
-        
+
         if (order.due_date) {
           const dateKey = format(new Date(order.due_date), 'yyyy-MM-dd');
           workload.dailyHours[dateKey] = (workload.dailyHours[dateKey] || 0) + hours;
         }
       }
     }
-    
+
     return workloads;
   }, [activeOrders]);
 
   const ganttFeatures = useMemo((): GanttFeature[] => {
     const features: GanttFeature[] = [];
-    
+
     for (const order of activeOrders) {
       const hours = calculateEstimatedHours(order);
       const daysNeeded = Math.ceil(hours / HOURS_PER_DAY);
-      
+
       let startDate = new Date();
-      const endDate = order.due_date 
-        ? new Date(order.due_date) 
+      const endDate = order.due_date
+        ? new Date(order.due_date)
         : addDays(new Date(), daysNeeded);
-      
+
       if (order.due_date) {
         startDate = addDays(new Date(order.due_date), -daysNeeded);
         if (startDate < new Date()) {
           startDate = new Date();
         }
       }
-      
+
       const statusColor = STATUS_COLORS[order.status] ?? STATUS_COLORS.pending ?? '#f59e0b';
-      
+
       features.push({
         id: order.id,
         name: `#${order.order_number} ${order.client_name || 'Order'}`,
@@ -204,7 +204,7 @@ export default function WorkloadPage() {
         },
       });
     }
-    
+
     return features;
   }, [activeOrders]);
 
@@ -225,7 +225,7 @@ export default function WorkloadPage() {
 
   const overloadedDays = useMemo(() => {
     const issues: Array<{ seamstress: string; date: string; hours: number }> = [];
-    
+
     for (const [name, workload] of Object.entries(workloadBySeamstress)) {
       for (const [date, hours] of Object.entries(workload.dailyHours)) {
         if (hours > HOURS_PER_DAY) {
@@ -233,7 +233,7 @@ export default function WorkloadPage() {
         }
       }
     }
-    
+
     return issues;
   }, [workloadBySeamstress]);
 
@@ -241,11 +241,11 @@ export default function WorkloadPage() {
     const totalAssignedHours = Object.values(workloadBySeamstress)
       .filter(w => w.name !== 'Unassigned')
       .reduce((sum, w) => sum + w.totalHours, 0);
-    
+
     const workingDays = 5;
     const seamstressCount = SEAMSTRESSES.length - 1;
     const weeklyCapacity = workingDays * HOURS_PER_DAY * seamstressCount;
-    
+
     return Math.min(100, (totalAssignedHours / weeklyCapacity) * 100);
   }, [workloadBySeamstress]);
 
@@ -305,8 +305,8 @@ export default function WorkloadPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex items-center justify-center py-4">
-                <GaugeCircle 
-                  value={totalCapacityUsed} 
+                <GaugeCircle
+                  value={totalCapacityUsed}
                   size="lg"
                   primaryColor={totalCapacityUsed > 80 ? 'stroke-red-500' : 'stroke-green-500'}
                 />
@@ -316,10 +316,10 @@ export default function WorkloadPage() {
             {SEAMSTRESSES.filter(s => s !== 'Unassigned').map((name) => {
               const workload = workloadBySeamstress[name];
               if (!workload) return null;
-              
+
               const weeklyCapacity = 5 * HOURS_PER_DAY;
               const utilization = Math.min(100, (workload.totalHours / weeklyCapacity) * 100);
-              
+
               return (
                 <Card key={name}>
                   <CardHeader className="pb-2">
@@ -327,8 +327,8 @@ export default function WorkloadPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
-                      <GaugeCircle 
-                        value={utilization} 
+                      <GaugeCircle
+                        value={utilization}
                         size="md"
                         primaryColor={utilization > 100 ? 'stroke-red-500' : 'stroke-green-500'}
                       />
