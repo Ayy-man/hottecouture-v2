@@ -46,14 +46,26 @@ export function InteractiveBoard({
   orders,
   onOrderUpdate,
   updatingOrders = new Set(),
-}: InteractiveBoardProps) {
+  initialOrderNumber,
+}: InteractiveBoardProps & { initialOrderNumber?: string | null }) {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [justMovedOrder, setJustMovedOrder] = useState<string | null>(null);
+  const [hasOpenedInitial, setHasOpenedInitial] = useState(false);
 
   console.log('🎯 InteractiveBoard: Received orders count:', orders.length);
-  console.log('🎯 InteractiveBoard: First few orders:', orders.slice(0, 3));
+
+  // Auto-open order from URL if present
+  if (initialOrderNumber && !hasOpenedInitial && orders.length > 0) {
+    const targetOrder = orders.find(o => o.order_number.toString() === initialOrderNumber);
+    if (targetOrder) {
+      console.log('🎯 Auto-opening order from URL:', targetOrder.order_number);
+      setSelectedOrder(targetOrder);
+      setIsModalOpen(true);
+      setHasOpenedInitial(true);
+    }
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -255,7 +267,7 @@ export function InteractiveBoard({
         order={selectedOrder}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onOrderUpdate={onOrderUpdate || (() => {})}
+        onOrderUpdate={onOrderUpdate || (() => { })}
       />
     </>
   );

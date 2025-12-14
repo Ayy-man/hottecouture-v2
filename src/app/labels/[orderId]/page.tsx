@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { generateQRCode, generateGarmentStatusQRValue } from '@/lib/utils/qr';
+import { generateQRCode } from '@/lib/utils/qr';
 import { Download, Printer } from 'lucide-react';
 import { LABEL_CONFIG } from '@/lib/config/production';
 
@@ -78,13 +78,8 @@ export default function LabelsPage() {
 
         const garmentsWithQRCodes = await Promise.all(
           order.garments.map(async (garment: any) => {
-            const qrData = generateGarmentStatusQRValue({
-              garmentId: garment.id,
-              labelCode: garment.label_code,
-              type: garment.type,
-              orderNumber: order.orderNumber,
-              status: order.status || 'pending',
-            });
+            // NEW: Generate a URL deep link to the order on the board
+            const qrData = `${window.location.origin}/board?order=${order.orderNumber}`;
 
             const qrCode = await generateQRCode(qrData);
 

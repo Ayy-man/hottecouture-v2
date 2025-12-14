@@ -39,6 +39,10 @@ export default function BoardPage() {
   const [pendingSmsConfirmation, setPendingSmsConfirmation] = useState<PendingSmsConfirmation | null>(null);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
+  // Read order query param
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const initialOrderNumber = urlParams?.get('order') || null;
+
   // Real-time refresh trigger
   const realtimeTrigger = useRealtimeOrders();
 
@@ -95,10 +99,6 @@ export default function BoardPage() {
     const fetchOrders = async () => {
       try {
         console.log('🔍 Fetching orders from Supabase...');
-        console.log(
-          '🔍 Board: Current orders state before fetch:',
-          orders.length
-        );
 
         // Fetch real orders from Supabase with proper cache busting
         const url = `/api/orders?ts=${Date.now()}`;
@@ -113,39 +113,12 @@ export default function BoardPage() {
         }
 
         const result = await response.json();
-        console.log('📊 Orders result:', result);
-        console.log('📊 Orders count from API:', result.orders?.length || 0);
-        console.log('📊 API timestamp:', result.timestamp);
-        console.log('📊 API source:', result.source);
-
-        console.log(
-          '📊 Board: Setting orders from API response:',
-          result.orders?.length || 0
-        );
-        console.log('📊 Board: API response details:', {
-          success: result.success,
-          count: result.count,
-          timestamp: result.timestamp,
-          source: result.source,
-        });
-
-        console.log(
-          '🔍 Board: About to set orders state with:',
-          result.orders?.length || 0,
-          'orders'
-        );
-        console.log('🔍 Board: Raw orders data:', result.orders);
 
         // Force a fresh state update
         setOrders([]);
         setTimeout(() => {
           setOrders(result.orders || []);
           setLoading(false);
-          console.log(
-            '🔍 Board: Orders state set, should now have:',
-            result.orders?.length || 0,
-            'orders'
-          );
         }, 100);
       } catch (err) {
         console.error('❌ Error fetching orders:', err);
@@ -157,17 +130,11 @@ export default function BoardPage() {
     fetchOrders();
   }, [refreshKey]);
 
-  // Track orders state changes
-  useEffect(() => {
-    console.log('🔍 Board: Orders state changed to:', orders.length, 'orders');
-    console.log('🔍 Board: First few orders:', orders.slice(0, 3));
-  }, [orders]);
-
   const handleOrderUpdate = async (orderId: string, newStatus: string) => {
     console.log(`🔄 Updating order ${orderId} to status: ${newStatus}`);
 
     const targetOrder = orders.find(o => o.id === orderId);
-    
+
     // If moving to "ready", show SMS confirmation modal instead of immediate update
     if (newStatus === 'ready' && targetOrder) {
       setPendingSmsConfirmation({
@@ -186,14 +153,12 @@ export default function BoardPage() {
   const executeOrderUpdate = async (orderId: string, newStatus: string, sendNotification: boolean) => {
     console.log(`🔄 Executing order update: ${orderId} to ${newStatus}, sendNotification: ${sendNotification}`);
 
-    // Store original status for potential revert
     const originalOrder = orders.find(o => o.id === orderId);
     const originalStatus = originalOrder?.status || 'pending';
 
-    // Mark order as updating
     setUpdatingOrders(prev => new Set(prev).add(orderId));
 
-    // OPTIMISTIC UPDATE: Immediately update the UI
+    // OPTIMISTIC UPDATE
     setOrders(prevOrders =>
       prevOrders.map(order =>
         order.id === orderId ? { ...order, status: newStatus } : order
@@ -201,9 +166,7 @@ export default function BoardPage() {
     );
 
     try {
-      // Generate a correlation ID for this request
       const correlationId = crypto.randomUUID();
-
       const response = await fetch(`/api/order/${orderId}/stage`, {
         method: 'POST',
         headers: {
@@ -219,44 +182,29 @@ export default function BoardPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error:', errorText);
-        throw new Error(
-          `Failed to update order: ${response.status} - ${errorText}`
-        );
+        throw new Error(`Failed to update order: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('API Response:', result);
-
-      // Update local state with server response (in case server made additional changes)
       setOrders(prevOrders =>
         prevOrders.map(order =>
           order.id === orderId ? { ...order, status: newStatus } : order
         )
       );
-
-      console.log(`✅ Order ${orderId} updated to ${newStatus}`);
     } catch (err) {
       console.error('❌ Error updating order:', err);
-
-      // REVERT OPTIMISTIC UPDATE: Restore the original status
+      // REVERT
       setOrders(prevOrders =>
         prevOrders.map(order =>
           order.id === orderId ? { ...order, status: originalStatus } : order
         )
       );
 
-      // Parse error message for user-friendly display
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       if (errorMessage.includes('work time') || errorMessage.includes('timer')) {
         alert('Cannot mark as done: Please record work hours using the timer first.');
-      } else {
-        console.log(
-          `🔄 Reverted order ${orderId} to original status due to API error`
-        );
       }
     } finally {
-      // Remove order from updating set
       setUpdatingOrders(prev => {
         const newSet = new Set(prev);
         newSet.delete(orderId);
@@ -272,201 +220,177 @@ export default function BoardPage() {
     }
   };
 
-  const handleSmsCancel = () => {
-    if (pendingSmsConfirmation) {
-      executeOrderUpdate(pendingSmsConfirmation.orderId, pendingSmsConfirmation.newStatus, false);
-      setPendingSmsConfirmation(null);
-    }
-  };
-
   if (loading) {
     return (
-      <div className='p-8'>
-        <div className='flex items-center justify-center min-h-[400px]'>
-          <LoadingLogo size='xl' text='Loading board...' />
-        </div>
+      <div className='flex items-center justify-center h-screen bg-stone-50'>
+        <LoadingLogo />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className='p-8'>
-        <div className='bg-red-50 border border-red-200 rounded-lg p-6'>
-          <h2 className='text-xl font-semibold text-red-800 mb-2'>
-            Error Loading Board
-          </h2>
-          <p className='text-red-600 mb-4'>{error}</p>
-          <Button onClick={() => window.location.reload()} variant='outline'>
-            Try Again
-          </Button>
+      <div className='flex items-center justify-center h-screen bg-stone-50'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold text-red-600 mb-4'>
+            Unable to load orders
+          </h1>
+          <p className='text-gray-600 mb-4'>{error}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     );
   }
 
-  // Filter orders by selected pipeline
-  const filteredOrders =
-    selectedPipeline === 'all'
-      ? orders
-      : orders.filter(order => order.type === selectedPipeline);
-
-  console.log('📊 Board: Filtered orders count:', filteredOrders.length);
-  console.log('📊 Board: Selected pipeline:', selectedPipeline);
-  console.log(
-    '📊 Board: First few filtered orders:',
-    filteredOrders.slice(0, 3)
-  );
-
   return (
     <AuthGuard>
-      <MuralBackground useMuralBackground={true} opacity={0.08}>
-        <div className='w-full max-w-none px-4 py-4 ipad-landscape:px-2 h-full flex flex-col overflow-hidden'>
-          {/* Compact Header */}
-          <div className='mb-3 text-center'>
-            <h1 className='text-2xl sm:text-3xl font-bold bg-gradient-to-r from-secondary-600 to-accent-olive bg-clip-text text-transparent mb-1'>
-              {viewMode === 'kanban' ? 'Kanban Board' : 'Order List'}
-            </h1>
-            <p className='text-xs sm:text-sm text-text-secondary max-w-2xl mx-auto'>
-              {viewMode === 'kanban'
-                ? 'Drag & Drop to Update Status'
-                : 'View and manage all orders'}
-            </p>
-          </div>
+      <div className='h-screen bg-stone-50 overflow-hidden'>
+        <MuralBackground>
+          <div className='flex flex-col h-full relative z-10'>
+            {/* Header */}
+            <header className='bg-white/80 backdrop-blur-md border-b border-stone-200 px-4 sm:px-6 py-4 shadow-sm flex-none'>
+              <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 max-w-[1920px] mx-auto w-full'>
+                <div className='flex items-center gap-4'>
+                  <h1 className='text-xl sm:text-2xl font-bold text-stone-800 tracking-tight'>
+                    Production Board
+                  </h1>
+                  <div className='h-6 w-px bg-stone-300 hidden sm:block' />
+                  <div className='flex bg-stone-100 p-1 rounded-lg border border-stone-200'>
+                    <Button
+                      variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                      size='sm'
+                      onClick={() => setViewMode('kanban')}
+                      className={`gap-2 h-8 ${viewMode === 'kanban' ? 'shadow-sm ring-1 ring-black/5' : 'text-stone-500 hover:text-stone-900'}`}
+                    >
+                      <LayoutGrid className='w-4 h-4' />
+                      <span className='hidden sm:inline'>Board</span>
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                      size='sm'
+                      onClick={() => setViewMode('list')}
+                      className={`gap-2 h-8 ${viewMode === 'list' ? 'shadow-sm ring-1 ring-black/5' : 'text-stone-500 hover:text-stone-900'}`}
+                    >
+                      <List className='w-4 h-4' />
+                      <span className='hidden sm:inline'>List</span>
+                    </Button>
+                  </div>
+                  <div className='hidden md:block'>
+                    <PipelineFilter
+                      orders={orders}
+                      selectedPipeline={selectedPipeline}
+                      onPipelineChange={setSelectedPipeline}
+                    />
+                  </div>
+                </div>
 
-          {/* Compact Pipeline Filter */}
-          <div className='mb-2 flex flex-col ipad:flex-row items-start ipad:items-center justify-between gap-2'>
-            <PipelineFilter
-              orders={orders}
-              selectedPipeline={selectedPipeline}
-              onPipelineChange={setSelectedPipeline}
-            />
-            <div className='flex gap-1'>
-              <div className='flex border rounded-md overflow-hidden mr-1'>
-                <Button
-                  variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-                  size='sm'
-                  onClick={() => setViewMode('kanban')}
-                  className='rounded-none h-7 px-2'
-                  title='Kanban View'
-                >
-                  <LayoutGrid className='w-4 h-4' />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size='sm'
-                  onClick={() => setViewMode('list')}
-                  className='rounded-none h-7 px-2'
-                  title='List View'
-                >
-                  <List className='w-4 h-4' />
-                </Button>
-              </div>
-              <Button
-                onClick={() => setShowWorkListExport(true)}
-                variant='outline'
-                size='sm'
-                className='btn-press bg-gradient-to-r from-secondary-100 to-secondary-200 hover:from-secondary-200 hover:to-secondary-300 text-secondary-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-secondary-300 px-2 py-1 text-xs'
-              >
-                📊 Export Tasks
-              </Button>
-              <ArchiveButton onArchiveComplete={handleRefresh} />
-              <Button
-                onClick={() => (window.location.href = '/clients')}
-                variant='outline'
-                size='sm'
-                className='btn-press bg-gradient-to-r from-accent-taupe/20 to-accent-taupe/30 hover:from-accent-taupe/30 hover:to-accent-taupe/40 text-accent-contrast font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-accent-taupe/40 px-2 py-1 text-xs'
-              >
-                👥 Clients
-              </Button>
-              <Button
-                asChild
-                variant='outline'
-                size='sm'
-                className='btn-press bg-gradient-to-r from-green-100 to-green-200 hover:from-green-200 hover:to-green-300 text-green-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-green-300 px-2 py-1 text-xs'
-              >
-                <Link href='/board/today'>
-                  📋 Travail du jour
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant='outline'
-                size='sm'
-                className='btn-press bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-blue-300 px-2 py-1 text-xs'
-              >
-                <Link href='/board/workload'>
-                  <Users className='w-3 h-3 mr-1' />
-                  Workload
-                </Link>
-              </Button>
-              <Button
-                asChild
-                className='btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-2 py-1 text-xs'
-              >
-                <Link href='/intake'>Create New Order</Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Board area - Same height chain as intake form */}
-          <div className='flex-1 min-h-0 overflow-hidden overflow-y-auto'>
-            {viewMode === 'kanban' ? (
-              <InteractiveBoard
-                orders={filteredOrders}
-                onOrderUpdate={handleOrderUpdate}
-                updatingOrders={updatingOrders}
-              />
-            ) : (
-              <OrderListView
-                orders={filteredOrders}
-                onOrderUpdate={handleOrderUpdate}
-                updatingOrders={updatingOrders}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Work List Export Modal */}
-        {showWorkListExport && (
-          <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
-            <div className='bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto'>
-              <div className='p-4 border-b border-gray-200'>
-                <div className='flex items-center justify-between'>
-                  <h3 className='text-lg font-semibold text-gray-900'>
-                    Export Work List
-                  </h3>
+                <div className='flex items-center gap-3 w-full sm:w-auto'>
+                  <div className='md:hidden flex-1'>
+                    <PipelineFilter
+                      orders={orders}
+                      selectedPipeline={selectedPipeline}
+                      onPipelineChange={setSelectedPipeline}
+                    />
+                  </div>
                   <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() => setShowWorkListExport(false)}
-                    className='text-gray-400 hover:text-gray-600'
+                    variant='outline'
+                    asChild
+                    className='hidden sm:flex border-stone-300 hover:bg-stone-50 hover:text-stone-900'
                   >
-                    ✕
+                    <Link href='/board/workload' className='flex items-center gap-2'>
+                      <Users className='w-4 h-4' />
+                      <span>Workload</span>
+                    </Link>
+                  </Button>
+                  <div className='hidden sm:block'>
+                    <ArchiveButton />
+                  </div>
+                  <Button asChild className='bg-stone-900 hover:bg-black text-white shadow-lg shadow-stone-900/20'>
+                    <Link href='/intake'>New Order</Link>
                   </Button>
                 </div>
               </div>
-              <div className='p-4'>
-                <WorkListExport
-                  onExportComplete={() => setShowWorkListExport(false)}
-                />
+            </header>
+
+            {/* Board Area */}
+            <main className='flex-1 overflow-hidden relative'>
+              <div className='h-full w-full max-w-[1920px] mx-auto p-4 sm:p-6'>
+                {viewMode === 'kanban' ? (
+                  <InteractiveBoard
+                    orders={orders.filter(
+                      o =>
+                        selectedPipeline === 'all' || o.type === selectedPipeline
+                    )}
+                    onOrderUpdate={handleOrderUpdate}
+                    updatingOrders={updatingOrders}
+                    initialOrderNumber={initialOrderNumber}
+                  />
+                ) : (
+                  <OrderListView
+                    orders={orders.filter(
+                      o =>
+                        selectedPipeline === 'all' || o.type === selectedPipeline
+                    )}
+                    onOrderUpdate={handleOrderUpdate}
+                    updatingOrders={updatingOrders}
+                  />
+                )}
+              </div>
+            </main>
+          </div>
+
+          {/* Internal Chat Widget */}
+          <InternalChat />
+
+          <SmsConfirmationModal
+            isOpen={!!pendingSmsConfirmation}
+            onCancel={() => setPendingSmsConfirmation(null)}
+            onConfirm={handleSmsConfirm}
+            clientName={pendingSmsConfirmation?.clientName || ''}
+            orderNumber={pendingSmsConfirmation?.orderNumber || 0}
+          />
+
+          {/* Export Button (Bottom Left) */}
+          <div className='fixed bottom-6 left-6 z-50'>
+            <Button
+              variant='secondary'
+              size='sm'
+              className='bg-white/90 backdrop-blur border border-stone-200 shadow-sm hover:bg-white text-xs'
+              onClick={() => setShowWorkListExport(true)}
+            >
+              Export Work List
+            </Button>
+          </div>
+
+          {/* Export Modal */}
+          {showWorkListExport && (
+            <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+              <div className='bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto'>
+                <div className='p-4 border-b border-gray-200'>
+                  <div className='flex items-center justify-between'>
+                    <h3 className='text-lg font-semibold text-gray-900'>
+                      Export Work List
+                    </h3>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => setShowWorkListExport(false)}
+                      className='text-gray-400 hover:text-gray-600'
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                </div>
+                <div className='p-4'>
+                  <WorkListExport
+                    onExportComplete={() => setShowWorkListExport(false)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* SMS Confirmation Modal */}
-        <SmsConfirmationModal
-          isOpen={pendingSmsConfirmation !== null}
-          orderNumber={pendingSmsConfirmation?.orderNumber || 0}
-          clientName={pendingSmsConfirmation?.clientName || ''}
-          onConfirm={handleSmsConfirm}
-          onCancel={handleSmsCancel}
-        />
-
-        {/* Internal Chat Assistant */}
-        <InternalChat />
-      </MuralBackground>
+          )}
+        </MuralBackground>
+      </div>
     </AuthGuard>
   );
 }
