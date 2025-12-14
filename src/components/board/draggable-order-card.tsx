@@ -93,9 +93,9 @@ export function DraggableOrderCard({
             </p>
           )}
 
-          {order.rack_position && (
-            <p className='text-xs text-blue-600 font-medium mb-1'>
-              Rack: {order.rack_position}
+          {order.rack_position && ['ready', 'delivered'].includes(order.status) && (
+            <p className='text-xs text-blue-600 font-medium mb-1 flex items-center gap-1'>
+              <span>📍</span> {order.rack_position}
             </p>
           )}
 
@@ -112,7 +112,7 @@ export function DraggableOrderCard({
                 onClick();
               }}
             >
-              View Details
+              Voir détails
             </Button>
           </div>
         </div>
@@ -150,9 +150,9 @@ export function DraggableOrderCard({
             </p>
           )}
 
-          {order.rack_position && (
-            <p className='text-xs text-blue-600 font-medium mb-1'>
-              Rack: {order.rack_position}
+          {order.rack_position && ['ready', 'delivered'].includes(order.status) && (
+            <p className='text-xs text-blue-600 font-medium mb-1 flex items-center gap-1'>
+              <span>📍</span> {order.rack_position}
             </p>
           )}
 
@@ -169,7 +169,7 @@ export function DraggableOrderCard({
                 onClick();
               }}
             >
-              Details
+              Détails
             </Button>
           </div>
         </div>

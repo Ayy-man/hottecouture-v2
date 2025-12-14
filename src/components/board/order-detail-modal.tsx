@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
 import { TimerButton } from '@/components/timer/timer-button';
 import { LoadingLogo } from '@/components/ui/loading-logo';
+import { RACK_CONFIG } from '@/lib/config/production';
 
 interface OrderDetailModalProps {
   order: any;
@@ -30,6 +31,9 @@ export function OrderDetailModal({
   const [savingTime, setSavingTime] = useState<string | null>(null);
   const [generatingPaymentLink, setGeneratingPaymentLink] = useState(false);
   const [paymentLinkUrl, setPaymentLinkUrl] = useState<string | null>(null);
+  const [rackPosition, setRackPosition] = useState<string>('');
+  const [customRackPosition, setCustomRackPosition] = useState<string>('');
+  const [savingRack, setSavingRack] = useState(false);
 
   const fetchOrderDetails = useCallback(async () => {
     if (!order?.id) return;
@@ -59,6 +63,22 @@ export function OrderDetailModal({
     }
   }, [isOpen, order?.id, fetchOrderDetails]);
 
+  useEffect(() => {
+    if (detailedOrder?.rack_position) {
+      const isPreset = RACK_CONFIG.positions.includes(detailedOrder.rack_position);
+      if (isPreset) {
+        setRackPosition(detailedOrder.rack_position);
+        setCustomRackPosition('');
+      } else {
+        setRackPosition('other');
+        setCustomRackPosition(detailedOrder.rack_position);
+      }
+    } else {
+      setRackPosition('');
+      setCustomRackPosition('');
+    }
+  }, [detailedOrder?.rack_position]);
+
   // Refresh order details when the order status changes
   useEffect(() => {
     if (isOpen && order?.id && order?.status) {
@@ -66,7 +86,6 @@ export function OrderDetailModal({
     }
   }, [isOpen, order?.id, order?.status, fetchOrderDetails]);
 
-  // Reset editing state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setEditingGarmentId(null);
@@ -76,6 +95,8 @@ export function OrderDetailModal({
       setEditingTimeMinutes(0);
       setSavingTime(null);
       setPaymentLinkUrl(null);
+      setRackPosition('');
+      setCustomRackPosition('');
     }
   }, [isOpen]);
 
@@ -315,14 +336,95 @@ export function OrderDetailModal({
                         {formatDate(order.created_at)}
                       </span>
                     </div>
-                    {order.rack_position && (
+                    {RACK_CONFIG.editableStatuses.includes(order.status) ? (
+                      <div className='space-y-2 pt-2 border-t border-gray-200'>
+                        <label className='block text-sm font-medium text-gray-700'>
+                          {RACK_CONFIG.label}
+                        </label>
+                        <div className='flex gap-2'>
+                          <select
+                            value={rackPosition}
+                            onChange={async (e) => {
+                              const value = e.target.value;
+                              setRackPosition(value);
+                              if (value !== 'other' && value !== '') {
+                                setCustomRackPosition('');
+                                setSavingRack(true);
+                                try {
+                                  await fetch(`/api/order/${order.id}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ rack_position: value }),
+                                  });
+                                  if (detailedOrder) {
+                                    setDetailedOrder({ ...detailedOrder, rack_position: value });
+                                  }
+                                } catch (err) {
+                                  console.error('Error saving rack position:', err);
+                                } finally {
+                                  setSavingRack(false);
+                                }
+                              }
+                            }}
+                            disabled={savingRack}
+                            className='flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500'
+                          >
+                            <option value=''>{RACK_CONFIG.placeholder}</option>
+                            {RACK_CONFIG.positions.map(pos => (
+                              <option key={pos} value={pos}>{pos}</option>
+                            ))}
+                            <option value='other'>{RACK_CONFIG.otherOption}</option>
+                          </select>
+                          {rackPosition === 'other' && (
+                            <>
+                              <input
+                                type='text'
+                                value={customRackPosition}
+                                onChange={(e) => setCustomRackPosition(e.target.value)}
+                                placeholder={RACK_CONFIG.placeholder}
+                                className='w-24 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500'
+                                disabled={savingRack}
+                              />
+                              <Button
+                                size='sm'
+                                onClick={async () => {
+                                  if (!customRackPosition.trim()) return;
+                                  setSavingRack(true);
+                                  try {
+                                    await fetch(`/api/order/${order.id}`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ rack_position: customRackPosition.trim() }),
+                                    });
+                                    if (detailedOrder) {
+                                      setDetailedOrder({ ...detailedOrder, rack_position: customRackPosition.trim() });
+                                    }
+                                  } catch (err) {
+                                    console.error('Error saving rack position:', err);
+                                  } finally {
+                                    setSavingRack(false);
+                                  }
+                                }}
+                                disabled={savingRack || !customRackPosition.trim()}
+                                className='bg-blue-600 hover:bg-blue-700 text-white'
+                              >
+                                {savingRack ? '...' : 'OK'}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        {savingRack && (
+                          <p className='text-xs text-blue-600'>Enregistrement...</p>
+                        )}
+                      </div>
+                    ) : order.rack_position ? (
                       <div className='flex justify-between'>
-                        <span className='text-gray-600'>Rack Position:</span>
+                        <span className='text-gray-600'>{RACK_CONFIG.label}:</span>
                         <span className='font-medium'>
                           {order.rack_position}
                         </span>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 

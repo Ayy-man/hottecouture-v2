@@ -68,6 +68,9 @@ export function OrderListView({
               Status
             </th>
             <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              Position rack
+            </th>
+            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
               Total
             </th>
           </tr>
@@ -75,7 +78,7 @@ export function OrderListView({
         <tbody className='bg-white divide-y divide-gray-200'>
           {orders.length === 0 ? (
             <tr>
-              <td colSpan={7} className='text-center py-8 text-gray-500'>
+              <td colSpan={8} className='text-center py-8 text-gray-500'>
                 No orders found
               </td>
             </tr>
@@ -123,6 +126,15 @@ export function OrderListView({
                       </option>
                     ))}
                   </select>
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap'>
+                  {order.rack_position && ['ready', 'delivered'].includes(order.status) ? (
+                    <span className='inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded'>
+                      📍 {order.rack_position}
+                    </span>
+                  ) : (
+                    <span className='text-gray-400'>—</span>
+                  )}
                 </td>
                 <td className='px-4 py-3 whitespace-nowrap font-medium'>
                   ${((order.total_cents || 0) / 100).toFixed(2)}

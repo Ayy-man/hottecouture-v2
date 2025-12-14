@@ -21,12 +21,16 @@
 | Duplicate client detection | ✅ Done | P0 |
 | Vercel cron for reminders | ✅ Done | P0 |
 | Client measurements UI | ✅ Done | P1 |
+| Customer portal with tracking timeline | ✅ Done | P0 |
+| Label download as PNG | ✅ Done | P1 |
 
 ### Sprint B: Medium Effort (Target: This Week)
 | Task | Status | Priority |
 |------|--------|----------|
 | Auto-archive cron | ⏳ Pending | P1 |
-| Rack position UI | ⏳ Pending | P2 |
+| Rack position UI | ✅ Done | P2 |
+| Printable to-do list | ✅ Done | P1 |
+| Dual labels per print | ✅ Done | P1 |
 
 ### Sprint C: Deferred (Needs External Access)
 | Task | Status | Blocker |
@@ -35,9 +39,9 @@
 | QuickBooks integration | ⏳ Pending | QB credentials needed |
 
 ### Completion Status
-- Complete: 8/11 (73%)
-- Partial: 2/11 (18%)
-- Missing: 1/11 (9%)
+- Complete: 13/15 (87%)
+- Partial: 1/15 (7%)
+- Missing: 1/15 (6%)
 
 ---
 
@@ -57,6 +61,68 @@
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-14] Rack Position, Printable Tasks, Dual Labels
+
+**What:** Implemented 3 production features: rack position tracking, printable task list, dual label copies
+
+**Files:**
+- `src/lib/config/production.ts` - NEW: Config constants for rack positions, print settings, label config
+- `src/components/board/order-detail-modal.tsx` - Rack position dropdown for ready/delivered orders
+- `src/app/api/order/[id]/route.ts` - NEW: PATCH endpoint for rack_position
+- `src/components/board/draggable-order-card.tsx` - 📍 badge for rack position
+- `src/components/board/order-list-view.tsx` - Rack column in list view
+- `src/app/print/tasks/page.tsx` - NEW: Printable task list page
+- `src/app/board/today/page.tsx` - Print button opens /print/tasks
+- `src/app/labels/[orderId]/page.tsx` - Dual copies with "1 de 2" indicator
+
+**Features:**
+- **Rack Position:** Dropdown with A1-C10 presets + "Autre" free-text, only editable when ready/delivered
+- **Printable Tasks:** Clean table with checkbox, order#, client, services, due date, priority, notes
+- **Dual Labels:** 2 copies per garment with "1 de 2" / "2 de 2" indicator
+
+**Config:** All settings in `src/lib/config/production.ts` for easy changes
+
+**Test Result:** Lint passes
+
+---
+
+### [2025-12-14] Label Download as PNG
+
+**What:** Added direct PNG download for garment labels alongside print option
+
+**Files:**
+- `src/app/labels/[orderId]/page.tsx` - Added canvas-based PNG generation and download button
+
+**Features:**
+- "Télécharger PNG" button generates clean label image
+- Canvas renders all labels with QR codes, order info, client name
+- Downloads as `labels-order-{orderNumber}.png`
+- French button labels
+
+**Test Result:** Build passes
+
+---
+
+### [2025-12-14] Customer Portal with Tracking Timeline
+
+**What:** Created public customer-facing order status portal with animated timeline
+
+**Files:**
+- `src/app/portal/page.tsx` - NEW: Customer portal with phone/order# search
+- `src/app/api/portal/lookup/route.ts` - NEW: Public API for order lookup
+- `src/components/ui/tracking-timeline.tsx` - NEW: Framer-motion animated timeline
+
+**Features:**
+- Search by phone OR order number
+- 5-stage animated timeline (Reçue → En cours → Terminé → Prêt → Livré)
+- Pulsing animation for current stage
+- French labels throughout
+- No admin links or pricing exposed
+
+**Test Result:** Build passes
+
+---
 
 ### [2025-12-14] Supabase Realtime with Broadcast
 

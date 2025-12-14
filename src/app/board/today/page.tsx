@@ -268,9 +268,13 @@ export default function TodayTasksPage() {
                 ))}
               </select>
               
-              <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open('/print/tasks', '_blank')}
+              >
                 <Printer className="h-4 w-4 mr-2" />
-                Imprimer
+                Imprimer la liste
               </Button>
             </div>
           </div>
