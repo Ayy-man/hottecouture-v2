@@ -66,7 +66,7 @@ export async function GET(request: Request) {
       is_archived: order.is_archived,
       estimated_completion_date: order.estimated_completion_date,
       actual_completion_date: order.actual_completion_date,
-      price_cents: order.price_cents,
+      total_cents: order.total_cents,
       is_active: order.is_active,
       client_name: order.client_first_name && order.client_last_name
         ? `${order.client_first_name} ${order.client_last_name}`.trim()

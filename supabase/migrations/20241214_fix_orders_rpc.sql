@@ -80,10 +80,10 @@ BEGIN
     o.actual_completion_date,
     o.total_cents,
     o.is_active,
-    c.first_name AS client_first_name,
-    c.last_name AS client_last_name,
-    c.phone AS client_phone,
-    c.email AS client_email,
+    COALESCE(c.first_name, '') AS client_first_name,
+    COALESCE(c.last_name, '') AS client_last_name,
+    COALESCE(c.phone, '') AS client_phone,
+    COALESCE(c.email, '') AS client_email,
     COALESCE(
       JSON_AGG(
         JSON_BUILD_OBJECT(
@@ -129,7 +129,7 @@ BEGIN
       0
     ) AS total_services
   FROM "order" o
-  INNER JOIN client c ON c.id = o.client_id
+  LEFT JOIN client c ON c.id = o.client_id
   LEFT JOIN garment g ON g.order_id = o.id
   WHERE o.is_archived = FALSE
     AND (p_client_id IS NULL OR o.client_id = p_client_id)
