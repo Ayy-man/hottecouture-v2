@@ -20,6 +20,7 @@ interface OrderData {
   rush: boolean;
   rush_fee_type?: 'small' | 'large'; // 'small' = $30 express service, 'large' = $60 express service for suits & evening dresses
   deposit_required?: boolean;
+  deposit_amount_cents?: number;
 }
 
 interface GarmentData {
@@ -439,6 +440,64 @@ export function PricingStep({
                       </span>
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Deposit Entry - Custom orders only */}
+          {data.type === 'custom' && (
+            <Card>
+              <CardHeader className='pb-3'>
+                <CardTitle className='text-lg'>Dépôt</CardTitle>
+                <CardDescription className='text-sm'>
+                  Montant du dépôt requis pour cette commande sur mesure
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='pt-0'>
+                <div className='space-y-3'>
+                  <div className='flex items-center space-x-3'>
+                    <input
+                      type='checkbox'
+                      id='deposit_required'
+                      checked={data.deposit_required || false}
+                      onChange={e =>
+                        handleInputChange('deposit_required', e.target.checked)
+                      }
+                      className='w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary touch-manipulation'
+                    />
+                    <label htmlFor='deposit_required' className='text-sm font-medium'>
+                      Dépôt requis
+                    </label>
+                  </div>
+
+                  {data.deposit_required && (
+                    <div className='ml-8'>
+                      <label className='text-xs font-medium text-gray-700 mb-1 block'>
+                        Montant du dépôt ($)
+                      </label>
+                      <div className='flex items-center gap-2'>
+                        <span className='text-gray-500'>$</span>
+                        <input
+                          type='number'
+                          min='0'
+                          step='0.01'
+                          value={((data.deposit_amount_cents || 0) / 100).toFixed(2)}
+                          onChange={e => {
+                            const cents = Math.round(parseFloat(e.target.value || '0') * 100);
+                            handleInputChange('deposit_amount_cents', cents);
+                          }}
+                          className='w-32 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
+                          placeholder='0.00'
+                        />
+                      </div>
+                      {calculation && data.deposit_amount_cents && (
+                        <p className='text-xs text-gray-500 mt-2'>
+                          Solde restant: {formatCurrency(calculation.total_cents - data.deposit_amount_cents)}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

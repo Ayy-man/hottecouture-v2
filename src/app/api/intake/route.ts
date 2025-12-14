@@ -268,6 +268,7 @@ export async function POST(request: NextRequest) {
         rush_fee_cents: rush_fee_cents,
         notes: JSON.stringify(notes || {}),
         assigned_to: order.assigned_to || null,
+        deposit_amount_cents: order.deposit_amount_cents || null,
       } as any)
       .select('id, order_number')
       .single();

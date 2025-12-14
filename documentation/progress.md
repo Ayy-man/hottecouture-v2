@@ -7,12 +7,30 @@
 
 ## CURRENT TASK
 
-**Task:** None - Phase 2 ~97% Complete
+**Task:** None - Phase 3A Complete
 **Status:** Only QuickBooks integration remaining
 
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-14] Phase 3A - Today's Tasks, Deposit Entry, Photo Upload
+
+**What:** Implemented 3 Phase 3A features
+
+**Files:**
+- `src/app/board/today/page.tsx` - NEW: Today's Tasks View with drag reordering, seamstress filter, print support
+- `src/components/intake/pricing-step.tsx` - Added deposit entry UI for custom orders
+- `src/components/intake/garments-step.tsx` - Added photo capture/upload functionality
+- `src/app/api/intake/route.ts` - Added deposit_amount_cents to order creation
+
+**Test Result:** Build passes
+**Notes:** 
+- Today's Tasks shows orders due within 3 days with drag-to-reorder
+- Deposit UI appears for custom orders only, shows remaining balance
+- Photo capture uses device camera, uploads to Supabase storage
+
+---
 
 ### [2025-12-14] Hourly Pricing & French Translations
 

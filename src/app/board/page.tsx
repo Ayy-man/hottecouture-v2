@@ -383,6 +383,16 @@ export default function BoardPage() {
                 asChild
                 variant='outline'
                 size='sm'
+                className='btn-press bg-gradient-to-r from-green-100 to-green-200 hover:from-green-200 hover:to-green-300 text-green-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-green-300 px-2 py-1 text-xs'
+              >
+                <Link href='/board/today'>
+                  📋 Travail du jour
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant='outline'
+                size='sm'
                 className='btn-press bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-blue-300 px-2 py-1 text-xs'
               >
                 <Link href='/board/workload'>
