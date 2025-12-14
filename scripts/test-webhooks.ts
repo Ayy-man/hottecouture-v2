@@ -10,9 +10,8 @@ import { sendSMSNotification } from '../src/lib/webhooks/sms-webhook';
 import { createCalendarEvent, formatOrderForCalendar } from '../src/lib/webhooks/calendar-webhook';
 import { sendToMake } from '../src/lib/integrations/make';
 
-// Load environment variables
-import { config } from 'dotenv';
-config({ path: '.env' });
+// Load environment variables (only needed when running the script, not during build)
+// config({ path: '.env' });
 
 async function testGHLWebhook() {
   console.log('\n🧪 Testing GHL/CRM Webhook...');
