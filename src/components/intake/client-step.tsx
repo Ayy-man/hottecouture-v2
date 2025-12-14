@@ -38,6 +38,20 @@ export function ClientStep({
   const [errors, setErrors] = useState<Partial<ClientCreate>>({});
   const [isCreating, setIsCreating] = useState(false);
   const [revealedClients, setRevealedClients] = useState<Set<string>>(new Set());
+  const [duplicateClient, setDuplicateClient] = useState<ClientCreate | null>(null);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [showMeasurements, setShowMeasurements] = useState(false);
+  const [measurements, setMeasurements] = useState({
+    bust: '',
+    waist: '',
+    hips: '',
+    inseam: '',
+    arm_length: '',
+    neck: '',
+    shoulders: '',
+    height: '',
+    notes: '',
+  });
 
   const maskPhone = (phone: string): string => {
     if (!phone) return '';
@@ -150,26 +164,38 @@ export function ClientStep({
     }
   };
 
+  const checkDuplicatePhone = async (phone: string): Promise<ClientCreate | null> => {
+    const normalizedPhone = phone.replace(/\D/g, '');
+    if (normalizedPhone.length < 7) return null;
+    
+    const { data: existing } = await supabase
+      .from('client')
+      .select('id, first_name, last_name, phone, email, language, preferred_contact, newsletter_consent')
+      .or(`phone.ilike.%${normalizedPhone.slice(-7)}%`)
+      .limit(1)
+      .maybeSingle();
+    
+    return existing as ClientCreate | null;
+  };
+
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newErrors: Partial<ClientCreate> = {};
 
     if (!formData.first_name.trim()) {
-      newErrors.first_name = 'First name is required';
+      newErrors.first_name = 'Prénom requis';
     }
 
     if (!formData.last_name.trim()) {
-      newErrors.last_name = 'Last name is required';
+      newErrors.last_name = 'Nom requis';
     }
 
-    // Phone validation (now required)
     const phoneError = validatePhone(formData.phone || '');
     if (phoneError) {
       newErrors.phone = phoneError;
     }
 
-    // Email validation (optional but must be valid if provided)
     const emailError = validateEmail(formData.email || '');
     if (emailError) {
       newErrors.email = emailError;
@@ -180,7 +206,27 @@ export function ClientStep({
     if (Object.keys(newErrors).length === 0) {
       setIsCreating(true);
       try {
-        const { data: newClient, error } = await (supabase as any)
+        const existingClient = await checkDuplicatePhone(formData.phone || '');
+        if (existingClient) {
+          setDuplicateClient(existingClient);
+          setShowDuplicateModal(true);
+          setIsCreating(false);
+          return;
+        }
+
+        await createClientInDB();
+      } catch (err) {
+        console.error('Error creating client:', err);
+        setErrors({ first_name: 'Échec de création. Réessayez.' });
+        setIsCreating(false);
+      }
+    }
+  };
+
+  const createClientInDB = async () => {
+    setIsCreating(true);
+    try {
+      const { data: newClient, error } = await (supabase as any)
           .from('client')
           .insert([
             {
@@ -266,11 +312,35 @@ export function ClientStep({
         setTimeout(() => onNext(), 300);
       } catch (err) {
         console.error('Error creating client:', err);
-        setErrors({ first_name: 'Failed to create client. Please try again.' });
+        setErrors({ first_name: 'Échec de création. Réessayez.' });
       } finally {
         setIsCreating(false);
       }
+  };
+
+  const handleUseExistingClient = () => {
+    if (duplicateClient) {
+      onUpdate(duplicateClient);
+      setShowDuplicateModal(false);
+      setDuplicateClient(null);
+      setShowCreateForm(false);
+      setFormData({
+        first_name: '',
+        last_name: '',
+        phone: '',
+        email: '',
+        language: 'fr',
+        preferred_contact: 'email',
+        newsletter_consent: false,
+      });
+      setTimeout(() => onNext(), 300);
     }
+  };
+
+  const handleCreateAnyway = async () => {
+    setShowDuplicateModal(false);
+    setDuplicateClient(null);
+    await createClientInDB();
   };
 
   const handleSelectClient = (client: ClientCreate) => {
@@ -282,6 +352,47 @@ export function ClientStep({
 
   return (
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
+      {/* Duplicate Client Modal */}
+      {showDuplicateModal && duplicateClient && (
+        <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-fade-in-up'>
+            <div className='text-center mb-4'>
+              <div className='w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <span className='text-2xl'>⚠️</span>
+              </div>
+              <h3 className='text-lg font-bold text-gray-900'>Client existant trouvé!</h3>
+              <p className='text-sm text-gray-600 mt-1'>Un client avec ce numéro de téléphone existe déjà.</p>
+            </div>
+            
+            <div className='bg-gray-50 rounded-lg p-4 mb-4'>
+              <p className='font-medium text-gray-900'>
+                {duplicateClient.first_name} {duplicateClient.last_name}
+              </p>
+              <p className='text-sm text-gray-600'>{duplicateClient.phone}</p>
+              {duplicateClient.email && (
+                <p className='text-sm text-gray-600'>{duplicateClient.email}</p>
+              )}
+            </div>
+            
+            <div className='flex gap-3'>
+              <Button
+                onClick={handleUseExistingClient}
+                className='flex-1 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold'
+              >
+                Utiliser ce client
+              </Button>
+              <Button
+                variant='outline'
+                onClick={handleCreateAnyway}
+                className='flex-1 border-gray-300 text-gray-700'
+              >
+                Créer nouveau
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* iOS-style Header with Navigation */}
       <div className='flex items-center justify-between px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
         <div className='w-1/4'>
@@ -304,17 +415,17 @@ export function ClientStep({
                   d='M15 19l-7-7 7-7'
                 />
               </svg>
-              <span className='font-medium'>Back</span>
+              <span className='font-medium'>Retour</span>
             </Button>
           )}
         </div>
 
         <div className='flex-1 text-center'>
           <h2 className='text-lg font-semibold text-gray-900'>
-            Client Information
+            Information Client
           </h2>
           <p className='text-sm text-gray-500'>
-            Search for an existing client or create a new one
+            Rechercher un client existant ou en créer un nouveau
           </p>
         </div>
 
@@ -323,7 +434,7 @@ export function ClientStep({
             onClick={onNext}
             className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-6 py-2 rounded-lg font-medium transition-all duration-200'
           >
-            Next
+            Suivant
           </Button>
         )}
       </div>
@@ -338,14 +449,14 @@ export function ClientStep({
                   htmlFor='search'
                   className='block text-sm font-medium mb-1'
                 >
-                  Search Client
+                  Rechercher Client
                 </label>
                 <input
                   id='search'
                   type='text'
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder='Enter phone number or email'
+                  placeholder='Entrer téléphone ou courriel'
                   className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[40px] text-sm touch-manipulation'
                 />
               </div>
@@ -353,13 +464,13 @@ export function ClientStep({
               {isSearching && (
                 <div className='text-center py-2'>
                   <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500 mx-auto'></div>
-                  <p className='mt-1 text-xs text-gray-600'>Searching...</p>
+                  <p className='mt-1 text-xs text-gray-600'>Recherche...</p>
                 </div>
               )}
 
               {searchResults.length > 0 && (
                 <div className='space-y-1'>
-                  <h3 className='font-medium text-sm'>Search Results</h3>
+                  <h3 className='font-medium text-sm'>Résultats</h3>
                   {searchResults.map((client, index) => (
                     <div
                       key={client.first_name + client.last_name + index}
@@ -399,7 +510,7 @@ export function ClientStep({
                   onClick={() => setShowCreateForm(true)}
                   className='w-full btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-primary-500 text-sm py-2'
                 >
-                  Create New Client
+                  Créer Nouveau Client
                 </Button>
               ) : (
                 <form onSubmit={handleCreateClient} className='space-y-3'>
@@ -409,7 +520,7 @@ export function ClientStep({
                         htmlFor='firstName'
                         className='block text-xs font-medium mb-1'
                       >
-                        First Name *
+                        Prénom *
                       </label>
                       <input
                         id='firstName'
@@ -438,7 +549,7 @@ export function ClientStep({
                         htmlFor='lastName'
                         className='block text-xs font-medium mb-1'
                       >
-                        Last Name *
+                        Nom *
                       </label>
                       <input
                         id='lastName'
@@ -470,7 +581,7 @@ export function ClientStep({
                         htmlFor='phone'
                         className='block text-xs font-medium mb-1'
                       >
-                        Phone *
+                        Téléphone *
                       </label>
                       <input
                         id='phone'
@@ -541,7 +652,7 @@ export function ClientStep({
                         htmlFor='preferredContact'
                         className='block text-xs font-medium mb-1'
                       >
-                        Preferred Contact
+                        Contact Préféré
                       </label>
                       <select
                         id='preferredContact'
@@ -579,7 +690,7 @@ export function ClientStep({
                       htmlFor='newsletterConsent'
                       className='text-xs font-medium text-gray-700'
                     >
-                      Subscribe to newsletter
+                      Abonner à l'infolettre
                     </label>
                   </div>
 
@@ -589,7 +700,7 @@ export function ClientStep({
                       className='flex-1 btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm py-2'
                       disabled={isCreating}
                     >
-                      {isCreating ? 'Creating...' : 'Create Client'}
+                      {isCreating ? 'Création...' : 'Créer Client'}
                     </Button>
                     <Button
                       type='button'
@@ -598,50 +709,169 @@ export function ClientStep({
                       className='flex-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-sm py-2'
                       disabled={isCreating}
                     >
-                      Cancel
+                      Annuler
                     </Button>
                   </div>
                 </form>
               )}
             </>
           ) : (
-            <div className='p-3 bg-green-50 border border-green-200 rounded-md'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <h3 className='font-medium text-green-800 text-sm'>
-                    {data.first_name} {data.last_name}
-                  </h3>
-                  <p
-                    className='text-xs text-green-600 cursor-pointer hover:text-green-800'
-                    onClick={() => toggleReveal('selected-' + data.phone)}
-                    title='Tap to reveal/hide'
-                  >
-                    {revealedClients.has('selected-' + data.phone)
-                      ? `${data.phone} • ${data.email}`
-                      : `${maskPhone(data.phone || '')} • ${maskEmail(data.email || '')}`}
-                  </p>
-                  <div className='text-xs text-green-600 mt-1'>
-                    Preferred:{' '}
-                    {data.preferred_contact === 'email' ? '📧 Email' : '💬 SMS'}{' '}
-                    • Newsletter:{' '}
-                    {data.newsletter_consent
-                      ? '✅ Subscribed'
-                      : '❌ Not subscribed'}
+            <div className='space-y-3'>
+              <div className='p-3 bg-green-50 border border-green-200 rounded-md'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <h3 className='font-medium text-green-800 text-sm'>
+                      {data.first_name} {data.last_name}
+                    </h3>
+                    <p
+                      className='text-xs text-green-600 cursor-pointer hover:text-green-800'
+                      onClick={() => toggleReveal('selected-' + data.phone)}
+                      title='Tap to reveal/hide'
+                    >
+                      {revealedClients.has('selected-' + data.phone)
+                        ? `${data.phone} • ${data.email}`
+                        : `${maskPhone(data.phone || '')} • ${maskEmail(data.email || '')}`}
+                    </p>
+                    <div className='text-xs text-green-600 mt-1'>
+                      Contact:{' '}
+                      {data.preferred_contact === 'email' ? '📧 Courriel' : '💬 SMS'}{' '}
+                      • Infolettre:{' '}
+                      {data.newsletter_consent
+                        ? '✅ Abonné'
+                        : '❌ Non abonné'}
+                    </div>
                   </div>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => {
+                      onUpdate(null as any);
+                      setShowCreateForm(false);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }}
+                    className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-xs px-2 py-1'
+                  >
+                    Changer Client
+                  </Button>
                 </div>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => {
-                    onUpdate(null as any);
-                    setShowCreateForm(false);
-                    setSearchQuery('');
-                    setSearchResults([]);
-                  }}
-                  className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-xs px-2 py-1'
+              </div>
+
+              {/* Measurements Section */}
+              <div className='border border-gray-200 rounded-md overflow-hidden'>
+                <button
+                  type='button'
+                  onClick={() => setShowMeasurements(!showMeasurements)}
+                  className='w-full px-3 py-2 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors'
                 >
-                  Change Client
-                </Button>
+                  <span className='text-sm font-medium text-gray-700'>📏 Mesures du client</span>
+                  <svg
+                    className={`w-4 h-4 text-gray-500 transition-transform ${showMeasurements ? 'rotate-180' : ''}`}
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+                  </svg>
+                </button>
+                
+                {showMeasurements && (
+                  <div className='p-3 space-y-3'>
+                    <p className='text-xs text-gray-500'>Pour projets sur mesure (optionnel)</p>
+                    <div className='grid grid-cols-2 gap-2'>
+                      <div>
+                        <label className='block text-xs text-gray-600 mb-1'>Tour de poitrine (cm)</label>
+                        <input
+                          type='number'
+                          value={measurements.bust}
+                          onChange={e => setMeasurements(prev => ({ ...prev, bust: e.target.value }))}
+                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                          placeholder='ex: 92'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-xs text-gray-600 mb-1'>Tour de taille (cm)</label>
+                        <input
+                          type='number'
+                          value={measurements.waist}
+                          onChange={e => setMeasurements(prev => ({ ...prev, waist: e.target.value }))}
+                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                          placeholder='ex: 76'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-xs text-gray-600 mb-1'>Tour de hanches (cm)</label>
+                        <input
+                          type='number'
+                          value={measurements.hips}
+                          onChange={e => setMeasurements(prev => ({ ...prev, hips: e.target.value }))}
+                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                          placeholder='ex: 97'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-xs text-gray-600 mb-1'>Entrejambe (cm)</label>
+                        <input
+                          type='number'
+                          value={measurements.inseam}
+                          onChange={e => setMeasurements(prev => ({ ...prev, inseam: e.target.value }))}
+                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                          placeholder='ex: 81'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-xs text-gray-600 mb-1'>Longueur bras (cm)</label>
+                        <input
+                          type='number'
+                          value={measurements.arm_length}
+                          onChange={e => setMeasurements(prev => ({ ...prev, arm_length: e.target.value }))}
+                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                          placeholder='ex: 63'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-xs text-gray-600 mb-1'>Tour de cou (cm)</label>
+                        <input
+                          type='number'
+                          value={measurements.neck}
+                          onChange={e => setMeasurements(prev => ({ ...prev, neck: e.target.value }))}
+                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                          placeholder='ex: 38'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-xs text-gray-600 mb-1'>Largeur épaules (cm)</label>
+                        <input
+                          type='number'
+                          value={measurements.shoulders}
+                          onChange={e => setMeasurements(prev => ({ ...prev, shoulders: e.target.value }))}
+                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                          placeholder='ex: 46'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-xs text-gray-600 mb-1'>Hauteur totale (cm)</label>
+                        <input
+                          type='number'
+                          value={measurements.height}
+                          onChange={e => setMeasurements(prev => ({ ...prev, height: e.target.value }))}
+                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                          placeholder='ex: 170'
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className='block text-xs text-gray-600 mb-1'>Notes de mesures</label>
+                      <textarea
+                        value={measurements.notes}
+                        onChange={e => setMeasurements(prev => ({ ...prev, notes: e.target.value }))}
+                        className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                        rows={2}
+                        placeholder='Notes additionnelles...'
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

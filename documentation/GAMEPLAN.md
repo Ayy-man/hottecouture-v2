@@ -2,8 +2,8 @@
 
 **Project:** Custom Fashion Management System  
 **Client:** Hotte Couture (Audrey - Owner, Solange - Seamstress)  
-**Status:** Rescue & Completion  
-**Last Updated:** 2025-12-13
+**Status:** Phase 4 - Production Readiness  
+**Last Updated:** 2025-12-14
 
 ---
 
@@ -136,6 +136,36 @@ The system is "done" when Audrey can:
 | `N8N_SMS_WEBHOOK_URL` | n8n workflow 1 | To create |
 | `N8N_CALENDAR_WEBHOOK_URL` | n8n workflow 2 | To create |
 | `N8N_CRM_WEBHOOK_URL` | n8n workflow 3 | To create |
+
+---
+
+## REMAINING WORK (Phase 4)
+
+### Sprint A: Quick Wins (Today)
+| Task | Priority | Notes |
+|------|----------|-------|
+| Duplicate client detection | P0 | Check phone before create, show modal if exists |
+| Vercel cron for reminders | P0 | 3-week + 1-month pickup reminders |
+| Client measurements UI | P1 | For custom design orders |
+
+### Sprint B: Medium Effort (This Week)
+| Task | Priority | Notes |
+|------|----------|-------|
+| Auto-archive cron | P1 | Archive delivered orders after 10 days |
+| Rack position UI | P2 | Assign/search by rack location |
+
+### Sprint C: Deferred
+| Task | Blocker | Notes |
+|------|---------|-------|
+| Customer status chatbot | Custom build | Simple order lookup form (NOT AI), embeddable on website |
+| QuickBooks integration | QB credentials | Make.com webhook |
+
+**Customer Chatbot Clarification:**
+- NOT a full AI chatbot
+- Simple status lookup widget: enter phone/order # → see status
+- No mutations, no AI responses
+- Embeddable as iframe on hottecouture.ca
+- Already partially implemented at `/status` route
 
 ---
 
