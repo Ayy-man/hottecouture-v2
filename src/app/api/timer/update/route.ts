@@ -35,22 +35,40 @@ export async function POST(request: NextRequest) {
         .limit(1)
         .single();
 
-      if (fetchError || !task) {
-        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw new Error(fetchError.message);
       }
 
-      if (task.is_active) {
-        return NextResponse.json({ error: 'Please pause timer before editing' }, { status: 400 });
+      if (!task) {
+        // Task doesn't exist yet (e.g. manual entry without starting timer)
+        // Create a new inactive task with the manual time
+        const { error: insertError } = await supabase
+          .from('task')
+          .insert({
+            garment_id: garmentId,
+            operation: 'Manual Entry',
+            stage: 'working',
+            is_active: false,
+            actual_minutes: totalSeconds / 60,
+            planned_minutes: 60
+          });
+
+        if (insertError) throw insertError;
+      } else {
+        // Update existing task
+        if (task.is_active) {
+          return NextResponse.json({ error: 'Please pause timer before editing' }, { status: 400 });
+        }
+
+        const { error: updateError } = await supabase
+          .from('task')
+          .update({
+            actual_minutes: totalSeconds / 60
+          })
+          .eq('id', task.id);
+
+        if (updateError) throw updateError;
       }
-
-      const { error: updateError } = await supabase
-        .from('task')
-        .update({
-          actual_minutes: totalSeconds / 60
-        })
-        .eq('id', task.id);
-
-      if (updateError) throw updateError;
 
     } else {
       // Legacy Order Logic
