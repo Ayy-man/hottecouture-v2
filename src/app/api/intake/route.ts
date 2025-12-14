@@ -379,6 +379,9 @@ export async function POST(request: NextRequest) {
               }
 
               // Now create the garment_service link with the new custom service ID
+              // Custom services default to 30 min per quantity
+              const customEstimatedMinutes = (service.qty || 1) * 30;
+              
               const { error: garmentServiceError } = await supabase
                 .from('garment_service')
                 .insert({
@@ -387,6 +390,7 @@ export async function POST(request: NextRequest) {
                   quantity: service.qty || 1,
                   custom_price_cents: service.customPriceCents || null,
                   notes: service.notes || null,
+                  estimated_minutes: customEstimatedMinutes,
                 } as any);
 
               if (garmentServiceError) {
@@ -411,11 +415,11 @@ export async function POST(request: NextRequest) {
               throw error;
             }
           } else {
-            // For regular services, ensure the service exists in the database
+            // For regular services, fetch full service details including pricing_model
             const { data: existingService, error: serviceCheckError } =
               await supabase
                 .from('service')
-                .select('id')
+                .select('id, pricing_model, estimated_minutes')
                 .eq('id', service.serviceId)
                 .single();
 
@@ -435,6 +439,11 @@ export async function POST(request: NextRequest) {
               );
             }
 
+            // Calculate estimated_minutes based on pricing model
+            const estimatedMinutes = (existingService as any).pricing_model === 'hourly'
+              ? (service.qty || 1) * 60  // qty hours → minutes
+              : (existingService as any).estimated_minutes || 30;
+
             // Insert regular service
             const { error: garmentServiceError } = await supabase
               .from('garment_service')
@@ -444,6 +453,7 @@ export async function POST(request: NextRequest) {
                 quantity: service.qty || 1,
                 custom_price_cents: service.customPriceCents || null,
                 notes: service.notes || null,
+                estimated_minutes: estimatedMinutes,
               } as any);
 
             if (garmentServiceError) {

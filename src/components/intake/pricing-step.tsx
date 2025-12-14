@@ -77,6 +77,14 @@ export function PricingStep({
     return service?.name || `Service ${serviceId}`;
   };
 
+  const getServicePrice = (baseService: any, qty: number, customPriceCents?: number): number => {
+    if (customPriceCents) return customPriceCents * qty;
+    if (baseService?.pricing_model === 'hourly') {
+      return (baseService.hourly_rate_cents || 3500) * qty;
+    }
+    return (baseService?.base_price_cents || 0) * qty;
+  };
+
   usePricing({
     isRush: data.rush,
   });
@@ -94,37 +102,9 @@ export function PricingStep({
         for (const service of garment.services || []) {
           console.log(`🔍 PricingStep: service:`, service);
 
-          // Try to get the service from the loaded services list first
-          let baseService = services.find(s => s.id === service.serviceId);
-          let basePrice = baseService?.base_price_cents || 5000;
-
-          // If not found in loaded services, try to fetch from API
-          if (!baseService) {
-            try {
-              const response = await fetch(`/api/services`);
-              if (response.ok) {
-                const data = await response.json();
-                baseService = data.services?.find(
-                  (s: any) => s.id === service.serviceId
-                );
-                basePrice = baseService?.base_price_cents || 5000;
-                console.log(
-                  `🔍 PricingStep: fetched service from API:`,
-                  baseService
-                );
-              }
-            } catch (error) {
-              console.error('Error fetching service from API:', error);
-            }
-          }
-
-          const servicePrice = service.customPriceCents || basePrice;
-
-          console.log(`🔍 PricingStep: baseService:`, baseService);
-          console.log(
-            `🔍 PricingStep: basePrice: ${basePrice}, customPrice: ${service.customPriceCents}, finalPrice: ${servicePrice}, qty: ${service.qty}`
-          );
-          subtotal_cents += servicePrice * service.qty;
+          const baseService = services.find(s => s.id === service.serviceId);
+          const serviceTotal = getServicePrice(baseService, service.qty, service.customPriceCents);
+          subtotal_cents += serviceTotal;
         }
       }
 
@@ -223,14 +203,14 @@ export function PricingStep({
               d='M15 19l-7-7 7-7'
             />
           </svg>
-          <span className='font-medium'>Previous</span>
+          <span className='font-medium'>Précédent</span>
         </Button>
 
         <div className='flex-1 text-center'>
           <h2 className='text-lg font-semibold text-gray-900'>
-            Pricing & Due Date
+            Tarification
           </h2>
-          <p className='text-sm text-gray-500'>Final pricing and due date</p>
+          <p className='text-sm text-gray-500'>Tarification et date de livraison</p>
         </div>
 
         <Button
@@ -238,7 +218,7 @@ export function PricingStep({
           disabled={isSubmitting}
           className='bg-gradient-to-r from-secondary-500 to-accent-olive hover:from-secondary-600 hover:to-accent-olive text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          {isSubmitting ? 'Processing...' : 'Submit Order 🚀'}
+          {isSubmitting ? 'Traitement...' : 'Soumettre la commande 🚀'}
         </Button>
       </div>
 
@@ -248,10 +228,9 @@ export function PricingStep({
           {/* Due Date */}
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-lg'>Due Date</CardTitle>
+              <CardTitle className='text-lg'>Date de livraison</CardTitle>
               <CardDescription className='text-sm'>
-                When should this order be completed? (Default: 10 working days
-                from today)
+                Quand cette commande doit-elle être terminée? (Par défaut: 10 jours ouvrables)
               </CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
@@ -268,10 +247,9 @@ export function PricingStep({
           {/* Rush Order */}
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-lg'>Express Service</CardTitle>
+              <CardTitle className='text-lg'>Service express</CardTitle>
               <CardDescription className='text-sm'>
-                Express services are completed faster but include additional
-                fees
+                Les services express sont complétés plus rapidement mais incluent des frais supplémentaires
               </CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
@@ -288,7 +266,7 @@ export function PricingStep({
                       className='w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary touch-manipulation'
                     />
                     <label htmlFor='rush' className='text-sm font-medium'>
-                      This is an express service
+                      Ceci est un service express
                     </label>
                   </div>
 
@@ -296,7 +274,7 @@ export function PricingStep({
                     <div className='ml-8 space-y-2'>
                       <div>
                         <label className='text-xs font-medium text-gray-700 mb-2 block'>
-                          Express Service Type
+                          Type de service express
                         </label>
                         <div className='space-y-2'>
                           <label className='flex items-center space-x-2 cursor-pointer'>
@@ -317,7 +295,7 @@ export function PricingStep({
                               className='w-4 h-4 text-primary border-gray-300 focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
-                              Express Service - $30.00 (1-2 days faster)
+                              Service express - 30,00$ (1-2 jours plus rapide)
                             </span>
                           </label>
                           <label className='flex items-center space-x-2 cursor-pointer'>
@@ -335,8 +313,8 @@ export function PricingStep({
                               className='w-4 h-4 text-primary border-gray-300 focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
-                              Express Service for Suits & Evening Dresses -
-                              $60.00 (3+ days faster)
+                              Service express pour complets et robes de soirée -
+                              60,00$ (3+ jours plus rapide)
                             </span>
                           </label>
                         </div>
@@ -355,8 +333,7 @@ export function PricingStep({
 
                     <div className='p-4 bg-red-50 border border-red-200 rounded-lg'>
                       <p className='text-red-800 font-medium text-sm'>
-                        ⚡ Express services are prioritized and completed faster
-                        than regular orders.
+                        ⚡ Les services express sont prioritaires et complétés plus rapidement.
                       </p>
                     </div>
                   </div>
@@ -370,10 +347,10 @@ export function PricingStep({
             <Card className='bg-gray-50 border-gray-200'>
               <CardHeader className='pb-3'>
                 <CardTitle className='text-gray-900 text-lg'>
-                  Order Items
+                  Articles
                 </CardTitle>
                 <CardDescription className='text-sm'>
-                  Review the garments and services for this order
+                  Vérifiez les vêtements et services de cette commande
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
@@ -386,21 +363,22 @@ export function PricingStep({
                       {garment.type}
                     </div>
                     {garment.services.map((service, sIndex) => {
-                      // Use the same logic as the calculation
                       const baseService = services.find(
                         s => s.id === service.serviceId
                       );
-                      const basePrice = baseService?.base_price_cents || 5000;
-                      const servicePrice =
-                        service.customPriceCents || basePrice;
+                      const unitPrice = service.customPriceCents 
+                        || (baseService?.pricing_model === 'hourly' 
+                          ? baseService?.hourly_rate_cents 
+                          : baseService?.base_price_cents) 
+                        || 0;
+                      const isHourly = baseService?.pricing_model === 'hourly';
 
                       return (
                         <div
                           key={sIndex}
                           className='ml-3 text-xs text-gray-700 mb-1'
                         >
-                          • {getServiceName(service.serviceId)}: Qty{' '}
-                          {service.qty} × ${(servicePrice / 100).toFixed(2)}
+                          • {getServiceName(service.serviceId)}: {isHourly ? `${service.qty}h` : `Qté ${service.qty}`} × ${(unitPrice / 100).toFixed(2)}{isHourly ? '/h' : ''}
                         </div>
                       );
                     })}
@@ -415,16 +393,16 @@ export function PricingStep({
             <Card className='bg-primary/5 border-primary/20'>
               <CardHeader className='pb-3'>
                 <CardTitle className='text-primary text-lg'>
-                  Order Summary
+                  Résumé de la commande
                 </CardTitle>
                 <CardDescription className='text-sm'>
-                  Review the pricing breakdown for this order
+                  Vérifiez le détail des prix de cette commande
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
                 <div className='space-y-2'>
                   <div className='flex justify-between'>
-                    <span className='text-sm'>Subtotal:</span>
+                    <span className='text-sm'>Sous-total:</span>
                     <span className='text-sm font-medium'>
                       {formatCurrency(calculation.subtotal_cents)}
                     </span>
@@ -432,7 +410,7 @@ export function PricingStep({
 
                   {data.rush && (
                     <div className='flex justify-between'>
-                      <span className='text-sm'>Express Service Fee:</span>
+                      <span className='text-sm'>Frais express:</span>
                       <span className='text-sm font-medium'>
                         {formatCurrency(calculation.rush_fee_cents)}
                       </span>
@@ -440,14 +418,14 @@ export function PricingStep({
                   )}
 
                   <div className='flex justify-between'>
-                    <span className='text-sm'>TPS: Canada tax</span>
+                    <span className='text-sm'>TPS (5%)</span>
                     <span className='text-sm font-medium'>
                       {formatCurrency(calculation.tps_cents || 0)}
                     </span>
                   </div>
 
                   <div className='flex justify-between'>
-                    <span className='text-sm'>TVQ: Québec tax</span>
+                    <span className='text-sm'>TVQ (9,975%)</span>
                     <span className='text-sm font-medium'>
                       {formatCurrency(calculation.tvq_cents || 0)}
                     </span>
@@ -472,9 +450,9 @@ export function PricingStep({
               <CardContent className='py-4'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <span className='text-sm font-medium'>Auto-Print Labels</span>
+                    <span className='text-sm font-medium'>Impression automatique</span>
                     <p className='text-xs text-gray-500'>
-                      Automatically open label printing when order is created
+                      Ouvrir automatiquement l'impression des étiquettes
                     </p>
                   </div>
                   <label className='relative inline-flex items-center cursor-pointer'>
