@@ -152,6 +152,31 @@ async function handleOrderStage(
     throw new Error(`Failed to update order status: ${updateError.message}`);
   }
 
+  // Auto-create tasks when order enters working stage
+  if (newStage === 'working') {
+    try {
+      console.log(`📋 Creating tasks for order ${orderId} entering working stage`);
+      const autoCreateResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/tasks/auto-create`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId }),
+        }
+      );
+
+      if (autoCreateResponse.ok) {
+        const autoCreateResult = await autoCreateResponse.json();
+        console.log(`✅ Auto-create tasks result:`, autoCreateResult);
+      } else {
+        console.error(`❌ Failed to auto-create tasks:`, await autoCreateResponse.text());
+      }
+    } catch (autoCreateError) {
+      console.error(`⚠️ Auto-create tasks error:`, autoCreateError);
+      // Don't fail the order update if auto-create fails
+    }
+  }
+
   // Note: Automatic time tracking removed - now using manual timer controls
   // Time tracking is now handled via dedicated timer API endpoints
 

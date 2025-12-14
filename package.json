@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -24,6 +25,7 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@next/bundle-analyzer": "^16.0.10",
     "@radix-ui/react-context-menu": "^2.2.16",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.4",
@@ -50,6 +52,7 @@
     "next-intl": "^3.0.0",
     "postcss": "^8.4.38",
     "qrcode": "^1.5.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-webcam": "^7.2.0",

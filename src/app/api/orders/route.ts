@@ -5,161 +5,87 @@ export const fetchCache = 'force-no-store';
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    console.log('🔍 SIMPLE ORDERS API: Starting fresh approach...');
+    console.log('🔍 OPTIMIZED ORDERS API: Starting...');
+
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = (page - 1) * limit;
+    const clientId = searchParams.get('client_id');
 
     const supabase = await createServiceRoleClient();
 
-    // Step 1: Get ALL non-archived orders with stable sorting
-    const { data: orders, error: ordersError } = (await supabase
-      .from('order')
-      .select('*')
-      .eq('is_archived', false)
-      .order('created_at', { ascending: false })) as {
-      data: any[] | null;
-      error: any;
-    };
+    // Use RPC function to get all data in a single query
+    const { data: orders, error: ordersError } = await supabase.rpc('get_orders_with_details', {
+      p_limit: limit,
+      p_offset: offset,
+      p_client_id: clientId
+    });
 
     if (ordersError) {
       console.error('❌ Error fetching orders:', ordersError);
       return NextResponse.json({ error: ordersError.message }, { status: 500 });
     }
 
-    console.log('📊 SIMPLE ORDERS API: Found', orders?.length || 0, 'orders');
-    console.log('📊 Order numbers:', orders?.map(o => o.order_number) || []);
+    console.log('📊 ORDERS API: Found', orders?.length || 0, 'orders');
 
-    if (!orders || orders.length === 0) {
-      const response = NextResponse.json({
-        success: true,
-        orders: [],
-        count: 0,
-        timestamp: new Date().toISOString(),
-      });
-      response.headers.set('Cache-Control', 'no-store');
-      return response;
+    // Get total count for pagination
+    const { count, error: countError } = await supabase
+      .from('order')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_archived', false)
+      .eq('client_id', clientId || '');
+
+    if (countError) {
+      console.error('❌ Error getting order count:', countError);
     }
 
-    // Step 2: Get client data for all orders
-    const clientIds = [...new Set(orders.map(order => order.client_id))];
-    const { data: clients, error: clientError } = (await supabase
-      .from('client')
-      .select('id, first_name, last_name, phone, email')
-      .in('id', clientIds)) as { data: any[] | null; error: any };
-
-    if (clientError) {
-      console.error('❌ Error fetching clients:', clientError);
-    }
-
-    const clientMap = new Map(
-      clients?.map(client => [client.id, client]) || []
-    );
-
-    // Step 3: Get garment data for all orders
-    const orderIds = orders.map(order => order.id);
-    const { data: garments, error: garmentError } = (await supabase
-      .from('garment')
-      .select('id, order_id, type, color, brand, notes, label_code, photo_path')
-      .in('order_id', orderIds)) as { data: any[] | null; error: any };
-
-    if (garmentError) {
-      console.error('❌ Error fetching garments:', garmentError);
-    }
-
-    // Group garments by order_id
-    const garmentsByOrder = new Map();
-    garments?.forEach(garment => {
-      if (!garmentsByOrder.has(garment.order_id)) {
-        garmentsByOrder.set(garment.order_id, []);
-      }
-      garmentsByOrder.get(garment.order_id).push(garment);
-    });
-
-    // Step 4: Get garment services for all garments
-    const garmentIds = garments?.map(g => g.id) || [];
-    const { data: garmentServices, error: serviceError } = (await supabase
-      .from('garment_service')
-      .select(
-        `
-        garment_id,
-        quantity,
-        custom_price_cents,
-        notes,
-        service (
-          id,
-          name,
-          description,
-          base_price_cents,
-          estimated_minutes
-        )
-      `
-      )
-      .in('garment_id', garmentIds)) as { data: any[] | null; error: any };
-
-    if (serviceError) {
-      console.error('❌ Error fetching garment services:', serviceError);
-    }
-
-    // Group services by garment_id and process them
-    const servicesByGarment = new Map();
-    garmentServices?.forEach(gs => {
-      if (!servicesByGarment.has(gs.garment_id)) {
-        servicesByGarment.set(gs.garment_id, []);
-      }
-
-      // Process the service data
-      const processedService = {
-        id: gs.id,
-        quantity: gs.quantity,
-        custom_price_cents: gs.custom_price_cents,
-        custom_service_name: null, // Will be added after migration
-        notes: gs.notes,
-        service: gs.service,
-        service_id: gs.service_id,
-      };
-
-      servicesByGarment.get(gs.garment_id).push(processedService);
-    });
-
-    // Step 5: Combine everything
-    const ordersWithDetails = orders.map(order => {
-      const client = clientMap.get(order.client_id);
-      const orderGarments = garmentsByOrder.get(order.id) || [];
-
-      // Add services to each garment
-      const garmentsWithServices = orderGarments.map((garment: any) => ({
-        ...garment,
-        services: servicesByGarment.get(garment.id) || [],
-      }));
-
-      return {
-        ...order,
-        client_name: client
-          ? `${client.first_name || ''} ${client.last_name || ''}`.trim()
-          : 'Unknown Client',
-        client_phone: client?.phone || null,
-        client_email: client?.email || null,
-        garments: garmentsWithServices,
-      };
-    });
-
-    console.log(
-      '✅ SIMPLE ORDERS API: Successfully processed',
-      ordersWithDetails.length,
-      'orders'
-    );
+    // Process the data
+    const processedOrders = orders?.map(order => ({
+      id: order.id,
+      order_number: order.order_number,
+      client_id: order.client_id,
+      status: order.status,
+      rush: order.rush,
+      due_date: order.due_date,
+      notes: order.notes,
+      created_at: order.created_at,
+      updated_at: order.updated_at,
+      is_archived: order.is_archived,
+      estimated_completion_date: order.estimated_completion_date,
+      actual_completion_date: order.actual_completion_date,
+      price_cents: order.price_cents,
+      is_active: order.is_active,
+      client_name: order.client_first_name && order.client_last_name
+        ? `${order.client_first_name} ${order.client_last_name}`.trim()
+        : order.client_first_name || order.client_last_name || 'Unknown Client',
+      client_phone: order.client_phone,
+      client_email: order.client_email,
+      garments: order.garments || [],
+      total_garments: order.total_garments,
+      total_services: order.total_services
+    })) || [];
 
     const response = NextResponse.json({
       success: true,
-      orders: ordersWithDetails,
-      count: ordersWithDetails.length,
+      orders: processedOrders,
+      pagination: {
+        current_page: page,
+        per_page: limit,
+        total_items: count || 0,
+        total_pages: Math.ceil((count || 0) / limit)
+      },
       timestamp: new Date().toISOString(),
     });
 
-    response.headers.set('Cache-Control', 'no-store');
+    // Add caching headers - allow short-term caching for pagination
+    response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
     return response;
+
   } catch (error) {
-    console.error('❌ SIMPLE ORDERS API ERROR:', error);
+    console.error('❌ ORDERS API ERROR:', error);
     return NextResponse.json(
       {
         error: 'Internal server error',

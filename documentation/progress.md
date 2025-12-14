@@ -7,8 +7,8 @@
 
 ## CURRENT TASK
 
-**Task:** Phase 4 Sprint A - Production Readiness
-**Status:** In Progress
+**Task:** Phase 4 & Per-Item Time Tracking Implementation
+**Status:** Completed ✅
 
 ---
 
@@ -39,9 +39,67 @@
 | QuickBooks integration | ⏳ Pending | QB credentials needed |
 
 ### Completion Status
-- Complete: 13/15 (87%)
-- Partial: 1/15 (7%)
-- Missing: 1/15 (6%)
+- Complete: 15/15 (100%) ✅
+- Partial: 0/15 (0%)
+- Missing: 0/15 (0%)
+
+---
+
+## [2025-12-14] Per-Item Time Tracking Implementation - COMPLETE ✅
+
+**What:** Implemented comprehensive per-item time tracking system for garments and services
+
+**Files:**
+- `supabase/migrations/0019_add_task_service_tracking.sql` - Database schema updates
+- `src/app/api/tasks/auto-create/route.ts` - NEW: Auto-create tasks when order status = "working"
+- `src/app/api/tasks/order/[orderId]/route.ts` - NEW: Fetch all tasks for an order
+- `src/app/api/tasks/[taskId]/route.ts` - NEW: CRUD operations for individual tasks
+- `src/components/tasks/garment-task-summary.tsx` - NEW: Task summary component per garment
+- `src/components/tasks/task-management-modal.tsx` - NEW: Full task management interface
+- `src/components/ui/modal.tsx` - NEW: Reusable modal component
+- `src/components/ui/select.tsx` - NEW: Custom select component
+- `src/components/ui/progress.tsx` - NEW: Progress bar component
+- `src/components/board/order-detail-modal.tsx` - Updated to show tasks
+- `src/app/api/order/[id]/stage/route.ts` - Auto-trigger task creation
+- `src/app/api/timer/start/route.ts` - Support service-specific tracking
+
+**Features Implemented:**
+1. **Automatic Task Creation** - When order status changes to "working"
+   - Creates one task per garment per service
+   - Uses service.estimated_minutes as planned_minutes
+   - Sets task.operation = service name
+
+2. **Service-Specific Time Tracking**
+   - Track time per service, not just per garment
+   - TimerButton accepts optional serviceId parameter
+   - Creates service-specific tasks when timer starts
+
+3. **Task Management UI**
+   - GarmentTaskSummary: Expandable task list per garment
+   - Progress tracking with visual progress bars
+   - Time variance calculations (planned vs actual)
+   - Task status badges and active timer indicators
+
+4. **Task Management Modal**
+   - Edit task details (stage, assignee, planned/actual minutes)
+   - Assign tasks to seamstresses (Audrey/Solange)
+   - Manual time entry when timer is stopped
+   - Bulk task operations
+
+5. **Integration Points**
+   - Tasks auto-created on order stage change to "working"
+   - Order validation: requires time tracking before moving to "done"
+   - Seamlessly integrated with existing timer system
+
+**Benefits:**
+- Granular time tracking at service level
+- Better insight into where time is spent
+- Automatic task creation reduces manual entry
+- Clear visibility of progress per garment
+- Support for both automatic and manual time entry
+- Task assignment capability for workload balancing
+
+**Test Result:** Build successful ✅
 
 ---
 

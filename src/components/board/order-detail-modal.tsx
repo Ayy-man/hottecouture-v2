@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
 import { TimerButton } from '@/components/timer/timer-button';
+import { GarmentTaskSummary } from '@/components/tasks/garment-task-summary';
+import { TaskManagementModal } from '@/components/tasks/task-management-modal';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { RACK_CONFIG } from '@/lib/config/production';
 
@@ -34,6 +36,7 @@ export function OrderDetailModal({
   const [rackPosition, setRackPosition] = useState<string>('');
   const [customRackPosition, setCustomRackPosition] = useState<string>('');
   const [savingRack, setSavingRack] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   const fetchOrderDetails = useCallback(async () => {
     if (!order?.id) return;
@@ -754,15 +757,13 @@ export function OrderDetailModal({
                         </div>
                       )}
 
-                      {/* Timer Button for Garment */}
-                      <div className='mt-4 pt-3 border-t border-gray-100 flex justify-between items-center'>
-                        <div className='text-xs text-gray-500'>
-                          {/* Optional: Show task status here if needed, but TimerButton handles it */}
-                        </div>
-                        <TimerButton
-                          orderId={displayOrder.id}
+                      {/* Garment Task Summary */}
+                      <div className='mt-4 pt-3 border-t border-gray-100'>
+                        <GarmentTaskSummary
                           garmentId={garment.id}
+                          orderId={displayOrder.id}
                           orderStatus={displayOrder.status}
+                          garmentType={garment.type}
                         />
                       </div>
                     </div>
@@ -908,6 +909,9 @@ export function OrderDetailModal({
                 <Button variant='outline' onClick={onClose}>
                   Close
                 </Button>
+                <Button variant='outline' onClick={() => setShowTaskModal(true)}>
+                  📋 Manage Tasks
+                </Button>
                 <Button asChild>
                   <a href={`/labels/${displayOrder.id}`} target='_blank'>
                     Print Labels
@@ -918,6 +922,13 @@ export function OrderDetailModal({
           )}
         </div>
       </Card>
+
+      {/* Task Management Modal */}
+      <TaskManagementModal
+        orderId={displayOrder.id}
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+      />
     </div>
   );
 }

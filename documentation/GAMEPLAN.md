@@ -56,6 +56,9 @@ See TASK LIST below.
 | Pricing Display | `src/components/intake/pipeline-selector.tsx` |
 | Client List | `src/app/clients/page.tsx` |
 | Labels | `src/app/labels/[orderId]/page.tsx` |
+| Task Tracking | `src/app/api/tasks/auto-create/route.ts` |
+| Time Tracking UI | `src/components/tasks/garment-task-summary.tsx` |
+| Task Management | `src/components/tasks/task-management-modal.tsx` |
 | SMS Endpoint | `src/app/api/notifications/sms/route.ts` |
 | GHL Webhook | `src/lib/webhooks/ghl-webhook.ts` |
 
@@ -68,7 +71,7 @@ The system is "done" when Audrey can:
 1. **Take an order** on iPad → saved to database
 2. **See Solange's queue** on Kanban board  
 3. **Assign orders** to specific seamstress
-4. **Track time** per item (currently per-order only)
+4. **Track time** per item (✅ IMPLEMENTED - per-garment & per-service tracking)
 5. **Mark complete** → triggers SMS (needs debounce fix)
 6. **Generate invoice** in QuickBooks (needs Make.com)
 7. **Accept payment** via Stripe (waiting on keys)
@@ -101,7 +104,7 @@ The system is "done" when Audrey can:
 - [ ] B2: Seamstress Assignment at Step 5
 - [ ] B3: Editable Hours When In Progress
 - [ ] B4: Validation - Done Requires Final Hours
-- [ ] B5: Per-Item Time Tracking
+- [x] B5: Per-Item Time Tracking ✅
 - [ ] B6: Nurture Sequence Enrollment
 
 ### Phase C: Nice to Have (P2)

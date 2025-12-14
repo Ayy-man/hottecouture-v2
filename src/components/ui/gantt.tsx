@@ -316,8 +316,8 @@ export const GanttTimeline: FC<GanttTimelineProps> = ({
     [computedRange, dayWidth]
   );
 
-  const handleMouseMove = useCallback(
-    throttle((e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useMemo(
+    () => throttle((e: React.MouseEvent<HTMLDivElement>) => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left + containerRef.current.scrollLeft;
@@ -325,6 +325,13 @@ export const GanttTimeline: FC<GanttTimelineProps> = ({
     }, 50),
     [getDateForPosition]
   );
+
+  // Cleanup throttle on unmount
+  useEffect(() => {
+    return () => {
+      handleMouseMove.cancel();
+    };
+  }, [handleMouseMove]);
 
   return (
     <div

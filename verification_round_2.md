@@ -16,6 +16,7 @@ The second round of verification focused on 17 specific "missing features" acros
 | **Task** | **Task Management** | | |
 | Q5 | Auto-archiving logic | **YES** | API endpoint `/api/orders/auto-archive` exists and handles archiving of simplified orders older than X days. |
 | Q6 | Staff reorder tasks by priority | **NO** | `InteractiveBoard` allows drag-and-drop to change *status* (column), but not to reorder *within* a column (`src/components/board/interactive-board.tsx`). |
+| Q6a | Per-item time tracking | **YES** | ✅ IMPLEMENTED - Automatic task creation per garment/service, detailed tracking in GarmentTaskSummary (`src/components/tasks/garment-task-summary.tsx`). |
 | Q7 | Field for Rack Position | **YES** | Displayed in `OrderDetailModal` (`src/components/board/order-detail-modal.tsx` line 318). |
 | **Work** | **Today's Work List** | | |
 | Q8 | Printable "Today's Tasks" view | **NO** | |
@@ -42,3 +43,12 @@ Based on this review, the following items are confirmed as **MISSING**:
 5.  **Internal Calendar**: No view for staff to see appointments.
 6.  **Deposit Entry**: No UI to specify deposit amount.
 7.  **Website Chatbot**: Not implemented.
+
+## ✅ RECENTLY IMPLEMENTED (2025-12-14)
+**Per-Item Time Tracking** - Previously listed as missing, now fully implemented:
+- Automatic task creation when order status changes to "working"
+- One task per garment per service
+- Visual task management in order details
+- Service-specific time tracking
+- Task assignment to seamstresses
+- Progress tracking and time variance reporting

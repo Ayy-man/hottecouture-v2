@@ -4,7 +4,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServiceRoleClient();
-    const { orderId, garmentId } = await request.json();
+    const { orderId, garmentId, serviceId } = await request.json();
 
     if (!orderId) {
       return NextResponse.json(
@@ -17,11 +17,17 @@ export async function POST(request: NextRequest) {
 
     if (garmentId) {
       // Garment Task Logic
-      // Check for existing task
-      const { data: existingTask, error: fetchError } = await supabase
+      // Check for existing task (service-specific if serviceId provided)
+      let taskQuery = supabase
         .from('task')
         .select('*')
-        .eq('garment_id', garmentId)
+        .eq('garment_id', garmentId);
+
+      if (serviceId) {
+        taskQuery = taskQuery.eq('service_id', serviceId);
+      }
+
+      const { data: existingTask, error: fetchError } = await taskQuery
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -51,17 +57,36 @@ export async function POST(request: NextRequest) {
         }
       } else {
         // Create new task
-        console.log('Creating new task for garment:', garmentId);
+        console.log('Creating new task for garment:', garmentId, 'service:', serviceId);
+
+        // Get service details if serviceId provided
+        let operation = 'General Work';
+        let plannedMinutes = 60;
+
+        if (serviceId) {
+          const { data: service, error: serviceError } = await supabase
+            .from('service')
+            .select('name, estimated_minutes')
+            .eq('id', serviceId)
+            .single();
+
+          if (!serviceError && service) {
+            operation = service.name;
+            plannedMinutes = service.estimated_minutes || 60;
+          }
+        }
+
         const { error: insertError } = await supabase
           .from('task')
           .insert({
             garment_id: garmentId,
-            operation: 'General Work', // Default operation
+            service_id: serviceId || null,
+            operation: operation,
             stage: 'working',
             is_active: true,
             started_at: now,
             actual_minutes: 0,
-            planned_minutes: 60 // Default, can be updated later
+            planned_minutes: plannedMinutes
           });
 
         if (insertError) {
