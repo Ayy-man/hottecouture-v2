@@ -1,31 +1,55 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import { RealtimeChannel } from '@supabase/supabase-js'
 
 export function useRealtimeOrders() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const supabase = createClient()
+  const channelsRef = useRef<RealtimeChannel[]>([])
 
   useEffect(() => {
-    // Subscribe to order table changes
-    const channel = supabase
-      .channel('order-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'order'
-        },
-        (payload: RealtimePostgresChangesPayload<any>) => {
-          console.log('🔄 Real-time order change detected:', payload.eventType, payload.new)
-          setRefreshTrigger(prev => prev + 1)
-        }
-      )
-      .subscribe()
+    let mounted = true
+
+    const setupChannels = async () => {
+      try {
+        await supabase.realtime.setAuth()
+
+        const orderChannel = supabase
+          .channel('order', { config: { private: true } })
+          .on('broadcast', { event: '*' }, (payload: { type: string; event: string; payload?: unknown }) => {
+            console.log('🔄 Order broadcast received:', payload)
+            if (mounted) setRefreshTrigger(prev => prev + 1)
+          })
+
+        const taskChannel = supabase
+          .channel('task', { config: { private: true } })
+          .on('broadcast', { event: '*' }, (payload: { type: string; event: string; payload?: unknown }) => {
+            console.log('🔄 Task broadcast received:', payload)
+            if (mounted) setRefreshTrigger(prev => prev + 1)
+          })
+
+        orderChannel.subscribe((status: string) => {
+          console.log('📡 Order channel status:', status)
+        })
+
+        taskChannel.subscribe((status: string) => {
+          console.log('📡 Task channel status:', status)
+        })
+
+        channelsRef.current = [orderChannel, taskChannel]
+      } catch (err) {
+        console.error('❌ Realtime setup error:', err)
+      }
+    }
+
+    setupChannels()
 
     return () => {
-      supabase.removeChannel(channel)
+      mounted = false
+      channelsRef.current.forEach(channel => {
+        supabase.removeChannel(channel)
+      })
+      channelsRef.current = []
     }
   }, [supabase])
 
