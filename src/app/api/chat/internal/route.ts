@@ -199,11 +199,13 @@ async function queryDatabase(query: string, supabase: any): Promise<string | nul
     return `[DB] ⏳ ${orders.length} commande(s) en attente:\n${list}`;
   }
 
-  if ((lowerQuery.includes('cherche') || lowerQuery.includes('client') || lowerQuery.includes('search')) && 
+  if ((lowerQuery.includes('cherche') || lowerQuery.includes('search')) && 
       !lowerQuery.includes('commande')) {
-    const nameMatch = lowerQuery.match(/(?:cherche|client|search)\s+(.+)/i);
+    const nameMatch = lowerQuery.match(/(?:cherche|search)\s+(.+)/i);
     if (nameMatch && nameMatch[1]) {
-      const searchTerm = nameMatch[1].trim();
+      const searchTerm = nameMatch[1]
+        .replace(/^client\s*/i, '')
+        .trim();
       const { data: clients, error } = await supabase
         .from('client')
         .select('id, first_name, last_name, phone, email')
@@ -320,18 +322,10 @@ export async function POST(request: NextRequest) {
 
     if (!openRouterResponse.ok) {
       const errorText = await openRouterResponse.text();
-      console.error('OpenRouter error:', errorText);
-      
-      if (dbContext) {
-        return NextResponse.json({
-          response: dbContext.replace('[DB] ', ''),
-          type: 'db_fallback',
-          latency_ms: Date.now() - startTime,
-        });
-      }
+      console.error('OpenRouter error:', openRouterResponse.status, errorText);
       
       return NextResponse.json({
-        response: 'Désolé, je rencontre des difficultés techniques. Réessayez dans un moment.',
+        response: `Erreur API (${openRouterResponse.status}): ${errorText.slice(0, 200)}`,
         type: 'error',
         latency_ms: Date.now() - startTime,
       });
