@@ -17,7 +17,7 @@ import { addDays, startOfDay, endOfDay, format } from 'date-fns';
 
 
 const HOURS_PER_DAY = 8;
-const SEAMSTRESSES = ['Audrey', 'Solange', 'Unassigned'];
+const SEAMSTRESSES = ['Audrey', 'Solange', 'Audrey-Anne', 'Unassigned'];
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#f59e0b',

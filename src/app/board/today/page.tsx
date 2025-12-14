@@ -47,7 +47,7 @@ interface TaskOrder {
   }>;
 }
 
-const SEAMSTRESSES = ['Audrey', 'Solange'];
+const SEAMSTRESSES = ['Audrey', 'Solange', 'Audrey-Anne'];
 
 function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
   const {

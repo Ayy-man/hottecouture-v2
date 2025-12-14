@@ -17,6 +17,15 @@ A modern, production-ready web application built with Next.js 14+, TypeScript, a
 - **Global error handling** with error boundaries
 - **SEO optimized** with proper meta tags
 
+### Business Features
+- **Order Management** - Complete order intake and tracking system
+- **Kanban Board** - Visual order management with drag-and-drop
+- **Customer Portal** - Public order status tracking
+- **Time Tracking** - Per-item task and time management
+- **QR Code Labels** - Scannable order labels
+- **Business Analytics** - Revenue, order, and customer insights
+- **Multi-user Support** - Role-based access for owners and seamstresses
+
 ## 🛠️ Tech Stack
 
 - **Framework**: Next.js 14+ (App Router)

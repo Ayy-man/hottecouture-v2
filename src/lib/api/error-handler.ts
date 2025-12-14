@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
-// import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { randomUUID } from 'crypto';
 
 export interface ApiError {
@@ -167,22 +167,21 @@ export async function logEvent(
   correlationId?: string
 ): Promise<void> {
   try {
-    // TODO: Fix event_log table typing issue
-    // const supabase = await createClient()
+    const supabase = await createClient()
 
-    // await supabase.from('event_log').insert({
-    //   entity,
-    //   entity_id: entityId,
-    //   action,
-    //   actor: 'system', // Default actor for system events
-    //   details: {
-    //     ...details,
-    //     correlationId,
-    //     timestamp: new Date().toISOString(),
-    //   },
-    // })
+    await supabase.from('event_log').insert({
+      entity,
+      entity_id: entityId,
+      action,
+      actor: 'system', // Default actor for system events
+      details: {
+        ...details,
+        correlationId,
+        timestamp: new Date().toISOString(),
+      },
+    })
 
-    // For now, just log to console
+    // Also log to console for debugging
     console.log('Event logged:', {
       entity,
       entityId,

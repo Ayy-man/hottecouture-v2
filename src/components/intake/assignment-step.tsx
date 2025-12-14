@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 const SEAMSTRESSES = [
   { id: 'audrey', name: 'Audrey', role: 'Owner', icon: '👑' },
   { id: 'solange', name: 'Solange', role: 'Seamstress', icon: '✂️' },
+  { id: 'audrey-anne', name: 'Audrey-Anne', role: 'Seamstress', icon: '🧵' },
 ];
 
 interface AssignmentStepProps {

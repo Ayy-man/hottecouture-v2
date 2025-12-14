@@ -43,6 +43,7 @@ interface TaskManagementModalProps {
 const SEAMSTRESSES = [
   { id: 'audrey', name: 'Audrey' },
   { id: 'solange', name: 'Solange' },
+  { id: 'audrey-anne', name: 'Audrey-Anne' },
 ];
 
 const STAGE_OPTIONS = [

@@ -69,27 +69,27 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                No orders yet
+                View Kanban board
               </p>
-              <Button variant="outline" className="w-full">
-                View Orders
+              <Button variant="outline" className="w-full" asChild>
+                <a href="/board">View Board</a>
               </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Settings</CardTitle>
+              <CardTitle>Analytics</CardTitle>
               <CardDescription>
-                Configure your preferences
+                View business insights
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Customize your experience
+                Revenue, orders, and customer metrics
               </p>
-              <Button variant="outline" className="w-full">
-                Open Settings
+              <Button variant="outline" className="w-full" asChild>
+                <a href="/dashboard/analytics">View Analytics</a>
               </Button>
             </CardContent>
           </Card>
