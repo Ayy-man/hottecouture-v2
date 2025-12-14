@@ -200,7 +200,7 @@ export default function HomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
-                <a href='/status' target='_blank' className='block cursor-pointer'>
+                <a href='/portal' target='_blank' className='block cursor-pointer'>
                   <Button
                     {...createHapticButtonProps('medium')}
                     className='w-full h-10 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press relative overflow-hidden'
