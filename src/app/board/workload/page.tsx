@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Clock, Users, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { addDays, startOfDay, endOfDay, format } from 'date-fns';
+import type { GanttFeature } from '@/components/ui/gantt';
 
 const HOURS_PER_DAY = 8;
 const SEAMSTRESSES = ['Audrey', 'Solange', 'Unassigned'];
@@ -72,6 +73,7 @@ export default function WorkloadPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -96,6 +98,36 @@ export default function WorkloadPage() {
     
     fetchOrders();
   }, []);
+
+  const handleUpdateFeature = async (feature: GanttFeature) => {
+    const orderId = feature.id;
+    const newDueDate = feature.endAt;
+    
+    setUpdatingOrder(orderId);
+    
+    try {
+      const response = await fetch(`/api/order/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ due_date: newDueDate.toISOString() }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update due date');
+      }
+      
+      setOrders(prev => prev.map(o => 
+        o.id === orderId 
+          ? { ...o, due_date: newDueDate.toISOString() }
+          : o
+      ));
+    } catch (err) {
+      console.error('Error updating order due date:', err);
+      alert('Erreur lors de la mise à jour de la date');
+    } finally {
+      setUpdatingOrder(null);
+    }
+  };
 
   const activeOrders = useMemo(() => {
     return orders.filter(o => 
@@ -369,6 +401,7 @@ export default function WorkloadPage() {
                   onSelectFeature={(id) => {
                     console.log('Selected order:', id);
                   }}
+                  onUpdateFeature={handleUpdateFeature}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -378,37 +411,12 @@ export default function WorkloadPage() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {SEAMSTRESSES.filter(s => s !== 'Unassigned').map((name) => {
-              const workload = workloadBySeamstress[name];
-              if (!workload) return null;
-              
-              const seamstressFeatures = ganttFeatures.filter(
-                f => f.owner?.name === name
-              );
-              
-              if (seamstressFeatures.length === 0) return null;
-              
-              return (
-                <Card key={name}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {name}&apos;s Schedule ({workload.orders.length} orders)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-[200px] overflow-auto">
-                    <Gantt
-                      features={seamstressFeatures}
-                      markers={[todayMarker]}
-                      range={ganttRange}
-                      zoom={80}
-                      showSidebar={false}
-                    />
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+          {updatingOrder && (
+            <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Mise à jour...
+            </div>
+          )}
         </div>
       </div>
     </AuthGuard>

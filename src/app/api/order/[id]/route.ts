@@ -12,9 +12,19 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { rack_position } = body;
+    const { rack_position, due_date } = body;
 
-    if (rack_position === undefined) {
+    const updateFields: Record<string, unknown> = {};
+    
+    if (rack_position !== undefined) {
+      updateFields.rack_position = rack_position || null;
+    }
+    
+    if (due_date !== undefined) {
+      updateFields.due_date = due_date || null;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
       return NextResponse.json(
         { error: 'No fields to update' },
         { status: 400 }
@@ -25,7 +35,7 @@ export async function PATCH(
 
     const { data, error } = await supabase
       .from('order')
-      .update({ rack_position: rack_position || null })
+      .update(updateFields)
       .eq('id', id)
       .select()
       .single();
