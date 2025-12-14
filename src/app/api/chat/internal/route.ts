@@ -236,6 +236,28 @@ const TOOLS = [
         required: ['order_number', 'note']
       }
     }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'get_productivity_stats',
+      description: 'Get productivity stats (completed orders, minutes worked) for the team or specific employee.',
+      parameters: {
+        type: 'object',
+        properties: {
+          time_range: {
+            type: 'string',
+            enum: ['today', 'week', 'month'],
+            description: 'Time period to analyze (default: week)'
+          },
+          employee: {
+            type: 'string',
+            enum: ['Audrey', 'Solange'],
+            description: 'Specific employee to filter by'
+          }
+        }
+      }
+    }
   }
 ];
 
@@ -549,6 +571,89 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         order_number,
         note_added: note
       });
+    }
+
+    case 'get_productivity_stats': {
+      const { time_range = 'week', employee } = args;
+      const now = new Date();
+      let startDate = new Date();
+
+      switch (time_range) {
+        case 'today':
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'month':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case 'week':
+        default:
+          startDate.setDate(now.getDate() - 7);
+      }
+
+      const isoDate = startDate.toISOString();
+      const statusList = ['done', 'ready', 'delivered'];
+
+      // 1. Get Completed Orders Count
+      let orderQuery = supabase
+        .from('order')
+        .select('assigned_to, status, updated_at', { count: 'exact' });
+
+      // We use updated_at for recent completion proxy (imperfect but available)
+      // or created_at for new volume
+      orderQuery = orderQuery
+        .in('status', statusList)
+        .gte('updated_at', isoDate)
+        .eq('is_archived', false);
+
+      if (employee) {
+        orderQuery = orderQuery.eq('assigned_to', employee);
+      }
+
+      const { data: orders, error: orderError } = await orderQuery;
+
+      // 2. Get Task/Time Stats
+      let taskQuery = supabase
+        .from('task')
+        .select('assignee, actual_minutes, planned_minutes, stage, stopped_at')
+        .gte('stopped_at', isoDate);
+
+      if (employee) {
+        taskQuery = taskQuery.eq('assignee', employee);
+      }
+
+      const { data: tasks, error: taskError } = await taskQuery;
+
+      if (orderError || taskError) {
+        return JSON.stringify({ error: 'Failed to fetch statistics' });
+      }
+
+      // Aggregations
+      const stats = {
+        period: time_range,
+        orders_completed: orders?.length || 0,
+        tasks_completed: tasks?.length || 0,
+        total_minutes: tasks?.reduce((sum: number, t: any) => sum + (t.actual_minutes || 0), 0) || 0,
+        by_employee: {} as Record<string, any>
+      };
+
+      // Group by Employee
+      const employees = new Set([
+        ...(orders?.map((o: any) => o.assigned_to).filter(Boolean) || []),
+        ...(tasks?.map((t: any) => t.assignee).filter(Boolean) || [])
+      ]);
+
+      employees.forEach((emp: string) => {
+        const empOrders = orders?.filter((o: any) => o.assigned_to === emp) || [];
+        const empTasks = tasks?.filter((t: any) => t.assignee === emp) || [];
+
+        stats.by_employee[emp] = {
+          orders_finished: empOrders.length,
+          tasks_done: empTasks.length,
+          minutes_logged: empTasks.reduce((sum: number, t: any) => sum + (t.actual_minutes || 0), 0)
+        };
+      });
+
+      return JSON.stringify(stats);
     }
 
     default:
