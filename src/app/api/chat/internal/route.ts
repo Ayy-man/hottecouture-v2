@@ -59,13 +59,19 @@ const SYSTEM_PROMPT = `Tu es l'assistant intelligent de Hotte Couture, une bouti
 5. Utilise des emojis avec modération
 
 ## IMPORTANT - Mutations
+
 Quand l'utilisateur demande de MODIFIER une commande, tu DOIS utiliser les outils:
 - "mets commande X en cours/prêt/etc" → utilise update_order_status
 - "donne commande X à Solange" → utilise update_order_details avec assigned_to
 - "repousse commande X à [date]" → utilise update_order_details avec due_date
 - "ajoute note à commande X" → utilise add_order_note
 
-Ne dis JAMAIS "je ne peux pas" ou "problème technique" sans avoir essayé l'outil d'abord.`;
+Ne dis JAMAIS "je ne peux pas" ou "problème technique" sans avoir essayé l'outil d'abord.
+
+## LANGUE
+- Si l'utilisateur parle français, réponds en français.
+- If the user speaks English, respond in English.
+- STRICTLY respect usage of "English only" or "Français seulement" if requested.`;
 
 const TOOLS = [
   {
@@ -258,7 +264,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
       }
 
       const client = order.client;
-      const services = order.garments?.flatMap((g: any) => 
+      const services = order.garments?.flatMap((g: any) =>
         g.garment_services?.map((gs: any) => gs.service?.name) || []
       ).filter(Boolean) || [];
 
@@ -288,7 +294,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         .limit(20);
 
       if (error) return JSON.stringify({ error: 'Database query failed' });
-      
+
       return JSON.stringify({
         count: orders?.length || 0,
         orders: (orders || []).map((o: any) => ({
@@ -312,7 +318,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         .limit(20);
 
       if (error) return JSON.stringify({ error: 'Database query failed' });
-      
+
       return JSON.stringify({
         status,
         count: orders?.length || 0,
@@ -335,7 +341,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         .limit(20);
 
       if (error) return JSON.stringify({ error: 'Database query failed' });
-      
+
       return JSON.stringify({
         date: today,
         count: orders?.length || 0,
@@ -357,7 +363,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         .limit(10);
 
       if (error) return JSON.stringify({ error: 'Database query failed' });
-      
+
       if (!clients || clients.length === 0) {
         return JSON.stringify({ error: `No clients found matching "${search_term}"` });
       }
@@ -406,7 +412,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
     case 'update_order_status': {
       const { order_number, new_status } = args;
       console.log('🔧 update_order_status called:', { order_number, new_status });
-      
+
       const { data: order, error: fetchError } = await supabase
         .from('order')
         .select('id, status')
@@ -449,7 +455,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
 
     case 'update_order_details': {
       const { order_number, due_date, priority, assigned_to, rush } = args;
-      
+
       const { data: order, error: fetchError } = await supabase
         .from('order')
         .select('id, due_date, priority, assigned_to, rush')
@@ -502,7 +508,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
 
     case 'add_order_note': {
       const { order_number, note } = args;
-      
+
       const { data: order, error: fetchError } = await supabase
         .from('order')
         .select('id, notes')
@@ -528,7 +534,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
 
       const { error: updateError } = await supabase
         .from('order')
-        .update({ 
+        .update({
           notes: JSON.stringify(existingNotes),
           updated_at: timestamp
         })
@@ -552,7 +558,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
-  
+
   try {
     const body: ChatRequest = await request.json();
     const { query, history = [] } = body;
@@ -571,7 +577,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createServiceRoleClient();
-    
+
     const messages: ChatMessage[] = [
       { role: 'system', content: SYSTEM_PROMPT },
     ];
@@ -616,7 +622,7 @@ export async function POST(request: NextRequest) {
 
       const result = await openRouterResponse.json();
       const choice = result.choices?.[0];
-      
+
       if (!choice) {
         return NextResponse.json({
           response: 'No response from AI',
@@ -637,10 +643,10 @@ export async function POST(request: NextRequest) {
         for (const toolCall of message.tool_calls) {
           const toolName = toolCall.function.name;
           const toolArgs = JSON.parse(toolCall.function.arguments || '{}');
-          
+
           console.log(`Executing tool: ${toolName}`, toolArgs);
           const toolResult = await executeToolCall(toolName, toolArgs, supabase);
-          
+
           messages.push({
             role: 'tool',
             tool_call_id: toolCall.id,
