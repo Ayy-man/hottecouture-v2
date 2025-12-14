@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronDown } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface SelectContextValue {
@@ -91,6 +91,8 @@ const SelectContent = React.forwardRef<
   const { open, setOpen } = useSelectContext()
   const contentRef = React.useRef<HTMLDivElement>(null)
 
+  React.useImperativeHandle(ref, () => contentRef.current!)
+
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
@@ -120,7 +122,6 @@ const SelectContent = React.forwardRef<
         )}
         onClick={(e) => e.stopPropagation()}
         {...props}
-        ref={contentRef}
       >
         <div className="p-1">
           {children}

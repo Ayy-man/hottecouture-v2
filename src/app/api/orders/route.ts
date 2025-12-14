@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     }
 
     // Process the data
-    const processedOrders = orders?.map(order => ({
+    const processedOrders = orders?.map((order: any) => ({
       id: order.id,
       order_number: order.order_number,
       client_id: order.client_id,
