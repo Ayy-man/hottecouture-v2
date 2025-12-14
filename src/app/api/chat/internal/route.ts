@@ -56,7 +56,8 @@ const SYSTEM_PROMPT = `Tu es l'assistant intelligent de Hotte Couture, une bouti
 2. Sois concis - Audrey et Solange ont besoin de réponses rapides
 3. Utilise les outils disponibles pour consulter la base de données quand nécessaire
 4. Pour les questions de prix, donne une fourchette réaliste basée sur tes connaissances
-5. Utilise des emojis avec modération`;
+5. Utilise des emojis avec modération
+6. Tu peux modifier les commandes (statut, date, assignation, priorité, notes) quand demandé`;
 
 const TOOLS = [
   {
@@ -141,6 +142,84 @@ const TOOLS = [
       parameters: {
         type: 'object',
         properties: {}
+      }
+    }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'update_order_status',
+      description: 'Update the status of an order. Use when user wants to move an order to a different stage like "mets commande 65 en cours" or "mark order 72 as ready".',
+      parameters: {
+        type: 'object',
+        properties: {
+          order_number: {
+            type: 'integer',
+            description: 'The order number to update'
+          },
+          new_status: {
+            type: 'string',
+            enum: ['pending', 'working', 'done', 'ready', 'delivered'],
+            description: 'The new status: pending (en attente), working (en cours), done (terminé), ready (prêt), delivered (livré)'
+          }
+        },
+        required: ['order_number', 'new_status']
+      }
+    }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'update_order_details',
+      description: 'Update order details like due date, priority, assignment, or rush status. Use when user wants to reschedule, reassign, or change priority.',
+      parameters: {
+        type: 'object',
+        properties: {
+          order_number: {
+            type: 'integer',
+            description: 'The order number to update'
+          },
+          due_date: {
+            type: 'string',
+            description: 'New due date in YYYY-MM-DD format'
+          },
+          priority: {
+            type: 'string',
+            enum: ['low', 'normal', 'high', 'urgent'],
+            description: 'New priority level'
+          },
+          assigned_to: {
+            type: 'string',
+            enum: ['Audrey', 'Solange'],
+            description: 'Reassign to Audrey or Solange'
+          },
+          rush: {
+            type: 'boolean',
+            description: 'Set rush status (true = rush order, false = normal)'
+          }
+        },
+        required: ['order_number']
+      }
+    }
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'add_order_note',
+      description: 'Add a note to an order. Use when user wants to add a comment or note to an order.',
+      parameters: {
+        type: 'object',
+        properties: {
+          order_number: {
+            type: 'integer',
+            description: 'The order number to add note to'
+          },
+          note: {
+            type: 'string',
+            description: 'The note text to add'
+          }
+        },
+        required: ['order_number', 'note']
       }
     }
   }
@@ -313,6 +392,143 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         },
         total_active: orders.length,
         today_revenue: `$${(todayRevenue / 100).toFixed(2)}`
+      });
+    }
+
+    case 'update_order_status': {
+      const { order_number, new_status } = args;
+      
+      const { data: order, error: fetchError } = await supabase
+        .from('order')
+        .select('id, status')
+        .eq('order_number', order_number)
+        .single();
+
+      if (fetchError || !order) {
+        return JSON.stringify({ error: `Order #${order_number} not found` });
+      }
+
+      const oldStatus = order.status;
+      const { error: updateError } = await supabase
+        .from('order')
+        .update({ status: new_status, updated_at: new Date().toISOString() })
+        .eq('id', order.id);
+
+      if (updateError) {
+        return JSON.stringify({ error: `Failed to update: ${updateError.message}` });
+      }
+
+      const statusLabels: Record<string, string> = {
+        pending: 'en attente',
+        working: 'en cours',
+        done: 'terminé',
+        ready: 'prêt pour ramassage',
+        delivered: 'livré'
+      };
+
+      return JSON.stringify({
+        success: true,
+        order_number,
+        old_status: statusLabels[oldStatus] || oldStatus,
+        new_status: statusLabels[new_status] || new_status
+      });
+    }
+
+    case 'update_order_details': {
+      const { order_number, due_date, priority, assigned_to, rush } = args;
+      
+      const { data: order, error: fetchError } = await supabase
+        .from('order')
+        .select('id, due_date, priority, assigned_to, rush')
+        .eq('order_number', order_number)
+        .single();
+
+      if (fetchError || !order) {
+        return JSON.stringify({ error: `Order #${order_number} not found` });
+      }
+
+      const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+      const changes: string[] = [];
+
+      if (due_date !== undefined) {
+        updates.due_date = due_date;
+        changes.push(`due_date: ${order.due_date} → ${due_date}`);
+      }
+      if (priority !== undefined) {
+        updates.priority = priority;
+        changes.push(`priority: ${order.priority} → ${priority}`);
+      }
+      if (assigned_to !== undefined) {
+        updates.assigned_to = assigned_to;
+        changes.push(`assigned_to: ${order.assigned_to || 'none'} → ${assigned_to}`);
+      }
+      if (rush !== undefined) {
+        updates.rush = rush;
+        changes.push(`rush: ${order.rush} → ${rush}`);
+      }
+
+      if (changes.length === 0) {
+        return JSON.stringify({ error: 'No changes specified' });
+      }
+
+      const { error: updateError } = await supabase
+        .from('order')
+        .update(updates)
+        .eq('id', order.id);
+
+      if (updateError) {
+        return JSON.stringify({ error: `Failed to update: ${updateError.message}` });
+      }
+
+      return JSON.stringify({
+        success: true,
+        order_number,
+        changes
+      });
+    }
+
+    case 'add_order_note': {
+      const { order_number, note } = args;
+      
+      const { data: order, error: fetchError } = await supabase
+        .from('order')
+        .select('id, notes')
+        .eq('order_number', order_number)
+        .single();
+
+      if (fetchError || !order) {
+        return JSON.stringify({ error: `Order #${order_number} not found` });
+      }
+
+      let existingNotes: any = {};
+      try {
+        existingNotes = order.notes ? JSON.parse(order.notes) : {};
+      } catch {
+        existingNotes = { legacy: order.notes };
+      }
+
+      const timestamp = new Date().toISOString();
+      if (!existingNotes.chat_notes) {
+        existingNotes.chat_notes = [];
+      }
+      existingNotes.chat_notes.push({ timestamp, note });
+
+      const { error: updateError } = await supabase
+        .from('order')
+        .update({ 
+          notes: JSON.stringify(existingNotes),
+          updated_at: timestamp
+        })
+        .eq('id', order.id);
+
+      if (updateError) {
+        return JSON.stringify({ error: `Failed to add note: ${updateError.message}` });
+      }
+
+      return JSON.stringify({
+        success: true,
+        order_number,
+        note_added: note
       });
     }
 
