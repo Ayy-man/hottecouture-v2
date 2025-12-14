@@ -17,6 +17,11 @@ export async function GET(request: Request) {
 
     const supabase = await createServiceRoleClient();
 
+    if (!supabase) {
+      console.error('❌ Failed to create Supabase client');
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
+    }
+
     // Use RPC function to get all data in a single query
     const { data: orders, error: ordersError } = await supabase.rpc('get_orders_with_details', {
       p_limit: limit,
@@ -32,11 +37,16 @@ export async function GET(request: Request) {
     console.log('📊 ORDERS API: Found', orders?.length || 0, 'orders');
 
     // Get total count for pagination
-    const { count, error: countError } = await supabase
+    let countQuery = supabase
       .from('order')
       .select('*', { count: 'exact', head: true })
-      .eq('is_archived', false)
-      .eq('client_id', clientId || '');
+      .eq('is_archived', false);
+
+    if (clientId) {
+      countQuery = countQuery.eq('client_id', clientId);
+    }
+
+    const { count, error: countError } = await countQuery;
 
     if (countError) {
       console.error('❌ Error getting order count:', countError);
