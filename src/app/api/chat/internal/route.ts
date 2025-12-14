@@ -272,6 +272,8 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
           client:client_id (first_name, last_name, phone, email),
           garments:garment (
             type,
+            notes,
+            estimated_minutes,
             garment_services:garment_service (
               quantity,
               service:service_id (name)
@@ -290,6 +292,19 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         g.garment_services?.map((gs: any) => gs.service?.name) || []
       ).filter(Boolean) || [];
 
+      // Parse order notes if they are JSON string
+      let orderNotes = order.notes;
+      try {
+        if (typeof order.notes === 'string' && (order.notes.startsWith('{') || order.notes.startsWith('['))) {
+          const parsed = JSON.parse(order.notes);
+          orderNotes = parsed.chat_notes ? parsed.chat_notes.map((n: any) => `${n.timestamp}: ${n.note}`).join('; ') : parsed;
+        }
+      } catch (e) {
+        // keep as string
+      }
+
+      const garmentNotes = order.garments?.map((g: any) => g.notes ? `${g.type}: ${g.notes}` : null).filter(Boolean) || [];
+
       return JSON.stringify({
         order_number: order.order_number,
         client_name: client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : 'Unknown',
@@ -300,7 +315,9 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
         services: services,
         total: `$${((order.total_cents || 0) / 100).toFixed(2)}`,
         deposit: `$${((order.deposit_cents || 0) / 100).toFixed(2)}`,
-        assigned_to: order.assigned_to || 'Unassigned'
+        assigned_to: order.assigned_to || 'Unassigned',
+        order_notes: orderNotes || 'None',
+        garment_notes: garmentNotes.length > 0 ? garmentNotes : 'None'
       });
     }
 
