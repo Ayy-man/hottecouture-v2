@@ -49,7 +49,7 @@ const SYSTEM_PROMPT = `Tu es l'assistant intelligent de Hotte Couture, une bouti
 - **delivered** = Livré
 
 ## Instructions
-1. Réponds TOUJOURS en français québécois professionnel
+1. Réponds dans la MÊME LANGUE que l'utilisateur (français ou anglais)
 2. Sois concis - Audrey et Solange ont besoin de réponses rapides
 3. Quand on te donne des données de la base de données, utilise-les pour répondre
 4. Pour les questions de prix, donne une fourchette réaliste
@@ -311,7 +311,7 @@ export async function POST(request: NextRequest) {
         'X-Title': 'Hotte Couture Assistant',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-3.5-sonnet',
+        model: 'openai/gpt-4o-mini',
         messages,
         max_tokens: 500,
         temperature: 0.7,
