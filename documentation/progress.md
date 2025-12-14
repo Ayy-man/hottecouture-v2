@@ -7,12 +7,37 @@
 
 ## CURRENT TASK
 
-**Task:** B3 - Editable Hours When In Progress
-**Status:** Starting
+**Task:** None - Phase 2 ~97% Complete
+**Status:** Only QuickBooks integration remaining
 
 ---
 
 ## COMPLETED TASKS
+
+### [2025-12-14] Hourly Pricing & French Translations
+
+**What:** Fixed hourly pricing calculation, estimated_minutes tracking, and French UI
+
+**Files:**
+- `src/components/intake/pricing-step.tsx` - Hourly pricing uses `hourly_rate_cents × qty`, all labels in French
+- `src/app/api/intake/route.ts` - Sets `estimated_minutes` on garment_service (hourly: qty×60, fixed: service default)
+
+**Test Result:** Build passes
+**Notes:** Hourly services now correctly priced and tracked
+
+---
+
+### [2025-12-14] Hide Phone/Email Privacy Feature
+
+**What:** Customer phone/email masked by default, tap to reveal
+
+**Files:**
+- `src/components/intake/client-step.tsx` - Added maskPhone/maskEmail functions, tap to reveal toggle
+
+**Test Result:** Build passes
+**Notes:** Phone shows as `***-***-1234`, email as `j***@domain.com`
+
+---
 
 ### [2025-12-13] Task B2 - Seamstress Assignment at Step 5
 

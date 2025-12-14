@@ -2,8 +2,8 @@
 
 **Project:** Custom Fashion Management System  
 **Client:** Hotte Couture (Audrey - Owner, Solange - Seamstress)  
-**Status:** Rescue & Completion  
-**Last Updated:** 2024-12-12
+**Status:** ~97% Complete  
+**Last Updated:** 2025-12-14
 
 ---
 
@@ -20,19 +20,22 @@
 - ✅ Kanban board (drag-drop, real-time, filtering)
 - ✅ Client management (search, CRUD, lookup)
 - ✅ Time tracking (start/pause/stop/resume)
-- ✅ Service catalog with pricing
-- ✅ Label generation
+- ✅ Service catalog with pricing (including hourly services)
+- ✅ Label generation (2 per garment, Print/PDF buttons)
 - ✅ Authentication (Supabase magic links)
-- ✅ Bilingual FR/EN (234 keys each)
+- ✅ Bilingual FR/EN (pricing step fully French)
 - ✅ Tax calculations (TPS/TVQ Quebec)
+- ✅ Customer privacy (phone/email masked, tap to reveal)
+- ✅ Seamstress assignment at intake
+- ✅ Workload scheduler with Gantt view
+- ✅ SMS confirmation modal (prevents accidental sends)
+- ✅ Auto-advance on card click
+- ✅ CRM integration (GHL contact sync)
+- ✅ Google Calendar integration
+- ✅ Stripe payment integration
 
 ### What's Missing
-- ❌ QuickBooks invoice sync
-- ❌ Payment processing (Stripe)
-- ❌ Google Calendar integration
-- ❌ SMS notifications (pickup ready, reminders)
-- ❌ AI chatbots (internal + external)
-- ❌ Various UI/UX refinements
+- ❌ QuickBooks invoice sync (only remaining item)
 
 ---
 
