@@ -7,7 +7,7 @@
 
 ## CURRENT TASK
 
-**Task:** None - Phase 3A Complete ✅
+**Task:** None - Phase 3A + AI Chat Complete ✅
 **Status:** Only QuickBooks integration remaining
 
 ---
@@ -18,6 +18,7 @@
 - [x] Today's Tasks View (`/board/today`) - Working
 - [x] Deposit Entry UI (custom orders) - Working (fixed `deposit_cents` column)
 - [x] Photo Upload (garments step) - Working
+- [x] Smart AI Chat Assistant - Working (requires OPENROUTER_API_KEY env var)
 
 ---
 
@@ -38,6 +39,27 @@
 - Today's Tasks shows orders due within 3 days with drag-to-reorder
 - Deposit UI appears for custom orders only, shows remaining balance
 - Photo capture uses device camera, uploads to Supabase storage
+
+### [2025-12-14] Smart AI Chat Assistant
+
+**What:** Upgraded internal chat from mock responses to real AI with database queries
+
+**Files:**
+- `src/app/api/chat/internal/route.ts` - Complete rewrite with OpenRouter + DB queries
+- `src/components/chat/internal-chat.tsx` - Added conversation history, updated welcome message
+
+**Features:**
+- OpenRouter API (Claude 3.5 Sonnet)
+- System prompt with business info, pricing, team details
+- DB queries: order lookup, today's orders, overdue, pending, ready, client search, stats
+- Conversation context (last 6 messages)
+- French responses (québécois professional)
+- Fallback to DB results if AI unavailable
+
+**Test Result:** Build passes
+**Notes:** Requires `OPENROUTER_API_KEY` env var in Vercel
+
+---
 
 ### [2025-12-14] Fix Deposit Column Name
 

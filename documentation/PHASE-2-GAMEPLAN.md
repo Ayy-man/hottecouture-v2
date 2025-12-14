@@ -38,6 +38,7 @@
 - ✅ Today's Tasks View (`/board/today`) with drag reordering
 - ✅ Deposit Entry UI for custom orders
 - ✅ Photo Upload in garments step
+- ✅ Smart AI Chat Assistant (OpenRouter + Claude 3.5 Sonnet)
 
 ### What's Missing
 - ❌ QuickBooks invoice sync (only remaining item)
