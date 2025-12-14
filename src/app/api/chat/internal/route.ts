@@ -684,7 +684,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createServiceRoleClient();
 
     const messages: ChatMessage[] = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: `${SYSTEM_PROMPT}\n\nDate actuelle: ${new Date().toLocaleDateString('fr-CA')} (${new Date().toLocaleDateString('en-US')})` },
     ];
 
     for (const msg of history.slice(-6)) {
