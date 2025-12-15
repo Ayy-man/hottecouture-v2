@@ -5,6 +5,7 @@ import { NavigationProvider } from '@/components/navigation/navigation-provider'
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { AuthButton } from '@/components/auth/auth-button';
 import { HLogo } from '@/components/ui/h-logo';
+import { GlobalChatWrapper } from '@/components/chat/global-chat-wrapper';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -116,6 +117,7 @@ export default function RootLayout({
                 {children}
               </main>
             </div>
+            <GlobalChatWrapper />
           </NavigationProvider>
         </AuthProvider>
       </body>
