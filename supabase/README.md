@@ -7,10 +7,14 @@ This directory contains the database migrations and setup scripts for the Hotte 
 ```
 supabase/
 ├── migrations/
-│   └── 0001_init.sql          # Initial database schema
+│   ├── 0001_init.sql                        # Initial database schema
+│   ├── 0002-0019_*.sql                      # Feature migrations
+│   ├── 0020_fix_get_orders_with_details.sql # Optimized orders RPC function
+│   └── 20240101_performance_indexes.sql     # Performance indexes
 ├── scripts/
-│   └── setup-storage.sql      # Storage bucket setup
-└── README.md                  # This file
+│   ├── setup-storage.sql                    # Storage bucket setup
+│   └── setup-storage-policies.sql           # Storage RLS policies
+└── README.md                                # This file
 ```
 
 ## 🗄️ Database Schema
@@ -120,6 +124,31 @@ const { data: orders } = await supabase
   .eq('status', 'pending')
 ```
 
+### RPC Functions
+
+#### `get_orders_with_details`
+
+Optimized function to fetch orders with all related data in a single query. Used by the board page for efficient data loading.
+
+```typescript
+const { data: orders } = await supabase.rpc('get_orders_with_details', {
+  p_limit: 50,
+  p_offset: 0,
+  p_client_id: null  // Optional: filter by client
+})
+```
+
+**Returns:**
+- Order details (id, order_number, status, rush, due_date, total_cents, etc.)
+- Client info (first_name, last_name, phone, email)
+- Garments array with nested services
+- Counts (total_garments, total_services)
+
+**Technical Notes:**
+- Uses `LANGUAGE sql` (not PL/pgSQL) to avoid variable scoping issues
+- Uses table aliases in subqueries to prevent ambiguous column references
+- Returns JSONB for garments array for flexible nested data
+
 ## 🔒 Security Considerations
 
 1. **Row Level Security**: All tables have RLS enabled
@@ -153,6 +182,8 @@ The migration includes indexes for:
 2. **Storage Upload Fails**: Check file size and type limits
 3. **Foreign Key Violations**: Verify referenced records exist
 4. **Permission Denied**: Check RLS policies and user roles
+5. **RPC Function "column reference is ambiguous"**: Use `LANGUAGE sql` instead of `LANGUAGE plpgsql`, and use table aliases in all subqueries
+6. **RPC Function "column does not exist"**: Verify column names match the actual schema (e.g., `total_cents` not `price_cents`)
 
 ### Debug Queries
 
