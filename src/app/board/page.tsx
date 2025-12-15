@@ -13,7 +13,7 @@ import { LoadingLogo } from '@/components/ui/loading-logo';
 import { MuralBackground } from '@/components/ui/mural-background';
 import { WorkListExport } from '@/components/board/worklist-export';
 import { SmsConfirmationModal } from '@/components/board/sms-confirmation-modal';
-import { LayoutGrid, List, Users } from 'lucide-react';
+import { LayoutGrid, List, Users, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 interface PendingSmsConfirmation {
@@ -304,6 +304,16 @@ export default function BoardPage() {
                   <div className='hidden sm:block'>
                     <ArchiveButton />
                   </div>
+                  <Button
+                    variant='outline'
+                    asChild
+                    className='hidden sm:flex border-stone-300 hover:bg-stone-50 hover:text-stone-900'
+                  >
+                    <Link href='/admin/staff' className='flex items-center gap-2'>
+                      <Settings className='w-4 h-4' />
+                      <span>Staff</span>
+                    </Link>
+                  </Button>
                   <Button asChild className='bg-stone-900 hover:bg-black text-white shadow-lg shadow-stone-900/20'>
                     <Link href='/intake'>New Order</Link>
                   </Button>
