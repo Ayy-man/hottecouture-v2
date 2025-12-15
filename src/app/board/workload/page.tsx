@@ -14,10 +14,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Clock, Users, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { addDays, startOfDay, endOfDay, format } from 'date-fns';
+import { useStaff } from '@/lib/hooks/useStaff';
 
 
 const HOURS_PER_DAY = 8;
-const SEAMSTRESSES = ['Audrey', 'Solange', 'Audrey-Anne', 'Unassigned'];
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#f59e0b',
@@ -74,6 +74,8 @@ export default function WorkloadPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
+  const { staff: staffMembers } = useStaff(true);
+  const SEAMSTRESSES = [...staffMembers.map(s => s.name), 'Unassigned'];
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -166,7 +168,7 @@ export default function WorkloadPage() {
     }
 
     return workloads;
-  }, [activeOrders]);
+  }, [activeOrders, SEAMSTRESSES]);
 
   const ganttFeatures = useMemo((): GanttFeature[] => {
     const features: GanttFeature[] = [];
@@ -247,7 +249,7 @@ export default function WorkloadPage() {
     const weeklyCapacity = workingDays * HOURS_PER_DAY * seamstressCount;
 
     return Math.min(100, (totalAssignedHours / weeklyCapacity) * 100);
-  }, [workloadBySeamstress]);
+  }, [workloadBySeamstress, SEAMSTRESSES]);
 
   const unassignedWorkload = workloadBySeamstress['Unassigned'];
 
