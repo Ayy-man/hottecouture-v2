@@ -2,12 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-
-const SEAMSTRESSES = [
-  { id: 'audrey', name: 'Audrey', role: 'Owner', icon: '👑' },
-  { id: 'solange', name: 'Solange', role: 'Seamstress', icon: '✂️' },
-  { id: 'audrey-anne', name: 'Audrey-Anne', role: 'Seamstress', icon: '🧵' },
-];
+import { useStaff } from '@/lib/hooks/useStaff';
+import { Loader2 } from 'lucide-react';
 
 interface AssignmentStepProps {
   selectedAssignee: string | null;
@@ -24,6 +20,8 @@ export function AssignmentStep({
   onPrev,
   isSubmitting = false,
 }: AssignmentStepProps) {
+  const { staff, loading } = useStaff(true);
+
   return (
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header */}
@@ -74,54 +72,66 @@ export function AssignmentStep({
             </p>
           </div>
 
-          <div className='space-y-3'>
-            {SEAMSTRESSES.map(({ id, name, role, icon }) => {
-              const isSelected = selectedAssignee === name;
+          {loading ? (
+            <div className='flex items-center justify-center py-8'>
+              <Loader2 className='h-6 w-6 animate-spin text-primary' />
+            </div>
+          ) : (
+            <div className='space-y-3'>
+              {staff.map((member) => {
+                const isSelected = selectedAssignee === member.name;
 
-              return (
-                <Card
-                  key={id}
-                  className={`cursor-pointer transition-all duration-200 ${
-                    isSelected
-                      ? 'ring-2 ring-primary shadow-lg scale-102'
-                      : 'hover:shadow-md'
-                  }`}
-                  onClick={() => onAssigneeChange(name)}
-                >
-                  <CardContent className='p-4'>
-                    <div className='flex items-center justify-between'>
-                      <div className='flex items-center space-x-3'>
-                        <div className='w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-2xl'>
-                          {icon}
+                return (
+                  <Card
+                    key={member.id}
+                    className={`cursor-pointer transition-all duration-200 ${
+                      isSelected
+                        ? 'ring-2 ring-primary shadow-lg scale-102'
+                        : 'hover:shadow-md'
+                    }`}
+                    onClick={() => onAssigneeChange(member.name)}
+                  >
+                    <CardContent className='p-4'>
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center space-x-3'>
+                          <div className='w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-2xl font-semibold text-primary'>
+                            {member.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className='font-semibold text-gray-900'>{member.name}</h3>
+                            <p className='text-sm text-gray-500'>Staff</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className='font-semibold text-gray-900'>{name}</h3>
-                          <p className='text-sm text-gray-500'>{role}</p>
-                        </div>
+                        {isSelected && (
+                          <div className='w-6 h-6 rounded-full bg-primary flex items-center justify-center'>
+                            <svg
+                              className='w-4 h-4 text-white'
+                              fill='currentColor'
+                              viewBox='0 0 20 20'
+                            >
+                              <path
+                                fillRule='evenodd'
+                                d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+                                clipRule='evenodd'
+                              />
+                            </svg>
+                          </div>
+                        )}
                       </div>
-                      {isSelected && (
-                        <div className='w-6 h-6 rounded-full bg-primary flex items-center justify-center'>
-                          <svg
-                            className='w-4 h-4 text-white'
-                            fill='currentColor'
-                            viewBox='0 0 20 20'
-                          >
-                            <path
-                              fillRule='evenodd'
-                              d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                              clipRule='evenodd'
-                            />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
-          {!selectedAssignee && (
+          {!loading && staff.length === 0 && (
+            <p className='text-center text-sm text-amber-600 mt-4'>
+              No staff members available. Add staff in Settings.
+            </p>
+          )}
+
+          {!selectedAssignee && staff.length > 0 && (
             <p className='text-center text-sm text-amber-600 mt-4'>
               Veuillez sélectionner une couturière pour continuer
             </p>
