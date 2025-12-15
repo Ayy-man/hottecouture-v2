@@ -116,7 +116,7 @@ export function InternalChat() {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full bg-gradient-to-r from-primary-500 to-accent-clay shadow-lg hover:shadow-xl transition-all duration-300"
+          className="fixed bottom-4 right-4 z-[9999] h-14 w-14 rounded-full bg-gradient-to-r from-primary-500 to-accent-clay shadow-lg hover:shadow-xl transition-all duration-300"
           size="icon"
         >
           <MessageCircle className="h-6 w-6 text-white" />
@@ -124,7 +124,7 @@ export function InternalChat() {
       )}
 
       {isOpen && (
-        <Card className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)] h-[500px] max-h-[calc(100vh-2rem)] flex flex-col shadow-2xl border-2 border-primary-200">
+        <Card className="fixed bottom-4 right-4 z-[9999] w-96 max-w-[calc(100vw-2rem)] h-[500px] max-h-[calc(100vh-2rem)] flex flex-col shadow-2xl border-2 border-primary-200">
           <div className="flex items-center justify-between p-3 border-b bg-gradient-to-r from-primary-500 to-accent-clay text-white rounded-t-lg">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />

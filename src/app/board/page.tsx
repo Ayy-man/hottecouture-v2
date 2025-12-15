@@ -307,11 +307,11 @@ export default function BoardPage() {
                   <Button
                     variant='outline'
                     asChild
-                    className='hidden sm:flex border-stone-300 hover:bg-stone-50 hover:text-stone-900'
+                    className='border-stone-300 hover:bg-stone-50 hover:text-stone-900'
                   >
                     <Link href='/admin/staff' className='flex items-center gap-2'>
                       <Settings className='w-4 h-4' />
-                      <span>Staff</span>
+                      <span className='hidden sm:inline'>Staff</span>
                     </Link>
                   </Button>
                   <Button asChild className='bg-stone-900 hover:bg-black text-white shadow-lg shadow-stone-900/20'>
