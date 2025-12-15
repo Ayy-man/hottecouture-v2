@@ -1,28 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { InternalChat } from './internal-chat';
 
 // Pages where chat should NOT appear
 const EXCLUDED_PATHS = ['/portal', '/embed', '/login', '/auth'];
 
 export function GlobalChatWrapper() {
-  const [showChat, setShowChat] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const isExcluded = EXCLUDED_PATHS.some(p => pathname.startsWith(p));
 
-  useEffect(() => {
-    if (!mounted) return;
-
-    const path = window.location.pathname;
-    const isExcluded = EXCLUDED_PATHS.some(p => path.startsWith(p));
-    setShowChat(!isExcluded);
-  }, [mounted]);
-
-  if (!mounted || !showChat) return null;
+  if (isExcluded) return null;
 
   return <InternalChat />;
 }
