@@ -1,5 +1,5 @@
--- Fixed version - Run this to fix the 500 error
--- This has correct parentheses structure
+-- WORKING VERSION - Use explicit aliases to avoid all ambiguity
+-- This should fix the id reference error once and for all
 
 DROP FUNCTION IF EXISTS get_orders_with_details;
 
@@ -34,20 +34,20 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   SELECT
-    o.id,
-    o.order_number,
-    o.client_id,
-    o.status,
-    o.rush,
-    o.due_date,
-    o.notes,
-    o.created_at,
-    o.updated_at,
-    o.is_archived,
-    o.estimated_completion_date,
-    o.actual_completion_date,
-    o.total_cents,
-    o.is_active,
+    o.id AS id,
+    o.order_number AS order_number,
+    o.client_id AS client_id,
+    o.status AS status,
+    o.rush AS rush,
+    o.due_date AS due_date,
+    o.notes AS notes,
+    o.created_at AS created_at,
+    o.updated_at AS updated_at,
+    o.is_archived AS is_archived,
+    o.estimated_completion_date AS estimated_completion_date,
+    o.actual_completion_date AS actual_completion_date,
+    o.total_cents AS total_cents,
+    o.is_active AS is_active,
     COALESCE(c.first_name, '') AS client_first_name,
     COALESCE(c.last_name, '') AS client_last_name,
     COALESCE(c.phone, '') AS client_phone,
@@ -56,7 +56,7 @@ BEGIN
       (
         SELECT JSON_AGG(
           JSON_BUILD_OBJECT(
-            'id', g.id,
+            'garment_id', g.id,
             'type', g.type,
             'label_code', g.label_code,
             'position_notes', g.position_notes,
@@ -64,14 +64,14 @@ BEGIN
               (
                 SELECT JSON_AGG(
                   JSON_BUILD_OBJECT(
-                    'id', gs.id,
+                    'garment_service_id', gs.id,
                     'service_id', gs.service_id,
                     'quantity', gs.quantity,
                     'custom_price_cents', gs.custom_price_cents,
                     'notes', gs.notes,
                     'service', (
                       SELECT JSON_BUILD_OBJECT(
-                        'id', s.id,
+                        'service_id', s.id,
                         'name', s.name,
                         'category', s.category,
                         'base_price_cents', s.base_price_cents
