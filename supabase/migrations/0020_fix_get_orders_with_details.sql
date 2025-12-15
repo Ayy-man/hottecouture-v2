@@ -1,6 +1,4 @@
--- WORKING VERSION - Use explicit aliases to avoid all ambiguity
--- This should fix the id reference error once and for all
-
+-- Fixed version using LANGUAGE sql to avoid PL/pgSQL variable scoping issues
 DROP FUNCTION IF EXISTS get_orders_with_details;
 
 CREATE OR REPLACE FUNCTION get_orders_with_details(
@@ -14,8 +12,8 @@ RETURNS TABLE (
   client_id UUID,
   status TEXT,
   rush BOOLEAN,
-  due_date TIMESTAMP WITH TIME ZONE,
-  notes TEXT,
+  due_date DATE,
+  notes JSONB,
   created_at TIMESTAMP WITH TIME ZONE,
   updated_at TIMESTAMP WITH TIME ZONE,
   is_archived BOOLEAN,
@@ -28,30 +26,28 @@ RETURNS TABLE (
   client_phone TEXT,
   client_email TEXT,
   garments JSONB,
-  total_garments INTEGER,
-  total_services INTEGER
+  total_garments BIGINT,
+  total_services BIGINT
 ) AS $$
-BEGIN
-  RETURN QUERY
   SELECT
-    o.id AS id,
-    o.order_number AS order_number,
-    o.client_id AS client_id,
-    o.status AS status,
-    o.rush AS rush,
-    o.due_date AS due_date,
-    o.notes AS notes,
-    o.created_at AS created_at,
-    o.updated_at AS updated_at,
-    o.is_archived AS is_archived,
-    o.estimated_completion_date AS estimated_completion_date,
-    o.actual_completion_date AS actual_completion_date,
-    o.total_cents AS total_cents,
-    o.is_active AS is_active,
-    COALESCE(c.first_name, '') AS client_first_name,
-    COALESCE(c.last_name, '') AS client_last_name,
-    COALESCE(c.phone, '') AS client_phone,
-    COALESCE(c.email, '') AS client_email,
+    o.id,
+    o.order_number,
+    o.client_id,
+    o.status::TEXT,
+    o.rush,
+    o.due_date,
+    o.notes,
+    o.created_at,
+    o.updated_at,
+    o.is_archived,
+    o.estimated_completion_date,
+    o.actual_completion_date,
+    o.total_cents,
+    o.is_active,
+    COALESCE(c.first_name, '')::TEXT,
+    COALESCE(c.last_name, '')::TEXT,
+    COALESCE(c.phone, '')::TEXT,
+    COALESCE(c.email, '')::TEXT,
     COALESCE(
       (
         SELECT JSON_AGG(
@@ -84,17 +80,17 @@ BEGIN
                 FROM garment_service gs
                 WHERE gs.garment_id = g.id
               ),
-              '[]'::json
+              '[]'::JSON
             )
           )
         )
         FROM garment g
         WHERE g.order_id = o.id
       ),
-      '[]'::json
-    ) AS garments,
-    (SELECT COUNT(*) FROM garment WHERE order_id = o.id) AS total_garments,
-    (SELECT COUNT(*) FROM garment_service WHERE garment_id IN (SELECT id FROM garment WHERE order_id = o.id)) AS total_services
+      '[]'::JSON
+    )::JSONB,
+    (SELECT COUNT(*) FROM garment gx WHERE gx.order_id = o.id),
+    (SELECT COUNT(*) FROM garment_service gsx WHERE gsx.garment_id IN (SELECT gy.id FROM garment gy WHERE gy.order_id = o.id))
   FROM "order" o
   LEFT JOIN client c ON c.id = o.client_id
   WHERE o.is_archived = FALSE
@@ -102,11 +98,7 @@ BEGIN
   ORDER BY o.created_at DESC
   LIMIT p_limit
   OFFSET p_offset;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE sql SECURITY DEFINER;
 
 GRANT EXECUTE ON FUNCTION get_orders_with_details TO authenticated;
 GRANT EXECUTE ON FUNCTION get_orders_with_details TO service_role;
-
--- Test the function
-SELECT * FROM get_orders_with_details(1, 0, NULL);
