@@ -27,6 +27,9 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useStaff } from '@/lib/hooks/useStaff';
+
+// Staff is now fetched dynamically via useStaff hook
 
 interface TaskOrder {
   id: string;
@@ -46,8 +49,6 @@ interface TaskOrder {
     }>;
   }>;
 }
-
-const SEAMSTRESSES = ['Audrey', 'Solange', 'Audrey-Anne'];
 
 function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
   const {
@@ -132,6 +133,7 @@ export default function TodayTasksPage() {
   const [orders, setOrders] = useState<TaskOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const { staff } = useStaff(true); // Only active staff
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -263,8 +265,8 @@ export default function TodayTasksPage() {
                 className="text-sm border rounded-lg px-3 py-2"
               >
                 <option value="all">Tous</option>
-                {SEAMSTRESSES.map(s => (
-                  <option key={s} value={s}>{s}</option>
+                {staff.map(s => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
                 ))}
               </select>
               

@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TimerButton } from '@/components/timer/timer-button';
 import { Edit2, Save, X, Clock, User, CheckCircle } from 'lucide-react';
+import { useStaff } from '@/lib/hooks/useStaff';
 
 interface Task {
   id: string;
@@ -40,12 +41,6 @@ interface TaskManagementModalProps {
   onClose: () => void;
 }
 
-const SEAMSTRESSES = [
-  { id: 'audrey', name: 'Audrey' },
-  { id: 'solange', name: 'Solange' },
-  { id: 'audrey-anne', name: 'Audrey-Anne' },
-];
-
 const STAGE_OPTIONS = [
   { value: 'pending', label: 'Pending' },
   { value: 'working', label: 'Working' },
@@ -64,6 +59,7 @@ export function TaskManagementModal({
   const [editForm, setEditForm] = useState<Partial<Task>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { staff } = useStaff(true);
 
   useEffect(() => {
     if (isOpen && orderId) {
@@ -226,9 +222,9 @@ export function TaskManagementModal({
                               <SelectValue placeholder="Unassigned" />
                             </SelectTrigger>
                             <SelectContent>
-                              {SEAMSTRESSES.map((seamstress) => (
-                                <SelectItem key={seamstress.id} value={seamstress.id}>
-                                  {seamstress.name}
+                              {staff.map((member) => (
+                                <SelectItem key={member.id} value={member.name}>
+                                  {member.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
