@@ -49,6 +49,34 @@ export async function DELETE(
   const supabase = await createClient();
   const { id } = await params;
 
+  // Get staff name first
+  const { data: staffMember, error: fetchError } = await supabase
+    .from('staff')
+    .select('name')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !staffMember) {
+    return NextResponse.json({ error: 'Staff member not found' }, { status: 404 });
+  }
+
+  // Check if staff has assigned orders
+  const { count, error: countError } = await supabase
+    .from('order')
+    .select('id', { count: 'exact', head: true })
+    .eq('assigned_to', staffMember.name);
+
+  if (countError) {
+    return NextResponse.json({ error: countError.message }, { status: 500 });
+  }
+
+  if (count && count > 0) {
+    return NextResponse.json(
+      { error: `Cannot delete staff with ${count} assigned order(s). Reassign orders first.` },
+      { status: 409 }
+    );
+  }
+
   const { error } = await supabase
     .from('staff')
     .delete()
