@@ -21,10 +21,13 @@ A modern, production-ready web application built with Next.js 14+, TypeScript, a
 - **Order Management** - Complete order intake and tracking system
 - **Kanban Board** - Visual order management with drag-and-drop
 - **Customer Portal** - Public order status tracking
-- **Time Tracking** - Per-item task and time management
-- **QR Code Labels** - Scannable order labels
+- **Time Tracking** - Per-garment, per-service task and time management
+- **Task Management** - Auto-create tasks when order enters "working" status
+- **Staff Management** - Dynamic staff list with add/edit/deactivate at `/admin/staff`
+- **QR Code Labels** - Scannable order labels with dual copies
 - **Business Analytics** - Revenue, order, and customer insights
 - **Multi-user Support** - Role-based access for owners and seamstresses
+- **AI Chat Assistant** - Internal chatbot for staff queries (OpenRouter/GPT-4)
 
 ## 🛠️ Tech Stack
 

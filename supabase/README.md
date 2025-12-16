@@ -10,6 +10,7 @@ supabase/
 │   ├── 0001_init.sql                        # Initial database schema
 │   ├── 0002-0019_*.sql                      # Feature migrations
 │   ├── 0020_fix_get_orders_with_details.sql # Optimized orders RPC function
+│   ├── 0021_add_staff_table.sql             # Staff management table
 │   └── 20240101_performance_indexes.sql     # Performance indexes
 ├── scripts/
 │   ├── setup-storage.sql                    # Storage bucket setup
@@ -26,7 +27,8 @@ supabase/
 - **garment**: Individual garments within orders
 - **service**: Available services and pricing
 - **garment_service**: Junction table linking garments to services
-- **task**: Work tasks and time tracking
+- **task**: Work tasks and time tracking per garment/service
+- **staff**: Employee/seamstress management (name, active status)
 - **price_list**: Pricing configurations
 - **document**: File attachments and documents
 - **event_log**: Audit trail and activity logging
@@ -148,6 +150,43 @@ const { data: orders } = await supabase.rpc('get_orders_with_details', {
 - Uses `LANGUAGE sql` (not PL/pgSQL) to avoid variable scoping issues
 - Uses table aliases in subqueries to prevent ambiguous column references
 - Returns JSONB for garments array for flexible nested data
+
+### Staff Table
+
+The `staff` table manages employees/seamstresses:
+
+```sql
+CREATE TABLE staff (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(100) NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**API Endpoints:**
+- `GET /api/staff` - List all active staff
+- `GET /api/staff?active=false` - List all staff including inactive
+- `POST /api/staff` - Create new staff member
+- `PATCH /api/staff/[id]` - Update staff (name, is_active)
+- `DELETE /api/staff/[id]` - Delete staff (blocked if has assigned orders)
+
+**Fallback:** If the staff table doesn't exist, the API returns hardcoded fallback staff (Audrey, Solange, Audrey-Anne) to prevent UI breakage.
+
+### Task Auto-Creation
+
+When an order moves to "working" status, tasks are automatically created:
+
+```typescript
+// Called from /api/order/[id]/stage when stage = 'working'
+import { autoCreateTasks } from '@/lib/tasks/auto-create';
+
+const result = await autoCreateTasks(supabase, orderId);
+// Creates one task per garment per service
+// Uses service.estimated_minutes as planned_minutes
+```
+
+Tasks can also be manually created via the "Auto-Create Tasks" button in the Task Management Modal
 
 ## 🔒 Security Considerations
 
