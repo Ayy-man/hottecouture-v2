@@ -63,42 +63,70 @@ export async function GET(request: NextRequest) {
       });
 
     } else {
-      // Legacy Order Logic
-      const { data: orderData, error: fetchError } = await supabase
-        .from('order')
-        .select(
-          'is_timer_running, timer_started_at, timer_paused_at, total_work_seconds, work_completed_at'
-        )
-        .eq('id', orderId)
-        .single();
+      // No garmentId - find first garment and check its task status
+      const { data: garments, error: garmentError } = await supabase
+        .from('garment')
+        .select('id')
+        .eq('order_id', orderId)
+        .limit(1);
 
-      if (fetchError) {
-        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      if (garmentError || !garments || garments.length === 0) {
+        // No garments - return idle state
+        return NextResponse.json({
+          success: true,
+          is_running: false,
+          is_paused: false,
+          is_completed: false,
+          timer_started_at: null,
+          timer_paused_at: null,
+          work_completed_at: null,
+          total_work_seconds: 0,
+          current_session_seconds: 0,
+          total_seconds: 0,
+        });
       }
 
-      const order = orderData as any;
+      const firstGarmentId = garments[0].id;
+
+      // Get task for this garment
+      const { data: taskData, error: taskError } = await supabase
+        .from('task')
+        .select('*')
+        .eq('garment_id', firstGarmentId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (taskError && taskError.code !== 'PGRST116') {
+        console.error('Task fetch error:', taskError);
+      }
+
+      const task = taskData || {};
+      const isRunning = task.is_active || false;
       let currentSessionSeconds = 0;
-      if (order.is_timer_running && order.timer_started_at) {
-        const startTime = new Date(order.timer_started_at);
+
+      if (isRunning && task.started_at) {
+        const startTime = new Date(task.started_at);
         const now = new Date();
         currentSessionSeconds = Math.floor(
           (now.getTime() - startTime.getTime()) / 1000
         );
       }
 
-      const totalSeconds = order.is_timer_running
-        ? (order.total_work_seconds || 0) + currentSessionSeconds
-        : order.total_work_seconds || 0;
+      const actualMinutes = task.actual_minutes || 0;
+      const totalSeconds = (actualMinutes * 60) + currentSessionSeconds;
+      const isCompleted = task.stage === 'completed';
+      const isPaused = !isRunning && (!!task.stopped_at || actualMinutes > 0) && !isCompleted;
 
       return NextResponse.json({
         success: true,
-        is_running: order.is_timer_running,
-        is_paused: !order.is_timer_running && order.timer_paused_at,
-        is_completed: !!order.work_completed_at,
-        timer_started_at: order.timer_started_at,
-        timer_paused_at: order.timer_paused_at,
-        work_completed_at: order.work_completed_at,
-        total_work_seconds: order.total_work_seconds || 0,
+        is_running: isRunning,
+        is_paused: isPaused,
+        is_completed: isCompleted,
+        timer_started_at: task.started_at || null,
+        timer_paused_at: task.stopped_at || null,
+        work_completed_at: isCompleted ? task.stopped_at : null,
+        total_work_seconds: actualMinutes * 60,
         current_session_seconds: currentSessionSeconds,
         total_seconds: totalSeconds,
       });

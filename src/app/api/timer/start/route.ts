@@ -103,48 +103,82 @@ export async function POST(request: NextRequest) {
       });
 
     } else {
-      // Legacy Order Logic
-      // Check if timer is already running for this order
-      const { data: orderData, error: fetchError } = await supabase
-        .from('order')
-        .select('is_timer_running, timer_started_at, total_work_seconds')
-        .eq('id', orderId)
-        .single();
+      // No garmentId provided - find first garment for this order and use task-based timer
+      const { data: garments, error: garmentError } = await supabase
+        .from('garment')
+        .select('id')
+        .eq('order_id', orderId)
+        .limit(1);
 
-      if (fetchError) {
-        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-      }
-
-      if ((orderData as any).is_timer_running) {
+      if (garmentError || !garments || garments.length === 0) {
         return NextResponse.json(
-          { error: 'Timer is already running for this order' },
+          { error: 'No garments found for this order. Cannot start timer.' },
           { status: 400 }
         );
       }
 
-      // Start the timer
-      const { error: updateError } = await (supabase as any)
-        .from('order')
-        .update({
-          is_timer_running: true,
-          timer_started_at: now,
-          timer_paused_at: null,
-        })
-        .eq('id', orderId);
+      const firstGarmentId = garments[0].id;
 
-      if (updateError) {
-        return NextResponse.json(
-          { error: 'Failed to start timer' },
-          { status: 500 }
-        );
+      // Check for existing task for this garment
+      const { data: existingTask, error: taskFetchError } = await supabase
+        .from('task')
+        .select('*')
+        .eq('garment_id', firstGarmentId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (taskFetchError && taskFetchError.code !== 'PGRST116') {
+        throw new Error(taskFetchError.message);
       }
 
-      return NextResponse.json({
-        success: true,
-        message: 'Timer started successfully',
-        timer_started_at: now,
-        total_work_seconds: (orderData as any).total_work_seconds || 0,
-      });
+      if (existingTask) {
+        if (existingTask.is_active) {
+          return NextResponse.json({ error: 'Timer already running' }, { status: 400 });
+        }
+
+        // Resume existing task
+        const { error: updateError } = await supabase
+          .from('task')
+          .update({
+            is_active: true,
+            started_at: now,
+            stage: 'working'
+          })
+          .eq('id', existingTask.id);
+
+        if (updateError) throw updateError;
+
+        return NextResponse.json({
+          success: true,
+          message: 'Timer started successfully',
+          timer_started_at: now,
+          total_work_seconds: (existingTask.actual_minutes || 0) * 60
+        });
+      } else {
+        // Create new general task for this garment
+        const { error: insertError } = await supabase
+          .from('task')
+          .insert({
+            garment_id: firstGarmentId,
+            service_id: null,
+            operation: 'General Work',
+            stage: 'working',
+            is_active: true,
+            started_at: now,
+            actual_minutes: 0,
+            planned_minutes: 60
+          });
+
+        if (insertError) throw insertError;
+
+        return NextResponse.json({
+          success: true,
+          message: 'Timer started successfully',
+          timer_started_at: now,
+          total_work_seconds: 0
+        });
+      }
     }
   } catch (error) {
     console.error('Timer start error:', error);

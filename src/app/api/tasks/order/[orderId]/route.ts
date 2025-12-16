@@ -17,7 +17,42 @@ export async function GET(
       );
     }
 
-    // Fetch all tasks for this order with garment and service details
+    // First, get all garment IDs for this order
+    const { data: garments, error: garmentError } = await supabase
+      .from('garment')
+      .select('id')
+      .eq('order_id', orderId);
+
+    if (garmentError) {
+      console.error('Error fetching garments:', garmentError);
+      return NextResponse.json(
+        { error: 'Failed to fetch garments', details: garmentError.message },
+        { status: 500 }
+      );
+    }
+
+    // If no garments, return empty
+    if (!garments || garments.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          tasks: [],
+          tasksByGarment: {},
+          summary: {
+            totalTasks: 0,
+            completedTasks: 0,
+            totalPlannedMinutes: 0,
+            totalActualMinutes: 0,
+            totalVarianceMinutes: 0,
+            progressPercentage: 0,
+          },
+        },
+      });
+    }
+
+    const garmentIds = garments.map((g: { id: string }) => g.id);
+
+    // Fetch all tasks for these garments with garment and service details
     const { data: tasks, error } = await supabase
       .from('task')
       .select(`
@@ -39,7 +74,8 @@ export async function GET(
           type,
           color,
           brand,
-          label_code
+          label_code,
+          order_id
         ),
         service (
           id,
@@ -48,7 +84,7 @@ export async function GET(
           category
         )
       `)
-      .eq('garment.order_id', orderId)
+      .in('garment_id', garmentIds)
       .order('created_at', { ascending: true });
 
     if (error) {

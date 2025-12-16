@@ -58,6 +58,14 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
+    // If staff table doesn't exist, return helpful error
+    if (error.message.includes('staff') || error.code === '42P01' || error.message.includes('does not exist')) {
+      console.error('Staff table not found:', error);
+      return NextResponse.json({
+        error: 'Staff table not configured. Please run migration 0021_add_staff_table.sql in Supabase.',
+        usingFallback: true
+      }, { status: 503 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
