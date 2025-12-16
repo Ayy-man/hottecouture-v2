@@ -481,14 +481,14 @@ export function PricingStep({
                         <input
                           type='number'
                           min='0'
-                          step='0.01'
-                          value={((data.deposit_amount_cents || 0) / 100).toFixed(2)}
+                          step='5'
+                          value={Math.round((data.deposit_amount_cents || 0) / 100)}
                           onChange={e => {
                             const cents = Math.round(parseFloat(e.target.value || '0') * 100);
                             handleInputChange('deposit_amount_cents', cents);
                           }}
                           className='w-32 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
-                          placeholder='0.00'
+                          placeholder='0'
                         />
                       </div>
                       {calculation && data.deposit_amount_cents && (

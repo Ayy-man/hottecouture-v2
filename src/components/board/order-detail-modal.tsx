@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
 import { GarmentTaskSummary } from '@/components/tasks/garment-task-summary';
 import { TaskManagementModal } from '@/components/tasks/task-management-modal';
+import { TimerButton } from '@/components/timer/timer-button';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { RACK_CONFIG } from '@/lib/config/production';
 
@@ -300,6 +301,20 @@ export function OrderDetailModal({
 
           {!loading && (
             <>
+              {/* Timer Section - Always visible for working orders */}
+              {(displayOrder.status === 'working' || displayOrder.status === 'pending') && (
+                <div className='mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
+                  <h3 className='text-lg font-semibold text-blue-800 mb-3'>⏱️ Time Tracking</h3>
+                  <TimerButton
+                    orderId={displayOrder.id}
+                    orderStatus={displayOrder.status}
+                  />
+                  <p className='text-xs text-blue-600 mt-2'>
+                    Track time spent on this order. Click &quot;Manage Tasks&quot; for per-service tracking.
+                  </p>
+                </div>
+              )}
+
               {/* Order Details Grid */}
               <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6'>
                 {/* Basic Info */}

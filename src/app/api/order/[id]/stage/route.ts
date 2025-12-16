@@ -10,6 +10,7 @@ import {
 } from '@/lib/api/error-handler';
 import { orderStageSchema, OrderStage, OrderStageResponse } from '@/lib/dto';
 import { sendSMSNotification } from '@/lib/webhooks/sms-webhook';
+import { autoCreateTasks } from '@/lib/tasks/auto-create';
 // Simple time tracking: just record timestamps
 
 // Valid status transitions - more flexible for Kanban board
@@ -156,20 +157,12 @@ async function handleOrderStage(
   if (newStage === 'working') {
     try {
       console.log(`📋 Creating tasks for order ${orderId} entering working stage`);
-      const autoCreateResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/tasks/auto-create`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId }),
-        }
-      );
+      const autoCreateResult = await autoCreateTasks(supabase, orderId);
 
-      if (autoCreateResponse.ok) {
-        const autoCreateResult = await autoCreateResponse.json();
+      if (autoCreateResult.success) {
         console.log(`✅ Auto-create tasks result:`, autoCreateResult);
       } else {
-        console.error(`❌ Failed to auto-create tasks:`, await autoCreateResponse.text());
+        console.error(`❌ Failed to auto-create tasks:`, autoCreateResult.error);
       }
     } catch (autoCreateError) {
       console.error(`⚠️ Auto-create tasks error:`, autoCreateError);

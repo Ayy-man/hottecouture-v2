@@ -9,10 +9,18 @@ export interface StaffMember {
   created_at: string;
 }
 
+// Hardcoded fallback staff when database table doesn't exist
+const FALLBACK_STAFF: StaffMember[] = [
+  { id: 'fallback-1', name: 'Audrey', is_active: true, created_at: new Date().toISOString() },
+  { id: 'fallback-2', name: 'Solange', is_active: true, created_at: new Date().toISOString() },
+  { id: 'fallback-3', name: 'Audrey-Anne', is_active: true, created_at: new Date().toISOString() },
+];
+
 export function useStaff(activeOnly: boolean = true) {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   const fetchStaff = useCallback(async () => {
     setLoading(true);
@@ -24,8 +32,21 @@ export function useStaff(activeOnly: boolean = true) {
         throw new Error('Failed to fetch staff');
       }
       const data = await response.json();
-      setStaff(data.staff || []);
+      const staffData = data.staff || [];
+
+      // If no staff returned or API error, use fallback
+      if (staffData.length === 0 && data.error) {
+        console.warn('Staff API error, using fallback staff:', data.error);
+        setStaff(FALLBACK_STAFF);
+        setUsingFallback(true);
+      } else {
+        setStaff(staffData);
+        setUsingFallback(false);
+      }
     } catch (err) {
+      console.warn('Staff fetch failed, using fallback staff:', err);
+      setStaff(FALLBACK_STAFF);
+      setUsingFallback(true);
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
@@ -102,6 +123,7 @@ export function useStaff(activeOnly: boolean = true) {
     staff,
     loading,
     error,
+    usingFallback,
     refetch: fetchStaff,
     addStaff,
     updateStaff,

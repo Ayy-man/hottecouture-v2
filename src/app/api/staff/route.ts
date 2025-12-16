@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// Hardcoded fallback staff when database table doesn't exist
+const FALLBACK_STAFF = [
+  { id: 'fallback-1', name: 'Audrey', is_active: true, created_at: new Date().toISOString() },
+  { id: 'fallback-2', name: 'Solange', is_active: true, created_at: new Date().toISOString() },
+  { id: 'fallback-3', name: 'Audrey-Anne', is_active: true, created_at: new Date().toISOString() },
+];
+
 // GET /api/staff - List all staff (optionally filter by active)
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -19,6 +26,15 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
 
   if (error) {
+    // If staff table doesn't exist, return fallback staff
+    if (error.message.includes('staff') || error.code === '42P01') {
+      console.warn('Staff table not found, returning fallback staff');
+      return NextResponse.json({
+        staff: FALLBACK_STAFF,
+        usingFallback: true,
+        warning: 'Using fallback staff data. Please run migration 0021_add_staff_table.sql'
+      });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

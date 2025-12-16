@@ -7,8 +7,62 @@
 
 ## CURRENT TASK
 
-**Task:** Phase 4 & Per-Item Time Tracking Implementation
+**Task:** Critical Bug Fixes - Staff, Timer, Tasks
 **Status:** Completed ✅
+
+---
+
+## [2025-12-16] Critical Bug Fixes - COMPLETE ✅
+
+**What:** Fixed 5 critical issues reported after staff management deployment
+
+**Issues Fixed:**
+1. **Staff table missing in production** - Migration 0021 not applied
+2. **Staff API returning 500 errors** - Added fallback staff data
+3. **Timer disappeared** - Added prominent timer section to order detail modal
+4. **Auto-create tasks not working** - Refactored to use direct function call instead of HTTP
+5. **Deposit input too granular** - Changed step from 0.01 to 5 for usability
+6. **No way to manually create tasks** - Added "Auto-Create Tasks" button to Task Management Modal
+
+**Files Changed:**
+- `src/lib/hooks/useStaff.ts` - Added FALLBACK_STAFF constant and usingFallback state
+- `src/app/api/staff/route.ts` - Return fallback staff when table doesn't exist
+- `src/lib/tasks/auto-create.ts` - NEW: Shared auto-create function
+- `src/app/api/tasks/auto-create/route.ts` - Refactored to use shared function
+- `src/app/api/order/[id]/stage/route.ts` - Direct function call instead of HTTP fetch
+- `src/components/tasks/task-management-modal.tsx` - Added auto-create button and task count
+- `src/components/board/order-detail-modal.tsx` - Added prominent Timer section
+- `src/components/intake/pricing-step.tsx` - Changed deposit step from 0.01 to 5
+
+**Root Causes:**
+- Staff migration (0021) was created but not deployed to production Supabase
+- Auto-create used HTTP fetch which failed in serverless environment
+- Timer was only visible within task list, not prominently displayed
+
+**Action Required:**
+Run this SQL in Supabase production:
+```sql
+-- From supabase/migrations/0021_add_staff_table.sql
+CREATE TABLE IF NOT EXISTS staff (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(100) NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_staff_active ON staff(is_active);
+INSERT INTO staff (name, is_active) VALUES
+  ('Audrey', true),
+  ('Solange', true),
+  ('Audrey-Anne', true);
+ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Staff readable by authenticated users"
+  ON staff FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Staff manageable by authenticated users"
+  ON staff FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
+```
+
+**Test Result:** Type check passes ✅
 
 ---
 
