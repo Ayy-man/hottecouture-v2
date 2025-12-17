@@ -109,19 +109,28 @@ export async function POST(request: NextRequest) {
       throw updateError;
     }
 
-    // Log the payment event
-    await supabase.from('event_log').insert({
-      entity: 'order',
-      entity_id: orderId,
-      action: 'payment_recorded',
-      actor: 'staff',
-      details: {
-        type,
-        method,
-        amount_cents: amountCents || (type === 'deposit' ? Math.ceil(order.total_cents / 2) : order.balance_due_cents),
-        notes,
-      },
-    });
+    // Calculate amount for webhook
+    const paymentAmountCents = amountCents || (type === 'deposit' ? Math.ceil(order.total_cents / 2) : order.balance_due_cents);
+
+    // Send n8n webhook to update GHL tags (discrete - no detailed logging for cash)
+    const client = order.client as any;
+    try {
+      await sendPaiementRecu({
+        payment_type: type,
+        payment_method: method,
+        amount_cents: paymentAmountCents,
+        order: {
+          id: orderId,
+          order_number: order.order_number,
+        },
+        client: {
+          ghl_contact_id: client?.ghl_contact_id || null,
+        },
+      });
+      console.log(`✅ Payment received webhook sent for order ${order.order_number}`);
+    } catch (webhookError) {
+      console.warn('⚠️ Payment received webhook failed (non-blocking):', webhookError);
+    }
 
     return NextResponse.json({
       success: true,

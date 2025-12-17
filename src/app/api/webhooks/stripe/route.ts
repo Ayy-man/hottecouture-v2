@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { constructWebhookEvent } from '@/lib/integrations/stripe';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
+import { sendPaiementRecu } from '@/lib/webhooks/n8n-webhooks';
 
 export async function POST(request: NextRequest) {
   const payload = await request.text();
@@ -86,24 +87,32 @@ export async function POST(request: NextRequest) {
             },
           });
 
-          // Send payment confirmation notification
-          if (process.env.NEXT_PUBLIC_APP_URL) {
-            try {
-              await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL}/api/notifications/payment-received`,
-                {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    order_id: orderId,
-                    payment_type: paymentType,
-                    amount_cents: session.amount_total,
-                  }),
-                }
-              );
-            } catch (notifyError) {
-              console.warn('⚠️ Failed to send payment notification:', notifyError);
-            }
+          // Get client GHL contact ID for webhook
+          const { data: orderWithClient } = await supabase
+            .from('order')
+            .select('client:client_id(ghl_contact_id)')
+            .eq('id', orderId)
+            .single();
+
+          const clientData = orderWithClient?.client as any;
+
+          // Send n8n webhook to update GHL tags
+          try {
+            await sendPaiementRecu({
+              payment_type: paymentType as 'deposit' | 'balance' | 'full',
+              payment_method: 'stripe',
+              amount_cents: session.amount_total || 0,
+              order: {
+                id: orderId,
+                order_number: parseInt(orderNumber || '0'),
+              },
+              client: {
+                ghl_contact_id: clientData?.ghl_contact_id || null,
+              },
+            });
+            console.log(`✅ Payment received webhook sent to n8n for order #${orderNumber}`);
+          } catch (webhookError) {
+            console.warn('⚠️ n8n webhook failed (non-blocking):', webhookError);
           }
         }
         break;

@@ -11,6 +11,11 @@ import {
 import { orderStageSchema, OrderStage, OrderStageResponse } from '@/lib/dto';
 import { sendSMSNotification } from '@/lib/webhooks/sms-webhook';
 import { autoCreateTasks } from '@/lib/tasks/auto-create';
+import {
+  sendPretRamassage,
+  buildN8nOrder,
+  buildN8nClient,
+} from '@/lib/webhooks/n8n-webhooks';
 // Simple time tracking: just record timestamps
 
 // Valid status transitions - more flexible for Kanban board
@@ -324,12 +329,12 @@ async function handleOrderStage(
     }
   }
 
-  // Auto-send payment link when order moves to "Ready" and notification is requested
+  // Auto-send notification when order moves to "Ready"
   if (newStage === 'ready' && shouldSendNotification) {
     const orderData = order as any;
     const paymentStatus = orderData.payment_status;
 
-    // Only send if payment is not already completed
+    // If payment is not complete, create checkout and send payment link
     if (paymentStatus !== 'paid') {
       try {
         // Determine payment type based on order type and deposit status
@@ -347,7 +352,7 @@ async function handleOrderStage(
             body: JSON.stringify({
               orderId: orderId,
               type: paymentType,
-              sendSms: true, // Auto-send SMS with payment link
+              sendSms: true, // Auto-send notification via n8n /pret-ramassage
             }),
           }
         );
@@ -364,7 +369,22 @@ async function handleOrderStage(
         // Don't fail the stage change if payment link fails
       }
     } else {
-      console.log(`ℹ️ Payment already completed for order ${orderId}, skipping payment link`);
+      // Order already paid - just send pickup notification without payment link
+      console.log(`ℹ️ Order ${orderId} already paid, sending pickup notification only`);
+      try {
+        const n8nOrder = buildN8nOrder(orderData);
+        const n8nClient = buildN8nClient(client);
+
+        await sendPretRamassage({
+          order: n8nOrder,
+          client: n8nClient,
+          checkout_url: null, // Already paid, no payment link needed
+          balance_amount_cents: 0,
+        });
+        console.log(`✅ Pickup notification sent for paid order ${orderId}`);
+      } catch (notifyError) {
+        console.warn(`⚠️ Pickup notification error for order ${orderId}:`, notifyError);
+      }
     }
   }
 
