@@ -52,6 +52,8 @@ interface IntakeFormData {
     rush: boolean;
     rush_fee_type?: 'small' | 'large';
     assigned_to?: string;
+    deposit_required?: boolean;
+    deposit_amount_cents?: number;
   };
 }
 
@@ -163,6 +165,8 @@ export default function IntakePage() {
           due_date: formData.order.due_date,
           rush: formData.order.rush,
           rush_fee_type: formData.order.rush_fee_type,
+          deposit_required: formData.order.deposit_required,
+          deposit_amount_cents: formData.order.deposit_amount_cents,
         },
         garments: formData.garments.map(garment => ({
           type: garment.type,
