@@ -309,7 +309,7 @@ export function ClientStep({
           newsletter_consent: false,
         });
         setErrors({});
-        setTimeout(() => onNext(), 300);
+        // Don't auto-advance for new clients - let them add measurements first
       } catch (err) {
         console.error('Error creating client:', err);
         setErrors({ first_name: 'Échec de création. Réessayez.' });
@@ -333,6 +333,7 @@ export function ClientStep({
         preferred_contact: 'email',
         newsletter_consent: false,
       });
+      // For existing clients, auto-advance since measurements would be on file
       setTimeout(() => onNext(), 300);
     }
   };
