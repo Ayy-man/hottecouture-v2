@@ -24,6 +24,8 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastSentUrl, setLastSentUrl] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [smsSent, setSmsSent] = useState(false);
 
   const isCustomOrder = order.type === 'custom';
   const depositRequired = isCustomOrder && !order.deposit_paid_at;
@@ -49,6 +51,8 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
     setLoading(type);
     setError(null);
     setLastSentUrl(null);
+    setLinkCopied(false);
+    setSmsSent(false);
 
     try {
       const response = await fetch('/api/payments/create-checkout', {
@@ -67,13 +71,25 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
         throw new Error(data.error || 'Failed to create checkout');
       }
 
-      setLastSentUrl(data.checkoutUrl);
-      onPaymentUpdate?.();
+      // Set URL first and copy to clipboard for "link only" mode
+      const checkoutUrl = data.checkoutUrl;
+      setLastSentUrl(checkoutUrl);
+      setSmsSent(sendSms);
 
-      if (sendSms) {
-        // Show success feedback
-        setError(null);
+      // For "link only" mode, also copy to clipboard automatically
+      if (!sendSms && checkoutUrl) {
+        try {
+          await navigator.clipboard.writeText(checkoutUrl);
+          setLinkCopied(true);
+        } catch {
+          // Fallback - user can manually copy
+        }
       }
+
+      // Delay the parent update to ensure our state is rendered first
+      setTimeout(() => {
+        onPaymentUpdate?.();
+      }, 100);
     } catch (err) {
       console.error('Payment request error:', err);
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi');
@@ -223,7 +239,9 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       {/* Last Sent URL */}
       {lastSentUrl && (
         <div className="rounded-md bg-green-50 border border-green-200 p-3 space-y-2">
-          <p className="text-sm text-green-700 font-medium">✓ Lien envoyé par SMS!</p>
+          <p className="text-sm text-green-700 font-medium">
+            {smsSent ? '✓ Lien envoyé par SMS!' : linkCopied ? '✓ Lien copié!' : '✓ Lien créé!'}
+          </p>
           <div className="flex gap-2">
             <input
               type="text"
@@ -234,10 +252,13 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
             <Button
               size="sm"
               variant="outline"
-              onClick={() => copyToClipboard(lastSentUrl)}
+              onClick={() => {
+                copyToClipboard(lastSentUrl);
+                setLinkCopied(true);
+              }}
               className="text-xs"
             >
-              Copier
+              {linkCopied ? '✓ Copié' : 'Copier'}
             </Button>
           </div>
         </div>
