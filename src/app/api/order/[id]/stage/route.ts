@@ -9,7 +9,6 @@ import {
   ConflictError,
 } from '@/lib/api/error-handler';
 import { orderStageSchema, OrderStage, OrderStageResponse } from '@/lib/dto';
-import { sendSMSNotification } from '@/lib/webhooks/sms-webhook';
 import { autoCreateTasks } from '@/lib/tasks/auto-create';
 import {
   sendPretRamassage,
@@ -200,47 +199,9 @@ async function handleOrderStage(
   // Orders should stay in 'done' status until manually moved to 'ready'
   // This allows for proper quality control and review process
 
-  // Send SMS notifications only when explicitly requested AND for ready/delivered status changes
+  // Get client and notification settings
   const client = (order as any).client;
-  const ghlContactId = client?.ghl_contact_id;
   const shouldSendNotification = validatedData.sendNotification === true;
-
-  if (shouldSendNotification && ghlContactId && (newStage === 'ready' || newStage === 'delivered')) {
-    try {
-      const smsData = {
-        contactId: ghlContactId,
-        action: newStage === 'ready' ? 'add' : ('remove' as 'add' | 'remove'),
-      };
-
-      const smsResult = await sendSMSNotification(smsData);
-      if (smsResult.success) {
-        console.log(
-          `✅ SMS notification sent for order ${orderId} (${newStage}):`,
-          smsData
-        );
-      } else {
-        console.warn(
-          `⚠️ SMS notification failed for order ${orderId} (${newStage}):`,
-          smsResult.error
-        );
-      }
-    } catch (smsError) {
-      console.warn(
-        `⚠️ SMS notification error for order ${orderId} (${newStage}):`,
-        smsError
-      );
-    }
-  } else if (newStage === 'ready' || newStage === 'delivered') {
-    if (!shouldSendNotification) {
-      console.log(
-        `ℹ️ SMS notification skipped for order ${orderId} (sendNotification: false)`
-      );
-    } else if (!ghlContactId) {
-      console.log(
-        `ℹ️ No GHL contact ID found for order ${orderId}, skipping SMS notification`
-      );
-    }
-  }
 
   // Trigger order-status webhook for integrations (Agent B: QuickBooks, etc.)
   if (newStage === 'ready' || newStage === 'delivered') {
