@@ -26,10 +26,10 @@ export async function lookupContactByEmail(
 
   const result = await ghlFetch<GHLContactLookupResponse>({
     method: 'GET',
-    path: '/contacts/lookup',
+    path: '/contacts/',
     queryParams: {
       locationId,
-      email,
+      query: email,
     },
   });
 
@@ -60,10 +60,10 @@ export async function lookupContactByPhone(
 
   const result = await ghlFetch<GHLContactLookupResponse>({
     method: 'GET',
-    path: '/contacts/lookup',
+    path: '/contacts/',
     queryParams: {
       locationId,
-      phone: formattedPhone,
+      query: formattedPhone,
     },
   });
 
