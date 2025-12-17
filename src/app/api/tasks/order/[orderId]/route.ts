@@ -7,6 +7,13 @@ export async function GET(
 ) {
   try {
     const supabase = await createServiceRoleClient();
+    if (!supabase) {
+      console.error('Failed to create Supabase client - check env vars');
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 503 }
+      );
+    }
     const orderId = params.orderId;
 
     // Validate orderId

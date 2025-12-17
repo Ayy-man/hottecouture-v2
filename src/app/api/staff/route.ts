@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 // Hardcoded fallback staff when database table doesn't exist
 const FALLBACK_STAFF = [
@@ -10,7 +10,15 @@ const FALLBACK_STAFF = [
 
 // GET /api/staff - List all staff (optionally filter by active)
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = await createServiceRoleClient();
+  if (!supabase) {
+    console.error('Failed to create Supabase client - check env vars');
+    return NextResponse.json({
+      staff: FALLBACK_STAFF,
+      usingFallback: true,
+      warning: 'Database connection failed'
+    });
+  }
   const { searchParams } = new URL(request.url);
   const activeOnly = searchParams.get('active') !== 'false';
 
@@ -43,7 +51,11 @@ export async function GET(request: NextRequest) {
 
 // POST /api/staff - Create new staff member
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = await createServiceRoleClient();
+  if (!supabase) {
+    console.error('Failed to create Supabase client - check env vars');
+    return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+  }
   const body = await request.json();
   const { name } = body;
 
