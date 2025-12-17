@@ -2,42 +2,49 @@
  * n8n Webhook Integration
  *
  * Centralized helper functions for calling n8n webhooks.
- * Base URL: https://upnorthwatches.app.n8n.cloud/webhook
+ *
+ * Two n8n instances are used:
+ * - GHL Contact Sync: otomato456321.app.n8n.cloud (existing workflow)
+ * - Payment flows: upnorthwatches.app.n8n.cloud (new workflows)
  *
  * Endpoints:
- * - /ghl-sync-contact - Sync contact to GHL on order create
+ * - GHL sync: /webhook/e7b5e81d-53e1-496f-a8d1-1d5100b653a2
  * - /demande-depot - Send deposit request with Stripe link
  * - /pret-ramassage - Send ready notification with payment link
  * - /paiement-recu - Notify payment received (updates GHL tags)
  */
 
+// GHL Contact Sync uses the existing n8n instance with specific webhook path
+const GHL_SYNC_WEBHOOK_URL = process.env.N8N_CRM_WEBHOOK_URL || 'https://otomato456321.app.n8n.cloud/webhook/e7b5e81d-53e1-496f-a8d1-1d5100b653a2';
+
+// New payment-related webhooks use the new n8n instance
 const N8N_WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL || 'https://upnorthwatches.app.n8n.cloud/webhook';
 
 // ============================================================================
-// Types
+// Types - Aligned with n8n workflow expectations
 // ============================================================================
 
-export interface N8nClient {
-  id: string;
-  first_name: string;
-  last_name: string;
+/**
+ * Client data structure expected by n8n GHL sync workflow
+ * Note: workflow expects combined 'name' field, not separate first/last
+ */
+export interface GHLSyncClient {
+  name: string;  // Combined "First Last" - workflow splits it
   email: string | null;
   phone: string | null;
-  language: 'fr' | 'en';
-  ghl_contact_id: string | null;
-  preferred_contact: 'sms' | 'email';
+  communication_preference: 'sms' | 'email';
+  newsletter_consent: boolean;
 }
 
-export interface N8nOrder {
+/**
+ * Order data structure expected by n8n GHL sync workflow
+ */
+export interface GHLSyncOrder {
   id: string;
   order_number: number;
-  type: 'alteration' | 'custom';
-  status: string;
   total_cents: number;
+  is_custom_order: boolean;  // Note: workflow expects is_custom_order, not is_custom
   deposit_cents: number;
-  balance_due_cents: number;
-  is_custom: boolean;
-  deposit_required: boolean;
 }
 
 export interface N8nService {
@@ -58,15 +65,43 @@ export type GHLTag =
   | 'paye';
 
 // ============================================================================
-// Payload Interfaces
+// Payload Interfaces - Aligned with n8n workflow
 // ============================================================================
 
+/**
+ * Payload for GHL Contact Sync webhook
+ * Must match the structure expected by the n8n "Extract & Format Data" node
+ */
 export interface GHLSyncContactPayload {
-  order: N8nOrder;
-  client: N8nClient;
+  client: GHLSyncClient;
+  order: GHLSyncOrder;
   services: N8nService[];
   tags: GHLTag[];
-  is_new_client: boolean;
+}
+
+// Types for internal app use (before transformation)
+export interface N8nClient {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  language: 'fr' | 'en';
+  ghl_contact_id: string | null;
+  preferred_contact: 'sms' | 'email';
+  newsletter_consent?: boolean;
+}
+
+export interface N8nOrder {
+  id: string;
+  order_number: number;
+  type: 'alteration' | 'custom';
+  status: string;
+  total_cents: number;
+  deposit_cents: number;
+  balance_due_cents: number;
+  is_custom: boolean;
+  deposit_required: boolean;
 }
 
 export interface DemandeDepotPayload {
@@ -105,7 +140,7 @@ export interface PaiementRecuPayload {
  */
 export function calculateGHLTags(
   order: N8nOrder,
-  _client: N8nClient, // Prefixed with underscore to indicate intentionally unused
+  _client: N8nClient,
   services: N8nService[],
   isNewClient: boolean
 ): GHLTag[] {
@@ -119,7 +154,9 @@ export function calculateGHLTags(
   }
 
   // Service type tags
-  const hasAlteration = services.some(s => s.category === 'alteration' || s.category === 'hemming' || s.category === 'repair');
+  const hasAlteration = services.some(s =>
+    s.category === 'alteration' || s.category === 'hemming' || s.category === 'repair'
+  );
   const hasCustom = services.some(s => s.category === 'custom');
 
   if (hasAlteration) {
@@ -154,14 +191,14 @@ interface WebhookResult {
   error?: string;
 }
 
-async function callN8nWebhook(
-  endpoint: string,
-  payload: any
+async function callWebhook(
+  url: string,
+  payload: any,
+  label: string
 ): Promise<WebhookResult> {
-  const url = `${N8N_WEBHOOK_BASE_URL}${endpoint}`;
-
   try {
-    console.log(`📤 Calling n8n webhook: ${endpoint}`);
+    console.log(`📤 Calling n8n webhook: ${label}`);
+    console.log(`   URL: ${url}`);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -173,7 +210,7 @@ async function callN8nWebhook(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ n8n webhook failed: ${endpoint}`, errorText);
+      console.error(`❌ n8n webhook failed: ${label}`, errorText);
       return {
         success: false,
         error: `Webhook failed: ${response.status} ${errorText}`,
@@ -181,14 +218,14 @@ async function callN8nWebhook(
     }
 
     const data = await response.json().catch(() => ({}));
-    console.log(`✅ n8n webhook success: ${endpoint}`);
+    console.log(`✅ n8n webhook success: ${label}`);
 
     return {
       success: true,
       data,
     };
   } catch (error) {
-    console.error(`❌ n8n webhook error: ${endpoint}`, error);
+    console.error(`❌ n8n webhook error: ${label}`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -198,12 +235,44 @@ async function callN8nWebhook(
 
 /**
  * Sync contact to GHL when order is created
- * Endpoint: POST /ghl-sync-contact
+ * Uses the existing n8n workflow at otomato456321.app.n8n.cloud
+ *
+ * @param client - App client data (will be transformed)
+ * @param order - App order data (will be transformed)
+ * @param services - Service list
+ * @param tags - GHL tags to apply
  */
-export async function syncContactToGHL(
-  payload: GHLSyncContactPayload
-): Promise<WebhookResult> {
-  return callN8nWebhook('/ghl-sync-contact', payload);
+export async function syncContactToGHL(payload: {
+  client: N8nClient;
+  order: N8nOrder;
+  services: N8nService[];
+  tags: GHLTag[];
+  is_new_client: boolean;
+}): Promise<WebhookResult> {
+  // Transform payload to match n8n workflow expectations
+  const webhookPayload: GHLSyncContactPayload = {
+    client: {
+      // Combine first + last name (workflow will split it)
+      name: `${payload.client.first_name} ${payload.client.last_name}`.trim(),
+      email: payload.client.email,
+      phone: payload.client.phone,
+      // Map preferred_contact to communication_preference
+      communication_preference: payload.client.preferred_contact || 'sms',
+      newsletter_consent: payload.client.newsletter_consent || false,
+    },
+    order: {
+      id: payload.order.id,
+      order_number: payload.order.order_number,
+      total_cents: payload.order.total_cents,
+      // Map is_custom to is_custom_order (what workflow expects)
+      is_custom_order: payload.order.is_custom,
+      deposit_cents: payload.order.deposit_cents,
+    },
+    services: payload.services,
+    tags: payload.tags,
+  };
+
+  return callWebhook(GHL_SYNC_WEBHOOK_URL, webhookPayload, 'GHL Contact Sync');
 }
 
 /**
@@ -213,7 +282,8 @@ export async function syncContactToGHL(
 export async function sendDemandeDepot(
   payload: DemandeDepotPayload
 ): Promise<WebhookResult> {
-  return callN8nWebhook('/demande-depot', payload);
+  const url = `${N8N_WEBHOOK_BASE_URL}/demande-depot`;
+  return callWebhook(url, payload, 'Demande Depot');
 }
 
 /**
@@ -223,7 +293,8 @@ export async function sendDemandeDepot(
 export async function sendPretRamassage(
   payload: PretRamassagePayload
 ): Promise<WebhookResult> {
-  return callN8nWebhook('/pret-ramassage', payload);
+  const url = `${N8N_WEBHOOK_BASE_URL}/pret-ramassage`;
+  return callWebhook(url, payload, 'Pret Ramassage');
 }
 
 /**
@@ -233,7 +304,8 @@ export async function sendPretRamassage(
 export async function sendPaiementRecu(
   payload: PaiementRecuPayload
 ): Promise<WebhookResult> {
-  return callN8nWebhook('/paiement-recu', payload);
+  const url = `${N8N_WEBHOOK_BASE_URL}/paiement-recu`;
+  return callWebhook(url, payload, 'Paiement Recu');
 }
 
 // ============================================================================
@@ -273,5 +345,6 @@ export function buildN8nClient(dbClient: any): N8nClient {
     language: dbClient.language || 'fr',
     ghl_contact_id: dbClient.ghl_contact_id || null,
     preferred_contact: dbClient.preferred_contact || 'sms',
+    newsletter_consent: dbClient.newsletter_consent || false,
   };
 }
