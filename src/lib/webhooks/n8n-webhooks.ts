@@ -29,9 +29,10 @@ const N8N_WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL || 'https://upnort
  * Note: workflow expects combined 'name' field, not separate first/last
  */
 export interface GHLSyncClient {
+  id: string;
   name: string;  // Combined "First Last" - workflow splits it
   email: string | null;
-  phone: string | null;
+  phone: string | null;  // E.164 format with country code
   communication_preference: 'sms' | 'email';
   newsletter_consent: boolean;
 }
@@ -59,10 +60,12 @@ export type GHLTag =
   | 'client_alteration'
   | 'client_creation'
   | 'client_vip'
+  | 'sequence_bienvenue'
   | 'depot_en_attente'
   | 'depot_recu'
   | 'pret_a_ramasser'
-  | 'paye';
+  | 'paye'
+  | 'paiement_comptant';
 
 // ============================================================================
 // Payload Interfaces - Aligned with n8n workflow
@@ -73,8 +76,9 @@ export type GHLTag =
  * Must match the structure expected by the n8n "Extract & Format Data" node
  */
 export interface GHLSyncContactPayload {
-  client: GHLSyncClient;
+  event: 'order.created';
   order: GHLSyncOrder;
+  client: GHLSyncClient;
   services: N8nService[];
   tags: GHLTag[];
 }
@@ -251,15 +255,7 @@ export async function syncContactToGHL(payload: {
 }): Promise<WebhookResult> {
   // Transform payload to match n8n workflow expectations
   const webhookPayload: GHLSyncContactPayload = {
-    client: {
-      // Combine first + last name (workflow will split it)
-      name: `${payload.client.first_name} ${payload.client.last_name}`.trim(),
-      email: payload.client.email,
-      phone: payload.client.phone,
-      // Map preferred_contact to communication_preference
-      communication_preference: payload.client.preferred_contact || 'sms',
-      newsletter_consent: payload.client.newsletter_consent || false,
-    },
+    event: 'order.created',
     order: {
       id: payload.order.id,
       order_number: payload.order.order_number,
@@ -267,6 +263,16 @@ export async function syncContactToGHL(payload: {
       // Map is_custom to is_custom_order (what workflow expects)
       is_custom_order: payload.order.is_custom,
       deposit_cents: payload.order.deposit_cents,
+    },
+    client: {
+      id: payload.client.id,
+      // Combine first + last name (workflow will split it)
+      name: `${payload.client.first_name} ${payload.client.last_name}`.trim(),
+      email: payload.client.email,
+      phone: payload.client.phone,  // Should be E.164 format
+      // Map preferred_contact to communication_preference
+      communication_preference: payload.client.preferred_contact || 'sms',
+      newsletter_consent: payload.client.newsletter_consent || false,
     },
     services: payload.services,
     tags: payload.tags,
