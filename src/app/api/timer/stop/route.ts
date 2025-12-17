@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
           is_active: false,
           stopped_at: now.toISOString(),
           actual_minutes: newActualMinutes,
-          stage: 'completed'
+          stage: 'done'
         })
         .eq('id', task.id);
 

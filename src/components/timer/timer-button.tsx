@@ -39,6 +39,7 @@ export function TimerButton({
   const [editHours, setEditHours] = useState('0');
   const [editMinutes, setEditMinutes] = useState('0');
   const [savingEdit, setSavingEdit] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Always show timer now (Persist visibility)
   // const shouldShowTimer = orderStatus === 'working';
@@ -116,10 +117,14 @@ export function TimerButton({
 
       const result = await response.json();
       if (result.success) {
+        setError(null);
         await fetchTimerStatus();
+      } else {
+        setError(result.error || 'Failed to start timer');
       }
-    } catch (error) {
-      console.error('Error starting timer:', error);
+    } catch (err) {
+      console.error('Error starting timer:', err);
+      setError('Failed to start timer');
     } finally {
       setLoading(false);
     }
@@ -136,10 +141,14 @@ export function TimerButton({
 
       const result = await response.json();
       if (result.success) {
+        setError(null);
         await fetchTimerStatus();
+      } else {
+        setError(result.error || 'Failed to pause timer');
       }
-    } catch (error) {
-      console.error('Error pausing timer:', error);
+    } catch (err) {
+      console.error('Error pausing timer:', err);
+      setError('Failed to pause timer');
     } finally {
       setLoading(false);
     }
@@ -156,10 +165,14 @@ export function TimerButton({
 
       const result = await response.json();
       if (result.success) {
+        setError(null);
         await fetchTimerStatus();
+      } else {
+        setError(result.error || 'Failed to resume timer');
       }
-    } catch (error) {
-      console.error('Error resuming timer:', error);
+    } catch (err) {
+      console.error('Error resuming timer:', err);
+      setError('Failed to resume timer');
     } finally {
       setLoading(false);
     }
@@ -176,10 +189,14 @@ export function TimerButton({
 
       const result = await response.json();
       if (result.success) {
+        setError(null);
         await fetchTimerStatus();
+      } else {
+        setError(result.error || 'Failed to stop timer');
       }
-    } catch (error) {
-      console.error('Error stopping timer:', error);
+    } catch (err) {
+      console.error('Error stopping timer:', err);
+      setError('Failed to stop timer');
     } finally {
       setLoading(false);
     }
@@ -309,72 +326,79 @@ export function TimerButton({
   }
 
   return (
-    <div className='flex items-center gap-2 p-2 bg-blue-50 rounded-lg'>
-      <div className='flex-1'>
-        <div className='text-sm font-medium text-blue-900'>
-          {timerState === 'running' ? 'Working...' : 'Paused'}
+    <div className='space-y-2'>
+      <div className='flex items-center gap-2 p-2 bg-blue-50 rounded-lg'>
+        <div className='flex-1'>
+          <div className='text-sm font-medium text-blue-900'>
+            {timerState === 'running' ? 'Working...' : 'Paused'}
+          </div>
+          <div className='text-xs text-blue-700'>
+            Total: {formatDetailedTime(displayTime)}
+          </div>
         </div>
-        <div className='text-xs text-blue-700'>
-          Total: {formatDetailedTime(displayTime)}
-        </div>
-      </div>
 
-      <div className='flex gap-1'>
-        {canEdit && (
-          <Button
-            size='sm'
-            variant='ghost'
-            onClick={handleStartEdit}
-            disabled={loading}
-            className='h-8 px-2 text-gray-500 hover:text-gray-700'
-            title='Edit time'
-          >
-            <Pencil className='w-3 h-3' />
-          </Button>
-        )}
-        {timerState === 'idle' ? (
-          <Button
-            size='sm'
-            onClick={handleStart}
-            disabled={loading}
-            className='btn-press bg-green-600 hover:bg-green-700 text-white'
-          >
-            <Play className='w-3 h-3 mr-1' />
-            Start
-          </Button>
-        ) : timerState === 'running' ? (
-          <Button
-            size='sm'
-            onClick={handlePause}
-            disabled={loading}
-            className='btn-press bg-yellow-600 hover:bg-yellow-700 text-white'
-          >
-            <Pause className='w-3 h-3 mr-1' />
-            Pause
-          </Button>
-        ) : (
-          <div className='flex gap-1'>
+        <div className='flex gap-1'>
+          {canEdit && (
             <Button
               size='sm'
-              onClick={handleResume}
+              variant='ghost'
+              onClick={handleStartEdit}
               disabled={loading}
-              className='btn-press bg-blue-600 hover:bg-blue-700 text-white'
+              className='h-8 px-2 text-gray-500 hover:text-gray-700'
+              title='Edit time'
+            >
+              <Pencil className='w-3 h-3' />
+            </Button>
+          )}
+          {timerState === 'idle' ? (
+            <Button
+              size='sm'
+              onClick={handleStart}
+              disabled={loading}
+              className='btn-press bg-green-600 hover:bg-green-700 text-white'
             >
               <Play className='w-3 h-3 mr-1' />
-              Resume
+              Start
             </Button>
+          ) : timerState === 'running' ? (
             <Button
               size='sm'
-              onClick={handleStop}
+              onClick={handlePause}
               disabled={loading}
-              className='btn-press bg-red-600 hover:bg-red-700 text-white'
+              className='btn-press bg-yellow-600 hover:bg-yellow-700 text-white'
             >
-              <Square className='w-3 h-3 mr-1' />
-              Stop
+              <Pause className='w-3 h-3 mr-1' />
+              Pause
             </Button>
-          </div>
-        )}
+          ) : (
+            <div className='flex gap-1'>
+              <Button
+                size='sm'
+                onClick={handleResume}
+                disabled={loading}
+                className='btn-press bg-blue-600 hover:bg-blue-700 text-white'
+              >
+                <Play className='w-3 h-3 mr-1' />
+                Resume
+              </Button>
+              <Button
+                size='sm'
+                onClick={handleStop}
+                disabled={loading}
+                className='btn-press bg-red-600 hover:bg-red-700 text-white'
+              >
+                <Square className='w-3 h-3 mr-1' />
+                Stop
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+      {error && (
+        <div className='text-red-600 text-xs p-2 bg-red-50 rounded-lg border border-red-200'>
+          {error}
+        </div>
+      )}
     </div>
   );
 }
