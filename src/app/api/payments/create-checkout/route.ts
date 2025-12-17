@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createServiceRoleClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+    }
 
     // Fetch order with client details
     const { data: order, error: orderError } = await supabase

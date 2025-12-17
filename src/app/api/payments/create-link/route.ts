@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentLink, OrderForPayment } from '@/lib/integrations/stripe';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,7 +33,10 @@ export async function POST(request: NextRequest) {
       }>;
     }
 
-    const supabase = await createClient();
+    const supabase = await createServiceRoleClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+    }
 
     const { data, error: orderError } = await supabase
       .from('order')

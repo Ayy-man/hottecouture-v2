@@ -23,6 +23,9 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createServiceRoleClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+    }
 
     // Fetch current order with client for GHL webhook
     const { data: order, error: orderError } = await supabase
