@@ -12,17 +12,16 @@ export function useRealtimeOrders() {
 
     const setupChannels = async () => {
       try {
-        await supabase.realtime.setAuth()
-
+        // Using public channels (no auth required for this app's use case)
         const orderChannel = supabase
-          .channel('order', { config: { private: true } })
+          .channel('order-updates')
           .on('broadcast', { event: '*' }, (payload: { type: string; event: string; payload?: unknown }) => {
             console.log('🔄 Order broadcast received:', payload)
             if (mounted) setRefreshTrigger(prev => prev + 1)
           })
 
         const taskChannel = supabase
-          .channel('task', { config: { private: true } })
+          .channel('task-updates')
           .on('broadcast', { event: '*' }, (payload: { type: string; event: string; payload?: unknown }) => {
             console.log('🔄 Task broadcast received:', payload)
             if (mounted) setRefreshTrigger(prev => prev + 1)
