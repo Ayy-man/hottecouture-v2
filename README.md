@@ -24,10 +24,13 @@ A modern, production-ready web application built with Next.js 14+, TypeScript, a
 - **Time Tracking** - Per-garment, per-service task and time management
 - **Task Management** - Auto-create tasks when order enters "working" status
 - **Staff Management** - Dynamic staff list with add/edit/deactivate at `/admin/staff`
+- **Stripe Payments** - Online payments with 50% deposits for custom orders, auto-triggered payment links
+- **Cash/Manual Payments** - Record in-person cash or card terminal payments
 - **QR Code Labels** - Scannable order labels with dual copies
 - **Business Analytics** - Revenue, order, and customer insights
 - **Multi-user Support** - Role-based access for owners and seamstresses
 - **AI Chat Assistant** - Internal chatbot for staff queries (OpenRouter/GPT-4)
+- **SMS Notifications** - Automated SMS via n8n/Twilio for order ready and payment requests
 
 ## 🛠️ Tech Stack
 
@@ -62,6 +65,9 @@ cp env.example .env.local
    - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
    - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key (server-only)
+   - `STRIPE_SECRET_KEY`: Your Stripe secret key (sk_live_... or sk_test_...)
+   - `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook signing secret (whsec_...)
+   - `N8N_SMS_WEBHOOK_URL`: n8n webhook URL for SMS notifications
 
 ## 🔐 Supabase Setup
 

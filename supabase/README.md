@@ -11,6 +11,7 @@ supabase/
 │   ├── 0002-0019_*.sql                      # Feature migrations
 │   ├── 0020_fix_get_orders_with_details.sql # Optimized orders RPC function
 │   ├── 0021_add_staff_table.sql             # Staff management table
+│   ├── 0022_add_deposit_tracking.sql        # Stripe payment & deposit tracking
 │   └── 20240101_performance_indexes.sql     # Performance indexes
 ├── scripts/
 │   ├── setup-storage.sql                    # Storage bucket setup
@@ -187,6 +188,31 @@ const result = await autoCreateTasks(supabase, orderId);
 ```
 
 Tasks can also be manually created via the "Auto-Create Tasks" button in the Task Management Modal
+
+### Payment System
+
+The order table includes payment tracking fields added by `0022_add_deposit_tracking.sql`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `payment_status` | TEXT | unpaid, pending, deposit_pending, deposit_paid, paid, failed, refunded |
+| `deposit_cents` | INTEGER | 50% deposit amount for custom orders |
+| `deposit_paid_at` | TIMESTAMPTZ | When deposit was received |
+| `deposit_payment_method` | TEXT | stripe, cash, card_terminal |
+| `balance_due_cents` | INTEGER | Auto-calculated remaining balance |
+| `paid_at` | TIMESTAMPTZ | When full/balance payment was received |
+| `payment_method` | TEXT | Final payment method |
+| `stripe_checkout_session_id` | TEXT | Stripe session ID for tracking |
+
+**Payment Flow:**
+- **Custom orders**: Require 50% deposit before work begins
+- **Alterations**: Full payment when order is ready
+- **Auto-trigger**: Payment links sent automatically when order moves to "Ready" status
+
+**API Endpoints:**
+- `POST /api/payments/create-checkout` - Create Stripe checkout session
+- `POST /api/payments/record-manual` - Record cash/card terminal payment
+- `POST /api/webhooks/stripe` - Handle Stripe payment confirmations
 
 ## 🔒 Security Considerations
 
