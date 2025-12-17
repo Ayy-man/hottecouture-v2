@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { sendPaiementRecu } from '@/lib/webhooks/n8n-webhooks';
+import { sendPaiementRecu, buildN8nClient, buildN8nOrder } from '@/lib/webhooks/n8n-webhooks';
 
 interface RecordManualPaymentRequest {
   orderId: string;
@@ -33,12 +33,23 @@ export async function POST(request: NextRequest) {
       .select(`
         id,
         order_number,
+        type,
+        status,
         total_cents,
         deposit_cents,
         balance_due_cents,
+        deposit_paid_at,
         payment_status,
         notes,
         client:client_id (
+          id,
+          first_name,
+          last_name,
+          email,
+          phone,
+          language,
+          preferred_contact,
+          newsletter_consent,
           ghl_contact_id
         )
       `)
@@ -112,29 +123,20 @@ export async function POST(request: NextRequest) {
       throw updateError;
     }
 
-    // Calculate amount for webhook
-    const paymentAmountCents = amountCents || (type === 'deposit' ? Math.ceil(order.total_cents / 2) : order.balance_due_cents);
-
     // Send n8n webhook to update GHL tags (discrete - no detailed logging for cash)
-    const client = order.client as any;
+    const clientData = order.client as any;
     // Map 'other' to 'cash' for webhook (manual payments are treated as cash)
     const webhookMethod: 'stripe' | 'cash' | 'card_terminal' = method === 'other' ? 'cash' : method;
-    try {
-      await sendPaiementRecu({
-        payment_type: type,
-        payment_method: webhookMethod,
-        amount_cents: paymentAmountCents,
-        order: {
-          id: orderId,
-          order_number: order.order_number,
-        },
-        client: {
-          ghl_contact_id: client?.ghl_contact_id || null,
-        },
-      });
-      console.log(`✅ Payment received webhook sent for order ${order.order_number}`);
-    } catch (webhookError) {
-      console.warn('⚠️ Payment received webhook failed (non-blocking):', webhookError);
+
+    if (clientData) {
+      try {
+        const n8nClient = buildN8nClient(clientData);
+        const n8nOrder = buildN8nOrder(order);
+        await sendPaiementRecu(n8nClient, n8nOrder, type, webhookMethod);
+        console.log(`✅ Payment received webhook sent for order ${order.order_number}`);
+      } catch (webhookError) {
+        console.warn('⚠️ Payment received webhook failed (non-blocking):', webhookError);
+      }
     }
 
     return NextResponse.json({

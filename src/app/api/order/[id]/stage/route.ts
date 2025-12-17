@@ -363,12 +363,7 @@ async function handleOrderStage(
         const n8nOrder = buildN8nOrder(orderData);
         const n8nClient = buildN8nClient(client);
 
-        await sendPretRamassage({
-          order: n8nOrder,
-          client: n8nClient,
-          checkout_url: null, // Already paid, no payment link needed
-          balance_amount_cents: 0,
-        });
+        await sendPretRamassage(n8nClient, n8nOrder, null, 0);
         console.log(`✅ Pickup notification sent for paid order ${orderId}`);
       } catch (notifyError) {
         console.warn(`⚠️ Pickup notification error for order ${orderId}:`, notifyError);

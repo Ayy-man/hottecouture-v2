@@ -161,13 +161,8 @@ export async function POST(request: NextRequest) {
         const n8nClient = buildN8nClient(client);
 
         if (type === 'deposit') {
-          // Call /demande-depot endpoint
-          const webhookResult = await sendDemandeDepot({
-            order: n8nOrder,
-            client: n8nClient,
-            checkout_url: session.url!,
-            deposit_amount_cents: amountCents,
-          });
+          // Send deposit request notification
+          const webhookResult = await sendDemandeDepot(n8nClient, n8nOrder, session.url!);
 
           if (webhookResult.success) {
             console.log(`✅ Deposit request sent via n8n for order ${order.order_number}`);
@@ -175,13 +170,8 @@ export async function POST(request: NextRequest) {
             console.warn(`⚠️ Deposit request webhook failed:`, webhookResult.error);
           }
         } else {
-          // Call /pret-ramassage endpoint for balance/full payments
-          const webhookResult = await sendPretRamassage({
-            order: n8nOrder,
-            client: n8nClient,
-            checkout_url: session.url!,
-            balance_amount_cents: amountCents,
-          });
+          // Send ready for pickup notification with payment link
+          const webhookResult = await sendPretRamassage(n8nClient, n8nOrder, session.url!, amountCents);
 
           if (webhookResult.success) {
             console.log(`✅ Payment ready notification sent via n8n for order ${order.order_number}`);

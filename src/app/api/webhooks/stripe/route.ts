@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { constructWebhookEvent } from '@/lib/integrations/stripe';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
-import { sendPaiementRecu } from '@/lib/webhooks/n8n-webhooks';
+import { sendPaiementRecu, buildN8nClient, buildN8nOrder } from '@/lib/webhooks/n8n-webhooks';
 
 export async function POST(request: NextRequest) {
   const payload = await request.text();
@@ -87,32 +87,45 @@ export async function POST(request: NextRequest) {
             },
           });
 
-          // Get client GHL contact ID for webhook
+          // Get full order and client data for webhook
           const { data: orderWithClient } = await supabase
             .from('order')
-            .select('client:client_id(ghl_contact_id)')
+            .select(`
+              id,
+              order_number,
+              type,
+              status,
+              total_cents,
+              deposit_cents,
+              balance_due_cents,
+              deposit_paid_at,
+              client:client_id (
+                id,
+                first_name,
+                last_name,
+                email,
+                phone,
+                language,
+                preferred_contact,
+                newsletter_consent,
+                ghl_contact_id
+              )
+            `)
             .eq('id', orderId)
             .single();
 
           const clientData = orderWithClient?.client as any;
 
           // Send n8n webhook to update GHL tags
-          try {
-            await sendPaiementRecu({
-              payment_type: paymentType as 'deposit' | 'balance' | 'full',
-              payment_method: 'stripe',
-              amount_cents: session.amount_total || 0,
-              order: {
-                id: orderId,
-                order_number: parseInt(orderNumber || '0'),
-              },
-              client: {
-                ghl_contact_id: clientData?.ghl_contact_id || null,
-              },
-            });
-            console.log(`✅ Payment received webhook sent to n8n for order #${orderNumber}`);
-          } catch (webhookError) {
-            console.warn('⚠️ n8n webhook failed (non-blocking):', webhookError);
+          if (orderWithClient && clientData) {
+            try {
+              const n8nClient = buildN8nClient(clientData);
+              const n8nOrder = buildN8nOrder(orderWithClient);
+              await sendPaiementRecu(n8nClient, n8nOrder, paymentType as 'deposit' | 'balance' | 'full', 'stripe');
+              console.log(`✅ Payment received webhook sent to n8n for order #${orderNumber}`);
+            } catch (webhookError) {
+              console.warn('⚠️ n8n webhook failed (non-blocking):', webhookError);
+            }
           }
         }
         break;

@@ -14,11 +14,18 @@
  * - /paiement-recu - Notify payment received (updates GHL tags)
  */
 
-// GHL Contact Sync uses the existing n8n instance with specific webhook path
+// GHL Contact Sync webhook (order creation)
 const GHL_SYNC_WEBHOOK_URL = process.env.N8N_CRM_WEBHOOK_URL || 'https://otomato456321.app.n8n.cloud/webhook/e7b5e81d-53e1-496f-a8d1-1d5100b653a2';
 
-// New payment-related webhooks use the new n8n instance
-const N8N_WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL || 'https://upnorthwatches.app.n8n.cloud/webhook';
+// Unified messaging webhook (handles all SMS/email notifications)
+const N8N_MESSAGING_WEBHOOK_URL = process.env.N8N_MESSAGING_WEBHOOK_URL || 'https://otomato456321.app.n8n.cloud/webhook/hotte-couture-messaging';
+
+// Action types for the messaging webhook switch node
+export type MessagingAction =
+  | 'DEPOSIT_REQUEST'      // Custom order needs deposit
+  | 'READY_PICKUP'         // Order ready, balance due
+  | 'READY_PICKUP_PAID'    // Order ready, already paid
+  | 'PAYMENT_RECEIVED';    // Payment confirmed (tags only)
 
 // ============================================================================
 // Types - Aligned with n8n workflow expectations
@@ -133,6 +140,32 @@ export interface PaiementRecuPayload {
   client: {
     ghl_contact_id: string | null;
   };
+}
+
+/**
+ * Unified messaging webhook payload
+ * Used by switch node to route to different message templates
+ */
+export interface MessagingWebhookPayload {
+  action: MessagingAction;
+  client: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    communication_preference: 'sms' | 'email';
+    language: 'fr' | 'en';
+  };
+  order: {
+    id: string;
+    order_number: number;
+    total_cents: number;
+    deposit_cents: number;
+    balance_cents: number;
+  };
+  payment_url: string | null;
+  tags_to_add: GHLTag[];
+  tags_to_remove: GHLTag[];
 }
 
 // ============================================================================
@@ -283,36 +316,134 @@ export async function syncContactToGHL(payload: {
 }
 
 /**
- * Send deposit request notification with Stripe checkout URL
- * Endpoint: POST /demande-depot
+ * Unified messaging webhook - handles all SMS/email notifications
+ * Routes to different message templates via switch node based on action
  */
-export async function sendDemandeDepot(
-  payload: DemandeDepotPayload
+export async function sendMessage(
+  payload: MessagingWebhookPayload
 ): Promise<WebhookResult> {
-  const url = `${N8N_WEBHOOK_BASE_URL}/demande-depot`;
-  return callWebhook(url, payload, 'Demande Depot');
+  // Ensure phone has + prefix for E.164
+  const normalizedPayload = {
+    ...payload,
+    client: {
+      ...payload.client,
+      phone: payload.client.phone
+        ? (payload.client.phone.startsWith('+') ? payload.client.phone : `+${payload.client.phone}`)
+        : null,
+    },
+  };
+
+  return callWebhook(N8N_MESSAGING_WEBHOOK_URL, normalizedPayload, `Message: ${payload.action}`);
 }
 
 /**
- * Send ready for pickup notification with payment link
- * Endpoint: POST /pret-ramassage
+ * Send deposit request notification with Stripe checkout URL
+ */
+export async function sendDemandeDepot(
+  client: N8nClient,
+  order: N8nOrder,
+  checkoutUrl: string
+): Promise<WebhookResult> {
+  return sendMessage({
+    action: 'DEPOSIT_REQUEST',
+    client: {
+      id: client.id,
+      name: `${client.first_name} ${client.last_name}`.trim(),
+      email: client.email,
+      phone: client.phone,
+      communication_preference: client.preferred_contact || 'sms',
+      language: client.language || 'fr',
+    },
+    order: {
+      id: order.id,
+      order_number: order.order_number,
+      total_cents: order.total_cents,
+      deposit_cents: order.deposit_cents,
+      balance_cents: order.balance_due_cents,
+    },
+    payment_url: checkoutUrl,
+    tags_to_add: ['depot_en_attente'],
+    tags_to_remove: [],
+  });
+}
+
+/**
+ * Send ready for pickup notification with optional payment link
  */
 export async function sendPretRamassage(
-  payload: PretRamassagePayload
+  client: N8nClient,
+  order: N8nOrder,
+  checkoutUrl: string | null,
+  balanceCents: number
 ): Promise<WebhookResult> {
-  const url = `${N8N_WEBHOOK_BASE_URL}/pret-ramassage`;
-  return callWebhook(url, payload, 'Pret Ramassage');
+  const isPaid = checkoutUrl === null || balanceCents === 0;
+
+  return sendMessage({
+    action: isPaid ? 'READY_PICKUP_PAID' : 'READY_PICKUP',
+    client: {
+      id: client.id,
+      name: `${client.first_name} ${client.last_name}`.trim(),
+      email: client.email,
+      phone: client.phone,
+      communication_preference: client.preferred_contact || 'sms',
+      language: client.language || 'fr',
+    },
+    order: {
+      id: order.id,
+      order_number: order.order_number,
+      total_cents: order.total_cents,
+      deposit_cents: order.deposit_cents,
+      balance_cents: balanceCents,
+    },
+    payment_url: checkoutUrl,
+    tags_to_add: ['pret_a_ramasser'],
+    tags_to_remove: isPaid ? [] : ['depot_recu'],
+  });
 }
 
 /**
  * Notify that payment was received (updates GHL tags)
- * Endpoint: POST /paiement-recu
  */
 export async function sendPaiementRecu(
-  payload: PaiementRecuPayload
+  client: N8nClient,
+  order: N8nOrder,
+  paymentType: 'deposit' | 'balance' | 'full',
+  paymentMethod: 'stripe' | 'cash' | 'card_terminal'
 ): Promise<WebhookResult> {
-  const url = `${N8N_WEBHOOK_BASE_URL}/paiement-recu`;
-  return callWebhook(url, payload, 'Paiement Recu');
+  // Determine tags based on payment type
+  let tagsToAdd: GHLTag[] = [];
+  let tagsToRemove: GHLTag[] = [];
+
+  if (paymentType === 'deposit') {
+    tagsToAdd = ['depot_recu'];
+    tagsToRemove = ['depot_en_attente'];
+  } else {
+    // balance or full payment
+    tagsToAdd = paymentMethod === 'cash' ? ['paye', 'paiement_comptant'] : ['paye'];
+    tagsToRemove = ['pret_a_ramasser', 'depot_en_attente'];
+  }
+
+  return sendMessage({
+    action: 'PAYMENT_RECEIVED',
+    client: {
+      id: client.id,
+      name: `${client.first_name} ${client.last_name}`.trim(),
+      email: client.email,
+      phone: client.phone,
+      communication_preference: client.preferred_contact || 'sms',
+      language: client.language || 'fr',
+    },
+    order: {
+      id: order.id,
+      order_number: order.order_number,
+      total_cents: order.total_cents,
+      deposit_cents: order.deposit_cents,
+      balance_cents: order.balance_due_cents,
+    },
+    payment_url: null,
+    tags_to_add: tagsToAdd,
+    tags_to_remove: tagsToRemove,
+  });
 }
 
 // ============================================================================
