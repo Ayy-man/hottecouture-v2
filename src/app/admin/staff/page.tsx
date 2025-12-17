@@ -11,7 +11,7 @@ import { ArrowLeft, Plus, Trash2, UserCheck, UserX } from 'lucide-react';
 import Link from 'next/link';
 
 export default function StaffManagementPage() {
-  const { staff, loading, error, addStaff, updateStaff, deleteStaff } = useStaff(false);
+  const { staff, loading, error, usingFallback, addStaff, updateStaff, deleteStaff } = useStaff(false);
   const [newName, setNewName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
@@ -57,6 +57,18 @@ export default function StaffManagementPage() {
             <h1 className="text-2xl font-bold">Staff Management</h1>
             <p className="text-gray-600">Add or remove team members</p>
           </div>
+
+          {usingFallback && (
+            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg">
+              <p className="font-semibold">⚠️ Staff table not configured</p>
+              <p className="text-sm mt-1">
+                Showing fallback staff data. Please run the migration in Supabase SQL Editor:
+              </p>
+              <code className="block text-xs mt-2 p-2 bg-amber-100 rounded overflow-x-auto">
+                supabase/migrations/0024_staff_table_complete.sql
+              </code>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">

@@ -65,15 +65,20 @@ export function useStaff(activeOnly: boolean = true) {
         body: JSON.stringify({ name }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to add staff');
+        // Show the actual error message from the API
+        const errorMsg = data.error || 'Failed to add staff';
+        setError(errorMsg);
+        throw new Error(errorMsg);
       }
 
-      const data = await response.json();
       await fetchStaff();
       return data.staff;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setError(errorMsg);
       return null;
     }
   };
@@ -82,6 +87,12 @@ export function useStaff(activeOnly: boolean = true) {
     id: string,
     updates: { name?: string; is_active?: boolean }
   ): Promise<boolean> => {
+    // Don't allow updates on fallback staff
+    if (id.startsWith('fallback-')) {
+      setError('Staff table not configured. Please run migration in Supabase.');
+      return false;
+    }
+
     try {
       const response = await fetch(`/api/staff/${id}`, {
         method: 'PATCH',
@@ -89,8 +100,12 @@ export function useStaff(activeOnly: boolean = true) {
         body: JSON.stringify(updates),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to update staff');
+        const errorMsg = data.error || 'Failed to update staff';
+        setError(errorMsg);
+        return false;
       }
 
       await fetchStaff();
@@ -102,13 +117,23 @@ export function useStaff(activeOnly: boolean = true) {
   };
 
   const deleteStaff = async (id: string): Promise<boolean> => {
+    // Don't allow deletes on fallback staff
+    if (id.startsWith('fallback-')) {
+      setError('Staff table not configured. Please run migration in Supabase.');
+      return false;
+    }
+
     try {
       const response = await fetch(`/api/staff/${id}`, {
         method: 'DELETE',
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to delete staff');
+        const errorMsg = data.error || 'Failed to delete staff';
+        setError(errorMsg);
+        return false;
       }
 
       await fetchStaff();
