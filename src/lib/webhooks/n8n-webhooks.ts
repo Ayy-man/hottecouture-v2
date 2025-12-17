@@ -269,7 +269,8 @@ export async function syncContactToGHL(payload: {
       // Combine first + last name (workflow will split it)
       name: `${payload.client.first_name} ${payload.client.last_name}`.trim(),
       email: payload.client.email,
-      phone: payload.client.phone,  // Should be E.164 format
+      // Ensure E.164 format with + prefix
+      phone: payload.client.phone ? (payload.client.phone.startsWith('+') ? payload.client.phone : `+${payload.client.phone}`) : null,
       // Map preferred_contact to communication_preference
       communication_preference: payload.client.preferred_contact || 'sms',
       newsletter_consent: payload.client.newsletter_consent || false,
