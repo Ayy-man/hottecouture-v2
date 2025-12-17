@@ -59,13 +59,13 @@ export async function GET(
 
     const garmentIds = garments.map((g: { id: string }) => g.id);
 
-    // Fetch all tasks for these garments with garment and service details
+    // Fetch all tasks for these garments with garment details
+    // Note: task table does not have service_id column - removed non-existent columns
     const { data: tasks, error } = await supabase
       .from('task')
       .select(`
         id,
         garment_id,
-        service_id,
         operation,
         stage,
         planned_minutes,
@@ -74,8 +74,6 @@ export async function GET(
         assignee,
         started_at,
         stopped_at,
-        created_at,
-        updated_at,
         garment (
           id,
           type,
@@ -83,16 +81,10 @@ export async function GET(
           brand,
           label_code,
           order_id
-        ),
-        service (
-          id,
-          name,
-          code,
-          category
         )
       `)
       .in('garment_id', garmentIds)
-      .order('created_at', { ascending: true });
+      .order('id', { ascending: true });
 
     if (error) {
       console.error('Error fetching tasks:', error);
