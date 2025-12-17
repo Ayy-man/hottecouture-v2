@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
+import {
+  sendDemandeDepot,
+  sendPretRamassage,
+  buildN8nOrder,
+  buildN8nClient,
+} from '@/lib/webhooks/n8n-webhooks';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -134,57 +140,48 @@ export async function POST(request: NextRequest) {
       .update(updateData)
       .eq('id', orderId);
 
-    // Send SMS with payment link if requested
-    if (sendSms && client?.phone && process.env.N8N_SMS_WEBHOOK_URL) {
-      const amountFormatted = (amountCents / 100).toFixed(2);
-
-      let smsPayload: Record<string, any>;
-
-      if (type === 'deposit') {
-        smsPayload = {
-          phone: client.phone,
-          template: 'deposit_request',
-          firstName: client.first_name || 'Client',
-          orderNumber: order.order_number,
-          amount: amountFormatted,
-          paymentUrl: session.url,
-          language: client.language || 'fr',
-          // Fallback message if template not found
-          message: client.language === 'en'
-            ? `Hello ${client.first_name || 'Client'}, your order #${order.order_number} requires a 50% deposit ($${amountFormatted}) before we can begin. Pay here: ${session.url}`
-            : `Bonjour ${client.first_name || 'Client'}, votre commande #${order.order_number} nécessite un dépôt de 50% (${amountFormatted}$) avant de commencer. Payez ici: ${session.url}`,
-        };
-      } else {
-        smsPayload = {
-          phone: client.phone,
-          template: 'payment_ready',
-          firstName: client.first_name || 'Client',
-          orderNumber: order.order_number,
-          amount: amountFormatted,
-          paymentUrl: session.url,
-          language: client.language || 'fr',
-          // Fallback message if template not found
-          message: client.language === 'en'
-            ? `Hello ${client.first_name || 'Client'}, your alterations (Order #${order.order_number}) are ready! Amount: $${amountFormatted}. Pay here: ${session.url}`
-            : `Bonjour ${client.first_name || 'Client'}, vos retouches (Commande #${order.order_number}) sont prêtes! Montant: ${amountFormatted}$. Payez ici: ${session.url}`,
-        };
-      }
-
+    // Send notification via n8n webhook
+    if (sendSms && client?.phone) {
       try {
-        const smsResponse = await fetch(process.env.N8N_SMS_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(smsPayload),
+        // Build n8n-compatible order and client objects
+        const n8nOrder = buildN8nOrder({
+          ...order,
+          deposit_cents: type === 'deposit' ? amountCents : order.deposit_cents,
         });
+        const n8nClient = buildN8nClient(client);
 
-        if (smsResponse.ok) {
-          console.log(`✅ SMS sent for ${type} payment request, order ${order.order_number}`);
+        if (type === 'deposit') {
+          // Call /demande-depot endpoint
+          const webhookResult = await sendDemandeDepot({
+            order: n8nOrder,
+            client: n8nClient,
+            checkout_url: session.url!,
+            deposit_amount_cents: amountCents,
+          });
+
+          if (webhookResult.success) {
+            console.log(`✅ Deposit request sent via n8n for order ${order.order_number}`);
+          } else {
+            console.warn(`⚠️ Deposit request webhook failed:`, webhookResult.error);
+          }
         } else {
-          console.warn(`⚠️ SMS send failed:`, await smsResponse.text());
+          // Call /pret-ramassage endpoint for balance/full payments
+          const webhookResult = await sendPretRamassage({
+            order: n8nOrder,
+            client: n8nClient,
+            checkout_url: session.url!,
+            balance_amount_cents: amountCents,
+          });
+
+          if (webhookResult.success) {
+            console.log(`✅ Payment ready notification sent via n8n for order ${order.order_number}`);
+          } else {
+            console.warn(`⚠️ Payment ready webhook failed:`, webhookResult.error);
+          }
         }
-      } catch (smsError) {
-        console.warn('⚠️ Failed to send SMS:', smsError);
-        // Don't fail the checkout creation if SMS fails
+      } catch (webhookError) {
+        console.warn('⚠️ Failed to send n8n webhook:', webhookError);
+        // Don't fail the checkout creation if webhook fails
       }
     }
 

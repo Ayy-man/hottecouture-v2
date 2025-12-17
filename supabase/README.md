@@ -12,6 +12,7 @@ supabase/
 │   ├── 0020_fix_get_orders_with_details.sql # Optimized orders RPC function
 │   ├── 0021_add_staff_table.sql             # Staff management table
 │   ├── 0022_add_deposit_tracking.sql        # Stripe payment & deposit tracking
+│   ├── 0023_disable_staff_rls.sql           # Disable RLS (API uses service role)
 │   └── 20240101_performance_indexes.sql     # Performance indexes
 ├── scripts/
 │   ├── setup-storage.sql                    # Storage bucket setup
@@ -216,11 +217,12 @@ The order table includes payment tracking fields added by `0022_add_deposit_trac
 
 ## 🔒 Security Considerations
 
-1. **Row Level Security**: All tables have RLS enabled
-2. **Authentication Required**: All operations require valid authentication
+1. **Service Role Client**: API routes use `createServiceRoleClient()` which bypasses RLS for server-side operations
+2. **RLS Disabled**: Key tables (staff, task, garment, order, client, service) have RLS disabled since all access goes through authenticated API routes
 3. **Private Storage**: Files are not publicly accessible
 4. **Signed URLs**: Temporary access to files via signed URLs
 5. **Input Validation**: Validate all inputs before database operations
+6. **Environment Variables**: `SUPABASE_SERVICE_ROLE_KEY` must be set for API routes to function
 
 ## 📊 Performance
 

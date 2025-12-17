@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { sendPaiementRecu } from '@/lib/webhooks/n8n-webhooks';
 
 interface RecordManualPaymentRequest {
   orderId: string;
@@ -23,10 +24,21 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createServiceRoleClient();
 
-    // Fetch current order
+    // Fetch current order with client for GHL webhook
     const { data: order, error: orderError } = await supabase
       .from('order')
-      .select('id, order_number, total_cents, deposit_cents, balance_due_cents, payment_status, notes')
+      .select(`
+        id,
+        order_number,
+        total_cents,
+        deposit_cents,
+        balance_due_cents,
+        payment_status,
+        notes,
+        client:client_id (
+          ghl_contact_id
+        )
+      `)
       .eq('id', orderId)
       .single();
 
