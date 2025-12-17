@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import QRCode from 'qrcode';
 import {
-  upsertGHLContact,
-  formatClientForGHL,
-} from '@/lib/webhooks/ghl-webhook';
-import {
   createCalendarEvent,
   formatOrderForCalendar,
 } from '@/lib/webhooks/calendar-webhook';
@@ -14,11 +10,10 @@ import {
   getPricingConfig,
 } from '@/lib/pricing/calcTotal';
 import {
-  syncContactToGHL,
-  calculateGHLTags,
-  isCustomOrder as checkIsCustomOrder,
-  type N8nService,
-} from '@/lib/webhooks/n8n-webhooks';
+  syncClientToGHL,
+  isGHLConfigured,
+  type AppClient,
+} from '@/lib/ghl';
 
 export async function POST(request: NextRequest) {
   const correlationId = crypto.randomUUID();
@@ -119,55 +114,7 @@ export async function POST(request: NextRequest) {
 
       clientId = (newClient as any).id;
       console.log('Created new client:', clientId);
-
-      // Send new client to GHL webhook with nurture sequence enrollment
-      let ghlContactId = null;
-      try {
-        const ghlContactData = formatClientForGHL(
-          {
-            first_name: client.first_name,
-            last_name: client.last_name,
-            email: client.email,
-            phone: client.phone,
-          },
-          { isNewClient: true, enrollInNurture: true }
-        );
-
-        const ghlResult = await upsertGHLContact(ghlContactData);
-        if (ghlResult.success) {
-          ghlContactId = ghlResult.contactId;
-          console.log(
-            '✅ GHL contact created successfully for client:',
-            clientId,
-            'Contact ID:',
-            ghlContactId
-          );
-        } else {
-          console.warn(
-            '⚠️ GHL webhook failed (non-blocking):',
-            ghlResult.error
-          );
-        }
-      } catch (ghlError) {
-        console.warn('⚠️ GHL webhook error (non-blocking):', ghlError);
-        // Don't fail the order creation if GHL webhook fails
-      }
-
-      // Update client with GHL contact ID if we got one
-      if (ghlContactId) {
-        try {
-          await (supabase as any)
-            .from('client')
-            .update({ ghl_contact_id: ghlContactId })
-            .eq('id', clientId);
-          console.log('✅ Updated client with GHL contact ID:', ghlContactId);
-        } catch (updateError) {
-          console.warn(
-            '⚠️ Failed to update client with GHL contact ID (non-blocking):',
-            updateError
-          );
-        }
-      }
+      // Note: GHL sync happens after order creation with full order details
     }
 
     // 2. Calculate pricing using proper pricing function
@@ -502,92 +449,45 @@ export async function POST(request: NextRequest) {
     });
 
     // Sync contact to GHL with full order details
-    try {
-      // Fetch services for this order to build GHL payload
-      const { data: orderServices } = await supabase
-        .from('garment')
-        .select(`
-          garment_service (
-            service (
-              name,
-              category,
-              base_price_cents
-            ),
-            custom_price_cents
-          )
-        `)
-        .eq('order_id', (newOrder as any).id);
+    if (isGHLConfigured()) {
+      try {
+        const isNewClient = !existingClient;
 
-      // Build services array for GHL
-      const n8nServices: N8nService[] = [];
-      for (const garment of orderServices || []) {
-        for (const gs of (garment as any).garment_service || []) {
-          if (gs.service) {
-            n8nServices.push({
-              name: gs.service.name,
-              category: gs.service.category || 'alteration',
-              price_cents: gs.custom_price_cents || gs.service.base_price_cents || 0,
-            });
-          }
+        // Build client data for GHL
+        const ghlClient: AppClient = {
+          id: clientId,
+          first_name: client.first_name || '',
+          last_name: client.last_name || '',
+          email: client.email || null,
+          phone: client.phone || null,
+          language: (client.language || 'fr') as 'fr' | 'en',
+          ghl_contact_id: null,
+          preferred_contact: client.preferred_contact || 'sms',
+        };
+
+        // Sync to GHL (creates contact and adds appropriate tags)
+        const ghlSyncResult = await syncClientToGHL(ghlClient, {
+          isNewClient,
+          orderType: order.type || 'alteration',
+          totalCents: total_cents,
+        });
+
+        if (ghlSyncResult.success && ghlSyncResult.data) {
+          // Update client with GHL contact ID
+          await supabase
+            .from('client')
+            .update({ ghl_contact_id: ghlSyncResult.data })
+            .eq('id', clientId);
+          console.log('✅ GHL contact synced:', ghlSyncResult.data);
+        } else {
+          console.warn('⚠️ GHL sync failed:', ghlSyncResult.error);
         }
+      } catch (ghlError) {
+        console.warn('⚠️ GHL sync error (non-blocking):', ghlError);
+        // Don't fail order creation if GHL sync fails
       }
-
-      // Check if this is a new client (was just created)
-      const isNewClient = !existingClient;
-
-      // Determine if this is a custom order
-      const isCustomOrderFlag = checkIsCustomOrder(n8nServices);
-
-      // Build order data for GHL
-      const n8nOrder = {
-        id: (newOrder as any).id,
-        order_number: (newOrder as any).order_number,
-        type: order.type || 'alteration',
-        status: 'pending',
-        total_cents: total_cents,
-        deposit_cents: isCustomOrderFlag ? Math.ceil(total_cents / 2) : 0,
-        balance_due_cents: total_cents,
-        is_custom: isCustomOrderFlag,
-        deposit_required: isCustomOrderFlag,
-      };
-
-      // Build client data for GHL
-      const n8nClient = {
-        id: clientId,
-        first_name: client.first_name || '',
-        last_name: client.last_name || '',
-        email: client.email || null,
-        phone: client.phone || null,
-        language: (client.language || 'fr') as 'fr' | 'en',
-        ghl_contact_id: null, // Will be set by webhook response
-        preferred_contact: 'sms' as const,
-      };
-
-      // Calculate GHL tags
-      const ghlTags = calculateGHLTags(n8nOrder, n8nClient, n8nServices, isNewClient);
-
-      // Call the new /ghl-sync-contact webhook
-      const ghlSyncResult = await syncContactToGHL({
-        order: n8nOrder,
-        client: n8nClient,
-        services: n8nServices,
-        tags: ghlTags,
-        is_new_client: isNewClient,
-      });
-
-      if (ghlSyncResult.success && ghlSyncResult.data?.contactId) {
-        // Update client with GHL contact ID
-        await supabase
-          .from('client')
-          .update({ ghl_contact_id: ghlSyncResult.data.contactId })
-          .eq('id', clientId);
-        console.log('✅ GHL contact synced:', ghlSyncResult.data.contactId);
-      } else {
-        console.warn('⚠️ GHL sync webhook response:', ghlSyncResult);
-      }
-    } catch (ghlError) {
-      console.warn('⚠️ GHL sync error (non-blocking):', ghlError);
-      // Don't fail order creation if GHL sync fails
+    } else {
+      console.log('ℹ️ GHL not configured - skipping contact sync');
     }
 
     // Push to calendar if assigned

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { sendPaiementRecu, buildN8nClient, buildN8nOrder } from '@/lib/webhooks/n8n-webhooks';
+import {
+  recordPaymentReceived,
+  isGHLConfigured,
+  type AppClient,
+} from '@/lib/ghl';
 
 interface RecordManualPaymentRequest {
   orderId: string;
@@ -123,19 +127,28 @@ export async function POST(request: NextRequest) {
       throw updateError;
     }
 
-    // Send n8n webhook to update GHL tags (discrete - no detailed logging for cash)
+    // Update GHL tags (discrete - no detailed logging for cash)
     const clientData = order.client as any;
-    // Map 'other' to 'cash' for webhook (manual payments are treated as cash)
-    const webhookMethod: 'stripe' | 'cash' | 'card_terminal' = method === 'other' ? 'cash' : method;
+    // Map 'other' to 'cash' for GHL (manual payments are treated as cash)
+    const ghlMethod: 'stripe' | 'cash' | 'card_terminal' = method === 'other' ? 'cash' : method;
 
-    if (clientData) {
+    if (clientData && isGHLConfigured()) {
       try {
-        const n8nClient = buildN8nClient(clientData);
-        const n8nOrder = buildN8nOrder(order);
-        await sendPaiementRecu(n8nClient, n8nOrder, type, webhookMethod);
-        console.log(`✅ Payment received webhook sent for order ${order.order_number}`);
-      } catch (webhookError) {
-        console.warn('⚠️ Payment received webhook failed (non-blocking):', webhookError);
+        const ghlClient: AppClient = {
+          id: clientData.id,
+          first_name: clientData.first_name || '',
+          last_name: clientData.last_name || '',
+          email: clientData.email || null,
+          phone: clientData.phone || null,
+          language: clientData.language || 'fr',
+          ghl_contact_id: clientData.ghl_contact_id || null,
+          preferred_contact: clientData.preferred_contact || 'sms',
+        };
+
+        await recordPaymentReceived(ghlClient, type, ghlMethod);
+        console.log(`✅ Payment tags updated in GHL for order ${order.order_number}`);
+      } catch (ghlError) {
+        console.warn('⚠️ GHL tag update failed (non-blocking):', ghlError);
       }
     }
 

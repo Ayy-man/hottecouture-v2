@@ -11,10 +11,11 @@ import {
 import { orderStageSchema, OrderStage, OrderStageResponse } from '@/lib/dto';
 import { autoCreateTasks } from '@/lib/tasks/auto-create';
 import {
-  sendPretRamassage,
-  buildN8nOrder,
-  buildN8nClient,
-} from '@/lib/webhooks/n8n-webhooks';
+  sendReadyPickup,
+  isGHLConfigured,
+  type AppClient,
+  type AppOrder,
+} from '@/lib/ghl';
 // Simple time tracking: just record timestamps
 
 // Valid status transitions - more flexible for Kanban board
@@ -279,7 +280,7 @@ async function handleOrderStage(
   }
 
   // Auto-send notification when order moves to "Ready"
-  if (newStage === 'ready' && shouldSendNotification) {
+  if (newStage === 'ready' && shouldSendNotification && isGHLConfigured()) {
     const orderData = order as any;
     const paymentStatus = orderData.payment_status;
 
@@ -301,7 +302,7 @@ async function handleOrderStage(
             body: JSON.stringify({
               orderId: orderId,
               type: paymentType,
-              sendSms: true, // Auto-send notification via n8n /pret-ramassage
+              sendSms: true, // Auto-send notification via GHL
             }),
           }
         );
@@ -321,10 +322,28 @@ async function handleOrderStage(
       // Order already paid - just send pickup notification without payment link
       console.log(`ℹ️ Order ${orderId} already paid, sending pickup notification only`);
       try {
-        const n8nOrder = buildN8nOrder(orderData);
-        const n8nClient = buildN8nClient(client);
+        const ghlClient: AppClient = {
+          id: client?.id || '',
+          first_name: client?.first_name || '',
+          last_name: client?.last_name || '',
+          email: client?.email || null,
+          phone: client?.phone || null,
+          language: client?.language || 'fr',
+          ghl_contact_id: client?.ghl_contact_id || null,
+          preferred_contact: client?.preferred_contact || 'sms',
+        };
 
-        await sendPretRamassage(n8nClient, n8nOrder, null, 0);
+        const ghlOrder: AppOrder = {
+          id: orderId,
+          order_number: orderData.order_number,
+          type: orderData.type || 'alteration',
+          status: newStage,
+          total_cents: orderData.total_cents || 0,
+          deposit_cents: orderData.deposit_cents || 0,
+          balance_due_cents: 0, // Already paid
+        };
+
+        await sendReadyPickup(ghlClient, ghlOrder, null, 0);
         console.log(`✅ Pickup notification sent for paid order ${orderId}`);
       } catch (notifyError) {
         console.warn(`⚠️ Pickup notification error for order ${orderId}:`, notifyError);

@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
 import {
-  sendDemandeDepot,
-  sendPretRamassage,
-  buildN8nOrder,
-  buildN8nClient,
-} from '@/lib/webhooks/n8n-webhooks';
+  sendDepositRequest,
+  sendReadyPickup,
+  isGHLConfigured,
+  type AppClient,
+  type AppOrder,
+} from '@/lib/ghl';
 
 // Lazy initialization to avoid build-time errors
 function getStripe() {
@@ -150,38 +151,53 @@ export async function POST(request: NextRequest) {
       .update(updateData)
       .eq('id', orderId);
 
-    // Send notification via n8n webhook
-    if (sendSms && client?.phone) {
+    // Send notification via GHL
+    if (sendSms && client?.phone && isGHLConfigured()) {
       try {
-        // Build n8n-compatible order and client objects
-        const n8nOrder = buildN8nOrder({
-          ...order,
-          deposit_cents: type === 'deposit' ? amountCents : order.deposit_cents,
-        });
-        const n8nClient = buildN8nClient(client);
+        // Build GHL-compatible order and client objects
+        const ghlClient: AppClient = {
+          id: client.id,
+          first_name: client.first_name || '',
+          last_name: client.last_name || '',
+          email: client.email || null,
+          phone: client.phone || null,
+          language: client.language || 'fr',
+          ghl_contact_id: client.ghl_contact_id || null,
+          preferred_contact: client.preferred_contact || 'sms',
+        };
+
+        const ghlOrder: AppOrder = {
+          id: order.id,
+          order_number: order.order_number,
+          type: order.type || 'alteration',
+          status: 'pending',
+          total_cents: order.total_cents,
+          deposit_cents: type === 'deposit' ? amountCents : (order.deposit_cents || 0),
+          balance_due_cents: amountCents,
+        };
 
         if (type === 'deposit') {
           // Send deposit request notification
-          const webhookResult = await sendDemandeDepot(n8nClient, n8nOrder, session.url!);
+          const result = await sendDepositRequest(ghlClient, ghlOrder, session.url!);
 
-          if (webhookResult.success) {
-            console.log(`✅ Deposit request sent via n8n for order ${order.order_number}`);
+          if (result.success) {
+            console.log(`✅ Deposit request sent via GHL for order ${order.order_number}`);
           } else {
-            console.warn(`⚠️ Deposit request webhook failed:`, webhookResult.error);
+            console.warn(`⚠️ Deposit request failed:`, result.error);
           }
         } else {
           // Send ready for pickup notification with payment link
-          const webhookResult = await sendPretRamassage(n8nClient, n8nOrder, session.url!, amountCents);
+          const result = await sendReadyPickup(ghlClient, ghlOrder, session.url!, amountCents);
 
-          if (webhookResult.success) {
-            console.log(`✅ Payment ready notification sent via n8n for order ${order.order_number}`);
+          if (result.success) {
+            console.log(`✅ Payment ready notification sent via GHL for order ${order.order_number}`);
           } else {
-            console.warn(`⚠️ Payment ready webhook failed:`, webhookResult.error);
+            console.warn(`⚠️ Payment ready notification failed:`, result.error);
           }
         }
-      } catch (webhookError) {
-        console.warn('⚠️ Failed to send n8n webhook:', webhookError);
-        // Don't fail the checkout creation if webhook fails
+      } catch (ghlError) {
+        console.warn('⚠️ Failed to send GHL notification:', ghlError);
+        // Don't fail the checkout creation if notification fails
       }
     }
 

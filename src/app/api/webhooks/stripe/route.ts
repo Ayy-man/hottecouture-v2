@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { constructWebhookEvent } from '@/lib/integrations/stripe';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
-import { sendPaiementRecu, buildN8nClient, buildN8nOrder } from '@/lib/webhooks/n8n-webhooks';
+import {
+  recordPaymentReceived,
+  isGHLConfigured,
+  type AppClient,
+} from '@/lib/ghl';
 
 export async function POST(request: NextRequest) {
   const payload = await request.text();
@@ -116,15 +120,24 @@ export async function POST(request: NextRequest) {
 
           const clientData = orderWithClient?.client as any;
 
-          // Send n8n webhook to update GHL tags
-          if (orderWithClient && clientData) {
+          // Update GHL tags
+          if (orderWithClient && clientData && isGHLConfigured()) {
             try {
-              const n8nClient = buildN8nClient(clientData);
-              const n8nOrder = buildN8nOrder(orderWithClient);
-              await sendPaiementRecu(n8nClient, n8nOrder, paymentType as 'deposit' | 'balance' | 'full', 'stripe');
-              console.log(`✅ Payment received webhook sent to n8n for order #${orderNumber}`);
-            } catch (webhookError) {
-              console.warn('⚠️ n8n webhook failed (non-blocking):', webhookError);
+              const ghlClient: AppClient = {
+                id: clientData.id,
+                first_name: clientData.first_name || '',
+                last_name: clientData.last_name || '',
+                email: clientData.email || null,
+                phone: clientData.phone || null,
+                language: clientData.language || 'fr',
+                ghl_contact_id: clientData.ghl_contact_id || null,
+                preferred_contact: clientData.preferred_contact || 'sms',
+              };
+
+              await recordPaymentReceived(ghlClient, paymentType as 'deposit' | 'balance' | 'full', 'stripe');
+              console.log(`✅ GHL tags updated for order #${orderNumber}`);
+            } catch (ghlError) {
+              console.warn('⚠️ GHL tag update failed (non-blocking):', ghlError);
             }
           }
         }

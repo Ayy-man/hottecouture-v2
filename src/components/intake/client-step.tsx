@@ -4,10 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { ClientCreate } from '@/lib/dto';
-import {
-  upsertGHLContact,
-  formatClientForGHL,
-} from '@/lib/webhooks/ghl-webhook';
+// GHL contact sync is handled server-side in the intake API
 
 interface ClientStepProps {
   data: ClientCreate | null;
@@ -251,52 +248,7 @@ export function ClientStep({
           return;
         }
 
-        // Send new client to GHL webhook
-        let ghlContactId = null;
-        try {
-          const ghlContactData = formatClientForGHL({
-            first_name: formData.first_name.trim(),
-            last_name: formData.last_name.trim(),
-            email: formData.email?.trim() || '',
-            phone: (formData.phone || '').trim(), // Now required
-            preferred_contact: formData.preferred_contact,
-          });
-
-          const ghlResult = await upsertGHLContact(ghlContactData);
-          if (ghlResult.success) {
-            ghlContactId = ghlResult.contactId;
-            console.log(
-              '✅ GHL contact created successfully for client:',
-              newClient.id,
-              'Contact ID:',
-              ghlContactId
-            );
-          } else {
-            console.warn(
-              '⚠️ GHL webhook failed (non-blocking):',
-              ghlResult.error
-            );
-          }
-        } catch (ghlError) {
-          console.warn('⚠️ GHL webhook error (non-blocking):', ghlError);
-          // Don't fail the client creation if GHL webhook fails
-        }
-
-        // Update client with GHL contact ID if we got one
-        if (ghlContactId) {
-          try {
-            await (supabase as any)
-              .from('client')
-              .update({ ghl_contact_id: ghlContactId })
-              .eq('id', newClient.id);
-            console.log('✅ Updated client with GHL contact ID:', ghlContactId);
-          } catch (updateError) {
-            console.warn(
-              '⚠️ Failed to update client with GHL contact ID (non-blocking):',
-              updateError
-            );
-          }
-        }
+        // Note: GHL contact sync happens server-side in the intake API when the order is submitted
 
         onUpdate(newClient);
         setShowCreateForm(false);
