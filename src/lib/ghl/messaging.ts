@@ -93,6 +93,48 @@ Hotte Couture`,
     fr: () => '',
     en: () => '',
   },
+
+  REMINDER_3WEEK: {
+    fr: (data: MessageData) =>
+      `Bonjour ${data.firstName},
+
+Rappel: Votre commande #${data.orderNumber} est prête depuis 3 semaines.
+
+Passez la récupérer chez Hotte Design & Couture.
+
+Merci,
+Hotte Couture`,
+    en: (data: MessageData) =>
+      `Hello ${data.firstName},
+
+Reminder: Your order #${data.orderNumber} has been ready for 3 weeks.
+
+Please pick it up at Hotte Design & Couture.
+
+Thank you,
+Hotte Couture`,
+  },
+
+  REMINDER_1MONTH: {
+    fr: (data: MessageData) =>
+      `Bonjour ${data.firstName},
+
+Dernier rappel: Votre commande #${data.orderNumber} est prête depuis plus d'un mois.
+
+Les articles non récupérés seront donnés à une œuvre de charité.
+
+Merci,
+Hotte Couture`,
+    en: (data: MessageData) =>
+      `Hello ${data.firstName},
+
+Final reminder: Your order #${data.orderNumber} has been ready for over a month.
+
+Unclaimed items will be donated to charity.
+
+Thank you,
+Hotte Couture`,
+  },
 };
 
 const EMAIL_SUBJECTS = {
@@ -371,4 +413,47 @@ export async function recordPaymentReceived(
     tagsToAdd,
     tagsToRemove,
   });
+}
+
+/**
+ * Send a pickup reminder (3 week or 1 month)
+ * Used by the cron job
+ */
+export async function sendPickupReminder(
+  client: AppClient,
+  orderNumber: number,
+  reminderType: '3week' | '1month'
+): Promise<GHLResult<{ messageSent: boolean }>> {
+  // Find or create GHL contact
+  const contactResult = await findOrCreateContact(client);
+  if (!contactResult.success || !contactResult.data) {
+    return { success: false, error: contactResult.error || 'Contact not found' };
+  }
+
+  const action: MessagingAction = reminderType === '3week' ? 'REMINDER_3WEEK' : 'REMINDER_1MONTH';
+
+  const result = await sendNotification({
+    action,
+    contactId: contactResult.data,
+    language: client.language,
+    preferredContact: client.preferred_contact,
+    data: {
+      firstName: client.first_name,
+      orderNumber,
+    },
+    tagsToAdd: [],
+    tagsToRemove: [],
+  });
+
+  if (!result.success) {
+    return {
+      success: false,
+      error: result.error || 'Failed to send reminder',
+    };
+  }
+
+  return {
+    success: true,
+    data: { messageSent: result.data?.messageSent || false },
+  };
 }

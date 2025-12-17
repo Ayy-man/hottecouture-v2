@@ -43,6 +43,7 @@ export {
   sendDepositRequest,
   sendReadyPickup,
   recordPaymentReceived,
+  sendPickupReminder,
 } from './messaging';
 
 export {

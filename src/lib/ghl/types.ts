@@ -94,7 +94,9 @@ export type MessagingAction =
   | 'DEPOSIT_REQUEST'
   | 'READY_PICKUP'
   | 'READY_PICKUP_PAID'
-  | 'PAYMENT_RECEIVED';
+  | 'PAYMENT_RECEIVED'
+  | 'REMINDER_3WEEK'
+  | 'REMINDER_1MONTH';
 
 export type GHLTag =
   | 'nouveau_client'
