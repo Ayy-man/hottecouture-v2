@@ -93,10 +93,11 @@ export function ClientStep({
   };
 
   const validateEmail = (email: string): string | null => {
-    if (email && email.trim()) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        return 'Invalid email format';
-      }
+    if (!email || !email.trim()) {
+      return 'Email requis'; // Email is required for GHL sync
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return 'Format email invalide';
     }
     return null;
   };
@@ -605,11 +606,12 @@ export function ClientStep({
                         htmlFor='email'
                         className='block text-xs font-medium mb-1'
                       >
-                        Email
+                        Email <span className='text-red-500'>*</span>
                       </label>
                       <input
                         id='email'
                         type='email'
+                        required
                         value={formData.email}
                         onChange={e => handleEmailChange(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${

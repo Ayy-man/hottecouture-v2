@@ -26,8 +26,8 @@ interface IntakeFormData {
   client: {
     first_name: string;
     last_name: string;
-    phone: string; // Now required
-    email?: string;
+    phone: string;
+    email: string; // Required for GHL sync
     language: 'fr' | 'en';
     newsletter_consent: boolean;
     preferred_contact: 'sms' | 'email';

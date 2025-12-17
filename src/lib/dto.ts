@@ -15,10 +15,10 @@ export const correlationIdSchema = z
 export const clientCreateSchema = z.object({
   first_name: z.string().min(1, 'First name is required').max(100),
   last_name: z.string().min(1, 'Last name is required').max(100),
-  phone: phoneSchema, // Now required
-  email: emailSchema.optional(),
+  phone: phoneSchema,
+  email: emailSchema, // Required for GHL contact sync
   language: z.enum(['fr', 'en']).default('fr'),
-  preferred_contact: z.enum(['email', 'sms']).default('email'),
+  preferred_contact: z.enum(['email', 'sms']).default('sms'),
   newsletter_consent: z.boolean().default(false),
 });
 
