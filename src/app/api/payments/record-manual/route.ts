@@ -1,0 +1,126 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
+
+interface RecordManualPaymentRequest {
+  orderId: string;
+  type: 'deposit' | 'balance' | 'full';
+  method: 'cash' | 'card_terminal' | 'other';
+  amountCents?: number;
+  notes?: string;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body: RecordManualPaymentRequest = await request.json();
+    const { orderId, type, method, amountCents, notes } = body;
+
+    if (!orderId || !type || !method) {
+      return NextResponse.json(
+        { error: 'Missing required fields: orderId, type, method' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = await createServiceRoleClient();
+
+    // Fetch current order
+    const { data: order, error: orderError } = await supabase
+      .from('order')
+      .select('id, order_number, total_cents, deposit_cents, balance_due_cents, payment_status, notes')
+      .eq('id', orderId)
+      .single();
+
+    if (orderError || !order) {
+      console.error('Order fetch error:', orderError);
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    const now = new Date().toISOString();
+    const updateData: Record<string, any> = {};
+
+    switch (type) {
+      case 'deposit':
+        // Record deposit payment
+        const depositAmount = amountCents || Math.ceil(order.total_cents / 2);
+        updateData.deposit_cents = depositAmount;
+        updateData.deposit_paid_at = now;
+        updateData.deposit_payment_method = method;
+        updateData.payment_status = 'deposit_paid'; // Deposit received, balance pending
+        console.log(`💵 Recording ${method} deposit of $${(depositAmount / 100).toFixed(2)} for order ${order.order_number}`);
+        break;
+
+      case 'balance':
+        // Record balance payment (after deposit was already paid)
+        updateData.payment_status = 'paid';
+        updateData.payment_method = method;
+        updateData.paid_at = now;
+        console.log(`💵 Recording ${method} balance payment for order ${order.order_number}`);
+        break;
+
+      case 'full':
+        // Record full payment (covers both deposit and balance)
+        updateData.payment_status = 'paid';
+        updateData.payment_method = method;
+        updateData.paid_at = now;
+        // If this is a custom order, also mark deposit as paid
+        if (order.deposit_cents === 0 || !order.deposit_cents) {
+          updateData.deposit_cents = Math.ceil(order.total_cents / 2);
+          updateData.deposit_paid_at = now;
+          updateData.deposit_payment_method = method;
+        }
+        console.log(`💵 Recording ${method} full payment for order ${order.order_number}`);
+        break;
+
+      default:
+        return NextResponse.json({ error: 'Invalid payment type' }, { status: 400 });
+    }
+
+    // Add payment notes if provided
+    if (notes) {
+      const existingNotes = (order.notes as Record<string, any>) || {};
+      updateData.notes = {
+        ...existingNotes,
+        payment_notes: notes,
+        payment_recorded_at: now,
+        payment_recorded_method: method,
+      };
+    }
+
+    // Update the order
+    const { error: updateError } = await supabase
+      .from('order')
+      .update(updateData)
+      .eq('id', orderId);
+
+    if (updateError) {
+      console.error('Update error:', updateError);
+      throw updateError;
+    }
+
+    // Log the payment event
+    await supabase.from('event_log').insert({
+      entity: 'order',
+      entity_id: orderId,
+      action: 'payment_recorded',
+      actor: 'staff',
+      details: {
+        type,
+        method,
+        amount_cents: amountCents || (type === 'deposit' ? Math.ceil(order.total_cents / 2) : order.balance_due_cents),
+        notes,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `${type} payment recorded via ${method}`,
+      payment_status: updateData.payment_status,
+    });
+  } catch (error) {
+    console.error('❌ Record manual payment error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to record payment' },
+      { status: 500 }
+    );
+  }
+}

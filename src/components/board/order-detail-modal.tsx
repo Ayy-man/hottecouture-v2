@@ -10,6 +10,7 @@ import { TaskManagementModal } from '@/components/tasks/task-management-modal';
 import { TimerButton } from '@/components/timer/timer-button';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { RACK_CONFIG } from '@/lib/config/production';
+import { PaymentStatusSection } from '@/components/payments/payment-status-section';
 
 interface OrderDetailModalProps {
   order: any;
@@ -31,8 +32,6 @@ export function OrderDetailModal({
   const [editingTimeGarmentId, setEditingTimeGarmentId] = useState<string | null>(null);
   const [editingTimeMinutes, setEditingTimeMinutes] = useState<number>(0);
   const [savingTime, setSavingTime] = useState<string | null>(null);
-  const [generatingPaymentLink, setGeneratingPaymentLink] = useState(false);
-  const [paymentLinkUrl, setPaymentLinkUrl] = useState<string | null>(null);
   const [rackPosition, setRackPosition] = useState<string>('');
   const [customRackPosition, setCustomRackPosition] = useState<string>('');
   const [savingRack, setSavingRack] = useState(false);
@@ -97,7 +96,6 @@ export function OrderDetailModal({
       setEditingTimeGarmentId(null);
       setEditingTimeMinutes(0);
       setSavingTime(null);
-      setPaymentLinkUrl(null);
       setRackPosition('');
       setCustomRackPosition('');
     }
@@ -197,44 +195,6 @@ export function OrderDetailModal({
       alert(error instanceof Error ? error.message : 'Failed to save time estimate');
     } finally {
       setSavingTime(null);
-    }
-  };
-
-  const handleGeneratePaymentLink = async () => {
-    if (!displayOrder?.id) return;
-    
-    setGeneratingPaymentLink(true);
-    setPaymentLinkUrl(null);
-    
-    try {
-      const response = await fetch('/api/payments/create-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: displayOrder.id }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate payment link');
-      }
-      
-      setPaymentLinkUrl(data.payment_url);
-    } catch (error) {
-      console.error('Error generating payment link:', error);
-      alert(error instanceof Error ? error.message : 'Failed to generate payment link');
-    } finally {
-      setGeneratingPaymentLink(false);
-    }
-  };
-
-  const handleCopyPaymentLink = async () => {
-    if (!paymentLinkUrl) return;
-    try {
-      await navigator.clipboard.writeText(paymentLinkUrl);
-      alert('Payment link copied to clipboard!');
-    } catch {
-      alert('Failed to copy. Link: ' + paymentLinkUrl);
     }
   };
 
@@ -866,56 +826,24 @@ export function OrderDetailModal({
                 </div>
               </div>
 
-              {/* Payment Link Section */}
-              <div className='mb-6 p-4 bg-green-50 border border-green-200 rounded-lg'>
-                <h3 className='text-lg font-semibold text-green-800 mb-3'>Payment</h3>
-                {paymentLinkUrl ? (
-                  <div className='space-y-2'>
-                    <div className='flex items-center gap-2'>
-                      <input
-                        type='text'
-                        value={paymentLinkUrl}
-                        readOnly
-                        className='flex-1 px-3 py-2 text-sm border border-green-300 rounded bg-white truncate'
-                      />
-                      <Button
-                        size='sm'
-                        onClick={handleCopyPaymentLink}
-                        className='bg-green-600 hover:bg-green-700 text-white'
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                    <div className='flex gap-2'>
-                      <Button
-                        size='sm'
-                        variant='outline'
-                        asChild
-                        className='text-green-700 border-green-300'
-                      >
-                        <a href={paymentLinkUrl} target='_blank' rel='noopener noreferrer'>
-                          Open Payment Page
-                        </a>
-                      </Button>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        onClick={() => setPaymentLinkUrl(null)}
-                        className='text-gray-500'
-                      >
-                        Generate New Link
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={handleGeneratePaymentLink}
-                    disabled={generatingPaymentLink}
-                    className='bg-green-600 hover:bg-green-700 text-white'
-                  >
-                    {generatingPaymentLink ? 'Generating...' : '💳 Generate Payment Link'}
-                  </Button>
-                )}
+              {/* Payment Section */}
+              <div className='mb-6'>
+                <PaymentStatusSection
+                  order={{
+                    id: displayOrder.id,
+                    order_number: displayOrder.order_number,
+                    type: displayOrder.type || 'alteration',
+                    total_cents: displayOrder.total_cents || 0,
+                    deposit_cents: displayOrder.deposit_cents || 0,
+                    deposit_paid_at: displayOrder.deposit_paid_at || null,
+                    balance_due_cents: displayOrder.balance_due_cents || displayOrder.total_cents || 0,
+                    payment_status: displayOrder.payment_status || 'unpaid',
+                    paid_at: displayOrder.paid_at || null,
+                    payment_method: displayOrder.payment_method || null,
+                    deposit_payment_method: displayOrder.deposit_payment_method || null,
+                  }}
+                  onPaymentUpdate={fetchOrderDetails}
+                />
               </div>
 
               {/* Actions */}

@@ -324,6 +324,50 @@ async function handleOrderStage(
     }
   }
 
+  // Auto-send payment link when order moves to "Ready" and notification is requested
+  if (newStage === 'ready' && shouldSendNotification) {
+    const orderData = order as any;
+    const paymentStatus = orderData.payment_status;
+
+    // Only send if payment is not already completed
+    if (paymentStatus !== 'paid') {
+      try {
+        // Determine payment type based on order type and deposit status
+        const isCustomOrder = orderData.type === 'custom';
+        const depositPaid = orderData.deposit_paid_at !== null;
+        const paymentType = isCustomOrder && depositPaid ? 'balance' : (isCustomOrder ? 'balance' : 'full');
+
+        console.log(`💳 Auto-sending payment link for order ${orderId} (type: ${paymentType})`);
+
+        const paymentResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/payments/create-checkout`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: orderId,
+              type: paymentType,
+              sendSms: true, // Auto-send SMS with payment link
+            }),
+          }
+        );
+
+        if (paymentResponse.ok) {
+          const paymentResult = await paymentResponse.json();
+          console.log(`✅ Payment link sent for order ${orderId}: ${paymentResult.checkoutUrl}`);
+        } else {
+          const errorText = await paymentResponse.text();
+          console.warn(`⚠️ Failed to create payment link for order ${orderId}:`, errorText);
+        }
+      } catch (paymentError) {
+        console.warn(`⚠️ Payment link error for order ${orderId}:`, paymentError);
+        // Don't fail the stage change if payment link fails
+      }
+    } else {
+      console.log(`ℹ️ Payment already completed for order ${orderId}, skipping payment link`);
+    }
+  }
+
   // Log the event
   await logEvent('order', orderId, 'status_changed', {
     correlationId,
