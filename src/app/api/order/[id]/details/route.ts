@@ -3,11 +3,11 @@ import { createServiceRoleClient } from '../../../../../lib/supabase/server';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServiceRoleClient();
-    const orderId = params.id;
+    const { id: orderId } = await params;
 
     console.log('🔍 Order Details API: Looking for order ID:', orderId);
 

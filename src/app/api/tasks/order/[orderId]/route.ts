@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     const supabase = await createServiceRoleClient();
@@ -14,7 +14,7 @@ export async function GET(
         { status: 503 }
       );
     }
-    const orderId = params.orderId;
+    const { orderId } = await params;
 
     // Validate orderId
     if (!orderId || typeof orderId !== 'string') {

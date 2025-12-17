@@ -9,11 +9,11 @@ export const revalidate = 0;
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServiceRoleClient();
-    const garmentId = params.id;
+    const { id: garmentId } = await params;
     const body = await request.json();
     const { notes, estimated_minutes } = body;
 

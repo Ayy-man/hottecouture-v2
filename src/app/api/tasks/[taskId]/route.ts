@@ -13,11 +13,11 @@ const updateTaskSchema = z.object({
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
     const supabase = await createServiceRoleClient();
-    const taskId = params.taskId;
+    const { taskId } = await params;
 
     const { data: task, error } = await supabase
       .from('task')
@@ -70,11 +70,11 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
     const supabase = await createServiceRoleClient();
-    const taskId = params.taskId;
+    const { taskId } = await params;
     const body = await request.json();
     const updateData = updateTaskSchema.parse(body);
 
@@ -145,11 +145,11 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
     const supabase = await createServiceRoleClient();
-    const taskId = params.taskId;
+    const { taskId } = await params;
 
     // Check if task has timer running
     const { data: currentTask } = await supabase

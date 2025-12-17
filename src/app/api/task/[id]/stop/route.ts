@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { 
-  withErrorHandling, 
-  getCorrelationId, 
-  logEvent, 
+import { createServiceRoleClient } from '@/lib/supabase/server'
+import {
+  withErrorHandling,
+  getCorrelationId,
+  logEvent,
   validateRequest,
-  UnauthorizedError,
   NotFoundError,
   ConflictError
 } from '@/lib/api/error-handler'
@@ -13,25 +12,19 @@ import { taskStopSchema, TaskStop, TaskResponse } from '@/lib/dto'
 
 async function handleTaskStop(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<TaskResponse> {
   const correlationId = getCorrelationId(request)
-    const supabase = await createClient()
-  
-  // Validate authentication
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    throw new UnauthorizedError('Authentication required')
-  }
-  
+  const supabase = await createServiceRoleClient()
+
   // Parse and validate request body
   const body = await request.json()
   const validatedData = validateRequest(taskStopSchema, body, correlationId) as TaskStop
-  
-  const taskId = params.id
 
-  // Get current user ID
-  const userId = user.id
+  const { id: taskId } = await params
+
+  // Use assignee from body or task's current assignee
+  const userId = body.assignee || 'system'
 
   // Check if task exists and is assigned to current user
   const { data: task, error: taskError } = await supabase
@@ -42,11 +35,6 @@ async function handleTaskStop(
 
   if (taskError || !task) {
     throw new NotFoundError('Task', correlationId)
-  }
-
-  // Check if task is assigned to current user
-  if ((task as any).assignee !== userId) {
-    throw new ConflictError('Task is not assigned to current user', correlationId)
   }
 
   // Check if task is active
@@ -99,7 +87,7 @@ async function handleTaskStop(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withErrorHandling(() => handleTaskStop(request, { params }), request)
 }

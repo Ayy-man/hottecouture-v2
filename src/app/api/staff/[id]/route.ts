@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 // PATCH /api/staff/[id] - Update staff member
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient();
+  const supabase = await createServiceRoleClient();
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+  }
   const { id } = await params;
   const body = await request.json();
 
@@ -46,7 +49,10 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient();
+  const supabase = await createServiceRoleClient();
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+  }
   const { id } = await params;
 
   // Get staff name first

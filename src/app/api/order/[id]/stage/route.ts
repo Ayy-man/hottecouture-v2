@@ -30,22 +30,10 @@ const validTransitions: Record<string, string[]> = {
 
 async function handleOrderStage(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<OrderStageResponse> {
   const correlationId = getCorrelationId(request);
   const supabase = await createServiceRoleClient();
-
-  // Validate authentication (skip for development)
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    console.log(
-      '🔧 Development mode: Skipping authentication for order stage update'
-    );
-    // In development, we'll allow the update to proceed without authentication
-  }
 
   // Parse and validate request body
   const body = await request.json();
@@ -55,7 +43,7 @@ async function handleOrderStage(
     correlationId
   ) as OrderStage;
 
-  const orderId = params.id;
+  const { id: orderId } = await params;
   const newStage = validatedData.stage;
 
   // Get current order with full details for webhooks and SMS notifications
@@ -409,7 +397,7 @@ async function handleOrderStage(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withErrorHandling(
     () => handleOrderStage(request, { params }),

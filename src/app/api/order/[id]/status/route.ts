@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { 
-  withErrorHandling, 
-  getCorrelationId, 
-  logEvent, 
+import { createServiceRoleClient } from '@/lib/supabase/server'
+import {
+  withErrorHandling,
+  getCorrelationId,
+  logEvent,
   validateRequest,
   NotFoundError
 } from '@/lib/api/error-handler'
@@ -11,20 +11,20 @@ import { statusQuerySchema, StatusQuery, StatusResponse } from '@/lib/dto'
 
 async function handleOrderStatus(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<StatusResponse> {
   const correlationId = getCorrelationId(request)
-    const supabase = await createClient()
-  
+  const supabase = await createServiceRoleClient()
+
   // Parse and validate query parameters
   const { searchParams } = new URL(request.url)
   const queryData = {
     phone: searchParams.get('phone') || undefined,
     last: searchParams.get('last') || undefined,
   }
-  
+
   const validatedQuery = validateRequest(statusQuerySchema, queryData, correlationId) as StatusQuery
-  const orderId = params.id
+  const { id: orderId } = await params
 
   // Build query with optional phone verification
   let query = supabase
@@ -94,7 +94,7 @@ async function handleOrderStatus(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withErrorHandling(() => handleOrderStatus(request, { params }), request)
 }

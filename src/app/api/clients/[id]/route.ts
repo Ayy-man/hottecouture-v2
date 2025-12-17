@@ -7,10 +7,10 @@ export const fetchCache = 'force-no-store'
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const clientId = params.id
+    const { id: clientId } = await params
 
     if (!clientId) {
       return NextResponse.json({ error: 'Client ID is required' }, { status: 400 })

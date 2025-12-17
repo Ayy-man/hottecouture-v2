@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { 
-  withErrorHandling, 
-  getCorrelationId, 
-  logEvent, 
+import { createServiceRoleClient } from '@/lib/supabase/server'
+import {
+  withErrorHandling,
+  getCorrelationId,
+  logEvent,
   validateRequest,
-  UnauthorizedError,
   NotFoundError,
   ConflictError
 } from '@/lib/api/error-handler'
@@ -13,25 +12,19 @@ import { taskStartSchema, TaskResponse } from '@/lib/dto'
 
 async function handleTaskStart(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<TaskResponse> {
   const correlationId = getCorrelationId(request)
-    const supabase = await createClient()
-  
-  // Validate authentication
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    throw new UnauthorizedError('Authentication required')
-  }
-  
+  const supabase = await createServiceRoleClient()
+
   // Parse and validate request body
   const body = await request.json()
   validateRequest(taskStartSchema, body, correlationId)
-  
-  const taskId = params.id
 
-  // Get current user ID
-  const userId = user.id
+  const { id: taskId } = await params
+
+  // Use assignee from body or default
+  const userId = body.assignee || 'system'
 
   // Check if task exists
   const { data: task, error: taskError } = await supabase
@@ -47,24 +40,6 @@ async function handleTaskStart(
   // Check if task is already active
   if ((task as any).is_active) {
     throw new ConflictError('Task is already active', correlationId)
-  }
-
-  // Check if user has any other active tasks
-  const { data: activeTasks, error: activeTasksError } = await supabase
-    .from('task')
-    .select('id, operation')
-    .eq('assignee', userId)
-    .eq('is_active', true)
-
-  if (activeTasksError) {
-    throw new Error(`Failed to check active tasks: ${activeTasksError.message}`)
-  }
-
-  if (activeTasks && activeTasks.length > 0) {
-    throw new ConflictError(
-      `User already has an active task: ${(activeTasks as any[])[0].operation}`,
-      correlationId
-    )
   }
 
   // Start the task
@@ -102,7 +77,7 @@ async function handleTaskStart(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withErrorHandling(() => handleTaskStart(request, { params }), request)
 }

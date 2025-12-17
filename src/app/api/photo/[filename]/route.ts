@@ -3,10 +3,10 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
-    const filename = params.filename;
+    const { filename } = await params;
     console.log('🔍 Photo API: Requesting photo:', filename);
 
     if (!filename) {

@@ -8,7 +8,13 @@ import {
   buildN8nClient,
 } from '@/lib/webhooks/n8n-webhooks';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// Lazy initialization to avoid build-time errors
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured');
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
 
 interface CreateCheckoutRequest {
   orderId: string;
@@ -95,6 +101,7 @@ export async function POST(request: NextRequest) {
     const clientName = `${client?.first_name || ''} ${client?.last_name || ''}`.trim() || 'Client';
 
     // Create Stripe Checkout Session
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
