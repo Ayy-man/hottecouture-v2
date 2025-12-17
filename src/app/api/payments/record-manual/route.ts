@@ -114,10 +114,12 @@ export async function POST(request: NextRequest) {
 
     // Send n8n webhook to update GHL tags (discrete - no detailed logging for cash)
     const client = order.client as any;
+    // Map 'other' to 'cash' for webhook (manual payments are treated as cash)
+    const webhookMethod: 'stripe' | 'cash' | 'card_terminal' = method === 'other' ? 'cash' : method;
     try {
       await sendPaiementRecu({
         payment_type: type,
-        payment_method: method,
+        payment_method: webhookMethod,
         amount_cents: paymentAmountCents,
         order: {
           id: orderId,

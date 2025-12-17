@@ -105,7 +105,7 @@ export interface PaiementRecuPayload {
  */
 export function calculateGHLTags(
   order: N8nOrder,
-  client: N8nClient,
+  _client: N8nClient, // Prefixed with underscore to indicate intentionally unused
   services: N8nService[],
   isNewClient: boolean
 ): GHLTag[] {
