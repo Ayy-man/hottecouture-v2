@@ -10,6 +10,9 @@ const requestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServiceRoleClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+    }
     const body = await request.json();
     const { orderId } = requestSchema.parse(body);
 

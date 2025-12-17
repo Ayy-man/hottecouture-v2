@@ -4,6 +4,9 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServiceRoleClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+    }
     const { orderId, garmentId, serviceId } = await request.json();
 
     if (!orderId) {

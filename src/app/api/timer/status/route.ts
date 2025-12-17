@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createServiceRoleClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+    }
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('orderId');
     const garmentId = searchParams.get('garmentId');
