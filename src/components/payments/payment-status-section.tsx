@@ -86,10 +86,9 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
         }
       }
 
-      // Delay the parent update to ensure our state is rendered first
-      setTimeout(() => {
-        onPaymentUpdate?.();
-      }, 100);
+      // Don't call onPaymentUpdate here - payment hasn't happened yet
+      // The actual payment completion will trigger updates via Stripe webhook
+      // Calling it now causes re-renders that lose the URL state
     } catch (err) {
       console.error('Payment request error:', err);
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi');
