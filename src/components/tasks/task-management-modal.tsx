@@ -59,7 +59,7 @@ export function TaskManagementModal({
   const [editForm, setEditForm] = useState<Partial<Task>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const { staff } = useStaff(true);
+  const { staff } = useStaff();
 
   useEffect(() => {
     if (isOpen && orderId) {

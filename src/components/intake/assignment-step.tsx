@@ -20,7 +20,7 @@ export function AssignmentStep({
   onPrev,
   isSubmitting = false,
 }: AssignmentStepProps) {
-  const { staff, loading } = useStaff(true);
+  const { staff, loading } = useStaff();
 
   return (
     <div className='h-full flex flex-col overflow-hidden min-h-0'>

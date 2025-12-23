@@ -133,7 +133,7 @@ export default function TodayTasksPage() {
   const [orders, setOrders] = useState<TaskOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
-  const { staff } = useStaff(true); // Only active staff
+  const { staff } = useStaff();
 
   const sensors = useSensors(
     useSensor(PointerSensor),

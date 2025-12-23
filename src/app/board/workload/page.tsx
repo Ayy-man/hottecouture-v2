@@ -74,7 +74,7 @@ export default function WorkloadPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
-  const { staff: staffMembers } = useStaff(true);
+  const { staff: staffMembers } = useStaff();
   const SEAMSTRESSES = [...staffMembers.map(s => s.name), 'Unassigned'];
 
   useEffect(() => {
