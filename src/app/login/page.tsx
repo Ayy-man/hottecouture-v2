@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, LogIn, User, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
+import { HLogo } from '@/components/ui/h-logo';
 
 function LoginContent() {
   const [username, setUsername] = useState('admin');
@@ -97,11 +98,11 @@ function LoginContent() {
       <div className='w-full max-w-md'>
         <Card className='shadow-lg'>
           <CardHeader className='text-center'>
-            <div className='mx-auto mb-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center'>
-              <LogIn className='w-6 h-6 text-primary-foreground' />
+            <div className='mx-auto mb-4'>
+              <HLogo size='lg' variant='round' />
             </div>
             <CardTitle className='text-2xl font-bold'>Hotte Couture</CardTitle>
-            <CardDescription>Sign in to access the application</CardDescription>
+            <CardDescription>Connectez-vous pour accéder à l'application</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className='space-y-4'>

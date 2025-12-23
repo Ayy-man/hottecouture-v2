@@ -11,7 +11,6 @@ import {
 import { ProtectedPage } from '@/components/auth/protected-page';
 import { createHapticButtonProps } from '@/lib/utils/haptic-feedback';
 import { MuralBackground } from '@/components/ui/mural-background';
-import { HLogo } from '@/components/ui/h-logo';
 
 export default function HomePage() {
   const isMockMode =
@@ -53,18 +52,8 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Compact Hero Section */}
-          <div className='text-center mb-4 flex-shrink-0'>
-            <div className='inline-flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-2xl mb-3 shadow-lg animate-fade-in-up p-4'>
-              <HLogo size='xl' />
-            </div>
-            <p className='text-sm md:text-base text-text-secondary max-w-2xl mx-auto leading-relaxed font-semibold animate-fade-in-up-delay-2'>
-              Services professionnels de couture et retouches
-            </p>
-          </div>
-
           {/* Action Cards */}
-          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 items-start justify-center pt-8'>
+          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 items-start justify-center pt-4'>
             {/* Create New Order Card */}
             <Card className='group relative overflow-hidden bg-surface/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-1 hover-lift'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
