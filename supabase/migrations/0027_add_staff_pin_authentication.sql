@@ -16,7 +16,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_garment_one_active_per_assignee
 -- Create index for faster staff name lookups
 CREATE INDEX IF NOT EXISTS idx_staff_name ON staff(name);
 
--- Set default PINs for existing staff (1234 for all - admin should change these)
--- Using simple hash for demo - in production use proper bcrypt
--- Note: PIN is '1234' for all staff initially
-UPDATE staff SET pin_hash = '1234' WHERE pin_hash IS NULL;
+-- Set unique PINs for each staff member
+UPDATE staff SET pin_hash = '1235' WHERE name = 'Audrey' AND pin_hash IS NULL;
+UPDATE staff SET pin_hash = '1236' WHERE name = 'Solange' AND pin_hash IS NULL;
+UPDATE staff SET pin_hash = '1237' WHERE name = 'Audrey-Anne' AND pin_hash IS NULL;
