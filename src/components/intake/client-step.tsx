@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
-import { ClientCreate } from '@/lib/dto';
+import { ClientCreate, MeasurementsData } from '@/lib/dto';
 // GHL contact sync is handled server-side in the intake API
 
 interface ClientStepProps {
@@ -38,6 +38,7 @@ export function ClientStep({
   const [duplicateClient, setDuplicateClient] = useState<ClientCreate | null>(null);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [showMeasurements, setShowMeasurements] = useState(false);
+  const [isLoadingMeasurements, setIsLoadingMeasurements] = useState(false);
   const [measurements, setMeasurements] = useState({
     bust: '',
     waist: '',
@@ -49,6 +50,71 @@ export function ClientStep({
     height: '',
     notes: '',
   });
+
+  // No-op for measurements update (feature incomplete)
+  const onMeasurementsUpdate = useCallback((_data: MeasurementsData) => {}, []);
+
+  // Update a single measurement field
+  const updateMeasurement = useCallback((field: string, value: string) => {
+    setMeasurements(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  // Load measurements from API when existing client is selected
+  const loadClientMeasurements = useCallback(async (clientId: string) => {
+    setIsLoadingMeasurements(true);
+    try {
+      const res = await fetch(`/api/clients/${clientId}/measurements`);
+      if (res.ok) {
+        const { data: grouped } = await res.json();
+        // Body measurements are in the 'body' category
+        const bodyMeasurements = grouped?.body || [];
+        const measurementMap: Record<string, number> = {};
+        for (const m of bodyMeasurements) {
+          if (m.name && m.value) {
+            measurementMap[m.name] = m.value;
+          }
+        }
+
+        const loadedMeasurements = {
+          bust: measurementMap['bust']?.toString() || '',
+          waist: measurementMap['waist']?.toString() || '',
+          hips: measurementMap['hips']?.toString() || '',
+          inseam: measurementMap['inseam']?.toString() || '',
+          arm_length: measurementMap['arm_length']?.toString() || '',
+          neck: measurementMap['neck']?.toString() || '',
+          shoulders: measurementMap['shoulders']?.toString() || '',
+          height: measurementMap['height']?.toString() || '',
+          notes: '',
+        };
+
+        setMeasurements(loadedMeasurements);
+
+        // Notify parent with loaded measurements
+        if (onMeasurementsUpdate) {
+          const parsed: MeasurementsData = {
+            bust: measurementMap['bust'] || null,
+            waist: measurementMap['waist'] || null,
+            hips: measurementMap['hips'] || null,
+            inseam: measurementMap['inseam'] || null,
+            arm_length: measurementMap['arm_length'] || null,
+            neck: measurementMap['neck'] || null,
+            shoulders: measurementMap['shoulders'] || null,
+            height: measurementMap['height'] || null,
+          };
+          onMeasurementsUpdate(parsed);
+        }
+
+        // Auto-expand measurements if client has saved data
+        if (Object.values(measurementMap).some(v => v)) {
+          setShowMeasurements(true);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading client measurements:', err);
+    } finally {
+      setIsLoadingMeasurements(false);
+    }
+  }, [onMeasurementsUpdate]);
 
   const maskPhone = (phone: string): string => {
     if (!phone) return '';
@@ -271,8 +337,9 @@ export function ClientStep({
       }
   };
 
-  const handleUseExistingClient = () => {
+  const handleUseExistingClient = async () => {
     if (duplicateClient) {
+      const clientWithId = duplicateClient as ClientCreate & { id?: string };
       onUpdate(duplicateClient);
       setShowDuplicateModal(false);
       setDuplicateClient(null);
@@ -286,8 +353,11 @@ export function ClientStep({
         preferred_contact: 'email',
         newsletter_consent: false,
       });
-      // For existing clients, auto-advance since measurements would be on file
-      setTimeout(() => onNext(), 300);
+      // Load measurements for existing client
+      if (clientWithId.id) {
+        await loadClientMeasurements(clientWithId.id);
+      }
+      // Don't auto-advance - let user review measurements
     }
   };
 
@@ -297,11 +367,15 @@ export function ClientStep({
     await createClientInDB();
   };
 
-  const handleSelectClient = (client: ClientCreate) => {
+  const handleSelectClient = async (client: ClientCreate & { id?: string }) => {
     onUpdate(client);
     setSearchQuery('');
     setSearchResults([]);
-    setTimeout(() => onNext(), 300);
+    // Load saved measurements if client has an ID
+    if (client.id) {
+      await loadClientMeasurements(client.id);
+    }
+    // Don't auto-advance - let user review/edit measurements
   };
 
   return (
@@ -732,14 +806,22 @@ export function ClientStep({
                 
                 {showMeasurements && (
                   <div className='p-3 space-y-3'>
-                    <p className='text-xs text-gray-500'>Pour projets sur mesure (optionnel)</p>
+                    <div className='flex items-center justify-between'>
+                      <p className='text-xs text-gray-500'>Pour projets sur mesure (optionnel)</p>
+                      {isLoadingMeasurements && (
+                        <div className='flex items-center gap-1 text-xs text-primary-600'>
+                          <div className='animate-spin w-3 h-3 border border-primary-500 border-t-transparent rounded-full'></div>
+                          Chargement...
+                        </div>
+                      )}
+                    </div>
                     <div className='grid grid-cols-2 gap-2'>
                       <div>
                         <label className='block text-xs text-gray-600 mb-1'>Tour de poitrine (cm)</label>
                         <input
                           type='number'
                           value={measurements.bust}
-                          onChange={e => setMeasurements(prev => ({ ...prev, bust: e.target.value }))}
+                          onChange={e => updateMeasurement('bust', e.target.value)}
                           className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                           placeholder='ex: 92'
                         />
@@ -749,7 +831,7 @@ export function ClientStep({
                         <input
                           type='number'
                           value={measurements.waist}
-                          onChange={e => setMeasurements(prev => ({ ...prev, waist: e.target.value }))}
+                          onChange={e => updateMeasurement('waist', e.target.value)}
                           className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                           placeholder='ex: 76'
                         />
@@ -759,7 +841,7 @@ export function ClientStep({
                         <input
                           type='number'
                           value={measurements.hips}
-                          onChange={e => setMeasurements(prev => ({ ...prev, hips: e.target.value }))}
+                          onChange={e => updateMeasurement('hips', e.target.value)}
                           className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                           placeholder='ex: 97'
                         />
@@ -769,7 +851,7 @@ export function ClientStep({
                         <input
                           type='number'
                           value={measurements.inseam}
-                          onChange={e => setMeasurements(prev => ({ ...prev, inseam: e.target.value }))}
+                          onChange={e => updateMeasurement('inseam', e.target.value)}
                           className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                           placeholder='ex: 81'
                         />
@@ -779,7 +861,7 @@ export function ClientStep({
                         <input
                           type='number'
                           value={measurements.arm_length}
-                          onChange={e => setMeasurements(prev => ({ ...prev, arm_length: e.target.value }))}
+                          onChange={e => updateMeasurement('arm_length', e.target.value)}
                           className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                           placeholder='ex: 63'
                         />
@@ -789,7 +871,7 @@ export function ClientStep({
                         <input
                           type='number'
                           value={measurements.neck}
-                          onChange={e => setMeasurements(prev => ({ ...prev, neck: e.target.value }))}
+                          onChange={e => updateMeasurement('neck', e.target.value)}
                           className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                           placeholder='ex: 38'
                         />
@@ -799,7 +881,7 @@ export function ClientStep({
                         <input
                           type='number'
                           value={measurements.shoulders}
-                          onChange={e => setMeasurements(prev => ({ ...prev, shoulders: e.target.value }))}
+                          onChange={e => updateMeasurement('shoulders', e.target.value)}
                           className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                           placeholder='ex: 46'
                         />
@@ -809,7 +891,7 @@ export function ClientStep({
                         <input
                           type='number'
                           value={measurements.height}
-                          onChange={e => setMeasurements(prev => ({ ...prev, height: e.target.value }))}
+                          onChange={e => updateMeasurement('height', e.target.value)}
                           className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                           placeholder='ex: 170'
                         />
@@ -819,7 +901,7 @@ export function ClientStep({
                       <label className='block text-xs text-gray-600 mb-1'>Notes de mesures</label>
                       <textarea
                         value={measurements.notes}
-                        onChange={e => setMeasurements(prev => ({ ...prev, notes: e.target.value }))}
+                        onChange={e => updateMeasurement('notes', e.target.value)}
                         className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                         rows={2}
                         placeholder='Notes additionnelles...'
