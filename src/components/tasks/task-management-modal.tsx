@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TimerButton } from '@/components/timer/timer-button';
-import { Edit2, Save, X, Clock, User, CheckCircle, Plus, Zap } from 'lucide-react';
+import { Edit2, Save, X, Clock, User, CheckCircle } from 'lucide-react';
 import { useStaff } from '@/lib/hooks/useStaff';
 
 interface Task {
@@ -59,7 +59,6 @@ export function TaskManagementModal({
   const [editForm, setEditForm] = useState<Partial<Task>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [autoCreating, setAutoCreating] = useState(false);
   const { staff } = useStaff(true);
 
   useEffect(() => {
@@ -67,32 +66,6 @@ export function TaskManagementModal({
       fetchTasks();
     }
   }, [isOpen, orderId]);
-
-  // Auto-create tasks for this order
-  const handleAutoCreateTasks = async () => {
-    setAutoCreating(true);
-    try {
-      const response = await fetch('/api/tasks/auto-create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId }),
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        console.log('✅ Auto-created tasks:', result);
-        await fetchTasks(); // Refresh tasks
-      } else {
-        console.error('Failed to auto-create tasks:', result);
-        alert(result.error || 'Failed to create tasks');
-      }
-    } catch (error) {
-      console.error('Error auto-creating tasks:', error);
-      alert('Failed to create tasks');
-    } finally {
-      setAutoCreating(false);
-    }
-  };
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -186,20 +159,11 @@ export function TaskManagementModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Manage Tasks" size="lg">
       <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-        {/* Auto-create tasks button */}
+        {/* Task count header */}
         <div className="flex justify-between items-center pb-4 border-b">
           <p className="text-sm text-gray-600">
             {tasks.length} task(s) found
           </p>
-          <Button
-            size="sm"
-            onClick={handleAutoCreateTasks}
-            disabled={autoCreating}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Zap className="w-4 h-4 mr-1" />
-            {autoCreating ? 'Creating...' : 'Auto-Create Tasks'}
-          </Button>
         </div>
 
         {loading ? (
@@ -207,18 +171,10 @@ export function TaskManagementModal({
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : Object.keys(tasksByGarment).length === 0 ? (
-          <div className="text-center py-8 space-y-4">
+          <div className="text-center py-8">
             <p className="text-gray-500">
-              No tasks found for this order.
+              No services for this order. Add services during order intake.
             </p>
-            <Button
-              onClick={handleAutoCreateTasks}
-              disabled={autoCreating}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {autoCreating ? 'Creating Tasks...' : 'Create Tasks from Services'}
-            </Button>
           </div>
         ) : (
           Object.entries(tasksByGarment).map(([garmentId, { garment, tasks: garmentTasks }]) => (
@@ -382,7 +338,7 @@ export function TaskManagementModal({
                         <div className="flex items-center gap-2">
                           <TimerButton
                             orderId={orderId}
-                            garmentId={task.garment_id}
+                            garmentId={task.id}
                             orderStatus="working" // Assuming we're in working context
                           />
                           <Button

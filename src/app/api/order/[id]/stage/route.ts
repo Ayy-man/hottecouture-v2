@@ -9,7 +9,7 @@ import {
   ConflictError,
 } from '@/lib/api/error-handler';
 import { orderStageSchema, OrderStage, OrderStageResponse } from '@/lib/dto';
-import { autoCreateTasks } from '@/lib/tasks/auto-create';
+// Note: Auto-create tasks logic removed - garment_service IS the task
 import {
   sendReadyPickup,
   isGHLConfigured,
@@ -98,11 +98,11 @@ async function handleOrderStage(
   // B4: Require final hours when moving to 'ready' or 'done'
   const legacyTotalSeconds = (order as any).total_work_seconds || 0;
 
-  // Calculate time from per-garment tasks
+  // Calculate time from garments (each garment IS a task)
   let taskTotalSeconds = 0;
   const { data: validationGarments, error: valGarError } = await supabase
     .from('garment')
-    .select('id')
+    .select('id, actual_minutes')
     .eq('order_id', orderId);
 
   if (valGarError) {
@@ -110,19 +110,7 @@ async function handleOrderStage(
   }
 
   if (validationGarments && validationGarments.length > 0) {
-    const vGarmentIds = validationGarments.map((g: any) => g.id);
-    const { data: validationTasks, error: valTaskError } = await supabase
-      .from('task')
-      .select('actual_minutes')
-      .in('garment_id', vGarmentIds);
-
-    if (valTaskError) {
-      console.error('Error fetching tasks for validation:', valTaskError);
-    }
-
-    if (validationTasks) {
-      taskTotalSeconds = validationTasks.reduce((sum: number, t: any) => sum + ((t.actual_minutes || 0) * 60), 0);
-    }
+    taskTotalSeconds = validationGarments.reduce((sum: number, g: any) => sum + ((g.actual_minutes || 0) * 60), 0);
   }
 
   const totalRecordedSeconds = legacyTotalSeconds + taskTotalSeconds;
@@ -146,53 +134,26 @@ async function handleOrderStage(
     throw new Error(`Failed to update order status: ${updateError.message}`);
   }
 
-  // Auto-create tasks when order enters working stage
-  if (newStage === 'working') {
-    try {
-      console.log(`📋 Creating tasks for order ${orderId} entering working stage`);
-      const autoCreateResult = await autoCreateTasks(supabase, orderId);
-
-      if (autoCreateResult.success) {
-        console.log(`✅ Auto-create tasks result:`, autoCreateResult);
-      } else {
-        console.error(`❌ Failed to auto-create tasks:`, autoCreateResult.error);
-      }
-    } catch (autoCreateError) {
-      console.error(`⚠️ Auto-create tasks error:`, autoCreateError);
-      // Don't fail the order update if auto-create fails
-    }
-  }
+  // Note: Auto-create tasks logic removed - garment_service records ARE the tasks
+  // They exist from order creation via intake, no need to create separately
 
   // Note: Automatic time tracking removed - now using manual timer controls
   // Time tracking is now handled via dedicated timer API endpoints
 
-  // Check if all tasks are complete (for automatic status updates)
+  // Check if all garments (tasks) are complete
   let allTasksComplete = false;
   if (newStage === 'done' || newStage === 'ready') {
-    // First get garments for this order, then get tasks for those garments
-    const { data: garments, error: garmentsError } = await (supabase as any)
+    // Check garment stages directly (each garment IS a task)
+    const { data: pendingGarments, error: garmentsError } = await (supabase as any)
       .from('garment')
-      .select('id')
-      .eq('order_id', orderId);
+      .select('id, stage')
+      .eq('order_id', orderId)
+      .in('stage', ['pending', 'working']);
 
     if (garmentsError) {
-      console.warn('Failed to get garments for order:', garmentsError.message);
-    } else if (garments && garments.length > 0) {
-      const garmentIds = garments.map((g: any) => g.id);
-      const { data: tasks, error: tasksError } = await (supabase as any)
-        .from('task')
-        .select('id, stage')
-        .in('garment_id', garmentIds)
-        .in('stage', ['pending', 'working']);
-
-      if (tasksError) {
-        console.warn('Failed to check task completion:', tasksError.message);
-      } else {
-        allTasksComplete = !tasks || tasks.length === 0;
-      }
+      console.warn('Failed to check garment completion:', garmentsError.message);
     } else {
-      // No garments found, consider tasks complete
-      allTasksComplete = true;
+      allTasksComplete = !pendingGarments || pendingGarments.length === 0;
     }
   }
 

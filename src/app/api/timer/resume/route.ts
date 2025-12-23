@@ -17,89 +17,61 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date().toISOString();
+    let garment = null;
 
     if (garmentId) {
-      // Garment Task Logic
-      const { data: task, error: fetchError } = await supabase
-        .from('task')
-        .select('*')
-        .eq('garment_id', garmentId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (fetchError || !task) {
-        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-      }
-
-      if (task.is_active) {
-        return NextResponse.json({ error: 'Timer already running' }, { status: 400 });
-      }
-
-      const { error: updateError } = await supabase
-        .from('task')
-        .update({
-          is_active: true,
-          started_at: now
-        })
-        .eq('id', task.id);
-
-      if (updateError) throw updateError;
-
-      return NextResponse.json({
-        success: true,
-        message: 'Timer resumed successfully',
-        timer_started_at: now,
-        total_work_seconds: (task.actual_minutes || 0) * 60
-      });
-
-    } else {
-      // No garmentId - find first garment and resume its task
-      const { data: garments, error: garmentError } = await supabase
+      // Get specific garment that's paused
+      const { data, error } = await supabase
         .from('garment')
-        .select('id')
-        .eq('order_id', orderId)
-        .limit(1);
-
-      if (garmentError || !garments || garments.length === 0) {
-        return NextResponse.json({ error: 'No garments found' }, { status: 404 });
-      }
-
-      const firstGarmentId = garments[0].id;
-
-      const { data: task, error: fetchError } = await supabase
-        .from('task')
         .select('*')
-        .eq('garment_id', firstGarmentId)
-        .order('created_at', { ascending: false })
+        .eq('id', garmentId)
+        .eq('is_active', false)
+        .not('stopped_at', 'is', null)
+        .maybeSingle();
+
+      if (error) throw new Error(error.message);
+      garment = data;
+    } else {
+      // Get first paused garment for this order
+      const { data, error } = await supabase
+        .from('garment')
+        .select('*')
+        .eq('order_id', orderId)
+        .eq('is_active', false)
+        .not('stopped_at', 'is', null)
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (fetchError || !task) {
-        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-      }
-
-      if (task.is_active) {
-        return NextResponse.json({ error: 'Timer already running' }, { status: 400 });
-      }
-
-      const { error: updateError } = await supabase
-        .from('task')
-        .update({
-          is_active: true,
-          started_at: now
-        })
-        .eq('id', task.id);
-
-      if (updateError) throw updateError;
-
-      return NextResponse.json({
-        success: true,
-        message: 'Timer resumed successfully',
-        timer_started_at: now,
-        total_work_seconds: (task.actual_minutes || 0) * 60
-      });
+      if (error) throw new Error(error.message);
+      garment = data;
     }
+
+    if (!garment) {
+      return NextResponse.json({ error: 'No paused timer found' }, { status: 404 });
+    }
+
+    if (garment.is_active) {
+      return NextResponse.json({ error: 'Timer already running' }, { status: 400 });
+    }
+
+    // Resume the timer
+    const { error: updateError } = await supabase
+      .from('garment')
+      .update({
+        is_active: true,
+        started_at: now
+      })
+      .eq('id', garment.id);
+
+    if (updateError) throw updateError;
+
+    return NextResponse.json({
+      success: true,
+      message: 'Timer resumed successfully',
+      timer_started_at: now,
+      total_work_seconds: (garment.actual_minutes || 0) * 60
+    });
+
   } catch (error) {
     console.error('Timer resume error:', error);
     return NextResponse.json(

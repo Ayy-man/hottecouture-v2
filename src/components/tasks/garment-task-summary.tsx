@@ -155,7 +155,7 @@ export function GarmentTaskSummary({
 
               <TimerButton
                 orderId={orderId}
-                garmentId={garmentId}
+                garmentId={task.id}
                 orderStatus={orderStatus}
               />
             </div>
@@ -165,7 +165,7 @@ export function GarmentTaskSummary({
 
       {expanded && tasks.length === 0 && (
         <p className="text-xs text-gray-500 text-center py-2">
-          No tasks created. Move order to "Working" status to auto-create tasks.
+          No services for this garment. Add services during order intake.
         </p>
       )}
     </Card>

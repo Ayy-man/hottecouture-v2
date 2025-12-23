@@ -11,7 +11,7 @@ interface TimerButtonProps {
   orderId: string;
   orderStatus: string;
   onTimeUpdate?: (totalSeconds: number) => void;
-  garmentId?: string; // Optional: if provided, tracks time for specific garment task
+  garmentId?: string; // Optional: specific garment to track
 }
 
 interface TimerStatus {
@@ -73,10 +73,10 @@ export function TimerButton({
   // Fetch timer status
   const fetchTimerStatus = async () => {
     try {
-      const url = garmentId
-        ? `/api/timer/status?orderId=${orderId}&garmentId=${garmentId}`
-        : `/api/timer/status?orderId=${orderId}`;
-      const response = await fetch(url);
+      const params = new URLSearchParams({ orderId });
+      if (garmentId) params.append('garmentId', garmentId);
+
+      const response = await fetch(`/api/timer/status?${params.toString()}`);
       const result = await response.json();
 
       if (result.success) {

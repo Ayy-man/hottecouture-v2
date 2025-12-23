@@ -24,109 +24,112 @@ export async function GET(
       );
     }
 
-    // First, get all garment IDs for this order
-    const { data: garments, error: garmentError } = await supabase
+    // Fetch all garments for this order - each garment IS a task
+    const { data: garments, error } = await supabase
       .from('garment')
-      .select('id')
-      .eq('order_id', orderId);
-
-    if (garmentError) {
-      console.error('Error fetching garments:', garmentError);
-      return NextResponse.json(
-        { error: 'Failed to fetch garments', details: garmentError.message },
-        { status: 500 }
-      );
-    }
-
-    // If no garments, return empty
-    if (!garments || garments.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          tasks: [],
-          tasksByGarment: {},
-          summary: {
-            totalTasks: 0,
-            completedTasks: 0,
-            totalPlannedMinutes: 0,
-            totalActualMinutes: 0,
-            totalVarianceMinutes: 0,
-            progressPercentage: 0,
-          },
-        },
-      });
-    }
-
-    const garmentIds = garments.map((g: { id: string }) => g.id);
-
-    // Fetch all tasks for these garments with garment details
-    // Note: task table does not have service_id column - removed non-existent columns
-    const { data: tasks, error } = await supabase
-      .from('task')
       .select(`
         id,
-        garment_id,
-        operation,
+        order_id,
+        type,
+        color,
+        brand,
+        label_code,
+        notes,
         stage,
-        planned_minutes,
-        actual_minutes,
         is_active,
-        assignee,
         started_at,
         stopped_at,
-        garment (
+        actual_minutes,
+        assignee,
+        garment_service (
           id,
-          type,
-          color,
-          brand,
-          label_code,
-          order_id
+          quantity,
+          notes,
+          service:service_id (
+            id,
+            name,
+            category,
+            estimated_minutes
+          )
         )
       `)
-      .in('garment_id', garmentIds)
-      .order('id', { ascending: true });
+      .eq('order_id', orderId);
 
     if (error) {
-      console.error('Error fetching tasks:', error);
+      console.error('Error fetching garments:', error);
       return NextResponse.json(
         { error: 'Failed to fetch tasks', details: error.message },
         { status: 500 }
       );
     }
 
-    // Group tasks by garment for easier consumption
-    const tasksByGarment: Record<string, any[]> = {};
+    // Transform garments into task format
+    const tasks = (garments || []).map((g: any) => {
+      // Calculate estimated minutes from all services on this garment
+      const estimatedMinutes = (g.garment_service || []).reduce((sum: number, gs: any) => {
+        return sum + ((gs.service?.estimated_minutes || 0) * (gs.quantity || 1));
+      }, 0);
 
-    (tasks || []).forEach((task: any) => {
+      // Build operation name from services
+      const serviceNames = (g.garment_service || [])
+        .map((gs: any) => gs.service?.name)
+        .filter(Boolean)
+        .join(', ');
+
+      return {
+        id: g.id,
+        garment_id: g.id, // For compatibility
+        operation: serviceNames || g.type,
+        stage: g.stage || 'pending',
+        planned_minutes: estimatedMinutes,
+        actual_minutes: g.actual_minutes || 0,
+        is_active: g.is_active || false,
+        assignee: g.assignee,
+        started_at: g.started_at,
+        stopped_at: g.stopped_at,
+        notes: g.notes,
+        garment: {
+          id: g.id,
+          type: g.type,
+          color: g.color,
+          brand: g.brand,
+          label_code: g.label_code,
+          order_id: g.order_id,
+        },
+        services: g.garment_service || [],
+        timeVariance: (g.actual_minutes || 0) - estimatedMinutes,
+        isActiveTimer: g.is_active && g.started_at && !g.stopped_at,
+      };
+    });
+
+    // Group tasks by garment (each garment is its own task, so 1:1 mapping)
+    const tasksByGarment: Record<string, any[]> = {};
+    tasks.forEach((task: any) => {
       const garmentId = task.garment_id;
       if (!tasksByGarment[garmentId]) {
         tasksByGarment[garmentId] = [];
       }
-      tasksByGarment[garmentId].push({
-        ...task,
-        timeVariance: (task.actual_minutes || 0) - (task.planned_minutes || 0),
-        isActiveTimer: task.is_active && task.started_at && !task.stopped_at,
-      });
+      tasksByGarment[garmentId].push(task);
     });
 
     // Calculate summary statistics
-    const totalPlannedMinutes = (tasks || []).reduce(
+    const totalPlannedMinutes = tasks.reduce(
       (sum: number, task: any) => sum + (task.planned_minutes || 0),
       0
     );
-    const totalActualMinutes = (tasks || []).reduce(
+    const totalActualMinutes = tasks.reduce(
       (sum: number, task: any) => sum + (task.actual_minutes || 0),
       0
     );
-    const completedTasks = (tasks || []).filter(
+    const completedTasks = tasks.filter(
       (task: any) => task.stage === 'done'
     ).length;
-    const totalTasks = (tasks || []).length;
+    const totalTasks = tasks.length;
 
     return NextResponse.json({
       success: true,
       data: {
-        tasks: tasks || [],
+        tasks,
         tasksByGarment,
         summary: {
           totalTasks,

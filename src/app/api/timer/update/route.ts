@@ -26,99 +26,63 @@ export async function POST(request: NextRequest) {
     }
 
     const { orderId, garmentId, hours, minutes } = parsed.data;
-    const totalSeconds = hours * 3600 + minutes * 60;
+    const totalMinutes = hours * 60 + minutes;
+
+    let garment = null;
 
     if (garmentId) {
-      // Garment Task Logic
-      const { data: task, error: fetchError } = await supabase
-        .from('task')
+      // Get specific garment
+      const { data, error } = await supabase
+        .from('garment')
         .select('*')
-        .eq('garment_id', garmentId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+        .eq('id', garmentId)
+        .maybeSingle();
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        throw new Error(fetchError.message);
-      }
-
-      if (!task) {
-        // Task doesn't exist yet (e.g. manual entry without starting timer)
-        // Create a new inactive task with the manual time
-        const { error: insertError } = await supabase
-          .from('task')
-          .insert({
-            garment_id: garmentId,
-            operation: 'Manual Entry',
-            stage: 'working',
-            is_active: false,
-            actual_minutes: totalSeconds / 60,
-            planned_minutes: 60
-          });
-
-        if (insertError) throw insertError;
-      } else {
-        // Update existing task
-        if (task.is_active) {
-          return NextResponse.json({ error: 'Please pause timer before editing' }, { status: 400 });
-        }
-
-        const { error: updateError } = await supabase
-          .from('task')
-          .update({
-            actual_minutes: totalSeconds / 60
-          })
-          .eq('id', task.id);
-
-        if (updateError) throw updateError;
-      }
-
+      if (error) throw new Error(error.message);
+      garment = data;
     } else {
-      // Legacy Order Logic
-      const { data: order, error: fetchError } = await supabase
-        .from('order')
-        .select('status, is_timer_running')
-        .eq('id', orderId)
-        .single();
+      // Get first garment for this order
+      const { data, error } = await supabase
+        .from('garment')
+        .select('*')
+        .eq('order_id', orderId)
+        .limit(1)
+        .maybeSingle();
 
-      if (fetchError || !order) {
-        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-      }
-
-      if ((order as any).status !== 'working') {
-        return NextResponse.json(
-          { error: 'Can only edit time for orders in progress' },
-          { status: 400 }
-        );
-      }
-
-      if ((order as any).is_timer_running) {
-        return NextResponse.json(
-          { error: 'Please pause the timer before editing time' },
-          { status: 400 }
-        );
-      }
-
-      const { error: updateError } = await supabase
-        .from('order')
-        .update({
-          total_work_seconds: totalSeconds,
-        })
-        .eq('id', orderId);
-
-      if (updateError) {
-        console.error('Error updating timer:', updateError);
-        return NextResponse.json(
-          { error: 'Failed to update timer' },
-          { status: 500 }
-        );
-      }
+      if (error) throw new Error(error.message);
+      garment = data;
     }
+
+    if (!garment) {
+      return NextResponse.json(
+        { error: 'No garment found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if timer is running
+    if (garment.is_active) {
+      return NextResponse.json(
+        { error: 'Please pause timer before editing' },
+        { status: 400 }
+      );
+    }
+
+    // Update the actual_minutes
+    const { error: updateError } = await supabase
+      .from('garment')
+      .update({
+        actual_minutes: totalMinutes
+      })
+      .eq('id', garment.id);
+
+    if (updateError) throw updateError;
 
     return NextResponse.json({
       success: true,
-      total_work_seconds: totalSeconds,
+      total_work_seconds: totalMinutes * 60,
     });
+
   } catch (error) {
     console.error('Timer update error:', error);
     return NextResponse.json(

@@ -18,122 +18,78 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    let garment = null;
+
     if (garmentId) {
-      // Garment Task Logic
-      const { data: taskData, error: taskError } = await supabase
-        .from('task')
-        .select('*')
-        .eq('garment_id', garmentId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (taskError && taskError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-        console.error('Task fetch error:', taskError);
-        // Fallback to idle if no task
-      }
-
-      const task = taskData || {};
-      const isRunning = task.is_active || false;
-      let currentSessionSeconds = 0;
-
-      if (isRunning && task.started_at) {
-        const startTime = new Date(task.started_at);
-        const now = new Date();
-        currentSessionSeconds = Math.floor(
-          (now.getTime() - startTime.getTime()) / 1000
-        );
-      }
-
-      const actualMinutes = task.actual_minutes || 0;
-      const totalSeconds = (actualMinutes * 60) + currentSessionSeconds;
-
-      // Determine state for UI
-      const isCompleted = task.stage === 'completed';
-      const isPaused = !isRunning && (!!task.stopped_at || actualMinutes > 0) && !isCompleted;
-
-      return NextResponse.json({
-        success: true,
-        is_running: isRunning,
-        is_paused: isPaused,
-        is_completed: isCompleted,
-        timer_started_at: task.started_at,
-        timer_paused_at: task.stopped_at,
-        work_completed_at: isCompleted ? task.stopped_at : null,
-        total_work_seconds: actualMinutes * 60,
-        current_session_seconds: currentSessionSeconds,
-        total_seconds: totalSeconds,
-      });
-
-    } else {
-      // No garmentId - find first garment and check its task status
-      const { data: garments, error: garmentError } = await supabase
+      // Get specific garment
+      const { data, error } = await supabase
         .from('garment')
-        .select('id')
+        .select('id, type, stage, is_active, started_at, stopped_at, actual_minutes, assignee')
+        .eq('id', garmentId)
+        .maybeSingle();
+
+      if (error) console.error('Garment fetch error:', error);
+      garment = data;
+    } else {
+      // Get first garment for this order
+      const { data, error } = await supabase
+        .from('garment')
+        .select('id, type, stage, is_active, started_at, stopped_at, actual_minutes, assignee')
         .eq('order_id', orderId)
-        .limit(1);
-
-      if (garmentError || !garments || garments.length === 0) {
-        // No garments - return idle state
-        return NextResponse.json({
-          success: true,
-          is_running: false,
-          is_paused: false,
-          is_completed: false,
-          timer_started_at: null,
-          timer_paused_at: null,
-          work_completed_at: null,
-          total_work_seconds: 0,
-          current_session_seconds: 0,
-          total_seconds: 0,
-        });
-      }
-
-      const firstGarmentId = garments[0].id;
-
-      // Get task for this garment
-      const { data: taskData, error: taskError } = await supabase
-        .from('task')
-        .select('*')
-        .eq('garment_id', firstGarmentId)
-        .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (taskError && taskError.code !== 'PGRST116') {
-        console.error('Task fetch error:', taskError);
-      }
+      if (error) console.error('Garment fetch error:', error);
+      garment = data;
+    }
 
-      const task = taskData || {};
-      const isRunning = task.is_active || false;
-      let currentSessionSeconds = 0;
-
-      if (isRunning && task.started_at) {
-        const startTime = new Date(task.started_at);
-        const now = new Date();
-        currentSessionSeconds = Math.floor(
-          (now.getTime() - startTime.getTime()) / 1000
-        );
-      }
-
-      const actualMinutes = task.actual_minutes || 0;
-      const totalSeconds = (actualMinutes * 60) + currentSessionSeconds;
-      const isCompleted = task.stage === 'completed';
-      const isPaused = !isRunning && (!!task.stopped_at || actualMinutes > 0) && !isCompleted;
-
+    // If no garment found, return idle state
+    if (!garment) {
       return NextResponse.json({
         success: true,
-        is_running: isRunning,
-        is_paused: isPaused,
-        is_completed: isCompleted,
-        timer_started_at: task.started_at || null,
-        timer_paused_at: task.stopped_at || null,
-        work_completed_at: isCompleted ? task.stopped_at : null,
-        total_work_seconds: actualMinutes * 60,
-        current_session_seconds: currentSessionSeconds,
-        total_seconds: totalSeconds,
+        is_running: false,
+        is_paused: false,
+        is_completed: false,
+        timer_started_at: null,
+        timer_paused_at: null,
+        work_completed_at: null,
+        total_work_seconds: 0,
+        current_session_seconds: 0,
+        total_seconds: 0,
       });
     }
+
+    const isRunning = garment.is_active || false;
+    let currentSessionSeconds = 0;
+
+    if (isRunning && garment.started_at) {
+      const startTime = new Date(garment.started_at);
+      const now = new Date();
+      currentSessionSeconds = Math.floor(
+        (now.getTime() - startTime.getTime()) / 1000
+      );
+    }
+
+    const actualMinutes = garment.actual_minutes || 0;
+    const totalSeconds = (actualMinutes * 60) + currentSessionSeconds;
+
+    // Determine state for UI
+    const isCompleted = garment.stage === 'done';
+    const isPaused = !isRunning && (!!garment.stopped_at || actualMinutes > 0) && !isCompleted;
+
+    return NextResponse.json({
+      success: true,
+      is_running: isRunning,
+      is_paused: isPaused,
+      is_completed: isCompleted,
+      timer_started_at: garment.started_at,
+      timer_paused_at: garment.stopped_at,
+      work_completed_at: isCompleted ? garment.stopped_at : null,
+      total_work_seconds: actualMinutes * 60,
+      current_session_seconds: currentSessionSeconds,
+      total_seconds: totalSeconds,
+    });
+
   } catch (error) {
     console.error('Timer status error:', error);
     return NextResponse.json(

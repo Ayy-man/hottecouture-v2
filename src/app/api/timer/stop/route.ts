@@ -17,101 +17,64 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date();
+    let garment = null;
 
     if (garmentId) {
-      // Garment Task Logic
-      const { data: task, error: fetchError } = await supabase
-        .from('task')
-        .select('*')
-        .eq('garment_id', garmentId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (fetchError || !task) {
-        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-      }
-
-      let newActualMinutes = task.actual_minutes || 0;
-
-      if (task.is_active) {
-        const startTime = new Date(task.started_at);
-        const elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
-        newActualMinutes += (elapsedSeconds / 60);
-      }
-
-      const { error: updateError } = await supabase
-        .from('task')
-        .update({
-          is_active: false,
-          stopped_at: now.toISOString(),
-          actual_minutes: newActualMinutes,
-          stage: 'done'
-        })
-        .eq('id', task.id);
-
-      if (updateError) throw updateError;
-
-      return NextResponse.json({
-        success: true,
-        message: 'Timer stopped successfully',
-        total_work_seconds: newActualMinutes * 60,
-        work_completed_at: now.toISOString()
-      });
-
-    } else {
-      // No garmentId - find first garment and stop its task
-      const { data: garments, error: garmentError } = await supabase
+      // Get specific garment
+      const { data, error } = await supabase
         .from('garment')
-        .select('id')
-        .eq('order_id', orderId)
-        .limit(1);
-
-      if (garmentError || !garments || garments.length === 0) {
-        return NextResponse.json({ error: 'No garments found' }, { status: 404 });
-      }
-
-      const firstGarmentId = garments[0].id;
-
-      const { data: task, error: fetchError } = await supabase
-        .from('task')
         .select('*')
-        .eq('garment_id', firstGarmentId)
-        .order('created_at', { ascending: false })
+        .eq('id', garmentId)
+        .maybeSingle();
+
+      if (error) throw new Error(error.message);
+      garment = data;
+    } else {
+      // Get first garment for this order
+      const { data, error } = await supabase
+        .from('garment')
+        .select('*')
+        .eq('order_id', orderId)
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (fetchError || !task) {
-        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-      }
-
-      let newActualMinutes = task.actual_minutes || 0;
-
-      if (task.is_active) {
-        const startTime = new Date(task.started_at);
-        const elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
-        newActualMinutes += (elapsedSeconds / 60);
-      }
-
-      const { error: updateError } = await supabase
-        .from('task')
-        .update({
-          is_active: false,
-          stopped_at: now.toISOString(),
-          actual_minutes: newActualMinutes,
-          stage: 'done'
-        })
-        .eq('id', task.id);
-
-      if (updateError) throw updateError;
-
-      return NextResponse.json({
-        success: true,
-        message: 'Timer stopped successfully',
-        total_work_seconds: newActualMinutes * 60,
-        work_completed_at: now.toISOString()
-      });
+      if (error) throw new Error(error.message);
+      garment = data;
     }
+
+    if (!garment) {
+      return NextResponse.json({ error: 'No garment found' }, { status: 404 });
+    }
+
+    let newActualMinutes = garment.actual_minutes || 0;
+
+    // If timer was running, add elapsed time
+    if (garment.is_active && garment.started_at) {
+      const startTime = new Date(garment.started_at);
+      const elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
+      newActualMinutes += (elapsedSeconds / 60);
+    }
+
+    // Stop and mark as done
+    const { error: updateError } = await supabase
+      .from('garment')
+      .update({
+        is_active: false,
+        stopped_at: now.toISOString(),
+        actual_minutes: newActualMinutes,
+        stage: 'done'
+      })
+      .eq('id', garment.id);
+
+    if (updateError) throw updateError;
+
+    return NextResponse.json({
+      success: true,
+      message: 'Timer stopped successfully',
+      total_work_seconds: newActualMinutes * 60,
+      work_completed_at: now.toISOString()
+    });
+
   } catch (error) {
     console.error('Timer stop error:', error);
     return NextResponse.json(
