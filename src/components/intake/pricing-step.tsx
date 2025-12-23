@@ -479,12 +479,13 @@ export function PricingStep({
                       <div className='flex items-center gap-2'>
                         <span className='text-gray-500'>$</span>
                         <input
-                          type='number'
-                          min='0'
-                          step='5'
-                          value={Math.round((data.deposit_amount_cents || 0) / 100)}
+                          type='text'
+                          inputMode='numeric'
+                          pattern='[0-9]*'
+                          value={data.deposit_amount_cents ? String(Math.round(data.deposit_amount_cents / 100)) : ''}
                           onChange={e => {
-                            const cents = Math.round(parseFloat(e.target.value || '0') * 100);
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            const cents = value ? parseInt(value, 10) * 100 : 0;
                             handleInputChange('deposit_amount_cents', cents);
                           }}
                           className='w-32 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
