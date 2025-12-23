@@ -3,7 +3,6 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { NavigationProvider } from '@/components/navigation/navigation-provider';
 import { AuthProvider } from '@/components/auth/auth-provider';
-import { AuthButton } from '@/components/auth/auth-button';
 import { HLogo } from '@/components/ui/h-logo';
 import { GlobalChatWrapper } from '@/components/chat/global-chat-wrapper';
 import {
@@ -115,7 +114,6 @@ export default function RootLayout({
                       </a>
                       <ActiveTaskIndicator />
                       <StaffIndicator />
-                      <AuthButton />
                     </nav>
                   </div>
                 </header>
