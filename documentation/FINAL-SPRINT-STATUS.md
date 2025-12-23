@@ -1,0 +1,294 @@
+# HOTTE COUTURE - FINAL SPRINT STATUS REPORT
+
+**Generated:** December 23, 2025
+
+---
+
+## EXECUTIVE SUMMARY
+
+| Deliverable | Status | Completion |
+|-------------|--------|------------|
+| 1. Client Management | **PARTIAL** | 75% |
+| 2. Alteration Workflow | **COMPLETE** | 90% |
+| 3. Task Management | **COMPLETE** | 95% |
+| 4. Physical-Digital Hybrid | **COMPLETE** | 90% |
+| 5. Payment & Invoicing | **PARTIAL** | 60% |
+| 6. Automated SMS | **COMPLETE** | 85% |
+| 7. Scheduling | **PARTIAL** | 40% |
+| 8. Customer Chatbot | **MISSING** | 0% |
+| 9. Internal AI Assistant | **COMPLETE** | 90% |
+| 10. GHL CRM Integration | **COMPLETE** | 85% |
+| 11. Custom Design Intake | **COMPLETE** | 80% |
+
+---
+
+## DETAILED ANALYSIS BY DELIVERABLE
+
+### 1. CLIENT MANAGEMENT — PARTIAL (75%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Tablet-optimized intake form | ✅ Complete | Multi-step wizard, touch-friendly |
+| Client database | ✅ Complete | Supabase with full CRUD |
+| Duplicate detection | ✅ Complete | Phone-based (last 7 digits) |
+| Name AND phone lookup | ✅ Complete | Search by first/last name, phone, email |
+| Measurement profiles | ⚠️ UI Only | Form exists but NOT saved to database |
+| Photo documentation | ✅ Complete | Camera capture per garment |
+| Newsletter consent (Law 25) | ✅ Complete | Checkbox with consent tracking |
+| French UI | ✅ Complete | All labels in French |
+| Bilingual (FR/EN) | ⚠️ Partial | French default, some EN support |
+| Privacy (hidden phone/email) | ❌ Missing | Not implemented |
+
+**Key Gap:** Measurements collected in UI but never persisted to database.
+
+---
+
+### 2. ALTERATION WORKFLOW — COMPLETE (90%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Visual clothing selection with icons | ✅ Complete | Emoji icons per garment type |
+| Service selection with pricing | ✅ Complete | Grid layout, categorized |
+| Custom price option | ✅ Complete | Custom service name + price |
+| Multi-step form flow | ✅ Complete | 7 steps: Client→Pipeline→Garment→Service→Pricing→Assignment→Summary |
+| Left sidebar with steps | ✅ Complete | Numbered progress indicator |
+| Auto-advance on card click | ⚠️ Partial | Manual Next/Back buttons |
+| iPad 8 optimized (touch targets) | ✅ Complete | Large buttons, responsive |
+| Notes field | ✅ Complete | Per garment and per order |
+| Alterations + Custom Design | ✅ Complete | Pipeline selector step |
+| "Starting at" removed | ✅ Complete | Shows exact prices |
+| Auto due dates (10d/4w) | ✅ Complete | 10 business days alterations, 4 weeks custom |
+
+---
+
+### 3. TASK MANAGEMENT — COMPLETE (95%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Kanban with drag-and-drop | ✅ Complete | @dnd-kit library |
+| 5 stages (Pending→Working→Done→Ready→Delivered) | ✅ Complete | Exact workflow |
+| One-tap time tracking | ✅ Complete | Start/Pause/Resume/Stop |
+| Auto-archiving after 7 days | ✅ Complete | Cron job implemented |
+| Color-coded urgency | ✅ Complete | Rush orders highlighted red |
+| Priority ordering (FIFO + express) | ✅ Complete | Rush skips queue |
+| Printable daily to-do list | ✅ Complete | `/print/tasks` route |
+| Multiple views (List, Kanban, Gantt) | ✅ Complete | All three available |
+| Per-item time tracking | ✅ Complete | Quoted vs actual per garment |
+| Block Done until hours entered | ❌ Missing | No enforcement |
+
+---
+
+### 4. PHYSICAL-DIGITAL HYBRID — COMPLETE (90%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| QR codes for tracking | ✅ Complete | Links to `/board?order=X` |
+| Printable clothing ID paper | ✅ Complete | Full label layout |
+| Label print route | ✅ Complete | `/labels/[orderId]` |
+| 2 labels per garment | ✅ Complete | Configurable `copyCount: 2` |
+| Auto-print on order creation | ✅ Complete | Default enabled |
+| Label includes: order #, client, QR, due date, rush, services | ✅ Complete | All fields present |
+| Rack position tracking | ✅ Complete | A1-C10 presets + custom |
+
+---
+
+### 5. PAYMENT & INVOICING — PARTIAL (60%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Invoice total calculation (GST/HST) | ✅ Complete | TPS 5% + TVQ 9.975% |
+| Stripe integration | ⚠️ Infrastructure only | **MISSING: STRIPE_SECRET_KEY in .env** |
+| SMS/email invoice with payment link | ✅ Complete | GHL sends SMS with Stripe link |
+| Payment status tracking | ✅ Complete | 7 states in database |
+| 50% deposit for custom | ✅ Complete | Deposit flow implemented |
+| Deposit request flow (manual trigger) | ✅ Complete | Button in UI |
+| Balance payment (auto on ready) | ❌ Missing | No auto-trigger |
+| Cash payment recording | ✅ Complete | Manual recording API |
+| Stripe webhooks configured | ⚠️ Code exists | **MISSING: STRIPE_WEBHOOK_SECRET** |
+
+**Critical Blocker:** No Stripe API keys configured in `.env` — payment will fail at runtime.
+
+---
+
+### 6. AUTOMATED COMMUNICATIONS — COMPLETE (85%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| "Ready for pickup" SMS | ✅ Complete | Triggered on stage change |
+| 3-week reminder SMS | ✅ Complete | Cron job |
+| 1-month final reminder | ✅ Complete | Cron job |
+| New client welcome sequence | ⚠️ Tags only | GHL tag `sequence_bienvenue` applied |
+| French SMS templates | ✅ Complete | All templates in French |
+| Prevent accidental notifications | ✅ Complete | SMS confirmation modal |
+| Notification triggers | ✅ Complete | Status changes + manual |
+| n8n → GHL integration | ✅ Complete | Direct GHL API (n8n deprecated) |
+
+---
+
+### 7. SCHEDULING — PARTIAL (40%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Google Calendar integration | ⚠️ Infrastructure only | **MISSING: All GOOGLE_* env vars** |
+| Online appointment booking | ⚠️ UI exists | Returns 503 without Google tokens |
+| In-app calendar view | ❌ Missing | No calendar component |
+| Seamstress → Google Calendar push | ⚠️ n8n webhook ready | Requires n8n workflow setup |
+| Automated workload scheduler | ✅ Complete | Gantt chart with capacity planning |
+
+**Critical Blocker:** Missing `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_ACCESS_TOKEN`, `GOOGLE_REFRESH_TOKEN`.
+
+---
+
+### 8. CUSTOMER-FACING CHATBOT — MISSING (0%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Website chatbot | ❌ Missing | Not implemented |
+| Order status via chat | ❌ Missing | Only manual portal lookup |
+| FAQ responses | ❌ Missing | — |
+| Appointment booking via chat | ❌ Missing | — |
+| Bilingual chatbot | ❌ Missing | — |
+| Handoff to human | ❌ Missing | — |
+
+**Note:** Customer portal exists (`/portal`) but is form-based lookup, not a chatbot.
+
+---
+
+### 9. INTERNAL AI ASSISTANT — COMPLETE (90%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Employee-facing AI | ✅ Complete | GPT-4o-mini via OpenRouter |
+| Business data context | ✅ Complete | Orders, clients, stats |
+| Pricing/procedure help | ✅ Complete | System prompt with business info |
+| Client/order database integration | ✅ Complete | 10 tools for DB queries + mutations |
+| Tool capabilities | ✅ Complete | Search, update status, add notes, get stats |
+
+**Tools available:** `get_order`, `get_overdue_orders`, `get_orders_by_status`, `search_clients`, `get_stats`, `update_order_status`, `update_order_details`, `add_order_note`, `get_productivity_stats`
+
+---
+
+### 10. GHL & CRM INTEGRATION — COMPLETE (85%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Auto-create customer on order | ✅ Complete | Sync on intake |
+| Push to GHL CRM | ✅ Complete | Direct API integration |
+| Auto-enroll nurture sequence | ⚠️ Tags only | `sequence_bienvenue` tag applied |
+| Custom fields synced | ⚠️ Partial | Only basic fields (name, phone, email) |
+| Tags applied | ✅ Complete | Full tag system implemented |
+| ghl_contact_id stored | ✅ Complete | In client table |
+
+**Tags implemented:** `nouveau_client`, `client_fidele`, `client_alteration`, `client_creation`, `client_vip`, `depot_en_attente`, `depot_recu`, `pret_a_ramasser`, `paye`, `paiement_comptant`
+
+**Missing custom fields:** `préférence_de_communication`, `source_de_commande`, `date_première_commande`, `dernier_numéro_de_commande`, `nombre_de_commandes`, `consentement_infolettre`
+
+---
+
+### 11. CUSTOM DESIGN INTAKE — COMPLETE (80%)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Alteration vs Custom branching | ✅ Complete | Pipeline selector step |
+| Custom project form | ✅ Complete | Same multi-step with custom pipeline |
+| 50% deposit notation | ✅ Complete | Deposit field in pricing step |
+| Separate pipeline | ✅ Complete | `order_type: 'custom'` |
+| Measurements on estimate | ⚠️ UI only | Collected but not saved |
+
+---
+
+## ENVIRONMENT CONFIGURATION
+
+### Currently Configured:
+```env
+GHL_API_KEY=pit-... ✅
+GHL_LOCATION_ID=L0... ✅
+N8N_CALENDAR_WEBHOOK_URL=https://... ✅
+```
+
+### MISSING (Critical):
+```env
+STRIPE_SECRET_KEY ❌
+STRIPE_WEBHOOK_SECRET ❌
+STRIPE_PUBLISHABLE_KEY ❌
+GOOGLE_CLIENT_ID ❌
+GOOGLE_CLIENT_SECRET ❌
+GOOGLE_ACCESS_TOKEN ❌
+GOOGLE_REFRESH_TOKEN ❌
+GOOGLE_CALENDAR_ID ❌
+```
+
+---
+
+## DATABASE SCHEMA STATUS
+
+**Tables (15):** client, order, garment, garment_service, service, task, garment_type, category, staff, price_list, document, event_log, notification_log, chat_log
+
+**Key Enums:** `preferred_contact`, `language`, `order_type`, `priority`, `order_status`, `task_stage`, `payment_status`
+
+**Missing tables:** `payment_intents`, `payment_transactions` (referenced in code but don't exist)
+
+---
+
+## CRITICAL ISSUES TO FIX
+
+1. **🔴 Stripe not configured** — Add `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PUBLISHABLE_KEY`
+2. **🔴 Google Calendar not configured** — Add all `GOOGLE_*` environment variables
+3. **🟡 Measurements not persisted** — UI collects but doesn't save to database
+4. **🟡 Customer chatbot missing** — Only portal lookup exists
+5. **🟡 GHL custom fields not synced** — Only basic contact info pushed
+
+---
+
+## PAGES & API ROUTES COUNT
+
+- **Pages:** 26 routes
+- **API Endpoints:** 60+ routes
+- **Components:** 55+ React components
+- **Database Migrations:** 25+
+
+---
+
+## VERDICT
+
+The application is **production-ready for core operations** (intake, Kanban, time tracking, labels, GHL SMS). Payment processing and calendar booking require environment configuration to function. Customer-facing chatbot is not implemented.
+
+---
+
+## FINAL SPRINT PRIORITIES
+
+### P0 - Blockers (Must Fix)
+1. Add Stripe environment variables
+2. Add Google Calendar environment variables
+
+### P1 - High Priority
+3. Persist measurement profiles to database
+4. Implement customer-facing chatbot (or defer to Phase 2)
+5. **CONVERT PAYMENT SYSTEM TO GHL INVOICES** - Replace Stripe checkout with GHL's native invoicing system for better CRM integration
+
+### P2 - Nice to Have
+6. Sync additional GHL custom fields
+7. Add privacy feature (hide phone/email by default)
+8. Auto-trigger balance payment link when order is ready
+
+---
+
+## PAYMENT SYSTEM MIGRATION NOTE
+
+**Current State:** Stripe Checkout integration (infrastructure built but not configured)
+
+**Recommended Migration:** Convert to GoHighLevel (GHL) Invoices
+
+**Benefits of GHL Invoices:**
+- Native CRM integration (already using GHL for contacts/SMS)
+- Single platform for customer management + payments
+- Automatic contact/opportunity updates on payment
+- Built-in invoice tracking and reminders
+- Reduces external dependencies (no separate Stripe setup)
+
+**Migration Tasks:**
+1. Set up GHL Payments in the location settings
+2. Create invoice templates in GHL (deposit, balance, full)
+3. Update `/api/payments/create-checkout` to use GHL Invoice API
+4. Update payment status webhooks from GHL
+5. Remove Stripe dependencies if fully migrating

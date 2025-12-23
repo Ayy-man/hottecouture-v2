@@ -96,11 +96,8 @@ export default function RootLayout({
             <div className='grid h-full grid-rows-[auto,1fr]'>
               <header className='row-start-1 row-end-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
                 <div className='container flex h-16 items-center justify-between'>
-                  <div className='flex items-center space-x-3'>
+                  <div className='flex items-center'>
                     <HLogo size='md' />
-                    <h1 className='text-xl font-bold text-gray-900'>
-                      Hotte Couture
-                    </h1>
                   </div>
                   <nav className='flex items-center space-x-6'>
                     <a

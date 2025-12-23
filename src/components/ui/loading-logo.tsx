@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { HLogo } from './h-logo';
+import Image from 'next/image';
 
 interface LoadingLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -14,7 +14,7 @@ export function LoadingLogo({
   size = 'md',
   className,
   showText = true,
-  text = 'Loading...',
+  text = 'Chargement...',
 }: LoadingLogoProps) {
   const sizeClasses = {
     sm: 'h-8 w-8',
@@ -23,11 +23,11 @@ export function LoadingLogo({
     xl: 'h-20 w-20',
   };
 
-  const hLogoSizeMap = {
-    sm: 'sm' as const,
-    md: 'md' as const,
-    lg: 'lg' as const,
-    xl: 'xl' as const,
+  const imageSizes = {
+    sm: 32,
+    md: 48,
+    lg: 64,
+    xl: 80,
   };
 
   const textSizeClasses = {
@@ -49,9 +49,16 @@ export function LoadingLogo({
         {/* Rotating Background Circle */}
         <div className='absolute inset-0 rounded-full bg-gradient-to-r from-primary-500/20 to-accent-clay/20 animate-spin' style={{ animationDuration: '3s' }}></div>
 
-        {/* H Logo */}
+        {/* Round Logo */}
         <div className='relative z-10 flex items-center justify-center h-full w-full animate-pulse'>
-          <HLogo size={hLogoSizeMap[size]} className='w-full h-full' />
+          <Image
+            src="/logo-round.jpg"
+            alt="Hotte Couture"
+            width={imageSizes[size]}
+            height={imageSizes[size]}
+            className="rounded-full object-cover w-full h-full"
+            priority
+          />
         </div>
 
         {/* Rotating Ring */}

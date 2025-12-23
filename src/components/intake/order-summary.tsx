@@ -39,13 +39,13 @@ export function OrderSummary({
       <div className='flex items-center justify-center px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
         <div className='text-center'>
           <div className='flex items-center justify-center mb-2'>
-            <HLogo size='sm' />
+            <HLogo size='sm' variant='round' />
           </div>
           <h2 className='text-lg font-semibold text-gray-900'>
-            Order Confirmation
+            Confirmation de commande
           </h2>
           <p className='text-sm text-gray-500'>
-            Your order has been created successfully
+            Votre commande a été créée avec succès
           </p>
         </div>
       </div>

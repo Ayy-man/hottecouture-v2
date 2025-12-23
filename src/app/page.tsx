@@ -55,14 +55,11 @@ export default function HomePage() {
 
           {/* Compact Hero Section */}
           <div className='text-center mb-4 flex-shrink-0'>
-            <div className='inline-flex items-center justify-center w-16 h-16 bg-white/90 backdrop-blur-sm rounded-2xl mb-3 shadow-lg animate-fade-in-up p-2'>
-              <HLogo size='lg' className='w-full h-full' />
+            <div className='inline-flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-2xl mb-3 shadow-lg animate-fade-in-up p-4'>
+              <HLogo size='xl' />
             </div>
-            <h1 className='text-3xl md:text-4xl font-bold bg-gradient-to-r from-accent-clay via-primary-500 to-accent-contrast bg-clip-text text-transparent mb-1 leading-tight animate-fade-in-up-delay-1'>
-              Hotte Couture
-            </h1>
             <p className='text-sm md:text-base text-text-secondary max-w-2xl mx-auto leading-relaxed font-semibold animate-fade-in-up-delay-2'>
-              Professional tailoring and alteration services
+              Services professionnels de couture et retouches
             </p>
           </div>
 
