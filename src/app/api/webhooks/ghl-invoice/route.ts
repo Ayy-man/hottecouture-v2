@@ -7,7 +7,7 @@
  * 1. Go to Automation → Workflows
  * 2. Create new workflow with trigger "Invoice Paid"
  * 3. Add action "Custom Webhook"
- * 4. Set URL to: https://your-domain.com/api/webhooks/ghl-invoice
+ * 4. Set URL to: https://hottecouture.vercel.app/api/webhooks/ghl-invoice
  * 5. Method: POST
  * 6. Add header: x-webhook-secret = your-secret
  */
@@ -18,18 +18,27 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 // Webhook secret for verification (set in GHL webhook config)
 const WEBHOOK_SECRET = process.env.GHL_WEBHOOK_SECRET || 'hotte-couture-ghl-webhook-2024';
 
-interface GHLInvoiceWebhookPayload {
+// Raw payload from GHL - accepts both snake_case and camelCase, strings or numbers
+interface GHLInvoiceWebhookPayloadRaw {
   type: 'InvoicePaid' | 'InvoiceCreate' | 'InvoiceUpdate' | 'InvoiceSent' | 'InvoiceVoid';
-  locationId: string;
+  locationId?: string;
+  location_id?: string;
   invoice: {
-    _id: string;
-    invoiceNumber: string;
-    status: 'draft' | 'sent' | 'paid' | 'void' | 'partially_paid';
-    amountPaid: number;
-    amountDue: number;
-    total: number;
-    currency: string;
-    contactId: string;
+    _id?: string;
+    id?: string;
+    invoiceNumber?: string;
+    invoice_number?: string;
+    status?: 'draft' | 'sent' | 'paid' | 'void' | 'partially_paid';
+    // GHL sends these as snake_case, may be string or number
+    amountPaid?: number | string;
+    amount_paid?: number | string;
+    amountDue?: number | string;
+    amount_due?: number | string;
+    total?: number | string;
+    total_price?: number | string;
+    currency?: string;
+    contactId?: string;
+    contact_id?: string;
     contactDetails?: {
       id: string;
       name: string;
@@ -37,8 +46,53 @@ interface GHLInvoiceWebhookPayload {
       phone?: string;
     };
     paidAt?: string;
-    createdAt: string;
-    updatedAt: string;
+    paid_at?: string;
+    createdAt?: string;
+    created_at?: string;
+    updatedAt?: string;
+    updated_at?: string;
+  };
+}
+
+// Normalized invoice data
+interface NormalizedInvoice {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  amountPaid: number;
+  amountDue: number;
+  total: number;
+  currency: string;
+  contactId: string;
+  paidAt: string | null;
+}
+
+/**
+ * Parse a value that might be a string or number into a number
+ */
+function toNumber(value: string | number | undefined | null): number {
+  if (value === undefined || value === null || value === '') return 0;
+  if (typeof value === 'number') return value;
+  // Remove any whitespace and parse
+  const cleaned = String(value).trim();
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+/**
+ * Normalize the raw GHL payload to a consistent format
+ */
+function normalizeInvoice(raw: GHLInvoiceWebhookPayloadRaw['invoice']): NormalizedInvoice {
+  return {
+    id: raw._id || raw.id || '',
+    invoiceNumber: raw.invoiceNumber || raw.invoice_number || '',
+    status: raw.status || 'paid',
+    amountPaid: toNumber(raw.amountPaid ?? raw.amount_paid),
+    amountDue: toNumber(raw.amountDue ?? raw.amount_due),
+    total: toNumber(raw.total ?? raw.total_price),
+    currency: raw.currency || 'CAD',
+    contactId: raw.contactId || raw.contact_id || raw.contactDetails?.id || '',
+    paidAt: raw.paidAt || raw.paid_at || raw.updatedAt || raw.updated_at || null,
   };
 }
 
@@ -51,21 +105,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const payload: GHLInvoiceWebhookPayload = await request.json();
+    const rawPayload: GHLInvoiceWebhookPayloadRaw = await request.json();
 
-    console.log(`📥 GHL Invoice Webhook: ${payload.type}`, {
-      invoiceId: payload.invoice._id,
-      invoiceNumber: payload.invoice.invoiceNumber,
-      status: payload.invoice.status,
+    // Log raw payload for debugging
+    console.log('📥 GHL Invoice Webhook Raw:', JSON.stringify(rawPayload, null, 2));
+
+    // Normalize the invoice data (handles snake_case, camelCase, strings, numbers)
+    const invoice = normalizeInvoice(rawPayload.invoice);
+
+    console.log(`📥 GHL Invoice Webhook: ${rawPayload.type}`, {
+      invoiceId: invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      status: invoice.status,
+      amountPaid: invoice.amountPaid,
+      total: invoice.total,
     });
 
     // Only process InvoicePaid events
-    if (payload.type !== 'InvoicePaid') {
-      console.log(`ℹ️ Ignoring ${payload.type} event`);
+    if (rawPayload.type !== 'InvoicePaid') {
+      console.log(`ℹ️ Ignoring ${rawPayload.type} event`);
       return NextResponse.json({ success: true, message: 'Event ignored' });
     }
 
-    const invoice = payload.invoice;
     const invoiceNumber = invoice.invoiceNumber;
 
     // Extract order number from invoice number (format: HC-123)
@@ -96,19 +157,20 @@ export async function POST(request: NextRequest) {
 
     // Determine payment type based on invoice name and current status
     const isDeposit = invoiceNumber.toLowerCase().includes('depot') ||
-                      invoice.total < order.total_cents / 100;
+                      (invoice.total > 0 && invoice.total < order.total_cents / 100);
 
     // Update order based on payment
+    const paidAt = invoice.paidAt || new Date().toISOString();
     const updateData: Record<string, any> = {
-      paid_at: invoice.paidAt || new Date().toISOString(),
+      paid_at: paidAt,
     };
 
     if (isDeposit && !order.deposit_paid_at) {
       // Deposit payment
       updateData.payment_status = 'deposit_paid';
-      updateData.deposit_paid_at = invoice.paidAt || new Date().toISOString();
+      updateData.deposit_paid_at = paidAt;
       updateData.deposit_cents = Math.round(invoice.amountPaid * 100);
-      console.log(`✅ Deposit payment recorded for order #${orderNumber}`);
+      console.log(`✅ Deposit payment recorded for order #${orderNumber}: $${invoice.amountPaid}`);
     } else if (order.deposit_paid_at || order.payment_status === 'deposit_paid') {
       // Balance payment (deposit was already paid)
       updateData.payment_status = 'paid';
@@ -137,9 +199,10 @@ export async function POST(request: NextRequest) {
       entity_id: order.id,
       action: 'payment_received',
       details: {
-        invoice_id: invoice._id,
+        invoice_id: invoice.id,
         invoice_number: invoiceNumber,
         amount_paid: invoice.amountPaid,
+        total: invoice.total,
         payment_type: isDeposit ? 'deposit' : 'full',
         contact_id: invoice.contactId,
       },
