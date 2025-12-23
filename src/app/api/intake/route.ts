@@ -429,6 +429,81 @@ export async function POST(request: NextRequest) {
       // Tasks removed - garments with services provide all necessary work information
     }
 
+    // 4. Save measurements if provided
+    const { measurements } = body;
+    if (measurements && typeof measurements === 'object') {
+      const hasMeasurements = Object.entries(measurements).some(
+        ([key, val]) => key !== 'notes' && val !== null && val !== undefined && val !== '' && val !== 0
+      );
+
+      if (hasMeasurements) {
+        console.log('📏 Intake API: Saving measurements', { correlationId, measurements });
+
+        // Get measurement templates
+        const { data: templates, error: templatesError } = await supabase
+          .from('measurement_template')
+          .select('id, name')
+          .eq('is_active', true);
+
+        if (templatesError) {
+          console.warn('⚠️ Intake API: Failed to fetch measurement templates:', templatesError);
+        } else if (templates) {
+          const templateMap = new Map(templates.map((t: { name: string; id: string }) => [t.name, t.id]));
+          const now = new Date().toISOString();
+
+          // Prepare client measurements
+          const clientMeasurements: any[] = [];
+          for (const [name, value] of Object.entries(measurements)) {
+            if (name === 'notes' || value === null || value === undefined || value === '' || value === 0) {
+              continue;
+            }
+            const templateId = templateMap.get(name);
+            if (!templateId) continue;
+
+            clientMeasurements.push({
+              client_id: clientId,
+              template_id: templateId,
+              value: typeof value === 'string' ? parseFloat(value) : value,
+              measured_at: now,
+              updated_at: now,
+            });
+          }
+
+          // Upsert to client_measurement
+          if (clientMeasurements.length > 0) {
+            const { error: clientMeasError } = await supabase
+              .from('client_measurement')
+              .upsert(clientMeasurements, { onConflict: 'client_id,template_id' });
+
+            if (clientMeasError) {
+              console.warn('⚠️ Intake API: Failed to save client measurements:', clientMeasError);
+            } else {
+              console.log(`✅ Intake API: Saved ${clientMeasurements.length} client measurements`);
+            }
+          }
+
+          // For custom orders, also save to order_measurement
+          if (order.type === 'custom' && clientMeasurements.length > 0) {
+            const orderMeasurements = clientMeasurements.map((m: any) => ({
+              order_id: (newOrder as any).id,
+              template_id: m.template_id,
+              value: m.value,
+            }));
+
+            const { error: orderMeasError } = await supabase
+              .from('order_measurement')
+              .upsert(orderMeasurements, { onConflict: 'order_id,template_id' });
+
+            if (orderMeasError) {
+              console.warn('⚠️ Intake API: Failed to save order measurements:', orderMeasError);
+            } else {
+              console.log(`✅ Intake API: Saved ${orderMeasurements.length} order measurements`);
+            }
+          }
+        }
+      }
+    }
+
     // Generate QR code as data URL
     const qrText = `ORD-${(newOrder as any).order_number}`;
     const qrCodeDataUrl = await QRCode.toDataURL(qrText, {

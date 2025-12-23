@@ -231,10 +231,16 @@ export default function ClientsPage() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Link href={`/orders/history?clientId=${client.id}`}>
+                    <Link href={`/clients/${client.id}`}>
                       <Button className="w-full sm:w-auto">
+                        <User className="w-4 h-4 mr-2" />
+                        Voir détails
+                      </Button>
+                    </Link>
+                    <Link href={`/orders/history?clientId=${client.id}`}>
+                      <Button variant="outline" className="w-full sm:w-auto">
                         <Package className="w-4 h-4 mr-2" />
-                        View Order History
+                        Commandes
                       </Button>
                     </Link>
                   </div>

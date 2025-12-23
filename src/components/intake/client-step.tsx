@@ -8,14 +8,18 @@ import { ClientCreate, MeasurementsData } from '@/lib/dto';
 
 interface ClientStepProps {
   data: ClientCreate | null;
+  measurements?: MeasurementsData;
   onUpdate: (client: ClientCreate) => void;
+  onMeasurementsUpdate?: (m: MeasurementsData) => void;
   onNext: () => void;
   onPrev?: () => void;
 }
 
 export function ClientStep({
   data,
+  measurements: propMeasurements,
   onUpdate,
+  onMeasurementsUpdate,
   onNext,
   onPrev,
 }: ClientStepProps) {
@@ -51,13 +55,41 @@ export function ClientStep({
     notes: '',
   });
 
-  // No-op for measurements update (feature incomplete)
-  const onMeasurementsUpdate = useCallback((_data: MeasurementsData) => {}, []);
+  // Sync measurements with props
+  useEffect(() => {
+    if (propMeasurements) {
+      setMeasurements({
+        bust: propMeasurements.bust?.toString() || '',
+        waist: propMeasurements.waist?.toString() || '',
+        hips: propMeasurements.hips?.toString() || '',
+        inseam: propMeasurements.inseam?.toString() || '',
+        arm_length: propMeasurements.arm_length?.toString() || '',
+        neck: propMeasurements.neck?.toString() || '',
+        shoulders: propMeasurements.shoulders?.toString() || '',
+        height: propMeasurements.height?.toString() || '',
+        notes: propMeasurements.notes || '',
+      });
+    }
+  }, [propMeasurements]);
 
-  // Update a single measurement field
+  // Update a single measurement field and notify parent
   const updateMeasurement = useCallback((field: string, value: string) => {
-    setMeasurements(prev => ({ ...prev, [field]: value }));
-  }, []);
+    setMeasurements(prev => {
+      const updated = { ...prev, [field]: value };
+      onMeasurementsUpdate?.({
+        bust: updated.bust ? parseFloat(updated.bust) : null,
+        waist: updated.waist ? parseFloat(updated.waist) : null,
+        hips: updated.hips ? parseFloat(updated.hips) : null,
+        inseam: updated.inseam ? parseFloat(updated.inseam) : null,
+        arm_length: updated.arm_length ? parseFloat(updated.arm_length) : null,
+        neck: updated.neck ? parseFloat(updated.neck) : null,
+        shoulders: updated.shoulders ? parseFloat(updated.shoulders) : null,
+        height: updated.height ? parseFloat(updated.height) : null,
+        notes: updated.notes || undefined,
+      });
+      return updated;
+    });
+  }, [onMeasurementsUpdate]);
 
   // Load measurements from API when existing client is selected
   const loadClientMeasurements = useCallback(async (clientId: string) => {

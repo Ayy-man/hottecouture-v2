@@ -7,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { PhotoGallery } from '@/components/ui/photo-gallery';
 import { GarmentTaskSummary } from '@/components/tasks/garment-task-summary';
 import { TaskManagementModal } from '@/components/tasks/task-management-modal';
-import { TimerButton } from '@/components/timer/timer-button';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { RACK_CONFIG } from '@/lib/config/production';
 import { PaymentStatusSection } from '@/components/payments/payment-status-section';
@@ -26,6 +25,7 @@ export function OrderDetailModal({
 }: OrderDetailModalProps) {
   const [detailedOrder, setDetailedOrder] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [orderMeasurements, setOrderMeasurements] = useState<Record<string, any[]>>({});
   const [editingGarmentId, setEditingGarmentId] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState<string>('');
   const [savingNotes, setSavingNotes] = useState<string | null>(null);
@@ -51,6 +51,13 @@ export function OrderDetailModal({
           order_number: result.order?.order_number,
         });
         setDetailedOrder(result.order);
+
+        // Fetch order measurements
+        const measRes = await fetch(`/api/orders/${order.id}/measurements`);
+        if (measRes.ok) {
+          const measData = await measRes.json();
+          setOrderMeasurements(measData.data || {});
+        }
       }
     } catch (error) {
       console.error('Error fetching order details:', error);
@@ -261,20 +268,6 @@ export function OrderDetailModal({
 
           {!loading && (
             <>
-              {/* Timer Section - Always visible for working orders */}
-              {(displayOrder.status === 'working' || displayOrder.status === 'pending') && (
-                <div className='mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
-                  <h3 className='text-lg font-semibold text-blue-800 mb-3'>⏱️ Time Tracking</h3>
-                  <TimerButton
-                    orderId={displayOrder.id}
-                    orderStatus={displayOrder.status}
-                  />
-                  <p className='text-xs text-blue-600 mt-2'>
-                    Track time spent on this order. Click &quot;Manage Tasks&quot; for per-service tracking.
-                  </p>
-                </div>
-              )}
-
               {/* Order Details Grid */}
               <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6'>
                 {/* Basic Info */}
@@ -448,6 +441,36 @@ export function OrderDetailModal({
                   </div>
                 </div>
               </div>
+
+              {/* Measurements Section - Only show if there are measurements */}
+              {Object.keys(orderMeasurements).length > 0 && (
+                <div className='mb-6'>
+                  <h3 className='text-lg font-semibold text-gray-900 mb-4'>
+                    📏 Mesures
+                  </h3>
+                  <div className='bg-purple-50 rounded-lg p-4'>
+                    {Object.entries(orderMeasurements).map(([category, items]) => (
+                      <div key={category} className='mb-4 last:mb-0'>
+                        <h4 className='text-sm font-medium text-purple-700 mb-2 capitalize'>
+                          {category === 'body' ? 'Mesures corporelles' :
+                           category === 'curtain' ? 'Rideaux' :
+                           category === 'upholstery' ? 'Rembourrage' : category}
+                        </h4>
+                        <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
+                          {(items as any[]).map((m: any) => (
+                            <div key={m.id} className='bg-white rounded p-2 text-center'>
+                              <p className='text-xs text-gray-500'>{m.name_fr || m.name}</p>
+                              <p className='text-lg font-semibold text-gray-900'>
+                                {m.value} <span className='text-xs font-normal text-gray-500'>{m.unit}</span>
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Garments */}
               <div className='mb-6'>
@@ -737,7 +760,7 @@ export function OrderDetailModal({
                           garmentId={garment.id}
                           orderId={displayOrder.id}
                           orderStatus={displayOrder.status}
-                          garmentType={garment.type}
+                          services={garment.services}
                         />
                       </div>
                     </div>

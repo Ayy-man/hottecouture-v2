@@ -253,7 +253,7 @@ export function TimerButton({
   if (!timerStatus) {
     return (
       <div className='flex items-center justify-center p-4 bg-gray-50 rounded-lg'>
-        <LoadingLogo size='sm' text='Loading timer...' />
+        <LoadingLogo size='sm' text='Chargement...' />
       </div>
     );
   }
@@ -264,7 +264,7 @@ export function TimerButton({
       <div className='flex items-center gap-2 p-2 bg-green-50 rounded-lg'>
         <Square className='w-4 h-4 text-green-600' />
         <div className='text-sm font-medium text-green-800'>
-          Completed: {formatDetailedTime(timerStatus.total_work_seconds)}
+          Terminé: {formatDetailedTime(timerStatus.total_work_seconds)}
         </div>
       </div>
     );
@@ -330,10 +330,10 @@ export function TimerButton({
       <div className='flex items-center gap-2 p-2 bg-blue-50 rounded-lg'>
         <div className='flex-1'>
           <div className='text-sm font-medium text-blue-900'>
-            {timerState === 'running' ? 'Working...' : 'Paused'}
+            {timerState === 'running' ? 'En cours...' : 'En pause'}
           </div>
           <div className='text-xs text-blue-700'>
-            Total: {formatDetailedTime(displayTime)}
+            Temps: {formatDetailedTime(displayTime)}
           </div>
         </div>
 
@@ -358,7 +358,7 @@ export function TimerButton({
               className='btn-press bg-green-600 hover:bg-green-700 text-white'
             >
               <Play className='w-3 h-3 mr-1' />
-              Start
+              Démarrer
             </Button>
           ) : timerState === 'running' ? (
             <Button
@@ -379,7 +379,7 @@ export function TimerButton({
                 className='btn-press bg-blue-600 hover:bg-blue-700 text-white'
               >
                 <Play className='w-3 h-3 mr-1' />
-                Resume
+                Reprendre
               </Button>
               <Button
                 size='sm'
@@ -388,7 +388,7 @@ export function TimerButton({
                 className='btn-press bg-red-600 hover:bg-red-700 text-white'
               >
                 <Square className='w-3 h-3 mr-1' />
-                Stop
+                Terminer
               </Button>
             </div>
           )}
