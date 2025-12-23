@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Play, Pause, Square, Pencil, Check, X } from 'lucide-react';
 import { formatDetailedTime, getTimerState } from '@/lib/timer/timer-utils';
 import { LoadingLogo } from '@/components/ui/loading-logo';
+import { useStaffSession } from '@/components/staff/staff-session-provider';
+import { OneTaskWarningModal } from '@/components/staff/one-task-warning-modal';
 
 interface TimerButtonProps {
   orderId: string;
@@ -26,20 +28,29 @@ interface TimerStatus {
   total_seconds: number;
 }
 
+interface ActiveTaskConflict {
+  garmentId: string;
+  garmentType: string;
+  orderId: string;
+  orderNumber: number | null;
+}
+
 export function TimerButton({
   orderId,
   orderStatus,
   onTimeUpdate,
   garmentId,
 }: TimerButtonProps) {
+  const { currentStaff } = useStaffSession();
   const [timerStatus, setTimerStatus] = useState<TimerStatus | null>(null);
-  const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editHours, setEditHours] = useState('0');
   const [editMinutes, setEditMinutes] = useState('0');
   const [savingEdit, setSavingEdit] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [conflictTask, setConflictTask] = useState<ActiveTaskConflict | null>(null);
+  const [showConflictModal, setShowConflictModal] = useState(false);
 
   // Always show timer now (Persist visibility)
   // const shouldShowTimer = orderStatus === 'working';
@@ -124,7 +135,11 @@ export function TimerButton({
       const response = await fetch('/api/timer/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, garmentId }),
+        body: JSON.stringify({
+          orderId,
+          garmentId,
+          assignee: currentStaff?.staffName || null,
+        }),
       });
 
       const result = await response.json();
@@ -132,6 +147,11 @@ export function TimerButton({
         setError(null);
         // Sync with actual server state
         await fetchTimerStatus();
+      } else if (result.error === 'active_task_exists' && result.activeTask) {
+        // User has another active task - show conflict modal
+        setTimerStatus(previousStatus);
+        setConflictTask(result.activeTask);
+        setShowConflictModal(true);
       } else {
         // Revert on error
         setTimerStatus(previousStatus);
@@ -143,6 +163,26 @@ export function TimerButton({
       console.error('Error starting timer:', err);
       setError('Failed to start timer');
     }
+  };
+
+  // Handle stopping the conflicting task
+  const handleStopConflictTask = async () => {
+    if (!conflictTask) return;
+
+    await fetch('/api/timer/stop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId: conflictTask.orderId,
+        garmentId: conflictTask.garmentId,
+      }),
+    });
+
+    // After stopping, try starting the new task again
+    setShowConflictModal(false);
+    setConflictTask(null);
+    // Small delay to let the DB update
+    setTimeout(() => handleStart(), 500);
   };
 
   const handlePause = async () => {
@@ -384,7 +424,6 @@ export function TimerButton({
               size='sm'
               variant='ghost'
               onClick={handleStartEdit}
-              disabled={loading}
               className='h-8 px-2 text-gray-500 hover:text-gray-700'
               title='Edit time'
             >
@@ -395,7 +434,6 @@ export function TimerButton({
             <Button
               size='sm'
               onClick={handleStart}
-              disabled={loading}
               className='btn-press bg-green-600 hover:bg-green-700 text-white'
             >
               <Play className='w-3 h-3 mr-1' />
@@ -405,7 +443,6 @@ export function TimerButton({
             <Button
               size='sm'
               onClick={handlePause}
-              disabled={loading}
               className='btn-press bg-yellow-600 hover:bg-yellow-700 text-white'
             >
               <Pause className='w-3 h-3 mr-1' />
@@ -416,7 +453,6 @@ export function TimerButton({
               <Button
                 size='sm'
                 onClick={handleResume}
-                disabled={loading}
                 className='btn-press bg-blue-600 hover:bg-blue-700 text-white'
               >
                 <Play className='w-3 h-3 mr-1' />
@@ -425,7 +461,6 @@ export function TimerButton({
               <Button
                 size='sm'
                 onClick={handleStop}
-                disabled={loading}
                 className='btn-press bg-red-600 hover:bg-red-700 text-white'
               >
                 <Square className='w-3 h-3 mr-1' />
@@ -439,6 +474,19 @@ export function TimerButton({
         <div className='text-red-600 text-xs p-2 bg-red-50 rounded-lg border border-red-200'>
           {error}
         </div>
+      )}
+
+      {/* Conflict modal */}
+      {conflictTask && (
+        <OneTaskWarningModal
+          isOpen={showConflictModal}
+          onClose={() => {
+            setShowConflictModal(false);
+            setConflictTask(null);
+          }}
+          activeTask={conflictTask}
+          onStopCurrentTask={handleStopConflictTask}
+        />
       )}
     </div>
   );

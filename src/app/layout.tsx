@@ -6,6 +6,12 @@ import { AuthProvider } from '@/components/auth/auth-provider';
 import { AuthButton } from '@/components/auth/auth-button';
 import { HLogo } from '@/components/ui/h-logo';
 import { GlobalChatWrapper } from '@/components/chat/global-chat-wrapper';
+import {
+  StaffSessionProvider,
+  StaffPinModal,
+  StaffIndicator,
+  ActiveTaskIndicator,
+} from '@/components/staff';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -92,30 +98,35 @@ export default function RootLayout({
     <html lang='en' className={inter.variable}>
       <body className='h-dvh overflow-hidden bg-background font-sans antialiased'>
         <AuthProvider>
-          <NavigationProvider>
-            <div className='grid h-full grid-rows-[auto,1fr]'>
-              <header className='row-start-1 row-end-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-                <div className='container flex h-16 items-center justify-between'>
-                  <div className='flex items-center'>
-                    <HLogo size='md' />
+          <StaffSessionProvider>
+            <NavigationProvider>
+              <div className='grid h-full grid-rows-[auto,1fr]'>
+                <header className='row-start-1 row-end-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+                  <div className='container flex h-16 items-center justify-between'>
+                    <div className='flex items-center'>
+                      <HLogo size='md' />
+                    </div>
+                    <nav className='flex items-center space-x-4'>
+                      <a
+                        href='/'
+                        className='text-sm font-medium transition-colors hover:text-primary'
+                      >
+                        Home
+                      </a>
+                      <ActiveTaskIndicator />
+                      <StaffIndicator />
+                      <AuthButton />
+                    </nav>
                   </div>
-                  <nav className='flex items-center space-x-6'>
-                    <a
-                      href='/'
-                      className='text-sm font-medium transition-colors hover:text-primary'
-                    >
-                      Home
-                    </a>
-                    <AuthButton />
-                  </nav>
-                </div>
-              </header>
-              <main className='row-start-2 row-end-3 min-h-0 overflow-hidden'>
-                {children}
-              </main>
-            </div>
-            <GlobalChatWrapper />
-          </NavigationProvider>
+                </header>
+                <main className='row-start-2 row-end-3 min-h-0 overflow-hidden'>
+                  {children}
+                </main>
+              </div>
+              <StaffPinModal />
+              <GlobalChatWrapper />
+            </NavigationProvider>
+          </StaffSessionProvider>
         </AuthProvider>
       </body>
     </html>
