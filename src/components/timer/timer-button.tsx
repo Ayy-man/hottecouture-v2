@@ -75,8 +75,11 @@ export function TimerButton({
     try {
       const params = new URLSearchParams({ orderId });
       if (garmentId) params.append('garmentId', garmentId);
+      params.append('_t', Date.now().toString()); // Cache bust
 
-      const response = await fetch(`/api/timer/status?${params.toString()}`);
+      const response = await fetch(`/api/timer/status?${params.toString()}`, {
+        cache: 'no-store',
+      });
       const result = await response.json();
 
       if (result.success) {
