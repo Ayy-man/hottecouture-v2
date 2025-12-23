@@ -48,19 +48,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No active timer found' }, { status: 404 });
     }
 
-    // Calculate elapsed minutes
-    const startTime = new Date(garment.started_at);
-    const elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
-    const elapsedMinutes = elapsedSeconds / 60;
-    const newActualMinutes = (garment.actual_minutes || 0) + elapsedMinutes;
+    // Calculate elapsed minutes (only if started_at exists)
+    let elapsedSeconds = 0;
+    let newActualMinutes = garment.actual_minutes || 0;
 
-    // Update garment
+    if (garment.started_at) {
+      const startTime = new Date(garment.started_at);
+      elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
+      const elapsedMinutes = elapsedSeconds / 60;
+      newActualMinutes += elapsedMinutes;
+    }
+
+    // Update garment - keep assignee but mark as paused
     const { error: updateError } = await supabase
       .from('garment')
       .update({
         is_active: false,
         stopped_at: now.toISOString(),
-        actual_minutes: newActualMinutes
+        actual_minutes: newActualMinutes,
+        started_at: null
       })
       .eq('id', garment.id);
 

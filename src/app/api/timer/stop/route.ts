@@ -55,14 +55,16 @@ export async function POST(request: NextRequest) {
       newActualMinutes += (elapsedSeconds / 60);
     }
 
-    // Stop and mark as done
+    // Stop and mark as done, clear assignee
     const { error: updateError } = await supabase
       .from('garment')
       .update({
         is_active: false,
         stopped_at: now.toISOString(),
         actual_minutes: newActualMinutes,
-        stage: 'done'
+        stage: 'done',
+        assignee: null,
+        started_at: null
       })
       .eq('id', garment.id);
 

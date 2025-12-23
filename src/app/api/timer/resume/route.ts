@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
       .from('garment')
       .update({
         is_active: true,
-        started_at: now
+        started_at: now,
+        stage: 'working'
       })
       .eq('id', garment.id);
 
