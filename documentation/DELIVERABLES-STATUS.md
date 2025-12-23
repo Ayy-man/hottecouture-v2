@@ -310,7 +310,7 @@
 ### Admin
 - [ ] Add new service (`/admin/services`)
 - [ ] Add new category (`/admin/categories`)
-- [ ] Manage staff (`/admin/staff`)
+- [x] Staff (hardcoded: Audrey, Solange, Audrey-Anne)
 
 ---
 

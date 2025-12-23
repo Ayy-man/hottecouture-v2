@@ -23,7 +23,7 @@ A modern, production-ready web application built with Next.js 14+, TypeScript, a
 - **Customer Portal** - Public order status tracking
 - **Time Tracking** - Per-garment, per-service task and time management
 - **Task Management** - Auto-create tasks when order enters "working" status
-- **Staff Management** - Dynamic staff list with add/edit/deactivate at `/admin/staff`
+- **Staff Management** - Hardcoded staff list (Audrey, Solange, Audrey-Anne)
 - **Stripe Payments** - Online payments with 50% deposits for custom orders, auto-triggered payment links
 - **Cash/Manual Payments** - Record in-person cash or card terminal payments
 - **QR Code Labels** - Scannable order labels with dual copies
