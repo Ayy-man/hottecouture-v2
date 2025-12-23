@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Find active garment for this staff member
-    const { data: garment, error: garmentError } = await supabase
+    // First try to find one assigned to them specifically
+    const { data: assignedGarment, error: garmentError } = await supabase
       .from('garment')
       .select(`
         id,
@@ -28,11 +29,44 @@ export async function GET(request: NextRequest) {
         started_at,
         actual_minutes,
         stage,
-        order_id
+        order_id,
+        assignee
       `)
       .eq('assignee', staffName)
       .eq('is_active', true)
       .maybeSingle();
+
+    let garment = assignedGarment;
+
+    // If not found, check for any active task with no assignee (legacy/backwards compat)
+    if (!garment && !garmentError) {
+      const { data: unassignedGarment, error: unassignedError } = await supabase
+        .from('garment')
+        .select(`
+          id,
+          type,
+          is_active,
+          started_at,
+          actual_minutes,
+          stage,
+          order_id,
+          assignee
+        `)
+        .eq('is_active', true)
+        .is('assignee', null)
+        .limit(1)
+        .maybeSingle();
+
+      if (!unassignedError && unassignedGarment) {
+        garment = unassignedGarment;
+
+        // Claim this task for the current staff
+        await supabase
+          .from('garment')
+          .update({ assignee: staffName })
+          .eq('id', unassignedGarment.id);
+      }
+    }
 
     if (garmentError) {
       console.error('Garment fetch error:', garmentError);
