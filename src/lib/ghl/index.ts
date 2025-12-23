@@ -15,6 +15,7 @@ export * from './client';
 export * from './contacts';
 export * from './messaging';
 export * from './tags';
+export * from './invoices';
 
 // Named exports for common functions
 export {
@@ -53,3 +54,17 @@ export {
   removeTags,
   calculateOrderTags,
 } from './tags';
+
+export {
+  // Invoices
+  createInvoice,
+  sendInvoice,
+  getInvoice,
+  listInvoicesByContact,
+  voidInvoice,
+  recordManualPayment,
+  createDepositInvoice,
+  createBalanceInvoice,
+  createFullInvoice,
+  getNextInvoiceNumber,
+} from './invoices';

@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import Stripe from 'stripe';
 import {
-  sendDepositRequest,
-  sendReadyPickup,
   isGHLConfigured,
+  findOrCreateContact,
+  createDepositInvoice,
+  createBalanceInvoice,
+  createFullInvoice,
+  sendInvoice,
+  centsToDollars,
   type AppClient,
-  type AppOrder,
 } from '@/lib/ghl';
-
-// Lazy initialization to avoid build-time errors
-function getStripe() {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY is not configured');
-  }
-  return new Stripe(process.env.STRIPE_SECRET_KEY);
-}
 
 interface CreateCheckoutRequest {
   orderId: string;
@@ -32,6 +26,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Missing orderId or type' },
         { status: 400 }
+      );
+    }
+
+    // Check GHL is configured
+    if (!isGHLConfigured()) {
+      return NextResponse.json(
+        { error: 'GHL is not configured. Please set GHL_API_KEY and GHL_LOCATION_ID.' },
+        { status: 503 }
       );
     }
 
@@ -52,13 +54,17 @@ export async function POST(request: NextRequest) {
         balance_due_cents,
         payment_status,
         deposit_paid_at,
+        rush_fee_cents,
+        due_date,
         client:client_id (
           id,
           first_name,
           last_name,
           email,
           phone,
-          language
+          language,
+          ghl_contact_id,
+          preferred_contact
         )
       `)
       .eq('id', orderId)
@@ -69,26 +75,64 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    const client = order.client as any;
+    if (!client) {
+      return NextResponse.json({ error: 'Client not found for order' }, { status: 404 });
+    }
+
+    const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Client';
+
+    // Ensure we have a GHL contact ID
+    let ghlContactId = client.ghl_contact_id;
+
+    if (!ghlContactId) {
+      // Try to find or create the contact in GHL
+      const ghlClient: AppClient = {
+        id: client.id,
+        first_name: client.first_name || '',
+        last_name: client.last_name || '',
+        email: client.email || null,
+        phone: client.phone || null,
+        language: client.language || 'fr',
+        ghl_contact_id: null,
+        preferred_contact: client.preferred_contact || 'sms',
+      };
+
+      const contactResult = await findOrCreateContact(ghlClient);
+      if (!contactResult.success || !contactResult.data) {
+        console.error('Failed to find/create GHL contact:', contactResult.error);
+        return NextResponse.json(
+          { error: 'Failed to create contact in GHL. Please check client phone/email.' },
+          { status: 400 }
+        );
+      }
+
+      // findOrCreateContact returns the contact ID directly as a string
+      ghlContactId = contactResult.data;
+
+      // Update client with GHL contact ID
+      await supabase
+        .from('client')
+        .update({ ghl_contact_id: ghlContactId })
+        .eq('id', client.id);
+    }
+
     // Calculate amount based on type
     let amountCents: number;
-    let description: string;
 
     switch (type) {
       case 'deposit':
         // 50% deposit for custom orders
         amountCents = Math.ceil(order.total_cents / 2);
-        description = `Dépôt 50% - Commande #${order.order_number}`;
         break;
       case 'balance':
         // Remaining balance (total - deposit already paid)
         const depositPaid = order.deposit_paid_at ? (order.deposit_cents || Math.ceil(order.total_cents / 2)) : 0;
         amountCents = order.total_cents - depositPaid;
-        description = `Solde - Commande #${order.order_number}`;
         break;
       case 'full':
         // Full amount
         amountCents = order.total_cents;
-        description = `Commande #${order.order_number}`;
         break;
       default:
         return NextResponse.json({ error: 'Invalid payment type' }, { status: 400 });
@@ -101,46 +145,123 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const client = order.client as any;
-    const clientName = `${client?.first_name || ''} ${client?.last_name || ''}`.trim() || 'Client';
+    // Create GHL Invoice based on payment type
+    let invoiceResult;
+    const dueDate = order.due_date ? new Date(order.due_date) : undefined;
 
-    // Create Stripe Checkout Session
-    const stripe = getStripe();
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'cad',
-            product_data: {
-              name: description,
-              description: `Client: ${clientName}`,
-            },
-            unit_amount: amountCents,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://hottecouture-v2.vercel.app'}/portal?order=${order.order_number}&payment=success&type=${type}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://hottecouture-v2.vercel.app'}/portal?order=${order.order_number}&payment=cancelled`,
-      customer_email: client?.email || undefined,
-      metadata: {
-        order_id: orderId,
-        order_number: order.order_number.toString(),
-        payment_type: type,
-      },
-      locale: client?.language === 'en' ? 'en' : 'fr-CA',
-    });
+    if (type === 'deposit') {
+      invoiceResult = await createDepositInvoice({
+        contactId: ghlContactId,
+        clientName,
+        orderNumber: order.order_number,
+        totalCents: order.total_cents,
+        depositCents: amountCents,
+        dueDate,
+      });
+    } else if (type === 'balance') {
+      invoiceResult = await createBalanceInvoice({
+        contactId: ghlContactId,
+        clientName,
+        orderNumber: order.order_number,
+        balanceCents: amountCents,
+        dueDate,
+      });
+    } else {
+      // Full invoice - fetch garment services for line items
+      const { data: garments } = await supabase
+        .from('garment')
+        .select(`
+          id,
+          type,
+          garment_service (
+            id,
+            quantity,
+            custom_price_cents,
+            service:service_id (
+              name,
+              base_price_cents
+            ),
+            custom_service_name
+          )
+        `)
+        .eq('order_id', orderId);
 
-    // Update order with checkout session ID and pending status
+      // Build line items from garment services
+      const items: Array<{
+        name: string;
+        description?: string | undefined;
+        priceCents: number;
+        quantity?: number | undefined;
+      }> = [];
+
+      if (garments) {
+        for (const garment of garments) {
+          const garmentServices = (garment.garment_service || []) as any[];
+          for (const gs of garmentServices) {
+            const serviceName = gs.service?.name || gs.custom_service_name || 'Service';
+            const priceCents = gs.custom_price_cents || gs.service?.base_price_cents || 0;
+            const item: typeof items[number] = {
+              name: serviceName,
+              priceCents: priceCents * (gs.quantity || 1),
+              quantity: 1,
+            };
+            if (garment.type) {
+              item.description = `Pour ${garment.type}`;
+            }
+            items.push(item);
+          }
+        }
+      }
+
+      // If no items found, create a single line item for the total
+      if (items.length === 0) {
+        items.push({
+          name: `Commande #${order.order_number}`,
+          priceCents: order.total_cents - (order.rush_fee_cents || 0),
+        });
+      }
+
+      invoiceResult = await createFullInvoice({
+        contactId: ghlContactId,
+        clientName,
+        orderNumber: order.order_number,
+        items,
+        rushFeeCents: order.rush_fee_cents || 0,
+        dueDate,
+      });
+    }
+
+    if (!invoiceResult.success || !invoiceResult.data) {
+      console.error('Failed to create GHL invoice:', invoiceResult.error);
+      return NextResponse.json(
+        { error: `Failed to create invoice: ${invoiceResult.error}` },
+        { status: 500 }
+      );
+    }
+
+    const invoice = invoiceResult.data;
+    console.log(`✅ GHL Invoice created: ${invoice._id} for order #${order.order_number}`);
+
+    // Send the invoice if requested
+    let invoiceUrl = invoice.invoiceUrl;
+    if (sendSms) {
+      const sendResult = await sendInvoice(invoice._id);
+      if (sendResult.success && sendResult.data) {
+        invoiceUrl = sendResult.data.invoiceUrl || invoiceUrl;
+        console.log(`✅ Invoice sent to ${clientName}`);
+      } else {
+        console.warn(`⚠️ Failed to send invoice:`, sendResult.error);
+      }
+    }
+
+    // Update order with invoice info and pending status
     const updateData: Record<string, any> = {
-      stripe_checkout_session_id: session.id,
+      invoice_url: invoiceUrl,
+      invoice_number: invoice.invoiceNumber,
     };
 
     if (type === 'deposit') {
       updateData.payment_status = 'deposit_pending';
-      // Pre-set the deposit amount
       updateData.deposit_cents = amountCents;
     } else {
       updateData.payment_status = 'pending';
@@ -151,69 +272,20 @@ export async function POST(request: NextRequest) {
       .update(updateData)
       .eq('id', orderId);
 
-    // Send notification via GHL
-    if (sendSms && client?.phone && isGHLConfigured()) {
-      try {
-        // Build GHL-compatible order and client objects
-        const ghlClient: AppClient = {
-          id: client.id,
-          first_name: client.first_name || '',
-          last_name: client.last_name || '',
-          email: client.email || null,
-          phone: client.phone || null,
-          language: client.language || 'fr',
-          ghl_contact_id: client.ghl_contact_id || null,
-          preferred_contact: client.preferred_contact || 'sms',
-        };
-
-        const ghlOrder: AppOrder = {
-          id: order.id,
-          order_number: order.order_number,
-          type: order.type || 'alteration',
-          status: 'pending',
-          total_cents: order.total_cents,
-          deposit_cents: type === 'deposit' ? amountCents : (order.deposit_cents || 0),
-          balance_due_cents: amountCents,
-        };
-
-        if (type === 'deposit') {
-          // Send deposit request notification
-          const result = await sendDepositRequest(ghlClient, ghlOrder, session.url!);
-
-          if (result.success) {
-            console.log(`✅ Deposit request sent via GHL for order ${order.order_number}`);
-          } else {
-            console.warn(`⚠️ Deposit request failed:`, result.error);
-          }
-        } else {
-          // Send ready for pickup notification with payment link
-          const result = await sendReadyPickup(ghlClient, ghlOrder, session.url!, amountCents);
-
-          if (result.success) {
-            console.log(`✅ Payment ready notification sent via GHL for order ${order.order_number}`);
-          } else {
-            console.warn(`⚠️ Payment ready notification failed:`, result.error);
-          }
-        }
-      } catch (ghlError) {
-        console.warn('⚠️ Failed to send GHL notification:', ghlError);
-        // Don't fail the checkout creation if notification fails
-      }
-    }
-
-    console.log(`✅ Checkout session created for order ${order.order_number}, type: ${type}, amount: $${(amountCents / 100).toFixed(2)}`);
+    console.log(`✅ Invoice created for order ${order.order_number}, type: ${type}, amount: $${centsToDollars(amountCents)}`);
 
     return NextResponse.json({
       success: true,
-      checkoutUrl: session.url,
-      sessionId: session.id,
+      invoiceId: invoice._id,
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceUrl: invoiceUrl,
       amount_cents: amountCents,
       type,
     });
   } catch (error) {
-    console.error('❌ Create checkout error:', error);
+    console.error('❌ Create invoice error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create checkout session' },
+      { error: error instanceof Error ? error.message : 'Failed to create invoice' },
       { status: 500 }
     );
   }
