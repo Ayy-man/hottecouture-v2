@@ -108,9 +108,18 @@ export function TimerButton({
     )
     : 'idle';
 
-  // Timer actions
+  // Timer actions with optimistic updates
   const handleStart = async () => {
-    setLoading(true);
+    // Optimistic update - show running state immediately
+    const previousStatus = timerStatus;
+    setTimerStatus(prev => prev ? {
+      ...prev,
+      is_running: true,
+      is_paused: false,
+      timer_started_at: new Date().toISOString(),
+    } : prev);
+    setCurrentTime(0);
+
     try {
       const response = await fetch('/api/timer/start', {
         method: 'POST',
@@ -121,20 +130,32 @@ export function TimerButton({
       const result = await response.json();
       if (result.success) {
         setError(null);
+        // Sync with actual server state
         await fetchTimerStatus();
       } else {
+        // Revert on error
+        setTimerStatus(previousStatus);
         setError(result.error || 'Failed to start timer');
       }
     } catch (err) {
+      // Revert on error
+      setTimerStatus(previousStatus);
       console.error('Error starting timer:', err);
       setError('Failed to start timer');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handlePause = async () => {
-    setLoading(true);
+    // Optimistic update
+    const previousStatus = timerStatus;
+    const pausedTime = currentTime;
+    setTimerStatus(prev => prev ? {
+      ...prev,
+      is_running: false,
+      is_paused: true,
+      total_work_seconds: (prev.total_work_seconds || 0) + pausedTime,
+    } : prev);
+
     try {
       const response = await fetch('/api/timer/pause', {
         method: 'POST',
@@ -147,18 +168,27 @@ export function TimerButton({
         setError(null);
         await fetchTimerStatus();
       } else {
+        setTimerStatus(previousStatus);
         setError(result.error || 'Failed to pause timer');
       }
     } catch (err) {
+      setTimerStatus(previousStatus);
       console.error('Error pausing timer:', err);
       setError('Failed to pause timer');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleResume = async () => {
-    setLoading(true);
+    // Optimistic update
+    const previousStatus = timerStatus;
+    setTimerStatus(prev => prev ? {
+      ...prev,
+      is_running: true,
+      is_paused: false,
+      timer_started_at: new Date().toISOString(),
+    } : prev);
+    setCurrentTime(0);
+
     try {
       const response = await fetch('/api/timer/resume', {
         method: 'POST',
@@ -171,18 +201,26 @@ export function TimerButton({
         setError(null);
         await fetchTimerStatus();
       } else {
+        setTimerStatus(previousStatus);
         setError(result.error || 'Failed to resume timer');
       }
     } catch (err) {
+      setTimerStatus(previousStatus);
       console.error('Error resuming timer:', err);
       setError('Failed to resume timer');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleStop = async () => {
-    setLoading(true);
+    // Optimistic update
+    const previousStatus = timerStatus;
+    setTimerStatus(prev => prev ? {
+      ...prev,
+      is_running: false,
+      is_paused: false,
+      is_completed: true,
+    } : prev);
+
     try {
       const response = await fetch('/api/timer/stop', {
         method: 'POST',
@@ -195,13 +233,13 @@ export function TimerButton({
         setError(null);
         await fetchTimerStatus();
       } else {
+        setTimerStatus(previousStatus);
         setError(result.error || 'Failed to stop timer');
       }
     } catch (err) {
+      setTimerStatus(previousStatus);
       console.error('Error stopping timer:', err);
       setError('Failed to stop timer');
-    } finally {
-      setLoading(false);
     }
   };
 
