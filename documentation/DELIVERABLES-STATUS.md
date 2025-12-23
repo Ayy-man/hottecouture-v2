@@ -1,6 +1,6 @@
 # HOTTE COUTURE — DELIVERABLES STATUS
 
-**Last Updated:** December 23, 2025
+**Last Updated:** December 24, 2025
 **Status:** Pre-Launch Testing Phase
 
 ---
@@ -50,7 +50,7 @@
 
 ---
 
-### 3. TASK MANAGEMENT — 90% ✅
+### 3. TASK MANAGEMENT — 98% ✅
 
 | Feature | Status | Notes |
 |---------|--------|-------|
@@ -60,6 +60,9 @@
 | Auto-archiving after 7 days | ✅ | Cron job |
 | Color-coded urgency levels | ✅ | Rush = red |
 | Simple priority ordering | ✅ | Rush skips queue |
+| **Staff PIN authentication** | ✅ | 4-digit PIN per staff |
+| **Global task indicator** | ✅ | Header badge + dropdown controls |
+| **One task per person** | ✅ | Enforced at API + DB level |
 
 **Gap:** "Block Done until hours entered" not enforced.
 
@@ -310,7 +313,8 @@
 ### Admin
 - [ ] Add new service (`/admin/services`)
 - [ ] Add new category (`/admin/categories`)
-- [x] Staff (hardcoded: Audrey, Solange, Audrey-Anne)
+- [x] Staff (database: Audrey, Solange, Audrey-Anne)
+- [x] Staff PIN authentication (PINs: 1235, 1236, 1237)
 
 ---
 
@@ -378,4 +382,37 @@ GOOGLE_REFRESH_TOKEN
 
 ---
 
-*Document generated: December 23, 2025*
+---
+
+## STAFF PIN SYSTEM (NEW)
+
+### Database Migration Required
+```sql
+ALTER TABLE staff ADD COLUMN IF NOT EXISTS pin_hash VARCHAR(64);
+ALTER TABLE staff ADD COLUMN IF NOT EXISTS last_clock_in TIMESTAMPTZ;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_garment_one_active_per_assignee
+  ON garment(assignee)
+  WHERE is_active = true AND assignee IS NOT NULL;
+UPDATE staff SET pin_hash = '1235' WHERE name = 'Audrey';
+UPDATE staff SET pin_hash = '1236' WHERE name = 'Solange';
+UPDATE staff SET pin_hash = '1237' WHERE name = 'Audrey-Anne';
+```
+
+### Staff PINs
+| Staff | PIN |
+|-------|-----|
+| Audrey | 1235 |
+| Solange | 1236 |
+| Audrey-Anne | 1237 |
+
+### How It Works
+1. Staff selects their name from dropdown
+2. Enters 4-digit PIN on keypad
+3. Session stored in localStorage
+4. Active task shows in header with live timer
+5. Can pause/stop task from header dropdown
+6. Only one active task per person allowed
+
+---
+
+*Document generated: December 24, 2025*

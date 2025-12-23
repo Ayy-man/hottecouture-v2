@@ -1,6 +1,6 @@
 # HOTTE COUTURE - FINAL SPRINT STATUS REPORT
 
-**Generated:** December 23, 2025
+**Generated:** December 24, 2025
 
 ---
 
@@ -10,7 +10,7 @@
 |-------------|--------|------------|
 | 1. Client Management | **PARTIAL** | 75% |
 | 2. Alteration Workflow | **COMPLETE** | 90% |
-| 3. Task Management | **COMPLETE** | 95% |
+| 3. Task Management | **COMPLETE** | 98% |
 | 4. Physical-Digital Hybrid | **COMPLETE** | 90% |
 | 5. Payment & Invoicing | **PARTIAL** | 60% |
 | 6. Automated SMS | **COMPLETE** | 85% |
@@ -61,7 +61,7 @@
 
 ---
 
-### 3. TASK MANAGEMENT — COMPLETE (95%)
+### 3. TASK MANAGEMENT — COMPLETE (98%)
 
 | Feature | Status | Notes |
 |---------|--------|-------|
@@ -74,7 +74,12 @@
 | Printable daily to-do list | ✅ Complete | `/print/tasks` route |
 | Multiple views (List, Kanban, Gantt) | ✅ Complete | All three available |
 | Per-item time tracking | ✅ Complete | Quoted vs actual per garment |
+| **Staff PIN login** | ✅ Complete | 4-digit PIN per staff member |
+| **Global task indicator** | ✅ Complete | Header badge with timer + controls |
+| **One task per person** | ✅ Complete | Enforced at API + DB level |
 | Block Done until hours entered | ❌ Missing | No enforcement |
+
+**New in v2.1:** Staff authentication via 4-digit PIN. Each staff member clocks in with their PIN and sees their active task in the header with pause/stop controls. Only one active task per person is allowed.
 
 ---
 
@@ -292,3 +297,47 @@ The application is **production-ready for core operations** (intake, Kanban, tim
 3. Update `/api/payments/create-checkout` to use GHL Invoice API
 4. Update payment status webhooks from GHL
 5. Remove Stripe dependencies if fully migrating
+
+---
+
+## STAFF PIN AUTHENTICATION SYSTEM
+
+**Added:** December 24, 2025
+
+### Overview
+Staff now authenticate via 4-digit PIN codes. This enables:
+- Individual task tracking per staff member
+- One active task per person enforcement
+- Global task indicator in header
+
+### Staff PINs
+| Staff | PIN |
+|-------|-----|
+| Audrey | 1235 |
+| Solange | 1236 |
+| Audrey-Anne | 1237 |
+
+### Database Migration Required
+Run this SQL in Supabase SQL Editor:
+
+```sql
+ALTER TABLE staff ADD COLUMN IF NOT EXISTS pin_hash VARCHAR(64);
+ALTER TABLE staff ADD COLUMN IF NOT EXISTS last_clock_in TIMESTAMPTZ;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_garment_one_active_per_assignee
+  ON garment(assignee)
+  WHERE is_active = true AND assignee IS NOT NULL;
+UPDATE staff SET pin_hash = '1235' WHERE name = 'Audrey';
+UPDATE staff SET pin_hash = '1236' WHERE name = 'Solange';
+UPDATE staff SET pin_hash = '1237' WHERE name = 'Audrey-Anne';
+```
+
+### New Components
+- `StaffPinModal` - Clock-in modal with PIN entry
+- `StaffIndicator` - Header display of logged-in staff
+- `ActiveTaskIndicator` - Header badge showing current task with dropdown controls
+- `OneTaskWarningModal` - Conflict warning when starting second task
+
+### API Endpoints
+- `POST /api/staff/verify-pin` - Verify staff PIN
+- `GET /api/staff/active-task` - Get staff's current active task
+- `POST /api/staff/set-pin` - Admin: set staff PIN
