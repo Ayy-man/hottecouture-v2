@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { InteractiveBoard } from '@/components/board/interactive-board';
 import { OrderListView } from '@/components/board/order-list-view';
 import { PipelineFilter } from '@/components/board/pipeline-filter';
-import { ArchiveButton } from '@/components/board/archive-button';
 import { OrderType } from '@/lib/types/database';
 import { useRealtimeOrders } from '@/lib/hooks/useRealtimeOrders';
 import { AuthGuard } from '@/components/auth/auth-guard';
@@ -13,8 +12,14 @@ import { LoadingLogo } from '@/components/ui/loading-logo';
 import { MuralBackground } from '@/components/ui/mural-background';
 import { WorkListExport } from '@/components/board/worklist-export';
 import { SmsConfirmationModal } from '@/components/board/sms-confirmation-modal';
-import { LayoutGrid, List, Users } from 'lucide-react';
+import { LayoutGrid, List, Users, MoreHorizontal, Archive } from 'lucide-react';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 
 interface PendingSmsConfirmation {
   orderId: string;
@@ -283,7 +288,7 @@ export default function BoardPage() {
                   </div>
                 </div>
 
-                <div className='flex items-center gap-3 w-full sm:w-auto'>
+                <div className='flex items-center gap-2 w-full sm:w-auto'>
                   <div className='md:hidden flex-1'>
                     <PipelineFilter
                       orders={orders}
@@ -291,20 +296,32 @@ export default function BoardPage() {
                       onPipelineChange={setSelectedPipeline}
                     />
                   </div>
-                  <Button
-                    variant='outline'
-                    asChild
-                    className='hidden sm:flex border-stone-300 hover:bg-stone-50 hover:text-stone-900'
-                  >
-                    <Link href='/board/workload' className='flex items-center gap-2'>
-                      <Users className='w-4 h-4' />
-                      <span>Workload</span>
-                    </Link>
-                  </Button>
-                  <div className='hidden sm:block'>
-                    <ArchiveButton />
-                  </div>
-                  <Button asChild className='bg-stone-900 hover:bg-black text-white shadow-lg shadow-stone-900/20'>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        className='hidden sm:flex border-stone-300 hover:bg-stone-50 h-8 px-2'
+                      >
+                        <MoreHorizontal className='w-4 h-4' />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align='end'>
+                      <DropdownMenuItem asChild>
+                        <Link href='/board/workload' className='flex items-center gap-2'>
+                          <Users className='w-4 h-4' />
+                          <span>Workload</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href='/board/archive' className='flex items-center gap-2'>
+                          <Archive className='w-4 h-4' />
+                          <span>Archive Delivered</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button asChild size='sm' className='bg-stone-900 hover:bg-black text-white shadow-lg shadow-stone-900/20 h-8'>
                     <Link href='/intake'>New Order</Link>
                   </Button>
                 </div>
