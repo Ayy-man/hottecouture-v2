@@ -37,11 +37,10 @@ export async function GET(request: NextRequest) {
           phone,
           email
         ),
-        garments (
+        garments:garment (
           id,
           type,
-          description,
-          measurements
+          notes
         )
       `
       )

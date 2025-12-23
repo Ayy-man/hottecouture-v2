@@ -142,7 +142,6 @@ export async function GET() {
           notes,
           label_code,
           photo_path,
-          measurements,
           garment_type_id,
           garment_type (
             id,
@@ -183,7 +182,6 @@ export async function GET() {
             notes: garment.notes,
             label_code: garment.label_code,
             photo_path: garment.photo_path,
-            measurements: garment.measurements,
             garment_type: garment.garment_type,
             services:
               garment.garment_service?.map((gs: any, index: number) => ({

@@ -68,6 +68,21 @@ export const garmentCreateSchema = z.object({
     .min(1, 'At least one service is required'),
 });
 
+// Measurements schema for body measurements
+export const measurementsSchema = z.object({
+  bust: z.number().nullable().optional(),
+  waist: z.number().nullable().optional(),
+  hips: z.number().nullable().optional(),
+  inseam: z.number().nullable().optional(),
+  arm_length: z.number().nullable().optional(),
+  neck: z.number().nullable().optional(),
+  shoulders: z.number().nullable().optional(),
+  height: z.number().nullable().optional(),
+  notes: z.string().optional(),
+});
+
+export type MeasurementsData = z.infer<typeof measurementsSchema>;
+
 // Intake API schemas
 export const intakeRequestSchema = z.object({
   client: clientCreateSchema,
@@ -75,12 +90,7 @@ export const intakeRequestSchema = z.object({
   garments: z
     .array(garmentCreateSchema)
     .min(1, 'At least one garment is required'),
-  notes: z
-    .object({
-      measurements: z.string().optional(),
-      specialInstructions: z.string().optional(),
-    })
-    .optional(),
+  measurements: measurementsSchema.optional(),
 });
 
 export const intakeResponseSchema = z.object({

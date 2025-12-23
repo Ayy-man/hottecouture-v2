@@ -437,6 +437,99 @@ export type Database = {
           is_active?: boolean;
         };
       };
+      measurement_template: {
+        Row: {
+          id: string;
+          name: string;
+          name_fr: string;
+          category: string;
+          unit: string;
+          display_order: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          name_fr: string;
+          category?: string;
+          unit?: string;
+          display_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          name_fr?: string;
+          category?: string;
+          unit?: string;
+          display_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+        };
+      };
+      client_measurement: {
+        Row: {
+          id: string;
+          client_id: string;
+          template_id: string;
+          value: number | null;
+          notes: string | null;
+          measured_at: string;
+          measured_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          template_id: string;
+          value?: number | null;
+          notes?: string | null;
+          measured_at?: string;
+          measured_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          client_id?: string;
+          template_id?: string;
+          value?: number | null;
+          notes?: string | null;
+          measured_at?: string;
+          measured_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      order_measurement: {
+        Row: {
+          id: string;
+          order_id: string;
+          template_id: string;
+          value: number | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          template_id: string;
+          value?: number | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          template_id?: string;
+          value?: number | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -481,6 +574,9 @@ export type Task = Tables<'task'>;
 export type PriceList = Tables<'price_list'>;
 export type Document = Tables<'document'>;
 export type EventLog = Tables<'event_log'>;
+export type MeasurementTemplate = Tables<'measurement_template'>;
+export type ClientMeasurement = Tables<'client_measurement'>;
+export type OrderMeasurement = Tables<'order_measurement'>;
 
 // Insert types
 export type ClientInsert = Database['public']['Tables']['client']['Insert'];
@@ -495,6 +591,12 @@ export type PriceListInsert =
 export type DocumentInsert = Database['public']['Tables']['document']['Insert'];
 export type EventLogInsert =
   Database['public']['Tables']['event_log']['Insert'];
+export type MeasurementTemplateInsert =
+  Database['public']['Tables']['measurement_template']['Insert'];
+export type ClientMeasurementInsert =
+  Database['public']['Tables']['client_measurement']['Insert'];
+export type OrderMeasurementInsert =
+  Database['public']['Tables']['order_measurement']['Insert'];
 
 // Update types
 export type ClientUpdate = Database['public']['Tables']['client']['Update'];
@@ -509,6 +611,12 @@ export type PriceListUpdate =
 export type DocumentUpdate = Database['public']['Tables']['document']['Update'];
 export type EventLogUpdate =
   Database['public']['Tables']['event_log']['Update'];
+export type MeasurementTemplateUpdate =
+  Database['public']['Tables']['measurement_template']['Update'];
+export type ClientMeasurementUpdate =
+  Database['public']['Tables']['client_measurement']['Update'];
+export type OrderMeasurementUpdate =
+  Database['public']['Tables']['order_measurement']['Update'];
 
 // Notification and Chat Log types (Agent C)
 export type NotificationLog = {

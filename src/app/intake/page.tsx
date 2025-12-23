@@ -9,7 +9,7 @@ import { ServicesStepNew } from '@/components/intake/services-step-new';
 import { PricingStep } from '@/components/intake/pricing-step';
 import { AssignmentStep } from '@/components/intake/assignment-step';
 import { OrderSummary } from '@/components/intake/order-summary';
-import { IntakeRequest, IntakeResponse } from '@/lib/dto';
+import { IntakeRequest, IntakeResponse, MeasurementsData } from '@/lib/dto';
 import { usePricing } from '@/lib/pricing/usePricing';
 import { MuralBackground } from '@/components/ui/mural-background';
 
@@ -55,6 +55,7 @@ interface IntakeFormData {
     deposit_required?: boolean;
     deposit_amount_cents?: number;
   };
+  measurements: MeasurementsData;
 }
 
 const initialFormData: IntakeFormData = {
@@ -65,6 +66,7 @@ const initialFormData: IntakeFormData = {
     rush: false,
     rush_fee_type: 'small',
   },
+  measurements: {},
 };
 
 export default function IntakePage() {
@@ -212,7 +214,9 @@ export default function IntakePage() {
         return (
           <ClientStep
             data={formData.client as any}
+            measurements={formData.measurements}
             onUpdate={client => updateFormData({ client: client as any })}
+            onMeasurementsUpdate={measurements => updateFormData({ measurements })}
             onNext={nextStep}
           />
         );

@@ -90,7 +90,6 @@ export async function GET(
         label_code,
         estimated_minutes,
         photo_path,
-        measurements,
         garment_type_id,
         garment_type (
           id,
