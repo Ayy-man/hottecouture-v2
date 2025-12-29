@@ -1,17 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useStaff, StaffMember } from '@/lib/hooks/useStaff';
 import { useStaffSession } from './staff-session-provider';
 import { StaffPinInput } from './staff-pin-input';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, ArrowLeft, Loader2 } from 'lucide-react';
+import { User, Loader2 } from 'lucide-react';
 
 export function StaffPinModal() {
-  const { staff, loading: staffLoading } = useStaff();
-  const { isAuthenticated, isLoading: sessionLoading, clockIn } = useStaffSession();
-  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
+  // We no longer need to fetch the staff list since we log in by PIN directly
+  const { isAuthenticated, isLoading: sessionLoading, loginByPin } = useStaffSession();
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,24 +17,12 @@ export function StaffPinModal() {
     return null;
   }
 
-  const handleStaffSelect = (member: StaffMember) => {
-    setSelectedStaff(member);
-    setError(null);
-  };
-
-  const handleBack = () => {
-    setSelectedStaff(null);
-    setError(null);
-  };
-
   const handlePinComplete = async (pin: string) => {
-    if (!selectedStaff) return;
-
     setVerifying(true);
     setError(null);
 
     try {
-      const success = await clockIn(selectedStaff.id, selectedStaff.name, pin);
+      const success = await loginByPin(pin);
       if (!success) {
         setError('NIP incorrect. Veuillez réessayer.');
       }
@@ -49,76 +34,35 @@ export function StaffPinModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">
-            {selectedStaff ? (
-              <div className="flex items-center justify-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleBack}
-                  className="absolute left-4"
-                  disabled={verifying}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-                <User className="w-5 h-5" />
-                {selectedStaff.name}
-              </div>
-            ) : (
-              'Connexion du personnel'
-            )}
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <Card className="w-full max-w-sm bg-white shadow-2xl border-0 ring-1 ring-black/5">
+        <CardHeader className="text-center pb-2">
+          <CardTitle className="text-xl flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
+              <User className="w-6 h-6" />
+            </div>
+            Connexion du personnel
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {staffLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
-            </div>
-          ) : selectedStaff ? (
-            <div className="space-y-4">
-              <p className="text-center text-sm text-stone-600">
-                Entrez votre NIP à 4 chiffres
-              </p>
-              <StaffPinInput
-                onComplete={handlePinComplete}
-                disabled={verifying}
-                error={error}
-              />
-              {verifying && (
-                <div className="flex justify-center">
-                  <Loader2 className="w-5 h-5 animate-spin text-stone-400" />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-center text-sm text-stone-600 mb-4">
-                Sélectionnez votre nom
-              </p>
-              {staff.length === 0 ? (
-                <p className="text-center text-sm text-stone-400">
-                  Aucun personnel disponible
-                </p>
-              ) : (
-                staff.map((member) => (
-                  <Button
-                    key={member.id}
-                    variant="outline"
-                    className="w-full justify-start gap-3 h-12"
-                    onClick={() => handleStaffSelect(member)}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center">
-                      <User className="w-4 h-4 text-stone-600" />
-                    </div>
-                    <span className="text-base">{member.name}</span>
-                  </Button>
-                ))
-              )}
-            </div>
-          )}
+          <div className="space-y-6">
+            <p className="text-center text-sm text-muted-foreground">
+              Entrez votre NIP à 4 chiffres pour vous connecter
+            </p>
+
+            <StaffPinInput
+              onComplete={handlePinComplete}
+              disabled={verifying}
+              error={error}
+            />
+
+            {verifying && (
+              <div className="flex justify-center items-center gap-2 text-sm text-primary">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Vérification...</span>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

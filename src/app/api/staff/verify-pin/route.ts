@@ -10,40 +10,53 @@ export async function POST(request: NextRequest) {
 
     const { staffId, pin } = await request.json();
 
-    if (!staffId || !pin) {
+    if (!pin) {
       return NextResponse.json(
-        { error: 'Staff ID and PIN are required' },
+        { error: 'PIN is required' },
         { status: 400 }
       );
     }
 
-    // Fetch staff member
-    const { data: staff, error: fetchError } = await supabase
-      .from('staff')
-      .select('id, name, pin_hash, is_active')
-      .eq('id', staffId)
-      .single();
+    let staff;
 
-    if (fetchError || !staff) {
-      return NextResponse.json(
-        { error: 'Staff member not found' },
-        { status: 404 }
-      );
+    if (staffId) {
+      // Original flow: Verify specific staff member
+      const { data, error } = await supabase
+        .from('staff')
+        .select('id, name, pin_hash, is_active')
+        .eq('id', staffId)
+        .single();
+
+      if (error || !data) {
+        return NextResponse.json({ error: 'Staff member not found' }, { status: 404 });
+      }
+      staff = data;
+
+      if (staff.pin_hash !== pin) {
+        return NextResponse.json({ success: false, error: 'Invalid PIN' }, { status: 401 });
+      }
+    } else {
+      // New flow: Lookup by PIN
+      // Note: In a real app with hashed PINs, this would be harder. 
+      // Since we store plain PINs currently (as noted in comments), we can match directly.
+      const { data, error } = await supabase
+        .from('staff')
+        .select('id, name, pin_hash, is_active')
+        .eq('pin_hash', pin)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error || !data) {
+        // Return generic error to avoid enumerating PINs
+        return NextResponse.json({ success: false, error: 'Invalid PIN' }, { status: 401 });
+      }
+      staff = data;
     }
 
     if (!staff.is_active) {
       return NextResponse.json(
         { error: 'Staff member is not active' },
         { status: 403 }
-      );
-    }
-
-    // Simple PIN comparison (in production, use proper hashing like bcrypt)
-    // For now, we store plain PIN for simplicity - can upgrade later
-    if (staff.pin_hash !== pin) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid PIN' },
-        { status: 401 }
       );
     }
 

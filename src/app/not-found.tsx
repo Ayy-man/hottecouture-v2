@@ -28,19 +28,10 @@ export default function NotFound() {
                   Go back home
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/about">
-                  Learn more about us
-                </Link>
-              </Button>
             </div>
             <div className="text-sm text-muted-foreground">
               <p>
-                If you believe this is an error, please{' '}
-                <Link href="/contact" className="text-primary hover:underline">
-                  contact support
-                </Link>
-                .
+                If you believe this is an error, please contact your administrator.
               </p>
             </div>
           </CardContent>

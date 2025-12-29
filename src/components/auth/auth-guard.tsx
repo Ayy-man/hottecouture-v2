@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/components/auth/auth-provider';
+import { useStaffSession } from '@/components/staff/staff-session-provider';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { LoadingLogo } from '@/components/ui/loading-logo';
@@ -10,16 +10,12 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { user, isLoading } = useAuth();
+  // Use staff session instead of Supabase auth
+  const { isAuthenticated, isLoading } = useStaffSession();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      console.log('🔒 No user found, redirecting to login...');
-      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-      router.push(`/login?redirectTo=${returnUrl}`);
-    }
-  }, [user, isLoading, router]);
+  // No redirect - StaffPinModal in layout will handle the prompt
+  // We just simply hide the content until authenticated
 
   // Show loading while checking auth
   if (isLoading) {
@@ -30,8 +26,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // Show nothing while redirecting
-  if (!user) {
+  // Not authenticated? Render nothing (Modal will show)
+  if (!isAuthenticated) {
     return null;
   }
 

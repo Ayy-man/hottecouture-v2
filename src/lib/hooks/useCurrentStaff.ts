@@ -58,6 +58,34 @@ export function useCurrentStaff() {
     }
   }, []);
 
+  const loginByPin = useCallback(async (pin: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/staff/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.staff) {
+        const newSession: StaffSession = {
+          staffId: result.staff.id,
+          staffName: result.staff.name,
+          clockedInAt: new Date().toISOString(),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newSession));
+        setSession(newSession);
+        return true;
+      }
+
+      return false;
+    } catch (err) {
+      console.error('Login by PIN failed:', err);
+      return false;
+    }
+  }, []);
+
   const clockOut = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setSession(null);
@@ -68,6 +96,7 @@ export function useCurrentStaff() {
     isLoading,
     isAuthenticated: !!session,
     clockIn,
+    loginByPin,
     clockOut,
   };
 }

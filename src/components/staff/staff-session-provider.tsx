@@ -8,6 +8,7 @@ interface StaffSessionContextValue {
   isLoading: boolean;
   isAuthenticated: boolean;
   clockIn: (staffId: string, staffName: string, pin: string) => Promise<boolean>;
+  loginByPin: (pin: string) => Promise<boolean>;
   clockOut: () => void;
 }
 
