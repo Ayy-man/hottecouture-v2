@@ -1,8 +1,4 @@
-'use client';
-
 import { useStaffSession } from '@/components/staff/staff-session-provider';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 
 interface AuthGuardProps {
@@ -12,7 +8,6 @@ interface AuthGuardProps {
 export function AuthGuard({ children }: AuthGuardProps) {
   // Use staff session instead of Supabase auth
   const { isAuthenticated, isLoading } = useStaffSession();
-  const router = useRouter();
 
   // No redirect - StaffPinModal in layout will handle the prompt
   // We just simply hide the content until authenticated
