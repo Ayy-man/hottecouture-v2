@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
     }
-    const { orderId, garmentId } = await request.json();
+    const { orderId, garmentId, staffName } = await request.json();
 
     if (!orderId) {
       return NextResponse.json(
@@ -29,7 +29,10 @@ export async function POST(request: NextRequest) {
         .not('stopped_at', 'is', null)
         .maybeSingle();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Error fetching garment for resume:', error);
+        throw new Error(error.message);
+      }
       garment = data;
     } else {
       // Get first paused garment for this order
@@ -42,12 +45,26 @@ export async function POST(request: NextRequest) {
         .limit(1)
         .maybeSingle();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Error fetching garment for resume:', error);
+        throw new Error(error.message);
+      }
       garment = data;
     }
 
     if (!garment) {
       return NextResponse.json({ error: 'No paused timer found' }, { status: 404 });
+    }
+
+    // Permission check
+    if (staffName && garment.assignee && garment.assignee !== staffName) {
+      return NextResponse.json(
+        {
+          error: `Permission denied. This task is assigned to ${garment.assignee}.`,
+          code: 'permission_denied'
+        },
+        { status: 403 }
+      );
     }
 
     if (garment.is_active) {

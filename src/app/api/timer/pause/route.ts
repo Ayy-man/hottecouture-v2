@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
     }
-    const { orderId, garmentId } = await request.json();
+    const { orderId, garmentId, staffName } = await request.json();
 
     if (!orderId) {
       return NextResponse.json(
@@ -28,7 +28,10 @@ export async function POST(request: NextRequest) {
         .eq('is_active', true)
         .maybeSingle();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Error fetching garment:', error);
+        throw new Error(error.message);
+      }
       garment = data;
     } else {
       // Get first active garment for this order
@@ -40,12 +43,27 @@ export async function POST(request: NextRequest) {
         .limit(1)
         .maybeSingle();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Error fetching active garment:', error);
+        throw new Error(error.message);
+      }
       garment = data;
     }
 
     if (!garment) {
       return NextResponse.json({ error: 'No active timer found' }, { status: 404 });
+    }
+
+    // Permission check: You can only pause your own timer
+    // We allow admins (if we had admin auth) or if assignee is not set (legacy)
+    if (staffName && garment.assignee && garment.assignee !== staffName) {
+      return NextResponse.json(
+        {
+          error: `Permission denied. This task is assigned to ${garment.assignee}.`,
+          code: 'permission_denied'
+        },
+        { status: 403 }
+      );
     }
 
     // Calculate elapsed minutes (only if started_at exists)

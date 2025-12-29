@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
     }
-    const { orderId, garmentId } = await request.json();
+    const { orderId, garmentId, staffName } = await request.json();
 
     if (!orderId) {
       return NextResponse.json(
@@ -27,7 +27,10 @@ export async function POST(request: NextRequest) {
         .eq('id', garmentId)
         .maybeSingle();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Error fetching garment for stop:', error);
+        throw new Error(error.message);
+      }
       garment = data;
     } else {
       // Get first garment for this order
@@ -38,12 +41,26 @@ export async function POST(request: NextRequest) {
         .limit(1)
         .maybeSingle();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('Error fetching garment for stop:', error);
+        throw new Error(error.message);
+      }
       garment = data;
     }
 
     if (!garment) {
       return NextResponse.json({ error: 'No garment found' }, { status: 404 });
+    }
+
+    // Permission check
+    if (staffName && garment.assignee && garment.assignee !== staffName) {
+      return NextResponse.json(
+        {
+          error: `Permission denied. This task is assigned to ${garment.assignee}.`,
+          code: 'permission_denied'
+        },
+        { status: 403 }
+      );
     }
 
     let newActualMinutes = garment.actual_minutes || 0;

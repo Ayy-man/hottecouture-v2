@@ -200,7 +200,11 @@ export function TimerButton({
       const response = await fetch('/api/timer/pause', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, garmentId }),
+        body: JSON.stringify({
+          orderId,
+          garmentId,
+          staffName: currentStaff?.staffName,
+        }),
       });
 
       const result = await response.json();
@@ -233,7 +237,11 @@ export function TimerButton({
       const response = await fetch('/api/timer/resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, garmentId }),
+        body: JSON.stringify({
+          orderId,
+          garmentId,
+          staffName: currentStaff?.staffName,
+        }),
       });
 
       const result = await response.json();
@@ -265,7 +273,11 @@ export function TimerButton({
       const response = await fetch('/api/timer/stop', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, garmentId }),
+        body: JSON.stringify({
+          orderId,
+          garmentId,
+          staffName: currentStaff?.staffName,
+        }),
       });
 
       const result = await response.json();
