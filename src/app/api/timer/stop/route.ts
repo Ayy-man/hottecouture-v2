@@ -20,11 +20,12 @@ export async function POST(request: NextRequest) {
     let garment = null;
 
     if (garmentId) {
-      // Get specific garment
+      // Get specific garment that's active
       const { data, error } = await supabase
         .from('garment')
         .select('*')
         .eq('id', garmentId)
+        .eq('is_active', true)
         .maybeSingle();
 
       if (error) {
@@ -33,11 +34,12 @@ export async function POST(request: NextRequest) {
       }
       garment = data;
     } else {
-      // Get first garment for this order
+      // Get first active garment for this order
       const { data, error } = await supabase
         .from('garment')
         .select('*')
         .eq('order_id', orderId)
+        .eq('is_active', true)
         .limit(1)
         .maybeSingle();
 
@@ -49,7 +51,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!garment) {
-      return NextResponse.json({ error: 'No garment found' }, { status: 404 });
+      console.log('⚠️ Stop called but no active timer found:', { orderId, garmentId });
+      return NextResponse.json({ error: 'No active timer found to stop' }, { status: 404 });
     }
 
     // Permission check
@@ -65,8 +68,16 @@ export async function POST(request: NextRequest) {
 
     let newActualMinutes = garment.actual_minutes || 0;
 
+    // Debug log for timer state
+    console.log('🕐 Timer stop - garment state:', {
+      id: garment.id,
+      is_active: garment.is_active,
+      started_at: garment.started_at,
+      actual_minutes: garment.actual_minutes,
+    });
+
     // If timer was running, add elapsed time
-    // If timer was running, add elapsed time
+    // Since we now filter by is_active=true, garment.is_active should always be true here
     if (garment.is_active && garment.started_at) {
       const startTime = new Date(garment.started_at);
 
@@ -91,6 +102,13 @@ export async function POST(request: NextRequest) {
       console.error('❌ Invalid final actual_minutes in stop:', newActualMinutes);
       newActualMinutes = garment.actual_minutes || 0; // Fallback
     }
+
+    // Log the calculated time
+    console.log('🕐 Timer stop - calculated time:', {
+      previousMinutes: garment.actual_minutes || 0,
+      newActualMinutes,
+      totalSeconds: Math.round(newActualMinutes * 60),
+    });
 
     // Stop and mark as done, clear assignee
     const { error: updateError } = await supabase

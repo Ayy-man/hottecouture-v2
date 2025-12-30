@@ -118,7 +118,10 @@ export default function ArchivedOrdersPage() {
   );
 
   const formatCurrency = (cents: number) => {
-    return `$${(cents / 100).toFixed(2)}`;
+    return new Intl.NumberFormat('fr-CA', {
+      style: 'currency',
+      currency: 'CAD',
+    }).format(cents / 100);
   };
 
   const formatDate = (dateString: string) => {

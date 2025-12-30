@@ -61,6 +61,7 @@ async function handleOrderStage(
       total_cents,
       total_work_seconds,
       payment_status,
+      deposit_paid_at,
       client_id,
       client:client_id (
         id,
@@ -96,6 +97,15 @@ async function handleOrderStage(
     );
   }
 
+  // B5: Require deposit for custom orders before starting work
+  const orderData = order as any;
+  if (newStage === 'working' && orderData.type === 'custom' && !orderData.deposit_paid_at) {
+    throw new ConflictError(
+      `Cannot start work on custom order without deposit. Please collect the 50% deposit first.`,
+      correlationId
+    );
+  }
+
   // B4: Require final hours when moving to 'ready' or 'done'
   const legacyTotalSeconds = (order as any).total_work_seconds || 0;
 
@@ -126,7 +136,6 @@ async function handleOrderStage(
   }
 
   // Check if we should auto-archive: transitioning to 'delivered' and already paid
-  const orderData = order as any;
   const shouldAutoArchive = newStage === 'delivered' && orderData.payment_status === 'paid';
   const now = new Date().toISOString();
 

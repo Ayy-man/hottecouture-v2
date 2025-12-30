@@ -129,9 +129,9 @@ function OrderHistoryContent() {
   };
 
   const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('fr-CA', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'CAD',
     }).format(cents / 100);
   };
 

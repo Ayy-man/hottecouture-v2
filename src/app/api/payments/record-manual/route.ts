@@ -5,6 +5,7 @@ import {
   isGHLConfigured,
   type AppClient,
 } from '@/lib/ghl';
+import { calculateDepositCents } from '@/lib/payments/deposit-calculator';
 
 interface RecordManualPaymentRequest {
   orderId: string;
@@ -70,8 +71,8 @@ export async function POST(request: NextRequest) {
 
     switch (type) {
       case 'deposit':
-        // Record deposit payment
-        const depositAmount = amountCents || Math.ceil(order.total_cents / 2);
+        // Record deposit payment (uses centralized calculator)
+        const depositAmount = amountCents || calculateDepositCents(order.total_cents);
         updateData.deposit_cents = depositAmount;
         updateData.deposit_paid_at = now;
         updateData.deposit_payment_method = method;
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
         updateData.paid_at = now;
         // If this is a custom order, also mark deposit as paid
         if (order.deposit_cents === 0 || !order.deposit_cents) {
-          updateData.deposit_cents = Math.ceil(order.total_cents / 2);
+          updateData.deposit_cents = calculateDepositCents(order.total_cents);
           updateData.deposit_paid_at = now;
           updateData.deposit_payment_method = method;
         }

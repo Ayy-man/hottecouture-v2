@@ -7,6 +7,7 @@
 
 import { ghlFetch, getLocationId, centsToDollars } from './client';
 import { GHLResult } from './types';
+import { encodePaymentTypeMetadata } from '@/lib/payments/deposit-calculator';
 
 // ============================================================================
 // Invoice Types
@@ -343,7 +344,10 @@ export async function createDepositInvoice(params: {
       },
     ],
     dueDate: params.dueDate,
-    notes: 'Merci pour votre confiance. Le solde sera dû à la livraison.',
+    notes: encodePaymentTypeMetadata(
+      'Merci pour votre confiance. Le solde sera dû à la livraison.',
+      'deposit'
+    ),
     sendNotification: true,
   });
 }
@@ -373,7 +377,10 @@ export async function createBalanceInvoice(params: {
       },
     ],
     dueDate: params.dueDate,
-    notes: 'Votre commande est prête! Merci de régler ce solde pour la récupération.',
+    notes: encodePaymentTypeMetadata(
+      'Votre commande est prête! Merci de régler ce solde pour la récupération.',
+      'balance'
+    ),
     sendNotification: true,
   });
 }
@@ -421,7 +428,7 @@ export async function createFullInvoice(params: {
     orderNumber: params.orderNumber,
     items: invoiceItems,
     dueDate: params.dueDate,
-    notes: 'Merci pour votre confiance!',
+    notes: encodePaymentTypeMetadata('Merci pour votre confiance!', 'full'),
     sendNotification: true,
   });
 }

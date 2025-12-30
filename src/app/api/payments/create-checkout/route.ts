@@ -10,6 +10,7 @@ import {
   centsToDollars,
   type AppClient,
 } from '@/lib/ghl';
+import { calculateDepositCents } from '@/lib/payments/deposit-calculator';
 
 interface CreateCheckoutRequest {
   orderId: string;
@@ -122,12 +123,14 @@ export async function POST(request: NextRequest) {
 
     switch (type) {
       case 'deposit':
-        // 50% deposit for custom orders
-        amountCents = Math.ceil(order.total_cents / 2);
+        // 50% deposit for custom orders (uses centralized calculator)
+        amountCents = calculateDepositCents(order.total_cents);
         break;
       case 'balance':
         // Remaining balance (total - deposit already paid)
-        const depositPaid = order.deposit_paid_at ? (order.deposit_cents || Math.ceil(order.total_cents / 2)) : 0;
+        const depositPaid = order.deposit_paid_at
+          ? (order.deposit_cents || calculateDepositCents(order.total_cents))
+          : 0;
         amountCents = order.total_cents - depositPaid;
         break;
       case 'full':

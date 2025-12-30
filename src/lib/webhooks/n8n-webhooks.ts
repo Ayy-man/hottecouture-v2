@@ -14,6 +14,8 @@
  * - /paiement-recu - Notify payment received (updates GHL tags)
  */
 
+import { calculateDepositCents } from '@/lib/payments/deposit-calculator';
+
 // GHL Contact Sync uses the existing n8n instance with specific webhook path
 const GHL_SYNC_WEBHOOK_URL = process.env.N8N_CRM_WEBHOOK_URL || 'https://otomato456321.app.n8n.cloud/webhook/e7b5e81d-53e1-496f-a8d1-1d5100b653a2';
 
@@ -325,7 +327,7 @@ export function buildN8nOrder(dbOrder: any): N8nOrder {
     type: dbOrder.type || 'alteration',
     status: dbOrder.status,
     total_cents: dbOrder.total_cents || 0,
-    deposit_cents: dbOrder.deposit_cents || Math.ceil((dbOrder.total_cents || 0) / 2),
+    deposit_cents: dbOrder.deposit_cents || calculateDepositCents(dbOrder.total_cents || 0),
     balance_due_cents: dbOrder.balance_due_cents || dbOrder.total_cents || 0,
     is_custom: isCustom,
     deposit_required: depositRequired,

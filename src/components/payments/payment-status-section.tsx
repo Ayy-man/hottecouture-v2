@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { calculateDepositCents } from '@/lib/payments/deposit-calculator';
 
 interface PaymentStatusSectionProps {
   order: {
@@ -32,8 +33,8 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
   const depositPaid = order.deposit_paid_at !== null;
   const fullyPaid = order.payment_status === 'paid';
 
-  // Calculate actual balance
-  const depositAmount = order.deposit_cents || (isCustomOrder ? Math.ceil(order.total_cents / 2) : 0);
+  // Calculate actual balance (uses centralized calculator)
+  const depositAmount = order.deposit_cents || (isCustomOrder ? calculateDepositCents(order.total_cents) : 0);
   const balanceDue = depositPaid
     ? order.total_cents - depositAmount
     : (isCustomOrder ? depositAmount : order.total_cents); // If deposit not paid, next payment is deposit
