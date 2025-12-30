@@ -73,31 +73,29 @@ export function DroppableColumn({
 
       {/* Column list - Same as intake form */}
       <div className='flex-1 min-h-0 overflow-y-auto p-3 lg:p-4 space-y-3'>
-        {orders.map(order => (
-          <DraggableOrderCard
-            key={order.id}
-            order={order}
-            onClick={() => onOrderClick(order)}
-            isJustMoved={justMovedOrder === order.id}
-            isUpdating={updatingOrders.has(order.id)}
-          />
-        ))}
-      </div>
-
-      {orders.length === 0 && (
-        <div
-          className={`flex-1 flex items-center justify-center transition-colors duration-200 ${isOver ? 'text-blue-500' : 'text-gray-400'}`}
-        >
-          <div className='flex flex-col items-center space-y-2'>
-            <p className='text-sm'>No orders in this stage</p>
+        {orders.length > 0 ? (
+          orders.map(order => (
+            <DraggableOrderCard
+              key={order.id}
+              order={order}
+              onClick={() => onOrderClick(order)}
+              isJustMoved={justMovedOrder === order.id}
+              isUpdating={updatingOrders.has(order.id)}
+            />
+          ))
+        ) : (
+          <div
+            className={`py-8 text-center transition-colors duration-200 ${isOver ? 'text-blue-500' : 'text-gray-400'}`}
+          >
+            <p className='text-xs'>No orders</p>
             {isOver && (
-              <p className='text-xs text-blue-600 font-medium animate-bounce'>
-                Drop here to move order
+              <p className='text-xs text-blue-600 font-medium mt-1 animate-bounce'>
+                Drop here
               </p>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

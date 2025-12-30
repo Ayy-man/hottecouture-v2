@@ -6,6 +6,22 @@ import { createClient } from '@/lib/supabase/client';
 import { ClientCreate, MeasurementsData } from '@/lib/dto';
 // GHL contact sync is handled server-side in the intake API
 
+// Measurement template type
+interface MeasurementTemplate {
+  id: string;
+  name: string;
+  name_fr: string;
+  category: string;
+  unit: string;
+  display_order: number;
+}
+
+// Custom measurement for per-order fields
+interface CustomMeasurement {
+  name: string;
+  value: string;
+}
+
 interface ClientStepProps {
   data: ClientCreate | null;
   measurements?: MeasurementsData | undefined;
@@ -43,32 +59,54 @@ export function ClientStep({
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [showMeasurements, setShowMeasurements] = useState(false);
   const [isLoadingMeasurements, setIsLoadingMeasurements] = useState(false);
-  const [measurements, setMeasurements] = useState({
-    bust: '',
-    waist: '',
-    hips: '',
-    inseam: '',
-    arm_length: '',
-    neck: '',
-    shoulders: '',
-    height: '',
-    notes: '',
-  });
+
+  // Dynamic measurement templates from database
+  const [measurementTemplates, setMeasurementTemplates] = useState<MeasurementTemplate[]>([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
+
+  // Dynamic measurements state - keys are template names
+  const [measurements, setMeasurements] = useState<Record<string, string>>({});
+
+  // Custom per-order measurements
+  const [customMeasurements, setCustomMeasurements] = useState<CustomMeasurement[]>([]);
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [newCustomName, setNewCustomName] = useState('');
+  const [newCustomValue, setNewCustomValue] = useState('');
+
+  // Load measurement templates on mount
+  useEffect(() => {
+    const loadTemplates = async () => {
+      setIsLoadingTemplates(true);
+      try {
+        const res = await fetch('/api/admin/measurement-templates?category=body');
+        if (res.ok) {
+          const data = await res.json();
+          setMeasurementTemplates(data.templates || []);
+        }
+      } catch (err) {
+        console.error('Error loading measurement templates:', err);
+      } finally {
+        setIsLoadingTemplates(false);
+      }
+    };
+    loadTemplates();
+  }, []);
 
   // Sync measurements with props
   useEffect(() => {
     if (propMeasurements) {
-      setMeasurements({
-        bust: propMeasurements.bust?.toString() || '',
-        waist: propMeasurements.waist?.toString() || '',
-        hips: propMeasurements.hips?.toString() || '',
-        inseam: propMeasurements.inseam?.toString() || '',
-        arm_length: propMeasurements.arm_length?.toString() || '',
-        neck: propMeasurements.neck?.toString() || '',
-        shoulders: propMeasurements.shoulders?.toString() || '',
-        height: propMeasurements.height?.toString() || '',
-        notes: propMeasurements.notes || '',
+      const measurementValues: Record<string, string> = {};
+      // Map known fields from propMeasurements to dynamic state
+      Object.entries(propMeasurements).forEach(([key, value]) => {
+        if (key !== 'notes' && value !== null && value !== undefined) {
+          measurementValues[key] = value.toString();
+        }
       });
+      // Handle notes separately
+      if (propMeasurements.notes) {
+        measurementValues['notes'] = propMeasurements.notes;
+      }
+      setMeasurements(measurementValues);
     }
   }, [propMeasurements]);
 
@@ -76,17 +114,30 @@ export function ClientStep({
   const updateMeasurement = useCallback((field: string, value: string) => {
     setMeasurements(prev => {
       const updated = { ...prev, [field]: value };
-      onMeasurementsUpdate?.({
-        bust: updated.bust ? parseFloat(updated.bust) : null,
-        waist: updated.waist ? parseFloat(updated.waist) : null,
-        hips: updated.hips ? parseFloat(updated.hips) : null,
-        inseam: updated.inseam ? parseFloat(updated.inseam) : null,
-        arm_length: updated.arm_length ? parseFloat(updated.arm_length) : null,
-        neck: updated.neck ? parseFloat(updated.neck) : null,
-        shoulders: updated.shoulders ? parseFloat(updated.shoulders) : null,
-        height: updated.height ? parseFloat(updated.height) : null,
-        notes: updated.notes || undefined,
+
+      // Convert dynamic measurements to MeasurementsData format for parent
+      // This maintains backward compatibility with the intake API
+      const measurementsData: MeasurementsData = {
+        bust: updated['bust'] ? parseFloat(updated['bust']) : null,
+        waist: updated['waist'] ? parseFloat(updated['waist']) : null,
+        hips: updated['hips'] ? parseFloat(updated['hips']) : null,
+        inseam: updated['inseam'] ? parseFloat(updated['inseam']) : null,
+        arm_length: updated['arm_length'] ? parseFloat(updated['arm_length']) : null,
+        neck: updated['neck'] ? parseFloat(updated['neck']) : null,
+        shoulders: updated['shoulders'] ? parseFloat(updated['shoulders']) : null,
+        height: updated['height'] ? parseFloat(updated['height']) : null,
+        notes: updated['notes'] || undefined,
+      };
+
+      // Also include any additional dynamic measurements
+      // The intake API will handle them via template lookup
+      Object.entries(updated).forEach(([key, val]) => {
+        if (!['bust', 'waist', 'hips', 'inseam', 'arm_length', 'neck', 'shoulders', 'height', 'notes'].includes(key) && val) {
+          (measurementsData as any)[key] = parseFloat(val) || null;
+        }
       });
+
+      onMeasurementsUpdate?.(measurementsData);
       return updated;
     });
   }, [onMeasurementsUpdate]);
@@ -100,44 +151,28 @@ export function ClientStep({
         const { data: grouped } = await res.json();
         // Body measurements are in the 'body' category
         const bodyMeasurements = grouped?.body || [];
-        const measurementMap: Record<string, number> = {};
+
+        // Build dynamic measurements object from API response
+        const loadedMeasurements: Record<string, string> = {};
+        const measurementsData: MeasurementsData = {};
+
         for (const m of bodyMeasurements) {
           if (m.name && m.value) {
-            measurementMap[m.name] = m.value;
+            loadedMeasurements[m.name] = m.value.toString();
+            // Also build the MeasurementsData object for parent
+            (measurementsData as any)[m.name] = m.value;
           }
         }
-
-        const loadedMeasurements = {
-          bust: measurementMap['bust']?.toString() || '',
-          waist: measurementMap['waist']?.toString() || '',
-          hips: measurementMap['hips']?.toString() || '',
-          inseam: measurementMap['inseam']?.toString() || '',
-          arm_length: measurementMap['arm_length']?.toString() || '',
-          neck: measurementMap['neck']?.toString() || '',
-          shoulders: measurementMap['shoulders']?.toString() || '',
-          height: measurementMap['height']?.toString() || '',
-          notes: '',
-        };
 
         setMeasurements(loadedMeasurements);
 
         // Notify parent with loaded measurements
         if (onMeasurementsUpdate) {
-          const parsed: MeasurementsData = {
-            bust: measurementMap['bust'] || null,
-            waist: measurementMap['waist'] || null,
-            hips: measurementMap['hips'] || null,
-            inseam: measurementMap['inseam'] || null,
-            arm_length: measurementMap['arm_length'] || null,
-            neck: measurementMap['neck'] || null,
-            shoulders: measurementMap['shoulders'] || null,
-            height: measurementMap['height'] || null,
-          };
-          onMeasurementsUpdate(parsed);
+          onMeasurementsUpdate(measurementsData);
         }
 
         // Auto-expand measurements if client has saved data
-        if (Object.values(measurementMap).some(v => v)) {
+        if (Object.keys(loadedMeasurements).length > 0) {
           setShowMeasurements(true);
         }
       }
@@ -855,99 +890,159 @@ export function ClientStep({
                   <div className='p-3 space-y-3'>
                     <div className='flex items-center justify-between'>
                       <p className='text-xs text-gray-500'>Pour projets sur mesure (optionnel)</p>
-                      {isLoadingMeasurements && (
+                      {(isLoadingMeasurements || isLoadingTemplates) && (
                         <div className='flex items-center gap-1 text-xs text-primary-600'>
                           <div className='animate-spin w-3 h-3 border border-primary-500 border-t-transparent rounded-full'></div>
                           Chargement...
                         </div>
                       )}
                     </div>
+
+                    {/* Dynamic measurement fields from templates */}
                     <div className='grid grid-cols-2 gap-2'>
-                      <div>
-                        <label className='block text-xs text-gray-600 mb-1'>Tour de poitrine (cm)</label>
-                        <input
-                          type='number'
-                          value={measurements.bust}
-                          onChange={e => updateMeasurement('bust', e.target.value)}
-                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
-                          placeholder='ex: 92'
-                        />
-                      </div>
-                      <div>
-                        <label className='block text-xs text-gray-600 mb-1'>Tour de taille (cm)</label>
-                        <input
-                          type='number'
-                          value={measurements.waist}
-                          onChange={e => updateMeasurement('waist', e.target.value)}
-                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
-                          placeholder='ex: 76'
-                        />
-                      </div>
-                      <div>
-                        <label className='block text-xs text-gray-600 mb-1'>Tour de hanches (cm)</label>
-                        <input
-                          type='number'
-                          value={measurements.hips}
-                          onChange={e => updateMeasurement('hips', e.target.value)}
-                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
-                          placeholder='ex: 97'
-                        />
-                      </div>
-                      <div>
-                        <label className='block text-xs text-gray-600 mb-1'>Entrejambe (cm)</label>
-                        <input
-                          type='number'
-                          value={measurements.inseam}
-                          onChange={e => updateMeasurement('inseam', e.target.value)}
-                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
-                          placeholder='ex: 81'
-                        />
-                      </div>
-                      <div>
-                        <label className='block text-xs text-gray-600 mb-1'>Longueur bras (cm)</label>
-                        <input
-                          type='number'
-                          value={measurements.arm_length}
-                          onChange={e => updateMeasurement('arm_length', e.target.value)}
-                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
-                          placeholder='ex: 63'
-                        />
-                      </div>
-                      <div>
-                        <label className='block text-xs text-gray-600 mb-1'>Tour de cou (cm)</label>
-                        <input
-                          type='number'
-                          value={measurements.neck}
-                          onChange={e => updateMeasurement('neck', e.target.value)}
-                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
-                          placeholder='ex: 38'
-                        />
-                      </div>
-                      <div>
-                        <label className='block text-xs text-gray-600 mb-1'>Largeur épaules (cm)</label>
-                        <input
-                          type='number'
-                          value={measurements.shoulders}
-                          onChange={e => updateMeasurement('shoulders', e.target.value)}
-                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
-                          placeholder='ex: 46'
-                        />
-                      </div>
-                      <div>
-                        <label className='block text-xs text-gray-600 mb-1'>Hauteur totale (cm)</label>
-                        <input
-                          type='number'
-                          value={measurements.height}
-                          onChange={e => updateMeasurement('height', e.target.value)}
-                          className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
-                          placeholder='ex: 170'
-                        />
-                      </div>
+                      {measurementTemplates.map(template => (
+                        <div key={template.id}>
+                          <label className='block text-xs text-gray-600 mb-1'>
+                            {template.name_fr} ({template.unit})
+                          </label>
+                          <input
+                            type='number'
+                            value={measurements[template.name] || ''}
+                            onChange={e => updateMeasurement(template.name, e.target.value)}
+                            className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                            placeholder={`ex: ${template.name === 'height' ? '170' : '0'}`}
+                          />
+                        </div>
+                      ))}
                     </div>
+
+                    {/* Custom per-order measurements */}
+                    {customMeasurements.length > 0 && (
+                      <div className='border-t border-gray-200 pt-2'>
+                        <p className='text-xs text-gray-500 mb-2'>Mesures personnalisées</p>
+                        <div className='grid grid-cols-2 gap-2'>
+                          {customMeasurements.map((custom, index) => (
+                            <div key={index} className='relative'>
+                              <label className='block text-xs text-gray-600 mb-1 flex items-center justify-between'>
+                                <span>{custom.name}</span>
+                                <button
+                                  type='button'
+                                  onClick={() => {
+                                    setCustomMeasurements(prev => prev.filter((_, i) => i !== index));
+                                  }}
+                                  className='text-gray-400 hover:text-red-500'
+                                >
+                                  <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                                  </svg>
+                                </button>
+                              </label>
+                              <input
+                                type='number'
+                                value={custom.value}
+                                onChange={e => {
+                                  const newValue = e.target.value;
+                                  setCustomMeasurements(prev =>
+                                    prev.map((c, i) => (i === index ? { ...c, value: newValue } : c))
+                                  );
+                                  // Update parent with custom measurement
+                                  updateMeasurement(`custom_${custom.name.toLowerCase().replace(/\s+/g, '_')}`, newValue);
+                                }}
+                                className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Add custom measurement */}
+                    {showAddCustom ? (
+                      <div className='border-t border-gray-200 pt-2'>
+                        <p className='text-xs text-gray-500 mb-2'>Ajouter une mesure personnalisée</p>
+                        <div className='grid grid-cols-2 gap-2'>
+                          <input
+                            type='text'
+                            value={newCustomName}
+                            onChange={e => setNewCustomName(e.target.value)}
+                            placeholder='Nom (ex: Biceps)'
+                            className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                            autoFocus
+                            onKeyDown={e => {
+                              if (e.key === 'Escape') {
+                                setShowAddCustom(false);
+                                setNewCustomName('');
+                                setNewCustomValue('');
+                              }
+                            }}
+                          />
+                          <input
+                            type='number'
+                            value={newCustomValue}
+                            onChange={e => setNewCustomValue(e.target.value)}
+                            placeholder='Valeur (cm)'
+                            className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && newCustomName.trim()) {
+                                setCustomMeasurements(prev => [...prev, { name: newCustomName.trim(), value: newCustomValue }]);
+                                // Update parent with custom measurement
+                                updateMeasurement(`custom_${newCustomName.trim().toLowerCase().replace(/\s+/g, '_')}`, newCustomValue);
+                                setNewCustomName('');
+                                setNewCustomValue('');
+                                setShowAddCustom(false);
+                              }
+                            }}
+                          />
+                        </div>
+                        <div className='flex gap-2 mt-2'>
+                          <button
+                            type='button'
+                            onClick={() => {
+                              setShowAddCustom(false);
+                              setNewCustomName('');
+                              setNewCustomValue('');
+                            }}
+                            className='text-xs text-gray-500 hover:text-gray-700'
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            type='button'
+                            onClick={() => {
+                              if (newCustomName.trim()) {
+                                setCustomMeasurements(prev => [...prev, { name: newCustomName.trim(), value: newCustomValue }]);
+                                // Update parent with custom measurement
+                                updateMeasurement(`custom_${newCustomName.trim().toLowerCase().replace(/\s+/g, '_')}`, newCustomValue);
+                                setNewCustomName('');
+                                setNewCustomValue('');
+                                setShowAddCustom(false);
+                              }
+                            }}
+                            disabled={!newCustomName.trim()}
+                            className='text-xs text-primary-600 hover:text-primary-700 disabled:text-gray-400'
+                          >
+                            Ajouter
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type='button'
+                        onClick={() => setShowAddCustom(true)}
+                        className='text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1'
+                      >
+                        <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
+                        </svg>
+                        Ajouter une mesure personnalisée
+                      </button>
+                    )}
+
+                    {/* Notes */}
                     <div>
                       <label className='block text-xs text-gray-600 mb-1'>Notes de mesures</label>
                       <textarea
-                        value={measurements.notes}
+                        value={measurements['notes'] || ''}
                         onChange={e => updateMeasurement('notes', e.target.value)}
                         className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
                         rows={2}
