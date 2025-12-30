@@ -162,21 +162,27 @@ export async function createInvoice(params: {
     console.log('📧 [3] Location ID:', locationId);
 
     console.log('📧 [4] Building request body...');
+    // Build items array - only include defined properties to avoid undefined values
+    const invoiceItems = params.items.map((item, idx) => {
+      console.log(`📧 [4.${idx}] Processing item:`, item);
+      const invoiceItem: Record<string, any> = {
+        name: String(item.name || 'Service'),
+        quantity: Number(item.quantity) || 1,
+        price: Number(item.price) || 0,
+      };
+      // Only add optional fields if they have values
+      if (item.description) {
+        invoiceItem.description = String(item.description);
+      }
+      return invoiceItem;
+    });
+
     const requestBody: GHLInvoiceCreateRequest = {
       altId: locationId,
       altType: 'location',
       name: String(params.name || ''),
       contactId: String(params.contactId || ''),
-      items: params.items.map((item, idx) => {
-        console.log(`📧 [4.${idx}] Processing item:`, item);
-        return {
-          name: String(item.name || 'Service'),
-          description: item.description ? String(item.description) : undefined,
-          quantity: Number(item.quantity) || 1,
-          price: Number(item.price) || 0,
-          currency: item.currency ? String(item.currency) : undefined,
-        };
-      }),
+      items: invoiceItems as GHLInvoiceItem[],
       currency: 'CAD',
       liveMode: true,
       sendNotification: params.sendNotification ?? false,
@@ -202,20 +208,15 @@ export async function createInvoice(params: {
       requestBody.termsNotes = String(params.notes);
     }
 
-    console.log('📧 [8] Adding business details...');
-    // Business details for Hotte Couture
-    requestBody.businessDetails = {
-      name: 'Hotte Couture',
-      address: '1234 Rue Example',
-      city: 'Montréal',
-      state: 'QC',
-      postalCode: 'H2X 1Y2',
-      country: 'CA',
-      phone: '+15141234567',
-      email: 'info@hottecouture.com',
-    };
+    // Note: businessDetails removed - GHL uses account settings for this
+    console.log('📧 [8] Skipping businessDetails (using GHL account settings)');
 
-    console.log('📧 [9] Final request body:', JSON.stringify(requestBody, null, 2));
+    // Log the final request body for debugging
+    try {
+      console.log('📧 [9] Final request body:', JSON.stringify(requestBody, null, 2));
+    } catch (e) {
+      console.error('📧 [9] Failed to stringify request body:', e);
+    }
 
     console.log('📧 [10] Calling ghlFetch...');
     const result = await ghlFetch<GHLInvoiceResponse>({
