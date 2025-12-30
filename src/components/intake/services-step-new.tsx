@@ -91,6 +91,10 @@ export function ServicesStepNew({
     null
   );
 
+  // Price editing state
+  const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
+  const [editPriceValue, setEditPriceValue] = useState('');
+
   // Zip selection modal states
   const [showZipModal, setShowZipModal] = useState(false);
   const [pendingService, setPendingService] = useState<{
@@ -777,6 +781,48 @@ export function ServicesStepNew({
     garment.services = garment.services.filter(s => s.serviceId !== serviceId);
 
     onUpdate(updatedGarments);
+  };
+
+  const updateServicePrice = (
+    garmentIndex: number,
+    serviceId: string,
+    newPriceCents: number
+  ) => {
+    const updatedGarments = [...data];
+    const garment = updatedGarments[garmentIndex];
+    if (!garment) return;
+
+    const serviceIndex = garment.services.findIndex(
+      s => s.serviceId === serviceId
+    );
+
+    if (serviceIndex >= 0) {
+      const service = garment.services[serviceIndex];
+      if (service) {
+        service.customPriceCents = newPriceCents;
+        onUpdate(updatedGarments);
+      }
+    }
+  };
+
+  const handleStartPriceEdit = (garmentIndex: number, serviceId: string, currentPriceCents: number) => {
+    const key = `${garmentIndex}-${serviceId}`;
+    setEditingPriceKey(key);
+    setEditPriceValue((currentPriceCents / 100).toFixed(2));
+  };
+
+  const handleSavePriceEdit = (garmentIndex: number, serviceId: string) => {
+    const newPrice = parseFloat(editPriceValue);
+    if (!isNaN(newPrice) && newPrice >= 0) {
+      updateServicePrice(garmentIndex, serviceId, Math.round(newPrice * 100));
+    }
+    setEditingPriceKey(null);
+    setEditPriceValue('');
+  };
+
+  const handleCancelPriceEdit = () => {
+    setEditingPriceKey(null);
+    setEditPriceValue('');
   };
 
   if (loading) {
@@ -1779,14 +1825,63 @@ export function ServicesStepNew({
                                       ? garmentService.customServiceName
                                       : service?.name}
                                   </h5>
-                                  <p className='text-xs text-gray-500'>
-                                    {formatCurrency(
-                                      garmentService.customPriceCents ||
-                                      service?.base_price_cents ||
-                                      0
-                                    )}{' '}
-                                    each
-                                  </p>
+                                  {/* Editable price */}
+                                  {editingPriceKey === `${garmentIndex}-${garmentService.serviceId}` ? (
+                                    <div className='flex items-center gap-1 mt-1'>
+                                      <span className='text-xs text-gray-500'>$</span>
+                                      <input
+                                        type='number'
+                                        step='0.01'
+                                        min='0'
+                                        value={editPriceValue}
+                                        onChange={e => setEditPriceValue(e.target.value)}
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter') handleSavePriceEdit(garmentIndex, garmentService.serviceId);
+                                          if (e.key === 'Escape') handleCancelPriceEdit();
+                                        }}
+                                        className='w-20 px-1 py-0.5 border border-primary-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary-500'
+                                        autoFocus
+                                      />
+                                      <button
+                                        onClick={() => handleSavePriceEdit(garmentIndex, garmentService.serviceId)}
+                                        className='p-1 text-green-600 hover:text-green-700'
+                                        title='Save'
+                                      >
+                                        <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        onClick={handleCancelPriceEdit}
+                                        className='p-1 text-gray-400 hover:text-gray-600'
+                                        title='Cancel'
+                                      >
+                                        <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleStartPriceEdit(
+                                        garmentIndex,
+                                        garmentService.serviceId,
+                                        garmentService.customPriceCents || service?.base_price_cents || 0
+                                      )}
+                                      className='text-xs text-gray-500 hover:text-primary-600 hover:underline cursor-pointer flex items-center gap-1 group'
+                                      title='Click to edit price'
+                                    >
+                                      {formatCurrency(
+                                        garmentService.customPriceCents ||
+                                        service?.base_price_cents ||
+                                        0
+                                      )}{' '}
+                                      each
+                                      <svg className='w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
+                                      </svg>
+                                    </button>
+                                  )}
                                 </div>
                                 <button
                                   onClick={() =>
