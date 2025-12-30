@@ -7,6 +7,61 @@
 
 ## CURRENT TASK
 
+**Task:** Fix Archived Orders 404
+**Status:** Completed ✅
+
+---
+
+## [2025-12-30] Fix Archived Orders 404 - COMPLETE ✅
+
+**What:** Fixed 404 error when clicking "Archive Delivered" from board menu
+
+**Root Cause:** Link pointed to `/board/archive` but page exists at `/archived`
+
+**Files Changed:**
+- `src/app/board/page.tsx` - Fixed link href from `/board/archive` to `/archived`
+
+**Also:**
+- Renamed menu item from "Archive Delivered" to "Archived Orders" for clarity
+
+**Test Result:** Type check passes ✅
+
+---
+
+## [2025-12-30] Previous Task
+
+**Task:** Editable Total Override
+**Status:** Completed ✅
+
+---
+
+## [2025-12-30] Editable Total Override - COMPLETE ✅
+
+**What:** Added ability to manually override order total during intake for testing and special pricing
+
+**Files Changed:**
+- `src/components/intake/pricing-step.tsx` - Added editable total UI with edit/save/reset
+- `src/app/intake/page.tsx` - Added totalOverrideCents state management
+- `src/app/api/intake/route.ts` - Accept and use total_override_cents parameter
+
+**Features:**
+- Click "Modifier" next to total to enter edit mode
+- Enter custom amount in dollars (e.g., "2.00")
+- Visual indicator when override is active: "(personnalisé)"
+- Shows original calculated total for reference
+- API returns both final and calculated totals for audit
+
+**Use Cases:**
+- Test GHL invoice/payment flow with $2.00 instead of full price
+- Apply special discounts for VIP customers
+- Quick price adjustments without editing services
+
+**Test Result:** Type check passes ✅
+
+---
+
+## [2025-12-30] Previous Task
+
 **Task:** Critical Bug Fixes - Staff, Timer, Tasks
 **Status:** Completed ✅
 

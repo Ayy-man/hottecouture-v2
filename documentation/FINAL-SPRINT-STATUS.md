@@ -393,3 +393,77 @@ Orders are automatically archived when BOTH conditions are met:
 All archive actions are logged to `event_log` table:
 - `auto_archived_on_payment` - Auto-archive triggered by payment
 - `auto_archived_on_delivery` - Auto-archive triggered by delivery (when already paid)
+
+### Bug Fix (December 30, 2025)
+**Issue:** "Archive Delivered" menu link returned 404
+**Cause:** Link pointed to `/board/archive` (non-existent) instead of `/archived`
+**Fix:** Updated `src/app/board/page.tsx` line 317 to use correct path
+
+---
+
+## EDITABLE TOTAL OVERRIDE (NEW)
+
+**Added:** December 30, 2025
+
+### Overview
+Order totals can now be manually overridden during order creation. This enables:
+- Testing payment flows with small amounts (e.g., $2.00)
+- Special pricing for VIP customers or promotions
+- Quick adjustments without modifying individual service prices
+
+### How to Use
+1. Complete the intake flow through the **Pricing & Due Date** step
+2. Click the **"Modifier"** (Edit) button next to the total
+3. Enter a custom amount (in dollars, e.g., "2.00")
+4. Click **"Enregistrer"** (Save) to apply the override
+5. Click **"Réinitialiser"** to restore the calculated total
+
+### UI Indicators
+| State | Display |
+|-------|---------|
+| Normal | `Total: $55.00 [Modifier]` |
+| Editing | Input field with Save/Reset buttons |
+| Override Active | `Total: $2.00 (personnalisé) [Modifier]` + "Calculé: $55.00" below |
+
+### Technical Details
+
+**Frontend Changes:**
+- `src/components/intake/pricing-step.tsx`
+  - New props: `totalOverrideCents`, `onTotalOverrideChange`
+  - New state: `isEditingTotal`, `editTotalValue`
+  - Editable input with save/reset functionality
+
+- `src/app/intake/page.tsx`
+  - New state: `totalOverrideCents`
+  - Passed to PricingStep and included in API payload
+
+**API Changes:**
+- `src/app/api/intake/route.ts`
+  - Accepts `total_override_cents` in request body
+  - Uses `final_total_cents = total_override_cents ?? total_cents`
+  - Stores override as `total_cents` in database
+  - Returns both `total_cents` (final) and `calculated_total_cents` (audit) in response
+
+### API Response
+```json
+{
+  "orderId": "uuid",
+  "orderNumber": 1234,
+  "totals": {
+    "subtotal_cents": 5000,
+    "tax_cents": 748,
+    "tps_cents": 250,
+    "tvq_cents": 498,
+    "total_cents": 200,           // Final total (override or calculated)
+    "rush_fee_cents": 0,
+    "calculated_total_cents": 5748, // Original calculated total
+    "has_override": true           // Indicates override was used
+  }
+}
+```
+
+### Use Cases
+1. **Payment Testing:** Set total to $2.00 to test GHL invoice + Stripe flow without paying full price
+2. **Special Discounts:** Apply custom pricing for loyal customers
+3. **Promotional Pricing:** Quick adjustments for sales or events
+4. **Error Correction:** Fix pricing mistakes without recreating the order

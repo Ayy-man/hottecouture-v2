@@ -236,7 +236,8 @@ export async function POST(request: NextRequest) {
       dueDate: dueDate,
       rush: order.rush || false,
       subtotalCents: subtotal_cents,
-      totalCents: total_cents,
+      totalCents: final_total_cents,
+      hasOverride: !!total_override_cents,
     });
 
     const { data: newOrder, error: orderError } = await supabase
@@ -251,7 +252,7 @@ export async function POST(request: NextRequest) {
         tax_cents: tax_cents,
         tps_cents: tps_cents,
         tvq_cents: tvq_cents,
-        total_cents: total_cents,
+        total_cents: final_total_cents,
         rush_fee_cents: rush_fee_cents,
         notes: JSON.stringify(notes || {}),
         assigned_to: order.assigned_to || null,
@@ -554,7 +555,8 @@ export async function POST(request: NextRequest) {
       orderId: (newOrder as any).id,
       orderNumber: (newOrder as any).order_number,
       clientName: client.first_name,
-      totalCents: total_cents,
+      totalCents: final_total_cents,
+      hasOverride: !!total_override_cents,
     });
 
     // Sync contact to GHL with full order details
@@ -578,7 +580,7 @@ export async function POST(request: NextRequest) {
         const ghlSyncResult = await syncClientToGHL(ghlClient, {
           isNewClient,
           orderType: order.type || 'alteration',
-          totalCents: total_cents,
+          totalCents: final_total_cents,
         });
 
         if (ghlSyncResult.success && ghlSyncResult.data) {
@@ -635,8 +637,10 @@ export async function POST(request: NextRequest) {
         tax_cents: tax_cents,
         tps_cents: tps_cents,
         tvq_cents: tvq_cents,
-        total_cents: total_cents,
+        total_cents: final_total_cents,
         rush_fee_cents: rush_fee_cents,
+        calculated_total_cents: total_cents, // Original calculated total for audit
+        has_override: !!total_override_cents,
       },
       qrcode: qrCodeDataUrl, // Actual QR code image as data URL
     });

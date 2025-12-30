@@ -314,9 +314,9 @@ export default function BoardPage() {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href='/board/archive' className='flex items-center gap-2'>
+                        <Link href='/archived' className='flex items-center gap-2'>
                           <Archive className='w-4 h-4' />
-                          <span>Archive Delivered</span>
+                          <span>Archived Orders</span>
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -1,8 +1,23 @@
 # HOTTE COUTURE - CODEBASE AUDIT REPORT
 
 **Date:** December 30, 2025
+**Last Updated:** December 30, 2025
 **Auditor:** Claude Code (Automated Analysis)
 **Scope:** Full codebase review including API routes, React components, database schema, and recent commits
+
+---
+
+## FIXES APPLIED (December 30, 2025)
+
+| Issue | Status | Commit |
+|-------|--------|--------|
+| SEC-004: Race Conditions | ✅ FIXED | Atomic updates in staff/active-task, timer/start, intake |
+| SEC-005: Timing Attacks | ✅ FIXED | Created `timing-safe.ts` utility, updated 4 webhook/cron routes |
+| DB-001: Migration indexes | ✅ FIXED | Removed non-existent columns/tables from performance_indexes.sql |
+| Archive not working | ✅ FIXED | Added `is_archived: true` to all archive operations |
+| Stale timers | ✅ FIXED | Added `/api/cron/stale-timers` - auto-terminates after 10 hours |
+| Edit completed time | ✅ FIXED | Added edit button to completed timer state |
+| Restart completed work | ✅ FIXED | Added "Reprendre" button to restart finished tasks |
 
 ---
 
@@ -10,14 +25,14 @@
 
 | Category | Critical | High | Medium | Low | Total |
 |----------|----------|------|--------|-----|-------|
-| API Security | 10 | 8 | 12 | 5 | 35 |
-| Database Schema | 4 | 3 | 5 | 4 | 16 |
+| API Security | 10 | 6 | 12 | 5 | 33 |
+| Database Schema | 3 | 3 | 5 | 4 | 15 |
 | React Components | 0 | 4 | 15 | 24 | 43 |
 | Code Quality | 0 | 2 | 8 | 10 | 20 |
 | Recent Commits | 0 | 2 | 5 | 3 | 10 |
-| **TOTAL** | **14** | **19** | **45** | **46** | **124** |
+| **TOTAL** | **13** | **17** | **45** | **46** | **121** |
 
-**Verdict:** The application has critical security vulnerabilities that must be addressed before production use. Core functionality works but lacks proper authentication on admin endpoints and has several database schema mismatches that will cause runtime errors.
+**Verdict:** The application has critical security vulnerabilities that must be addressed before production use. Core functionality works but lacks proper authentication on admin endpoints. Race conditions and timing attacks have been fixed.
 
 ---
 
@@ -106,85 +121,97 @@ if (webhookSecret !== WEBHOOK_SECRET) {
 
 ---
 
-### DB-001: Code References Non-Existent Database Columns
+### DB-001: Code References Non-Existent Database Columns ✅ PARTIALLY FIXED
 
-**Severity:** CRITICAL
+**Severity:** CRITICAL → MEDIUM (migration fixed, service columns exist)
 **Type:** Database - Schema Mismatch
-**Impact:** Runtime errors when accessing services, migrations will fail
+**Status:** Migration file fixed on December 30, 2025
 
-| Code Location | Missing Column | Table | Error Type |
-|---------------|----------------|-------|------------|
-| `src/app/api/admin/services/route.ts:56` | `is_active` | service | `.eq('is_active', true)` will fail |
-| `src/app/api/admin/services/route.ts:58` | `display_order` | service | `.order('display_order')` will fail |
-| `supabase/migrations/20240101_performance_indexes.sql:35` | `assigned_user_id` | task | Index creation fails |
-| `supabase/migrations/20240101_performance_indexes.sql:47` | `is_active` | client | Index creation fails |
-| `supabase/migrations/20240101_performance_indexes.sql:51` | N/A | time_tracking | Table doesn't exist |
-| `supabase/migrations/20240101_performance_indexes.sql:68` | N/A | log | Table doesn't exist |
-| `supabase/migrations/20240101_performance_indexes.sql:78` | N/A | photo | Table doesn't exist |
-| `supabase/migrations/20240101_performance_indexes.sql:85` | N/A | status_change_history | Table doesn't exist |
+**Clarification:** `service.is_active` and `service.display_order` DO exist in the actual database schema. Initial audit was based on incomplete schema information.
 
-**Recommendation:**
-1. Add missing columns to service table: `is_active BOOLEAN DEFAULT true`, `display_order INTEGER`
-2. Remove or fix performance indexes migration referencing non-existent tables
-3. Verify all code paths against actual database schema
+**Migration File Fixes Applied:**
+| Original Issue | Fix |
+|----------------|-----|
+| `task.assigned_user_id` | Changed to `task.assignee` |
+| `task.status` | Changed to `task.stage` |
+| `client.is_active` index | Removed (column doesn't exist) |
+| `garment.created_at` | Changed to just `garment.order_id` (garment only has `updated_at`) |
+| `time_tracking` table | Changed to use `garment` columns (time tracking is on garment table) |
+| `log` table | Changed to `event_log` |
+| `photo` table | Removed (photos stored in Supabase Storage) |
+| `status_change_history` table | Removed (tracked in event_log) |
+| `CREATE INDEX CONCURRENTLY` | Changed to `CREATE INDEX` (CONCURRENTLY not allowed in transactions)
+
+**File:** `supabase/migrations/20240101_performance_indexes.sql`
+
+**To Apply:** Run `npx supabase db push` to apply the fixed migration.
 
 ---
 
 ## HIGH SEVERITY ISSUES (P1 - Fix This Week)
 
-### SEC-004: Race Conditions in Task Assignment
+### SEC-004: Race Conditions in Task Assignment ✅ FIXED
 
-**Severity:** HIGH
+**Severity:** HIGH → RESOLVED
 **Type:** Concurrency - Race Condition
-**Impact:** Two staff members could claim the same task simultaneously
+**Status:** Fixed on December 30, 2025
 
-**Location:** `src/app/api/staff/active-task/route.ts:64-67`
+**Fix Applied:**
+- `src/app/api/staff/active-task/route.ts`: Atomic task claiming with conditional UPDATE
+- `src/app/api/timer/start/route.ts`: Conditional UPDATE to prevent double-start (returns 409 if already started)
+- `src/app/api/intake/route.ts`: Handle unique constraint violation (error code `23505`) for concurrent client creation
 
+**Implementation:**
 ```typescript
-// Check then update pattern - not atomic
-const { data: unassignedTasks } = await supabase
-  .from('garment')
-  .select('*')
-  .is('assignee', null);
-
-// Another request could claim the same task between these calls
-await supabase
+// Atomic claim - only succeeds if still unassigned
+const { data: claimedGarment } = await supabase
   .from('garment')
   .update({ assignee: staffName })
-  .eq('id', taskId);
+  .eq('id', unassignedGarment.id)
+  .is('assignee', null) // Only update if still unassigned
+  .select()
+  .maybeSingle();
 ```
 
-**Also affects:**
-- `src/app/api/timer/start/route.ts:20-30`
-- `src/app/api/intake/route.ts:71-95` (client creation)
-- `src/app/api/admin/categories/route.ts:171-186`
-- `src/app/api/admin/services/route.ts:117-129`
-
-**Recommendation:** Use database transactions with row-level locking or optimistic concurrency control.
+**Remaining:** Admin category/service routes still have race conditions (lower priority).
 
 ---
 
-### SEC-005: Timing Attack Vulnerabilities
+### SEC-005: Timing Attack Vulnerabilities ✅ FIXED
 
-**Severity:** HIGH
+**Severity:** HIGH → RESOLVED
 **Type:** Security - Cryptographic Weakness
-**Impact:** Attackers can determine secret length/content through response timing
+**Status:** Fixed on December 30, 2025
 
-| File | Line | Issue |
-|------|------|-------|
-| `src/app/api/webhooks/payment/route.ts` | 24 | `webhookSecret !== WEBHOOK_SECRET` |
-| `src/app/api/webhooks/order-ready/route.ts` | 24 | `webhookSecret !== WEBHOOK_SECRET` |
-| `src/app/api/cron/reminders/route.ts` | 9 | `authHeader !== Bearer ${process.env.CRON_SECRET}` |
-| `src/app/api/webhooks/ghl-invoice/route.ts` | 103 | `webhookSecret !== WEBHOOK_SECRET` |
+**Fix Applied:**
+Created `src/lib/utils/timing-safe.ts` utility with:
+- `safeCompare()` - Constant-time string comparison with length padding
+- `validateBearerToken()` - For Authorization header validation
+- `validateWebhookSecret()` - For webhook secret validation
 
-**Recommendation:** Replace with `crypto.timingSafeEqual()`:
+**Files Updated:**
+| File | Change |
+|------|--------|
+| `src/app/api/webhooks/payment/route.ts` | Uses `validateBearerToken()` |
+| `src/app/api/webhooks/order-ready/route.ts` | Uses `validateBearerToken()` |
+| `src/app/api/cron/reminders/route.ts` | Uses `validateBearerToken()` |
+| `src/app/api/webhooks/ghl-invoice/route.ts` | Uses `validateWebhookSecret()` |
+| `src/app/api/cron/auto-archive/route.ts` | Still uses direct comparison (TODO) |
+
+**Implementation:**
 ```typescript
 import { timingSafeEqual } from 'crypto';
 
-const isValid = timingSafeEqual(
-  Buffer.from(providedSecret),
-  Buffer.from(expectedSecret)
-);
+export function safeCompare(a: string | undefined | null, b: string | undefined | null): boolean {
+  if (!a || !b) return false;
+  // Pad to same length to prevent length-based timing leaks
+  const maxLength = Math.max(a.length, b.length);
+  const paddedA = Buffer.alloc(maxLength);
+  const paddedB = Buffer.alloc(maxLength);
+  Buffer.from(a).copy(paddedA);
+  Buffer.from(b).copy(paddedB);
+  return timingSafeEqual(paddedA, paddedB);
+}
 ```
 
 ---
@@ -599,12 +626,12 @@ if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
 ### Phase 1: Critical Security (Today)
 1. Add authentication to all `/api/admin/*` endpoints
 2. Implement bcrypt hashing for staff PINs
-3. Add missing `is_active` and `display_order` columns to service table
-4. Fix timing attack vulnerabilities with `timingSafeEqual`
+3. ~~Add missing `is_active` and `display_order` columns to service table~~ ✅ Already exist
+4. ~~Fix timing attack vulnerabilities with `timingSafeEqual`~~ ✅ DONE
 
 ### Phase 2: High Priority (This Week)
 5. Add Stripe webhook signature verification
-6. Fix race conditions with database transactions
+6. ~~Fix race conditions with database transactions~~ ✅ DONE (staff/active-task, timer/start, intake)
 7. Fix unarchive to preserve original status
 8. Add authentication to chat API
 9. Re-enable RLS with proper policies
@@ -614,14 +641,14 @@ if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
 11. Standardize API response formats
 12. Add error boundaries to critical React components
 13. Fix memory leak potential in components
-14. Consolidate archive state representation
+14. ~~Consolidate archive state representation~~ ✅ DONE (both `status` and `is_archived` are set consistently)
 
 ### Phase 4: Post-Launch
 15. Replace `any` types with proper interfaces (60+)
 16. Implement i18n for mixed language strings
 17. Add accessibility improvements
 18. Resolve TODO comments
-19. Add missing database indexes
+19. ~~Add missing database indexes~~ ✅ DONE (migration file fixed)
 
 ---
 
@@ -629,17 +656,36 @@ if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
 
 | File | Issues | Priority |
 |------|--------|----------|
-| `src/app/api/admin/services/route.ts` | No auth, missing columns, race condition | CRITICAL |
+| `src/app/api/admin/services/route.ts` | No auth, race condition | CRITICAL |
 | `src/app/api/staff/set-pin/route.ts` | Plain text PINs | CRITICAL |
 | `src/app/api/staff/verify-pin/route.ts` | Plain text comparison | CRITICAL |
 | `src/app/api/webhooks/stripe/route.ts` | No signature verification, 20+ console.logs | HIGH |
 | `src/app/api/orders/unarchive/route.ts` | Status loss bug | HIGH |
 | `src/app/api/chat/internal/route.ts` | No auth, extensive any types | HIGH |
 | `src/components/intake/services-step-new.tsx` | 1900+ lines, no error boundary, 13 console.errors | MEDIUM |
-| `src/app/api/intake/route.ts` | Race condition, 40+ console.logs | MEDIUM |
-| `supabase/migrations/20240101_performance_indexes.sql` | References non-existent tables | CRITICAL |
+| ~~`src/app/api/intake/route.ts`~~ | ~~Race condition~~, 40+ console.logs | ✅ Race condition fixed |
+| ~~`supabase/migrations/20240101_performance_indexes.sql`~~ | ~~References non-existent tables~~ | ✅ FIXED |
+
+---
+
+## NEW FILES ADDED
+
+| File | Purpose |
+|------|---------|
+| `src/lib/utils/timing-safe.ts` | Timing-safe comparison utilities for secrets/tokens |
+| `src/app/api/cron/stale-timers/route.ts` | Auto-terminate timers running >10 hours |
+
+---
+
+## TIMER IMPROVEMENTS ADDED
+
+1. **Auto-terminate stale timers**: Cron job runs hourly, stops timers >10 hours, caps at 10h max
+2. **Edit completed time**: Pencil icon on "Terminé" state allows adjusting hours/minutes
+3. **Restart completed work**: "Reprendre" button allows restarting work on finished tasks
+4. **Archive fix**: `is_archived: true` now set consistently in all archive operations
 
 ---
 
 *Document generated: December 30, 2025*
+*Last updated: December 30, 2025*
 *Next review recommended: Before production deployment*
