@@ -33,7 +33,7 @@ interface IntakeFormData {
     preferred_contact: 'sms' | 'email';
     notes?: string;
   } | null;
-  measurements?: MeasurementsData;
+  measurements?: MeasurementsData | undefined;
   garments: Array<{
     type: string;
     garment_type_id?: string | null;

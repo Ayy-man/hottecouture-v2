@@ -8,7 +8,7 @@ import { ClientCreate, MeasurementsData } from '@/lib/dto';
 
 interface ClientStepProps {
   data: ClientCreate | null;
-  measurements?: MeasurementsData;
+  measurements?: MeasurementsData | undefined;
   onUpdate: (client: ClientCreate) => void;
   onMeasurementsUpdate?: (m: MeasurementsData) => void;
   onNext: () => void;
