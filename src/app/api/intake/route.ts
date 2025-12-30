@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { client, order, garments, notes } = body;
+    const { client, order, garments, notes, total_override_cents } = body;
 
     // 1. Create or find client
     let clientId: string;
@@ -202,6 +202,9 @@ export async function POST(request: NextRequest) {
       total_cents,
     } = pricingCalculation;
 
+    // Use override if provided, otherwise use calculated total
+    const final_total_cents = total_override_cents ?? total_cents;
+
     console.log('🔍 Intake API: Calculated pricing:', {
       subtotal_cents,
       rush_fee_cents,
@@ -209,6 +212,8 @@ export async function POST(request: NextRequest) {
       tps_cents,
       tvq_cents,
       total_cents,
+      total_override_cents: total_override_cents ?? 'not set',
+      final_total_cents,
     });
 
     // Calculate due date if not provided (10 days for alteration, 28 days for custom)

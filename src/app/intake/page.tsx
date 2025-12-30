@@ -76,6 +76,7 @@ export default function IntakePage() {
   const [orderResult, setOrderResult] = useState<IntakeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [autoPrint, setAutoPrint] = useState(true);
+  const [totalOverrideCents, setTotalOverrideCents] = useState<number | null>(null);
 
   usePricing({
     initialItems: [],
@@ -159,7 +160,7 @@ export default function IntakePage() {
 
     try {
       // Convert form data to API format
-      const intakeRequest: IntakeRequest = {
+      const intakeRequest: IntakeRequest & { total_override_cents?: number } = {
         client: formData.client,
         order: {
           type: formData.order.type,
@@ -179,6 +180,7 @@ export default function IntakePage() {
           notes: garment.notes,
           services: garment.services,
         })),
+        ...(totalOverrideCents ? { total_override_cents: totalOverrideCents } : {}),
       };
 
       const response = await fetch('/api/intake', {
@@ -264,6 +266,8 @@ export default function IntakePage() {
             isSubmitting={false}
             autoPrint={autoPrint}
             onAutoPrintChange={setAutoPrint}
+            totalOverrideCents={totalOverrideCents}
+            onTotalOverrideChange={setTotalOverrideCents}
           />
         );
       case 'assignment':

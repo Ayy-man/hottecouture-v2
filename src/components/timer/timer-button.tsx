@@ -352,12 +352,32 @@ export function TimerButton({
   }
 
   // Show completed state
-  if (timerState === 'completed') {
+  if (timerState === 'completed' && !isEditing) {
     return (
       <div className='flex items-center gap-2 p-2 bg-green-50 rounded-lg'>
         <Square className='w-4 h-4 text-green-600' />
-        <div className='text-sm font-medium text-green-800'>
+        <div className='flex-1 text-sm font-medium text-green-800'>
           Terminé: {formatDetailedTime(timerStatus.total_work_seconds)}
+        </div>
+        <div className='flex gap-1'>
+          <Button
+            size='sm'
+            variant='ghost'
+            onClick={handleStartEdit}
+            className='h-8 px-2 text-gray-500 hover:text-gray-700'
+            title='Modifier le temps'
+          >
+            <Pencil className='w-3 h-3' />
+          </Button>
+          <Button
+            size='sm'
+            onClick={handleStart}
+            className='btn-press bg-blue-600 hover:bg-blue-700 text-white h-8'
+            title='Reprendre le travail'
+          >
+            <Play className='w-3 h-3 mr-1' />
+            Reprendre
+          </Button>
         </div>
       </div>
     );
@@ -368,7 +388,7 @@ export function TimerButton({
   const displayTime =
     timerState === 'running' ? baseTime + Math.max(0, currentTime) : baseTime;
 
-  const canEdit = timerState === 'paused' || timerState === 'idle';
+  const canEdit = timerState === 'paused' || timerState === 'idle' || timerState === 'completed';
 
   if (isEditing) {
     return (

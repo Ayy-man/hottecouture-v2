@@ -41,6 +41,8 @@ interface PricingStepProps {
   isSubmitting: boolean;
   autoPrint?: boolean;
   onAutoPrintChange?: (enabled: boolean) => void;
+  totalOverrideCents?: number | null;
+  onTotalOverrideChange?: (cents: number | null) => void;
 }
 
 export function PricingStep({
@@ -52,10 +54,14 @@ export function PricingStep({
   isSubmitting,
   autoPrint = true,
   onAutoPrintChange,
+  totalOverrideCents,
+  onTotalOverrideChange,
 }: PricingStepProps) {
   // const t = useTranslations('intake.pricing')
   const [calculation, setCalculation] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
+  const [isEditingTotal, setIsEditingTotal] = useState(false);
+  const [editTotalValue, setEditTotalValue] = useState('');
 
   // Fetch services for display names
   useEffect(() => {
@@ -433,12 +439,85 @@ export function PricingStep({
                   </div>
 
                   <div className='border-t border-primary/20 pt-2'>
-                    <div className='flex justify-between'>
-                      <span className='text-lg font-bold'>Total:</span>
-                      <span className='text-xl font-bold text-primary'>
-                        {formatCurrency(calculation.total_cents)}
-                      </span>
-                    </div>
+                    {isEditingTotal ? (
+                      <div className='space-y-2'>
+                        <div className='flex items-center gap-2'>
+                          <span className='text-lg font-bold'>Total:</span>
+                          <div className='flex items-center gap-1'>
+                            <span className='text-gray-500'>$</span>
+                            <input
+                              type='text'
+                              inputMode='decimal'
+                              value={editTotalValue}
+                              onChange={e => {
+                                const value = e.target.value.replace(/[^0-9.]/g, '');
+                                setEditTotalValue(value);
+                              }}
+                              className='w-24 px-2 py-1 text-lg font-bold border border-primary rounded focus:ring-2 focus:ring-primary focus:border-transparent'
+                              placeholder='0.00'
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className='flex gap-2'>
+                          <Button
+                            type='button'
+                            size='sm'
+                            onClick={() => {
+                              const dollars = parseFloat(editTotalValue) || 0;
+                              const cents = Math.round(dollars * 100);
+                              onTotalOverrideChange?.(cents > 0 ? cents : null);
+                              setIsEditingTotal(false);
+                            }}
+                            className='bg-primary text-white text-xs'
+                          >
+                            Enregistrer
+                          </Button>
+                          <Button
+                            type='button'
+                            size='sm'
+                            variant='outline'
+                            onClick={() => {
+                              onTotalOverrideChange?.(null);
+                              setIsEditingTotal(false);
+                            }}
+                            className='text-xs'
+                          >
+                            Réinitialiser ({formatCurrency(calculation.total_cents)})
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className='flex justify-between items-center'>
+                        <span className='text-lg font-bold'>Total:</span>
+                        <div className='flex items-center gap-2'>
+                          <div className='text-right'>
+                            <span className={`text-xl font-bold ${totalOverrideCents ? 'text-amber-600' : 'text-primary'}`}>
+                              {formatCurrency(totalOverrideCents ?? calculation.total_cents)}
+                            </span>
+                            {totalOverrideCents && (
+                              <div className='text-xs text-gray-500 line-through'>
+                                Calculé: {formatCurrency(calculation.total_cents)}
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            type='button'
+                            size='sm'
+                            variant='ghost'
+                            onClick={() => {
+                              setEditTotalValue(
+                                ((totalOverrideCents ?? calculation.total_cents) / 100).toFixed(2)
+                              );
+                              setIsEditingTotal(true);
+                            }}
+                            className='text-xs text-gray-500 hover:text-primary'
+                          >
+                            Modifier
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
