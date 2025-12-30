@@ -258,6 +258,13 @@ export async function POST(request: NextRequest) {
     }
 
     const invoice = invoiceResult.data;
+    if (!invoice || !invoice._id) {
+      console.error('❌ Invoice data is invalid:', invoice);
+      return NextResponse.json(
+        { error: 'Invoice was created but returned invalid data' },
+        { status: 500 }
+      );
+    }
     console.log(`✅ GHL Invoice created: ${invoice._id} for order #${order.order_number}`);
 
     // Send the invoice if requested

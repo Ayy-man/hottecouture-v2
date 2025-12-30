@@ -120,7 +120,9 @@ export async function ghlFetch<T>(options: FetchOptions): Promise<GHLResult<T>> 
       };
     }
 
-    console.log(`✅ GHL API Success: ${method} ${path}`);
+    console.log(`✅ GHL API Success: ${method} ${path}`, {
+      responseKeys: data ? Object.keys(data) : 'null',
+    });
 
     return {
       success: true,

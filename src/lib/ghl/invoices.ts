@@ -190,7 +190,14 @@ export async function createInvoice(params: {
     return { success: false, error: result.error || 'Failed to create invoice' };
   }
 
-  return { success: true, data: result.data.invoice };
+  // Validate the invoice object exists in the response
+  const invoice = result.data.invoice;
+  if (!invoice || !invoice._id) {
+    console.error('❌ GHL API returned unexpected response:', JSON.stringify(result.data));
+    return { success: false, error: 'GHL API returned invalid invoice response' };
+  }
+
+  return { success: true, data: invoice };
 }
 
 /**
