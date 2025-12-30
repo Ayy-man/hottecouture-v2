@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
     let garment = null;
 
     if (garmentId) {
-      // Get specific garment that's active
+      // Get specific garment (active OR paused - we can complete both)
       const { data, error } = await supabase
         .from('garment')
         .select('*')
         .eq('id', garmentId)
-        .eq('is_active', true)
+        .neq('stage', 'done') // Not already completed
         .maybeSingle();
 
       if (error) {
@@ -34,12 +34,13 @@ export async function POST(request: NextRequest) {
       }
       garment = data;
     } else {
-      // Get first active garment for this order
+      // Get first non-completed garment for this order (prefer active ones)
       const { data, error } = await supabase
         .from('garment')
         .select('*')
         .eq('order_id', orderId)
-        .eq('is_active', true)
+        .neq('stage', 'done')
+        .order('is_active', { ascending: false }) // Active first
         .limit(1)
         .maybeSingle();
 
@@ -51,8 +52,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!garment) {
-      console.log('⚠️ Stop called but no active timer found:', { orderId, garmentId });
-      return NextResponse.json({ error: 'No active timer found to stop' }, { status: 404 });
+      console.log('⚠️ Stop called but no timer found to stop:', { orderId, garmentId });
+      return NextResponse.json({ error: 'No timer found to stop (already completed?)' }, { status: 404 });
     }
 
     // Permission check
@@ -76,8 +77,8 @@ export async function POST(request: NextRequest) {
       actual_minutes: garment.actual_minutes,
     });
 
-    // If timer was running, add elapsed time
-    // Since we now filter by is_active=true, garment.is_active should always be true here
+    // If timer was running (active), add elapsed time
+    // For paused timers, actual_minutes already has the time, no need to add more
     if (garment.is_active && garment.started_at) {
       const startTime = new Date(garment.started_at);
 
