@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 
   const { data: staleGarments, error: fetchError } = await supabase
     .from('garment')
-    .select('id, order_id, garment_type, assignee, started_at, actual_minutes')
+    .select('id, order_id, type, assignee, started_at, actual_minutes')
     .eq('is_active', true)
     .lt('started_at', cutoffTime.toISOString());
 
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
       cappedMinutes: cappedTotalMinutes
     });
 
-    console.log(`⏱️ Auto-terminated timer for garment ${garment.id} (${garment.garment_type}), capped at ${MAX_HOURS}h`);
+    console.log(`⏱️ Auto-terminated timer for garment ${garment.id} (${garment.type}), capped at ${MAX_HOURS}h`);
   }
 
   console.log(`✅ Terminated ${results.length} stale timers`);
