@@ -50,6 +50,10 @@ export interface GHLInvoiceCreateRequest {
   // contactDetails is required - NOT contactId at top level
   contactDetails: {
     id: string;
+    name?: string;
+    email?: string;
+    phoneNo?: string;
+    address?: string;
   };
   businessDetails: {
     name: string;
@@ -150,6 +154,9 @@ export async function getNextInvoiceNumber(): Promise<GHLResult<string>> {
  */
 export async function createInvoice(params: {
   contactId: string;
+  contactName?: string | undefined;
+  contactEmail?: string | undefined;
+  contactPhone?: string | undefined;
   name: string;
   items: GHLInvoiceItem[];
   dueDate?: Date | undefined;
@@ -207,14 +214,20 @@ export async function createInvoice(params: {
       ? params.dueDate.toISOString().substring(0, 10)
       : undefined;
 
+    // Build contactDetails with all available info
+    const contactDetails: GHLInvoiceCreateRequest['contactDetails'] = {
+      id: String(params.contactId || ''),
+    };
+    if (params.contactName) contactDetails.name = params.contactName;
+    if (params.contactEmail) contactDetails.email = params.contactEmail;
+    if (params.contactPhone) contactDetails.phoneNo = params.contactPhone;
+
     const requestBody: GHLInvoiceCreateRequest = {
       altId: locationId,
       altType: 'location',
       name: String(params.name || ''),
       // GHL requires contactDetails object, NOT contactId at top level
-      contactDetails: {
-        id: String(params.contactId || ''),
-      },
+      contactDetails,
       // businessDetails is required
       businessDetails: {
         name: 'Hotte Couture',
@@ -432,6 +445,8 @@ export async function recordManualPayment(
 export async function createDepositInvoice(params: {
   contactId: string;
   clientName: string;
+  clientEmail?: string | undefined;
+  clientPhone?: string | undefined;
   orderNumber: number;
   totalCents: number;
   depositCents: number;
@@ -441,6 +456,9 @@ export async function createDepositInvoice(params: {
 
   return createInvoice({
     contactId: params.contactId,
+    contactName: params.clientName,
+    contactEmail: params.clientEmail,
+    contactPhone: params.clientPhone,
     name: `Dépôt - Commande #${params.orderNumber}`,
     orderNumber: params.orderNumber,
     items: [
@@ -466,6 +484,8 @@ export async function createDepositInvoice(params: {
 export async function createBalanceInvoice(params: {
   contactId: string;
   clientName: string;
+  clientEmail?: string | undefined;
+  clientPhone?: string | undefined;
   orderNumber: number;
   balanceCents: number;
   dueDate?: Date | undefined;
@@ -474,6 +494,9 @@ export async function createBalanceInvoice(params: {
 
   return createInvoice({
     contactId: params.contactId,
+    contactName: params.clientName,
+    contactEmail: params.clientEmail,
+    contactPhone: params.clientPhone,
     name: `Solde - Commande #${params.orderNumber}`,
     orderNumber: params.orderNumber,
     items: [
@@ -499,6 +522,8 @@ export async function createBalanceInvoice(params: {
 export async function createFullInvoice(params: {
   contactId: string;
   clientName: string;
+  clientEmail?: string | undefined;
+  clientPhone?: string | undefined;
   orderNumber: number;
   items: Array<{
     name: string;
@@ -532,6 +557,9 @@ export async function createFullInvoice(params: {
 
   return createInvoice({
     contactId: params.contactId,
+    contactName: params.clientName,
+    contactEmail: params.clientEmail,
+    contactPhone: params.clientPhone,
     name: `Commande #${params.orderNumber} - ${params.clientName}`,
     orderNumber: params.orderNumber,
     items: invoiceItems,

@@ -211,6 +211,8 @@ export async function POST(request: NextRequest) {
       invoiceResult = await createDepositInvoice({
         contactId: ghlContactId,
         clientName,
+        clientEmail: client.email || undefined,
+        clientPhone: client.phone || undefined,
         orderNumber,
         totalCents,
         depositCents: amountCents,
@@ -227,6 +229,8 @@ export async function POST(request: NextRequest) {
       invoiceResult = await createBalanceInvoice({
         contactId: ghlContactId,
         clientName,
+        clientEmail: client.email || undefined,
+        clientPhone: client.phone || undefined,
         orderNumber,
         balanceCents: amountCents,
         dueDate,
@@ -290,6 +294,8 @@ export async function POST(request: NextRequest) {
       invoiceResult = await createFullInvoice({
         contactId: ghlContactId,
         clientName,
+        clientEmail: client.email || undefined,
+        clientPhone: client.phone || undefined,
         orderNumber,
         items,
         rushFeeCents,
