@@ -121,7 +121,6 @@ export function GarmentTaskSummary({
   }
 
   const stage = getStage();
-  const isDone = stage === 'done';
   const canTrackTime = orderStatus === 'working' || orderStatus === 'pending';
 
   return (
