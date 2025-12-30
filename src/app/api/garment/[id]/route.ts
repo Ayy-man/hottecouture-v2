@@ -57,6 +57,8 @@ export async function PATCH(
       updateData.estimated_minutes = estimated_minutes;
     }
 
+    console.log('🔧 Garment PATCH: Updating garment', garmentId, 'with data:', updateData);
+
     const { data: updatedGarment, error: updateError } = await (
       supabase.from('garment') as any
     )
@@ -66,7 +68,7 @@ export async function PATCH(
       .single();
 
     if (updateError) {
-      console.error('Error updating garment:', updateError);
+      console.error('❌ Error updating garment:', updateError);
       return NextResponse.json(
         {
           error: 'Failed to update garment',
@@ -75,6 +77,8 @@ export async function PATCH(
         { status: 500 }
       );
     }
+
+    console.log('✅ Garment PATCH: Updated successfully:', updatedGarment);
 
     return NextResponse.json(
       {

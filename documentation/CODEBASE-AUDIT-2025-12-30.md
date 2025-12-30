@@ -21,6 +21,8 @@
 | Stale timers column name | ✅ FIXED | Changed `garment_type` to `type` (correct column) |
 | Invoice creation error | ✅ FIXED | Added defensive checks for GHL API response validation |
 | Dynamic measurements | ✅ ADDED | Admin template management + dynamic fields in intake |
+| Timer resume on completed | ✅ FIXED | Show TimerButton for completed tasks to allow resuming |
+| Stop paused timers | ✅ FIXED | Allow "Terminer" on paused timers, not just active ones |
 
 ---
 
@@ -702,6 +704,8 @@ if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
 2. **Edit completed time**: Pencil icon on "Terminé" state allows adjusting hours/minutes
 3. **Restart completed work**: "Reprendre" button allows restarting work on finished tasks
 4. **Archive fix**: `is_archived: true` now set consistently in all archive operations
+5. **Resume completed tasks**: TimerButton now shows for completed tasks (not hidden), allowing resume
+6. **Stop paused timers**: "Terminer" now works on paused timers, not just running ones
 
 ---
 

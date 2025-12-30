@@ -222,6 +222,7 @@ export function OrderDetailModal({
 
   const handleSaveTime = async (garmentId: string) => {
     setSavingTime(garmentId);
+    console.log('⏱️ Saving estimated time:', { garmentId, minutes: editingTimeMinutes });
     try {
       const response = await fetch(`/api/garment/${garmentId}`, {
         method: 'PATCH',
@@ -233,10 +234,12 @@ export function OrderDetailModal({
 
       if (!response.ok) {
         const error = await response.json();
+        console.error('❌ Failed to save time:', error);
         throw new Error(error.error || 'Failed to save time estimate');
       }
 
       const result = await response.json();
+      console.log('✅ Time saved, response:', result);
 
       if (detailedOrder && detailedOrder.garments) {
         setDetailedOrder({
