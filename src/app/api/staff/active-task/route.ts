@@ -58,13 +58,25 @@ export async function GET(request: NextRequest) {
         .maybeSingle();
 
       if (!unassignedError && unassignedGarment) {
-        garment = unassignedGarment;
-
-        // Claim this task for the current staff
-        await supabase
+        // Atomically claim this task - only succeeds if still unassigned
+        // This prevents race condition where two staff claim same task
+        const { data: claimedGarment, error: claimError } = await supabase
           .from('garment')
           .update({ assignee: staffName })
-          .eq('id', unassignedGarment.id);
+          .eq('id', unassignedGarment.id)
+          .is('assignee', null) // Only update if still unassigned
+          .select()
+          .maybeSingle();
+
+        if (claimError) {
+          console.error('Error claiming task:', claimError);
+        }
+
+        // Only use this garment if we successfully claimed it
+        if (claimedGarment) {
+          garment = claimedGarment;
+        }
+        // If claimedGarment is null, someone else claimed it first - we'll return no active task
       }
     }
 

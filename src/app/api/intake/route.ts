@@ -64,33 +64,28 @@ export async function POST(request: NextRequest) {
     let clientId: string;
 
     // Try to find existing client by email or phone
+    // Use a single query with OR to reduce race condition window
     let existingClient = null;
 
+    const orConditions = [];
     if (client.email) {
-      // First try by email
-      const { data: emailClient } = await supabase
-        .from('client')
-        .select('id')
-        .eq('email', client.email)
-        .single();
-
-      if (emailClient) {
-        existingClient = emailClient;
-        console.log('Found existing client by email:', (emailClient as any).id);
-      }
+      orConditions.push(`email.eq.${client.email}`);
+    }
+    if (client.phone) {
+      orConditions.push(`phone.eq.${client.phone}`);
     }
 
-    // If not found by email, try by phone
-    if (!existingClient && client.phone) {
-      const { data: phoneClient } = await supabase
+    if (orConditions.length > 0) {
+      const { data: foundClient } = await supabase
         .from('client')
         .select('id')
-        .eq('phone', client.phone)
-        .single();
+        .or(orConditions.join(','))
+        .limit(1)
+        .maybeSingle();
 
-      if (phoneClient) {
-        existingClient = phoneClient;
-        console.log('Found existing client by phone:', (phoneClient as any).id);
+      if (foundClient) {
+        existingClient = foundClient;
+        console.log('Found existing client:', (foundClient as any).id);
       }
     }
 
@@ -98,6 +93,9 @@ export async function POST(request: NextRequest) {
       clientId = (existingClient as any).id;
     } else {
       // Create new client
+      // Handle potential race condition: if another request creates the same client
+      // between our check and insert, we'll catch the unique constraint error
+      // and retry the lookup
       const { data: newClient, error: clientError } = await supabase
         .from('client')
         .insert({
@@ -111,17 +109,40 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (clientError) {
-        console.error('Client creation error:', clientError);
-        return NextResponse.json(
-          {
-            error: `Failed to create client: ${clientError.message}`,
-          },
-          { status: 500 }
-        );
-      }
+        // Check if this is a unique constraint violation (duplicate client created by another request)
+        if (clientError.code === '23505') {
+          // Unique violation - try to find the existing client that was just created
+          console.log('Race condition detected: client was created by another request, retrying lookup');
 
-      clientId = (newClient as any).id;
-      console.log('Created new client:', clientId);
+          const { data: raceClient } = await supabase
+            .from('client')
+            .select('id')
+            .or(orConditions.join(','))
+            .limit(1)
+            .maybeSingle();
+
+          if (raceClient) {
+            clientId = (raceClient as any).id;
+            console.log('Found client after race condition:', clientId);
+          } else {
+            // Still couldn't find - this shouldn't happen, but fail gracefully
+            console.error('Client creation race condition error:', clientError);
+            return NextResponse.json(
+              { error: `Failed to create client: duplicate detected but not found` },
+              { status: 500 }
+            );
+          }
+        } else {
+          console.error('Client creation error:', clientError);
+          return NextResponse.json(
+            { error: `Failed to create client: ${clientError.message}` },
+            { status: 500 }
+          );
+        }
+      } else {
+        clientId = (newClient as any).id;
+        console.log('Created new client:', clientId);
+      }
       // Note: GHL sync happens after order creation with full order details
     }
 

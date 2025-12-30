@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Start the timer on garment with assignee
+    // Use atomic update with condition to prevent race condition
     const updateData: Record<string, unknown> = {
       is_active: true,
       started_at: now,
@@ -108,14 +109,27 @@ export async function POST(request: NextRequest) {
       updateData.assignee = assignee;
     }
 
-    const { error: updateError } = await supabase
+    // Atomically update only if garment is NOT already active
+    // This prevents race condition where two requests try to start same timer
+    const { data: updatedGarment, error: updateError } = await supabase
       .from('garment')
       .update(updateData)
-      .eq('id', garment.id);
+      .eq('id', garment.id)
+      .eq('is_active', false) // Only update if not already active
+      .select('id')
+      .maybeSingle();
 
     if (updateError) {
       console.error('Garment update error:', updateError);
       throw updateError;
+    }
+
+    // If no rows were updated, someone else started the timer first
+    if (!updatedGarment) {
+      return NextResponse.json(
+        { error: 'Timer was started by another user. Please refresh.' },
+        { status: 409 }
+      );
     }
 
     return NextResponse.json({

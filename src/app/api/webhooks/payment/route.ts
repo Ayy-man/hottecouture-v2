@@ -1,28 +1,24 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { 
-  withErrorHandling, 
-  getCorrelationId, 
-  logEvent, 
+import {
+  withErrorHandling,
+  getCorrelationId,
+  logEvent,
   validateRequest,
   UnauthorizedError,
   NotFoundError
 } from '@/lib/api/error-handler'
 import { webhookPaymentSchema, WebhookPayment, WebhookResponse } from '@/lib/dto'
+import { validateBearerToken } from '@/lib/utils/timing-safe'
 
 async function handlePaymentWebhook(request: NextRequest): Promise<WebhookResponse> {
   const correlationId = getCorrelationId(request)
     const supabase = await createClient()
-  
-  // Validate authentication (webhook secret)
+
+  // Validate authentication (webhook secret) using timing-safe comparison
   const authHeader = request.headers.get('authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new UnauthorizedError('Missing or invalid webhook authorization')
-  }
-  
-  const webhookSecret = authHeader.substring(7)
-  if (webhookSecret !== process.env.WEBHOOK_SECRET) {
-    throw new UnauthorizedError('Invalid webhook secret')
+  if (!validateBearerToken(authHeader, process.env.WEBHOOK_SECRET)) {
+    throw new UnauthorizedError('Invalid webhook authorization')
   }
   
   // Parse and validate request body

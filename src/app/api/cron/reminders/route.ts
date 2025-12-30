@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendPickupReminder, isGHLConfigured, type AppClient } from '@/lib/ghl';
+import { validateBearerToken } from '@/lib/utils/timing-safe';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  // Use timing-safe comparison to prevent timing attacks
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!validateBearerToken(authHeader, process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { validateWebhookSecret } from '@/lib/utils/timing-safe';
 
 // Webhook secret for verification (set in GHL webhook config)
 const WEBHOOK_SECRET = process.env.GHL_WEBHOOK_SECRET || 'hotte-couture-ghl-webhook-2024';
@@ -98,9 +99,9 @@ function normalizeInvoice(raw: GHLInvoiceWebhookPayloadRaw['invoice']): Normaliz
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify webhook secret
+    // Verify webhook secret using timing-safe comparison
     const webhookSecret = request.headers.get('x-webhook-secret');
-    if (webhookSecret !== WEBHOOK_SECRET) {
+    if (!validateWebhookSecret(webhookSecret, WEBHOOK_SECRET)) {
       console.warn('⚠️ Invalid webhook secret');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
