@@ -542,7 +542,7 @@ const GanttFeatureItem: FC<GanttFeatureItemProps> = ({
           onClick={onSelect}
         >
           <div
-            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-black/20 rounded-l-md"
+            className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/20 active:bg-black/30 rounded-l-md"
             onMouseDown={(e) => handleDragStart(e, 'left')}
           />
           <span
@@ -552,7 +552,7 @@ const GanttFeatureItem: FC<GanttFeatureItemProps> = ({
             {localFeature.name}
           </span>
           <div
-            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-black/20 rounded-r-md"
+            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/20 active:bg-black/30 rounded-r-md"
             onMouseDown={(e) => handleDragStart(e, 'right')}
           />
         </div>
