@@ -83,7 +83,7 @@ export default function WorkloadPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
-  const { staff: staffMembers } = useStaff();
+  const { staff: staffMembers, loading: staffLoading } = useStaff();
   const SEAMSTRESSES = [...staffMembers.map(s => s.name), 'Unassigned'];
 
   useEffect(() => {
@@ -299,7 +299,7 @@ export default function WorkloadPage() {
 
   const unassignedWorkload = workloadBySeamstress['Unassigned'];
 
-  if (loading) {
+  if (loading || staffLoading) {
     return (
       <AuthGuard>
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
