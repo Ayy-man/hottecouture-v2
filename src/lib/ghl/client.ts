@@ -92,7 +92,16 @@ export async function ghlFetch<T>(options: FetchOptions): Promise<GHLResult<T>> 
     };
 
     if (body) {
-      fetchOptions.body = JSON.stringify(body);
+      try {
+        fetchOptions.body = JSON.stringify(body);
+        console.log(`📤 GHL Request body keys:`, Object.keys(body));
+      } catch (jsonError) {
+        console.error('❌ Failed to serialize request body:', jsonError);
+        return {
+          success: false,
+          error: `Failed to serialize request: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`,
+        };
+      }
     }
 
     const response = await fetch(url, fetchOptions);
@@ -110,13 +119,14 @@ export async function ghlFetch<T>(options: FetchOptions): Promise<GHLResult<T>> 
       const errorMessage = data.message || data.error || `HTTP ${response.status}`;
       console.error(`❌ GHL API Error: ${method} ${path}`, {
         status: response.status,
+        statusText: response.statusText,
         error: errorMessage,
-        data,
+        responseData: JSON.stringify(data).slice(0, 500), // Truncate for logging
       });
 
       return {
         success: false,
-        error: errorMessage,
+        error: `GHL API Error (${response.status}): ${errorMessage}`,
       };
     }
 

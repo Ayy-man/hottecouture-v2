@@ -135,11 +135,14 @@ export async function createInvoice(params: {
   sendNotification?: boolean | undefined;
 }): Promise<GHLResult<GHLInvoice>> {
   try {
+    // Ensure orderNumber is a regular number (defensive against BigInt)
+    const safeOrderNumber = params.orderNumber !== undefined ? Number(params.orderNumber) : undefined;
+
     console.log('📧 [1] createInvoice called with:', {
       contactId: params.contactId,
       name: params.name,
       itemCount: params.items?.length ?? 'undefined',
-      orderNumber: params.orderNumber,
+      orderNumber: safeOrderNumber,
       hasDueDate: !!params.dueDate,
     });
 
@@ -188,8 +191,8 @@ export async function createInvoice(params: {
 
     console.log('📧 [6] Processing invoice number...');
     // Add invoice number based on order number
-    if (params.orderNumber !== undefined && params.orderNumber !== null) {
-      requestBody.invoiceNumber = `HC-${params.orderNumber}`;
+    if (safeOrderNumber !== undefined && safeOrderNumber !== null && !isNaN(safeOrderNumber)) {
+      requestBody.invoiceNumber = `HC-${safeOrderNumber}`;
       console.log('📧 [6.1] Invoice number set:', requestBody.invoiceNumber);
     }
 

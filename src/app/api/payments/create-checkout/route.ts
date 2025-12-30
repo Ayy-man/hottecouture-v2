@@ -81,9 +81,13 @@ export async function POST(request: NextRequest) {
       console.error('Order fetch error:', orderError);
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
+    // Ensure order_number is a regular number (not BigInt from BIGSERIAL)
+    const orderNumber = Number(order.order_number);
+    const totalCents = Number(order.total_cents) || 0;
+
     console.log('💳 [7] Order fetched:', {
-      order_number: order.order_number,
-      total_cents: order.total_cents,
+      order_number: orderNumber,
+      total_cents: totalCents,
       type: order.type,
       due_date: order.due_date,
       hasClient: !!order.client,
@@ -103,13 +107,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Validate order has total_cents
-    if (!order.total_cents || order.total_cents <= 0) {
+    if (!totalCents || totalCents <= 0) {
       return NextResponse.json(
         { error: 'Order has no valid total amount. Please add services first.' },
         { status: 400 }
       );
     }
-    console.log('💳 [9] Total cents validated:', order.total_cents);
+    console.log('💳 [9] Total cents validated:', totalCents);
 
     const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Client';
     console.log('💳 [10] Client name:', clientName);
@@ -162,18 +166,18 @@ export async function POST(request: NextRequest) {
     switch (type) {
       case 'deposit':
         // 50% deposit for custom orders (uses centralized calculator)
-        amountCents = calculateDepositCents(order.total_cents);
+        amountCents = calculateDepositCents(totalCents);
         break;
       case 'balance':
         // Remaining balance (total - deposit already paid)
         const depositPaid = order.deposit_paid_at
-          ? (order.deposit_cents || calculateDepositCents(order.total_cents))
+          ? (Number(order.deposit_cents) || calculateDepositCents(totalCents))
           : 0;
-        amountCents = order.total_cents - depositPaid;
+        amountCents = totalCents - depositPaid;
         break;
       case 'full':
         // Full amount
-        amountCents = order.total_cents;
+        amountCents = totalCents;
         break;
       default:
         return NextResponse.json({ error: 'Invalid payment type' }, { status: 400 });
@@ -199,16 +203,16 @@ export async function POST(request: NextRequest) {
       console.log('💳 [18] Creating deposit invoice with:', {
         contactId: ghlContactId,
         clientName,
-        orderNumber: order.order_number,
-        totalCents: order.total_cents,
+        orderNumber,
+        totalCents,
         depositCents: amountCents,
         hasDueDate: !!dueDate,
       });
       invoiceResult = await createDepositInvoice({
         contactId: ghlContactId,
         clientName,
-        orderNumber: order.order_number,
-        totalCents: order.total_cents,
+        orderNumber,
+        totalCents,
         depositCents: amountCents,
         dueDate,
       });
@@ -216,14 +220,14 @@ export async function POST(request: NextRequest) {
       console.log('💳 [18] Creating balance invoice with:', {
         contactId: ghlContactId,
         clientName,
-        orderNumber: order.order_number,
+        orderNumber,
         balanceCents: amountCents,
         hasDueDate: !!dueDate,
       });
       invoiceResult = await createBalanceInvoice({
         contactId: ghlContactId,
         clientName,
-        orderNumber: order.order_number,
+        orderNumber,
         balanceCents: amountCents,
         dueDate,
       });
@@ -275,19 +279,20 @@ export async function POST(request: NextRequest) {
       }
 
       // If no items found, create a single line item for the total
+      const rushFeeCents = Number(order.rush_fee_cents) || 0;
       if (items.length === 0) {
         items.push({
-          name: `Commande #${order.order_number}`,
-          priceCents: order.total_cents - (order.rush_fee_cents || 0),
+          name: `Commande #${orderNumber}`,
+          priceCents: totalCents - rushFeeCents,
         });
       }
 
       invoiceResult = await createFullInvoice({
         contactId: ghlContactId,
         clientName,
-        orderNumber: order.order_number,
+        orderNumber,
         items,
-        rushFeeCents: order.rush_fee_cents || 0,
+        rushFeeCents,
         dueDate,
       });
     }
@@ -297,7 +302,7 @@ export async function POST(request: NextRequest) {
       console.error('Invoice params:', {
         contactId: ghlContactId,
         clientName,
-        orderNumber: order.order_number,
+        orderNumber,
         type,
         amountCents,
       });
@@ -315,7 +320,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    console.log(`✅ GHL Invoice created: ${invoice._id} for order #${order.order_number}`);
+    console.log(`✅ GHL Invoice created: ${invoice._id} for order #${orderNumber}`);
 
     // Send the invoice if requested
     let invoiceUrl = invoice.invoiceUrl;
@@ -347,7 +352,7 @@ export async function POST(request: NextRequest) {
       .update(updateData)
       .eq('id', orderId);
 
-    console.log(`✅ Invoice created for order ${order.order_number}, type: ${type}, amount: $${centsToDollars(amountCents)}`);
+    console.log(`✅ Invoice created for order ${orderNumber}, type: ${type}, amount: $${centsToDollars(amountCents)}`);
 
     return NextResponse.json({
       success: true,
