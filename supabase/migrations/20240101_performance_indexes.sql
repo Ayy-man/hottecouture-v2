@@ -29,9 +29,9 @@ ON "order" (payment_status) WHERE is_archived = false;
 -- GARMENT INDEXES
 -- =============================================================================
 
--- Garment lookup by order
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_garment_order_created
-ON garment (order_id, created_at);
+-- Garment lookup by order (garment has updated_at, not created_at)
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_garment_order
+ON garment (order_id);
 
 -- Label code lookup (QR code scanning)
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_garment_label_code
