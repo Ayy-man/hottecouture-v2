@@ -117,12 +117,11 @@ export async function ghlFetch<T>(options: FetchOptions): Promise<GHLResult<T>> 
 
     if (!response.ok) {
       const errorMessage = data.message || data.error || `HTTP ${response.status}`;
-      console.error(`❌ GHL API Error: ${method} ${path}`, {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorMessage,
-        responseData: JSON.stringify(data).slice(0, 500), // Truncate for logging
-      });
+      // Log full error details for debugging
+      console.error(`❌ GHL API Error: ${method} ${path}`);
+      console.error(`❌ Status: ${response.status} ${response.statusText}`);
+      console.error(`❌ Error message: ${errorMessage}`);
+      console.error(`❌ Full response:`, JSON.stringify(data, null, 2));
 
       return {
         success: false,
