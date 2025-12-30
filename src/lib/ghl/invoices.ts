@@ -134,70 +134,120 @@ export async function createInvoice(params: {
   notes?: string | undefined;
   sendNotification?: boolean | undefined;
 }): Promise<GHLResult<GHLInvoice>> {
-  const locationId = getLocationId();
+  try {
+    console.log('📧 [1] createInvoice called with:', {
+      contactId: params.contactId,
+      name: params.name,
+      itemCount: params.items?.length ?? 'undefined',
+      orderNumber: params.orderNumber,
+      hasDueDate: !!params.dueDate,
+    });
 
-  const requestBody: GHLInvoiceCreateRequest = {
-    altId: locationId,
-    altType: 'location',
-    name: params.name,
-    contactId: params.contactId,
-    items: params.items,
-    currency: 'CAD',
-    liveMode: true,
-    sendNotification: params.sendNotification ?? false,
-  };
+    // Validate required params
+    if (!params.contactId) {
+      return { success: false, error: 'Missing contactId' };
+    }
+    if (!params.name) {
+      return { success: false, error: 'Missing invoice name' };
+    }
+    if (!params.items || !Array.isArray(params.items) || params.items.length === 0) {
+      return { success: false, error: 'Missing or empty items array' };
+    }
 
-  // Add due date if provided and valid
-  if (params.dueDate && params.dueDate instanceof Date && !isNaN(params.dueDate.getTime())) {
-    requestBody.dueDate = params.dueDate.toISOString();
+    console.log('📧 [2] Getting location ID...');
+    const locationId = getLocationId();
+    console.log('📧 [3] Location ID:', locationId);
+
+    console.log('📧 [4] Building request body...');
+    const requestBody: GHLInvoiceCreateRequest = {
+      altId: locationId,
+      altType: 'location',
+      name: String(params.name || ''),
+      contactId: String(params.contactId || ''),
+      items: params.items.map((item, idx) => {
+        console.log(`📧 [4.${idx}] Processing item:`, item);
+        return {
+          name: String(item.name || 'Service'),
+          description: item.description ? String(item.description) : undefined,
+          quantity: Number(item.quantity) || 1,
+          price: Number(item.price) || 0,
+          currency: item.currency ? String(item.currency) : undefined,
+        };
+      }),
+      currency: 'CAD',
+      liveMode: true,
+      sendNotification: params.sendNotification ?? false,
+    };
+
+    console.log('📧 [5] Processing due date...');
+    // Add due date if provided and valid
+    if (params.dueDate && params.dueDate instanceof Date && !isNaN(params.dueDate.getTime())) {
+      requestBody.dueDate = params.dueDate.toISOString();
+      console.log('📧 [5.1] Due date set:', requestBody.dueDate);
+    }
+
+    console.log('📧 [6] Processing invoice number...');
+    // Add invoice number based on order number
+    if (params.orderNumber !== undefined && params.orderNumber !== null) {
+      requestBody.invoiceNumber = `HC-${params.orderNumber}`;
+      console.log('📧 [6.1] Invoice number set:', requestBody.invoiceNumber);
+    }
+
+    console.log('📧 [7] Processing notes...');
+    // Add notes/terms
+    if (params.notes) {
+      requestBody.termsNotes = String(params.notes);
+    }
+
+    console.log('📧 [8] Adding business details...');
+    // Business details for Hotte Couture
+    requestBody.businessDetails = {
+      name: 'Hotte Couture',
+      address: '1234 Rue Example',
+      city: 'Montréal',
+      state: 'QC',
+      postalCode: 'H2X 1Y2',
+      country: 'CA',
+      phone: '+15141234567',
+      email: 'info@hottecouture.com',
+    };
+
+    console.log('📧 [9] Final request body:', JSON.stringify(requestBody, null, 2));
+
+    console.log('📧 [10] Calling ghlFetch...');
+    const result = await ghlFetch<GHLInvoiceResponse>({
+      method: 'POST',
+      path: '/invoices/',
+      body: requestBody,
+    });
+
+    console.log('📧 [11] ghlFetch result:', {
+      success: result.success,
+      hasData: !!result.data,
+      error: result.error,
+    });
+
+    if (!result.success || !result.data) {
+      return { success: false, error: result.error || 'Failed to create invoice' };
+    }
+
+    // Validate the invoice object exists in the response
+    console.log('📧 [12] Validating response...');
+    const invoice = result.data.invoice;
+    if (!invoice || !invoice._id) {
+      console.error('❌ GHL API returned unexpected response:', JSON.stringify(result.data));
+      return { success: false, error: 'GHL API returned invalid invoice response' };
+    }
+
+    console.log('📧 [13] Invoice created successfully:', invoice._id);
+    return { success: true, data: invoice };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : 'No stack';
+    console.error('❌ createInvoice EXCEPTION:', errorMessage);
+    console.error('❌ Stack trace:', errorStack);
+    return { success: false, error: `Invoice creation failed: ${errorMessage}` };
   }
-
-  // Add invoice number based on order number
-  if (params.orderNumber) {
-    requestBody.invoiceNumber = `HC-${params.orderNumber}`;
-  }
-
-  // Add notes/terms
-  if (params.notes) {
-    requestBody.termsNotes = params.notes;
-  }
-
-  // Business details for Hotte Couture
-  requestBody.businessDetails = {
-    name: 'Hotte Couture',
-    address: '1234 Rue Example',
-    city: 'Montréal',
-    state: 'QC',
-    postalCode: 'H2X 1Y2',
-    country: 'CA',
-    phone: '+15141234567',
-    email: 'info@hottecouture.com',
-  };
-
-  console.log('📧 Creating GHL invoice:', {
-    contactId: params.contactId,
-    name: params.name,
-    itemCount: params.items.length,
-  });
-
-  const result = await ghlFetch<GHLInvoiceResponse>({
-    method: 'POST',
-    path: '/invoices/',
-    body: requestBody,
-  });
-
-  if (!result.success || !result.data) {
-    return { success: false, error: result.error || 'Failed to create invoice' };
-  }
-
-  // Validate the invoice object exists in the response
-  const invoice = result.data.invoice;
-  if (!invoice || !invoice._id) {
-    console.error('❌ GHL API returned unexpected response:', JSON.stringify(result.data));
-    return { success: false, error: 'GHL API returned invalid invoice response' };
-  }
-
-  return { success: true, data: invoice };
 }
 
 /**

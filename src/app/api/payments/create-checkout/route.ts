@@ -20,8 +20,10 @@ interface CreateCheckoutRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('💳 [1] create-checkout called');
     const body: CreateCheckoutRequest = await request.json();
     const { orderId, type, sendSms = true } = body;
+    console.log('💳 [2] Request body:', { orderId, type, sendSms });
 
     if (!orderId || !type) {
       return NextResponse.json(
@@ -31,19 +33,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Check GHL is configured
+    console.log('💳 [3] Checking GHL config...');
     if (!isGHLConfigured()) {
       return NextResponse.json(
         { error: 'GHL is not configured. Please set GHL_API_KEY and GHL_LOCATION_ID.' },
         { status: 503 }
       );
     }
+    console.log('💳 [4] GHL is configured');
 
     const supabase = await createServiceRoleClient();
     if (!supabase) {
       return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
     }
+    console.log('💳 [5] Supabase client created');
 
     // Fetch order with client details
+    console.log('💳 [6] Fetching order:', orderId);
     const { data: order, error: orderError } = await supabase
       .from('order')
       .select(`
@@ -75,11 +81,26 @@ export async function POST(request: NextRequest) {
       console.error('Order fetch error:', orderError);
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
+    console.log('💳 [7] Order fetched:', {
+      order_number: order.order_number,
+      total_cents: order.total_cents,
+      type: order.type,
+      due_date: order.due_date,
+      hasClient: !!order.client,
+    });
 
     const client = order.client as any;
     if (!client) {
       return NextResponse.json({ error: 'Client not found for order' }, { status: 404 });
     }
+    console.log('💳 [8] Client data:', {
+      id: client.id,
+      first_name: client.first_name,
+      last_name: client.last_name,
+      email: client.email,
+      phone: client.phone,
+      ghl_contact_id: client.ghl_contact_id,
+    });
 
     // Validate order has total_cents
     if (!order.total_cents || order.total_cents <= 0) {
@@ -88,13 +109,17 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    console.log('💳 [9] Total cents validated:', order.total_cents);
 
     const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Client';
+    console.log('💳 [10] Client name:', clientName);
 
     // Ensure we have a GHL contact ID
     let ghlContactId = client.ghl_contact_id;
+    console.log('💳 [11] Existing GHL contact ID:', ghlContactId);
 
     if (!ghlContactId) {
+      console.log('💳 [12] Creating GHL contact...');
       // Try to find or create the contact in GHL
       const ghlClient: AppClient = {
         id: client.id,
@@ -106,8 +131,11 @@ export async function POST(request: NextRequest) {
         ghl_contact_id: null,
         preferred_contact: client.preferred_contact || 'sms',
       };
+      console.log('💳 [12.1] GHL client object:', ghlClient);
 
       const contactResult = await findOrCreateContact(ghlClient);
+      console.log('💳 [12.2] Contact result:', { success: contactResult.success, data: contactResult.data, error: contactResult.error });
+
       if (!contactResult.success || !contactResult.data) {
         console.error('Failed to find/create GHL contact:', contactResult.error);
         return NextResponse.json(
@@ -118,6 +146,7 @@ export async function POST(request: NextRequest) {
 
       // findOrCreateContact returns the contact ID directly as a string
       ghlContactId = contactResult.data;
+      console.log('💳 [12.3] New GHL contact ID:', ghlContactId);
 
       // Update client with GHL contact ID
       await supabase
@@ -127,6 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate amount based on type
+    console.log('💳 [13] Calculating amount for type:', type);
     let amountCents: number;
 
     switch (type) {
@@ -148,6 +178,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid payment type' }, { status: 400 });
     }
+    console.log('💳 [14] Amount cents calculated:', amountCents);
 
     if (amountCents <= 0) {
       return NextResponse.json(
@@ -158,9 +189,21 @@ export async function POST(request: NextRequest) {
 
     // Create GHL Invoice based on payment type
     let invoiceResult;
+    console.log('💳 [15] Processing due date:', order.due_date);
     const dueDate = order.due_date ? new Date(order.due_date) : undefined;
+    console.log('💳 [16] Due date object:', dueDate, 'isValid:', dueDate ? !isNaN(dueDate.getTime()) : 'N/A');
+
+    console.log('💳 [17] Creating invoice for type:', type);
 
     if (type === 'deposit') {
+      console.log('💳 [18] Creating deposit invoice with:', {
+        contactId: ghlContactId,
+        clientName,
+        orderNumber: order.order_number,
+        totalCents: order.total_cents,
+        depositCents: amountCents,
+        hasDueDate: !!dueDate,
+      });
       invoiceResult = await createDepositInvoice({
         contactId: ghlContactId,
         clientName,
@@ -170,6 +213,13 @@ export async function POST(request: NextRequest) {
         dueDate,
       });
     } else if (type === 'balance') {
+      console.log('💳 [18] Creating balance invoice with:', {
+        contactId: ghlContactId,
+        clientName,
+        orderNumber: order.order_number,
+        balanceCents: amountCents,
+        hasDueDate: !!dueDate,
+      });
       invoiceResult = await createBalanceInvoice({
         contactId: ghlContactId,
         clientName,
