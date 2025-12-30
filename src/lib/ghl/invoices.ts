@@ -39,22 +39,45 @@ export interface GHLBusinessDetails {
   logoUrl?: string;
 }
 
+/**
+ * GHL API Request Structure - matches the official GHL Invoice API
+ * See: https://marketplace.gohighlevel.com/docs/ghl/invoices/create-invoice/
+ */
 export interface GHLInvoiceCreateRequest {
   altId: string; // Location ID
   altType: 'location';
   name: string;
-  contactId: string;
-  title?: string;
-  dueDate?: string; // ISO date string
-  issueDate?: string;
-  items: GHLInvoiceItem[];
-  discount?: GHLInvoiceDiscount;
-  currency?: string;
+  // contactDetails is required - NOT contactId at top level
+  contactDetails: {
+    id: string;
+  };
+  businessDetails: {
+    name: string;
+    phoneNo?: string;
+    address?: string;
+  };
+  currency: string;
+  // items use qty/amount, NOT quantity/price
+  items: Array<{
+    name: string;
+    description?: string;
+    qty: number;
+    amount: number;
+  }>;
+  discount: {
+    value: number;
+    type: 'percentage' | 'fixed';
+  };
+  issueDate: string; // YYYY-MM-DD format - REQUIRED
+  dueDate?: string; // YYYY-MM-DD format
+  sentTo: {
+    email: string[];
+    phoneNo: string[];
+  };
+  liveMode: boolean;
   termsNotes?: string;
   invoiceNumber?: string;
-  sendNotification?: boolean;
-  liveMode?: boolean;
-  businessDetails?: GHLBusinessDetails;
+  title?: string;
 }
 
 export interface GHLInvoice {
@@ -162,13 +185,13 @@ export async function createInvoice(params: {
     console.log('📧 [3] Location ID:', locationId);
 
     console.log('📧 [4] Building request body...');
-    // Build items array - only include defined properties to avoid undefined values
+    // Build items array using GHL API field names: qty and amount (not quantity/price)
     const invoiceItems = params.items.map((item, idx) => {
       console.log(`📧 [4.${idx}] Processing item:`, item);
-      const invoiceItem: Record<string, any> = {
+      const invoiceItem: { name: string; qty: number; amount: number; description?: string } = {
         name: String(item.name || 'Service'),
-        quantity: Number(item.quantity) || 1,
-        price: Number(item.price) || 0,
+        qty: Number(item.quantity) || 1,
+        amount: Number(item.price) || 0,
       };
       // Only add optional fields if they have values
       if (item.description) {
@@ -177,21 +200,46 @@ export async function createInvoice(params: {
       return invoiceItem;
     });
 
+    // Format dates as YYYY-MM-DD (required by GHL API)
+    const todayISO = new Date().toISOString();
+    const today = todayISO.substring(0, 10); // YYYY-MM-DD
+    const dueDateStr = params.dueDate && params.dueDate instanceof Date && !isNaN(params.dueDate.getTime())
+      ? params.dueDate.toISOString().substring(0, 10)
+      : undefined;
+
     const requestBody: GHLInvoiceCreateRequest = {
       altId: locationId,
       altType: 'location',
       name: String(params.name || ''),
-      contactId: String(params.contactId || ''),
-      items: invoiceItems as GHLInvoiceItem[],
+      // GHL requires contactDetails object, NOT contactId at top level
+      contactDetails: {
+        id: String(params.contactId || ''),
+      },
+      // businessDetails is required
+      businessDetails: {
+        name: 'Hotte Couture',
+      },
       currency: 'CAD',
+      items: invoiceItems,
+      // discount is required (default to 0%)
+      discount: {
+        value: 0,
+        type: 'percentage',
+      },
+      // issueDate is REQUIRED
+      issueDate: today,
+      // sentTo is required (empty arrays if not sending notification)
+      sentTo: {
+        email: [],
+        phoneNo: [],
+      },
       liveMode: true,
-      sendNotification: params.sendNotification ?? false,
     };
 
     console.log('📧 [5] Processing due date...');
     // Add due date if provided and valid
-    if (params.dueDate && params.dueDate instanceof Date && !isNaN(params.dueDate.getTime())) {
-      requestBody.dueDate = params.dueDate.toISOString();
+    if (dueDateStr) {
+      requestBody.dueDate = dueDateStr;
       console.log('📧 [5.1] Due date set:', requestBody.dueDate);
     }
 
@@ -208,8 +256,7 @@ export async function createInvoice(params: {
       requestBody.termsNotes = String(params.notes);
     }
 
-    // Note: businessDetails removed - GHL uses account settings for this
-    console.log('📧 [8] Skipping businessDetails (using GHL account settings)');
+    console.log('📧 [8] Request body built with required GHL fields');
 
     // Log the final request body for debugging
     try {
