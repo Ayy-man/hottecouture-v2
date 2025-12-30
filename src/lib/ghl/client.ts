@@ -166,7 +166,11 @@ export function formatPhoneE164(phone: string | null | undefined): string | null
 
 /**
  * Format cents to dollars string (e.g., 1234 -> "12.34")
+ * Returns "0.00" for null/undefined/NaN values
  */
-export function centsToDollars(cents: number): string {
+export function centsToDollars(cents: number | null | undefined): string {
+  if (cents === null || cents === undefined || isNaN(cents)) {
+    return '0.00';
+  }
   return (cents / 100).toFixed(2);
 }

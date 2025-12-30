@@ -81,6 +81,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Client not found for order' }, { status: 404 });
     }
 
+    // Validate order has total_cents
+    if (!order.total_cents || order.total_cents <= 0) {
+      return NextResponse.json(
+        { error: 'Order has no valid total amount. Please add services first.' },
+        { status: 400 }
+      );
+    }
+
     const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Client';
 
     // Ensure we have a GHL contact ID
