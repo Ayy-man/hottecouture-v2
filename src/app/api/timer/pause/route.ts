@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       .update({
         is_active: false,
         stopped_at: now.toISOString(),
-        actual_minutes: newActualMinutes,
+        actual_minutes: Math.round(newActualMinutes), // Ensure integer for DB
         started_at: null
       })
       .eq('id', garment.id);

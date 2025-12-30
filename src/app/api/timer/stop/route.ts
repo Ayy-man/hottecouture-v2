@@ -66,10 +66,30 @@ export async function POST(request: NextRequest) {
     let newActualMinutes = garment.actual_minutes || 0;
 
     // If timer was running, add elapsed time
+    // If timer was running, add elapsed time
     if (garment.is_active && garment.started_at) {
       const startTime = new Date(garment.started_at);
-      const elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
-      newActualMinutes += (elapsedSeconds / 60);
+
+      // Validate start time
+      if (isNaN(startTime.getTime())) {
+        console.warn('⚠️ Invalid started_at date found in stop:', garment.started_at);
+        // Don't add any time if start date is invalid 
+      } else {
+        const elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
+        const elapsedMinutes = elapsedSeconds / 60;
+
+        if (isNaN(elapsedMinutes) || !isFinite(elapsedMinutes)) {
+          console.error('❌ Calculated invalid elapsed minutes in stop:', elapsedMinutes);
+        } else {
+          newActualMinutes += elapsedMinutes;
+        }
+      }
+    }
+
+    // Safety check for final value
+    if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
+      console.error('❌ Invalid final actual_minutes in stop:', newActualMinutes);
+      newActualMinutes = garment.actual_minutes || 0; // Fallback
     }
 
     // Stop and mark as done, clear assignee
@@ -78,14 +98,17 @@ export async function POST(request: NextRequest) {
       .update({
         is_active: false,
         stopped_at: now.toISOString(),
-        actual_minutes: newActualMinutes,
+        actual_minutes: Math.round(newActualMinutes), // Ensure integer for DB
         stage: 'done',
         assignee: null,
         started_at: null
       })
       .eq('id', garment.id);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Database update error in stop:', updateError);
+      throw updateError;
+    }
 
     return NextResponse.json({
       success: true,
