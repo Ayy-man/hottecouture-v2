@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import QRCode from 'qrcode';
 import {
   createCalendarEvent,
@@ -20,7 +20,15 @@ export async function POST(request: NextRequest) {
   console.log('🚀 Intake API: New order creation request', { correlationId });
 
   try {
-    const supabase = await createClient();
+    const supabase = await createServiceRoleClient();
+
+    if (!supabase) {
+      console.error('❌ Intake API: Database connection failed');
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 503 }
+      );
+    }
 
     // Parse request body
     const body = await request.json();

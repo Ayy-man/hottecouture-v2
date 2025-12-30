@@ -9,7 +9,7 @@ import { ServicesStepNew } from '@/components/intake/services-step-new';
 import { PricingStep } from '@/components/intake/pricing-step';
 import { AssignmentStep } from '@/components/intake/assignment-step';
 import { OrderSummary } from '@/components/intake/order-summary';
-import { IntakeRequest, IntakeResponse } from '@/lib/dto';
+import { IntakeRequest, IntakeResponse, MeasurementsData } from '@/lib/dto';
 import { usePricing } from '@/lib/pricing/usePricing';
 import { MuralBackground } from '@/components/ui/mural-background';
 
@@ -33,6 +33,7 @@ interface IntakeFormData {
     preferred_contact: 'sms' | 'email';
     notes?: string;
   } | null;
+  measurements?: MeasurementsData;
   garments: Array<{
     type: string;
     garment_type_id?: string | null;
@@ -168,6 +169,7 @@ export default function IntakePage() {
           deposit_required: formData.order.deposit_required,
           deposit_amount_cents: formData.order.deposit_amount_cents,
         },
+        measurements: formData.measurements,
         garments: formData.garments.map(garment => ({
           type: garment.type,
           garment_type_id: garment.garment_type_id,
@@ -212,7 +214,9 @@ export default function IntakePage() {
         return (
           <ClientStep
             data={formData.client as any}
+            {...(formData.measurements ? { measurements: formData.measurements } : {})}
             onUpdate={client => updateFormData({ client: client as any })}
+            onMeasurementsUpdate={measurements => updateFormData({ measurements })}
             onNext={nextStep}
           />
         );
@@ -332,10 +336,10 @@ export default function IntakePage() {
                   <div key={step.key} className='flex flex-col items-center'>
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold touch-manipulation transition-all duration-300 flex-shrink-0 ${isActive
-                          ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-lg'
-                          : isCompleted
-                            ? 'bg-gradient-to-r from-secondary-500 to-accent-olive text-white'
-                            : 'bg-gray-100 text-gray-500'
+                        ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-lg'
+                        : isCompleted
+                          ? 'bg-gradient-to-r from-secondary-500 to-accent-olive text-white'
+                          : 'bg-gray-100 text-gray-500'
                         }`}
                     >
                       {isCompleted ? (

@@ -55,9 +55,26 @@ export async function ghlFetch<T>(options: FetchOptions): Promise<GHLResult<T>> 
 
   // Build URL with query params
   let url = `${GHL_BASE_URL}${path}`;
-  if (queryParams) {
-    const params = new URLSearchParams(queryParams);
-    url += `?${params.toString()}`;
+  try {
+    if (queryParams) {
+      // Debug logging for query params
+      // console.log('🔍 GHL Query Params:', JSON.stringify(queryParams));
+
+      const params = new URLSearchParams();
+      Object.entries(queryParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+
+      const queryString = params.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+  } catch (err: any) {
+    console.error('❌ Error building GHL URL params:', err);
+    throw new Error(`Failed to build URL params: ${err.message}`);
   }
 
   const headers: Record<string, string> = {
@@ -112,6 +129,9 @@ export async function ghlFetch<T>(options: FetchOptions): Promise<GHLResult<T>> 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`❌ GHL API Exception: ${method} ${path}`, error);
+    if (error instanceof Error && error.stack) {
+      console.error('Stack:', error.stack);
+    }
 
     return {
       success: false,
