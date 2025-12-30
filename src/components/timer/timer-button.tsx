@@ -9,10 +9,17 @@ import { LoadingLogo } from '@/components/ui/loading-logo';
 import { useStaffSession } from '@/components/staff/staff-session-provider';
 import { OneTaskWarningModal } from '@/components/staff/one-task-warning-modal';
 
+interface TimerUpdateData {
+  is_running: boolean;
+  is_paused: boolean;
+  is_completed: boolean;
+  total_work_seconds: number;
+}
+
 interface TimerButtonProps {
   orderId: string;
   orderStatus: string;
-  onTimeUpdate?: (totalSeconds: number) => void;
+  onTimeUpdate?: (data: TimerUpdateData) => void;
   garmentId?: string; // Optional: specific garment to track
 }
 
@@ -96,7 +103,13 @@ export function TimerButton({
       if (result.success) {
         setTimerStatus(result);
         setCurrentTime(result.current_session_seconds);
-        onTimeUpdate?.(result.total_seconds);
+        // Pass full state to parent so it can update without refetching
+        onTimeUpdate?.({
+          is_running: result.is_running || false,
+          is_paused: result.is_paused || false,
+          is_completed: result.is_completed || false,
+          total_work_seconds: result.total_work_seconds || 0,
+        });
       }
     } catch (error) {
       console.error('Error fetching timer status:', error);

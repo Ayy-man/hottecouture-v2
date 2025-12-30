@@ -31,6 +31,13 @@ interface TimerState {
   total_work_seconds: number;
 }
 
+interface TimerUpdateData {
+  is_running: boolean;
+  is_paused: boolean;
+  is_completed: boolean;
+  total_work_seconds: number;
+}
+
 export function GarmentTaskSummary({
   garmentId,
   orderId,
@@ -183,7 +190,15 @@ export function GarmentTaskSummary({
             orderId={orderId}
             garmentId={garmentId}
             orderStatus={orderStatus}
-            onTimeUpdate={() => fetchTimerState()}
+            onTimeUpdate={(data: TimerUpdateData) => {
+              // Directly update parent state from child's fresh data
+              setTimerState({
+                is_running: data.is_running,
+                is_paused: data.is_paused,
+                is_completed: data.is_completed,
+                total_work_seconds: data.total_work_seconds,
+              });
+            }}
           />
         </div>
       )}
