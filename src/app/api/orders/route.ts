@@ -68,6 +68,7 @@ export async function GET(request: Request) {
       actual_completion_date: order.actual_completion_date,
       total_cents: order.total_cents,
       is_active: order.is_active,
+      assigned_to: order.assigned_to || null,
       client_name: order.client_first_name && order.client_last_name
         ? `${order.client_first_name} ${order.client_last_name}`.trim()
         : order.client_first_name || order.client_last_name || 'Unknown Client',

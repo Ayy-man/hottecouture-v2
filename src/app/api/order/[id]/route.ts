@@ -12,16 +12,20 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { rack_position, due_date } = body;
+    const { rack_position, due_date, assigned_to } = body;
 
     const updateFields: Record<string, unknown> = {};
-    
+
     if (rack_position !== undefined) {
       updateFields.rack_position = rack_position || null;
     }
-    
+
     if (due_date !== undefined) {
       updateFields.due_date = due_date || null;
+    }
+
+    if (assigned_to !== undefined) {
+      updateFields.assigned_to = assigned_to || null;
     }
 
     if (Object.keys(updateFields).length === 0) {

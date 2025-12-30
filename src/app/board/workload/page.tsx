@@ -131,6 +131,33 @@ export default function WorkloadPage() {
     }
   };
 
+  const handleAssignOrder = async (orderId: string, assignee: string | null) => {
+    setUpdatingOrder(orderId);
+
+    try {
+      const response = await fetch(`/api/order/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_to: assignee }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to assign order');
+      }
+
+      setOrders(prev => prev.map(o =>
+        o.id === orderId
+          ? { ...o, assigned_to: assignee }
+          : o
+      ));
+    } catch (err) {
+      console.error('Error assigning order:', err);
+      alert('Erreur lors de l\'assignation');
+    } finally {
+      setUpdatingOrder(null);
+    }
+  };
+
   const activeOrders = useMemo(() => {
     return orders.filter(o =>
       !['delivered', 'archived'].includes(o.status) &&
@@ -357,7 +384,29 @@ export default function WorkloadPage() {
                   <div className="text-2xl font-bold text-amber-700">
                     {unassignedWorkload.orders.length}
                   </div>
-                  <div className="text-xs text-amber-600">orders need assignment</div>
+                  <div className="text-xs text-amber-600 mb-3">orders need assignment</div>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {unassignedWorkload.orders.slice(0, 5).map(order => (
+                      <div key={order.id} className="flex items-center justify-between gap-2 text-xs">
+                        <span className="font-medium">#{order.order_number}</span>
+                        <select
+                          className="text-xs border rounded px-1 py-0.5 bg-white"
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              handleAssignOrder(order.id, e.target.value);
+                            }
+                          }}
+                          disabled={updatingOrder === order.id}
+                        >
+                          <option value="">Assign...</option>
+                          {staffMembers.map(s => (
+                            <option key={s.name} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             )}
