@@ -31,6 +31,7 @@ export function OrderDetailModal({
   const [editingNotes, setEditingNotes] = useState<string>('');
   const [savingNotes, setSavingNotes] = useState<string | null>(null);
   const [editingTimeGarmentId, setEditingTimeGarmentId] = useState<string | null>(null);
+  const [editingTimeHours, setEditingTimeHours] = useState<number>(0);
   const [editingTimeMinutes, setEditingTimeMinutes] = useState<number>(0);
   const [savingTime, setSavingTime] = useState<string | null>(null);
   const [rackPosition, setRackPosition] = useState<string>('');
@@ -153,6 +154,7 @@ export function OrderDetailModal({
       setEditingNotes('');
       setSavingNotes(null);
       setEditingTimeGarmentId(null);
+      setEditingTimeHours(0);
       setEditingTimeMinutes(0);
       setSavingTime(null);
       setRackPosition('');
@@ -212,24 +214,27 @@ export function OrderDetailModal({
 
   const handleStartEditTime = (garmentId: string, currentMinutes: number) => {
     setEditingTimeGarmentId(garmentId);
-    setEditingTimeMinutes(currentMinutes);
+    setEditingTimeHours(Math.floor(currentMinutes / 60));
+    setEditingTimeMinutes(currentMinutes % 60);
   };
 
   const handleCancelEditTime = () => {
     setEditingTimeGarmentId(null);
+    setEditingTimeHours(0);
     setEditingTimeMinutes(0);
   };
 
   const handleSaveTime = async (garmentId: string) => {
     setSavingTime(garmentId);
-    console.log('⏱️ Saving estimated time:', { garmentId, minutes: editingTimeMinutes });
+    const totalMinutes = editingTimeHours * 60 + editingTimeMinutes;
+    console.log('⏱️ Saving estimated time:', { garmentId, hours: editingTimeHours, minutes: editingTimeMinutes, totalMinutes });
     try {
       const response = await fetch(`/api/garment/${garmentId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ estimated_minutes: editingTimeMinutes }),
+        body: JSON.stringify({ estimated_minutes: totalMinutes }),
       });
 
       if (!response.ok) {
@@ -251,6 +256,7 @@ export function OrderDetailModal({
       }
 
       setEditingTimeGarmentId(null);
+      setEditingTimeHours(0);
       setEditingTimeMinutes(0);
     } catch (error) {
       console.error('Error saving time estimate:', error);
@@ -660,20 +666,29 @@ export function OrderDetailModal({
                         {editingTimeGarmentId === garment.id ? (
                           <div className='space-y-2'>
                             <label className='block text-xs font-medium text-purple-700'>
-                              Estimated Time (minutes)
+                              Estimated Time
                             </label>
                             <div className='flex items-center gap-2'>
                               <input
                                 type='number'
                                 min='0'
-                                value={editingTimeMinutes}
-                                onChange={e => setEditingTimeMinutes(parseInt(e.target.value) || 0)}
-                                className='w-24 px-2 py-1 text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500'
+                                max='99'
+                                value={editingTimeHours}
+                                onChange={e => setEditingTimeHours(Math.max(0, parseInt(e.target.value) || 0))}
+                                className='w-16 px-2 py-1 text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500'
                                 disabled={savingTime === garment.id}
                               />
-                              <span className='text-xs text-purple-600'>
-                                = {Math.floor(editingTimeMinutes / 60)}h {editingTimeMinutes % 60}m
-                              </span>
+                              <span className='text-xs text-purple-600'>h</span>
+                              <input
+                                type='number'
+                                min='0'
+                                max='59'
+                                value={editingTimeMinutes}
+                                onChange={e => setEditingTimeMinutes(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))}
+                                className='w-16 px-2 py-1 text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500'
+                                disabled={savingTime === garment.id}
+                              />
+                              <span className='text-xs text-purple-600'>m</span>
                             </div>
                             <div className='flex gap-2'>
                               <Button

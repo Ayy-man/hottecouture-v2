@@ -37,6 +37,9 @@ interface Order {
   client_name?: string;
   total_estimated_minutes?: number;
   garments?: Array<{
+    garment_id?: string;
+    assignee?: string | null;
+    estimated_minutes?: number;
     services?: Array<{
       service?: {
         estimated_minutes?: number;
@@ -60,8 +63,14 @@ function calculateEstimatedHours(order: Order): number {
   let totalMinutes = 0;
   if (order.garments) {
     for (const garment of order.garments) {
-      for (const service of garment.services || []) {
-        totalMinutes += service.service?.estimated_minutes || 30;
+      // PRIORITY: Use garment.estimated_minutes if set (from Est. Time edit in modal)
+      if (garment.estimated_minutes && garment.estimated_minutes > 0) {
+        totalMinutes += garment.estimated_minutes;
+      } else {
+        // Fallback: Sum service estimated minutes
+        for (const service of garment.services || []) {
+          totalMinutes += service.service?.estimated_minutes || 30;
+        }
       }
     }
   }
@@ -178,7 +187,11 @@ export default function WorkloadPage() {
     }
 
     for (const order of activeOrders) {
-      const assignee = order.assigned_to || 'Unassigned';
+      // Check garment-level assignees first (from task management), then order-level
+      const garmentAssignees = order.garments
+        ?.map(g => g.assignee)
+        .filter((a): a is string => !!a) || [];
+      const assignee = garmentAssignees[0] || order.assigned_to || 'Unassigned';
       const seamstress = SEAMSTRESSES.includes(assignee) ? assignee : 'Unassigned';
       const hours = calculateEstimatedHours(order);
 
@@ -218,6 +231,12 @@ export default function WorkloadPage() {
 
       const statusColor = STATUS_COLORS[order.status] ?? STATUS_COLORS.pending ?? '#f59e0b';
 
+      // Check garment-level assignees first (from task management), then order-level
+      const garmentAssignees = order.garments
+        ?.map(g => g.assignee)
+        .filter((a): a is string => !!a) || [];
+      const ownerName = garmentAssignees[0] || order.assigned_to || 'Unassigned';
+
       features.push({
         id: order.id,
         name: `#${order.order_number} ${order.client_name || 'Order'}`,
@@ -228,8 +247,8 @@ export default function WorkloadPage() {
           name: order.status,
         },
         owner: {
-          id: order.assigned_to || 'unassigned',
-          name: order.assigned_to || 'Unassigned',
+          id: ownerName.toLowerCase().replace(/\s+/g, '-'),
+          name: ownerName,
         },
       });
     }
