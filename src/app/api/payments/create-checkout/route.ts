@@ -244,8 +244,15 @@ export async function POST(request: NextRequest) {
 
     if (!invoiceResult.success || !invoiceResult.data) {
       console.error('Failed to create GHL invoice:', invoiceResult.error);
+      console.error('Invoice params:', {
+        contactId: ghlContactId,
+        clientName,
+        orderNumber: order.order_number,
+        type,
+        amountCents,
+      });
       return NextResponse.json(
-        { error: `Failed to create invoice: ${invoiceResult.error}` },
+        { error: `Failed to create invoice: ${invoiceResult.error || 'Unknown error'}` },
         { status: 500 }
       );
     }

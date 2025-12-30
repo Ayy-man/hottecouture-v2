@@ -147,8 +147,8 @@ export async function createInvoice(params: {
     sendNotification: params.sendNotification ?? false,
   };
 
-  // Add due date if provided
-  if (params.dueDate) {
+  // Add due date if provided and valid
+  if (params.dueDate && params.dueDate instanceof Date && !isNaN(params.dueDate.getTime())) {
     requestBody.dueDate = params.dueDate.toISOString();
   }
 
@@ -403,10 +403,10 @@ export async function createFullInvoice(params: {
   dueDate?: Date | undefined;
 }): Promise<GHLResult<GHLInvoice>> {
   const invoiceItems: GHLInvoiceItem[] = params.items.map((item) => ({
-    name: item.name,
-    description: item.description,
+    name: item.name || 'Service',
+    description: item.description || undefined,
     quantity: item.quantity || 1,
-    price: Number(centsToDollars(item.priceCents)),
+    price: Number(centsToDollars(item.priceCents)) || 0,
   }));
 
   // Add rush fee if applicable

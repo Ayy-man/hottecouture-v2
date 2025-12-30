@@ -127,10 +127,16 @@ export async function ghlFetch<T>(options: FetchOptions): Promise<GHLResult<T>> 
       data: data as T,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`❌ GHL API Exception: ${method} ${path}`, error);
-    if (error instanceof Error && error.stack) {
-      console.error('Stack:', error.stack);
+    let errorMessage: string;
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      console.error(`❌ GHL API Exception: ${method} ${path}`, error.message);
+      if (error.stack) {
+        console.error('Stack:', error.stack);
+      }
+    } else {
+      errorMessage = String(error) || 'Unknown error';
+      console.error(`❌ GHL API Exception (non-Error): ${method} ${path}`, error);
     }
 
     return {
