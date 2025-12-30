@@ -174,8 +174,8 @@ export function GarmentTaskSummary({
         </div>
       )}
 
-      {/* Timer button - only show if order is in working/pending status */}
-      {canTrackTime && !isDone && (
+      {/* Timer button - show for working/pending orders, including completed tasks */}
+      {canTrackTime && (
         <div className="pt-2 border-t border-stone-200">
           <TimerButton
             orderId={orderId}
@@ -183,15 +183,6 @@ export function GarmentTaskSummary({
             orderStatus={orderStatus}
             onTimeUpdate={() => fetchTimerState()}
           />
-        </div>
-      )}
-
-      {/* Done state - show final time */}
-      {isDone && (
-        <div className="pt-2 border-t border-stone-200 text-center">
-          <span className="text-sm text-green-700 font-medium">
-            ✓ Terminé en {formatMinutes(actualMinutes)}
-          </span>
         </div>
       )}
     </div>
