@@ -504,64 +504,69 @@ export function ClientStep({
         <div className='p-4 space-y-4'>
           {!data ? (
             <>
-              <div>
-                <label
-                  htmlFor='search'
-                  className='block text-sm font-medium mb-1'
-                >
-                  Rechercher Client
-                </label>
-                <input
-                  id='search'
-                  type='text'
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder='Entrer téléphone ou courriel'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[40px] text-sm touch-manipulation'
-                />
-              </div>
-
-              {isSearching && (
-                <div className='text-center py-2'>
-                  <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500 mx-auto'></div>
-                  <p className='mt-1 text-xs text-gray-600'>Recherche...</p>
-                </div>
-              )}
-
-              {searchResults.length > 0 && (
-                <div className='space-y-1'>
-                  <h3 className='font-medium text-sm'>Résultats</h3>
-                  {searchResults.map((client, index) => (
-                    <div
-                      key={client.first_name + client.last_name + index}
-                      className='p-2 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer'
-                      onClick={() => handleSelectClient(client)}
+              {/* Search section - hidden when create form is open */}
+              {!showCreateForm && (
+                <>
+                  <div>
+                    <label
+                      htmlFor='search'
+                      className='block text-sm font-medium mb-1'
                     >
-                      <div className='font-medium text-sm'>
-                        {client.first_name} {client.last_name}
-                      </div>
-                      <div
-                        className='text-xs text-gray-600 cursor-pointer hover:text-gray-800'
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleReveal(client.phone + client.email);
-                        }}
-                        title='Tap to reveal/hide'
-                      >
-                        {revealedClients.has(client.phone + client.email)
-                          ? `${client.phone} • ${client.email}`
-                          : `${maskPhone(client.phone || '')} • ${maskEmail(client.email || '')}`}
-                      </div>
-                      <div className='text-xs text-gray-500 mt-1'>
-                        Preferred:{' '}
-                        {client.preferred_contact === 'email'
-                          ? '📧 Email'
-                          : '💬 SMS'}{' '}
-                        • Newsletter: {client.newsletter_consent ? '✅' : '❌'}
-                      </div>
+                      Rechercher Client
+                    </label>
+                    <input
+                      id='search'
+                      type='text'
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      placeholder='Entrer téléphone ou courriel'
+                      className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[40px] text-sm touch-manipulation'
+                    />
+                  </div>
+
+                  {isSearching && (
+                    <div className='text-center py-2'>
+                      <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500 mx-auto'></div>
+                      <p className='mt-1 text-xs text-gray-600'>Recherche...</p>
                     </div>
-                  ))}
-                </div>
+                  )}
+
+                  {searchResults.length > 0 && (
+                    <div className='space-y-1'>
+                      <h3 className='font-medium text-sm'>Résultats</h3>
+                      {searchResults.map((client, index) => (
+                        <div
+                          key={client.first_name + client.last_name + index}
+                          className='p-2 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer'
+                          onClick={() => handleSelectClient(client)}
+                        >
+                          <div className='font-medium text-sm'>
+                            {client.first_name} {client.last_name}
+                          </div>
+                          <div
+                            className='text-xs text-gray-600 cursor-pointer hover:text-gray-800'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleReveal(client.phone + client.email);
+                            }}
+                            title='Tap to reveal/hide'
+                          >
+                            {revealedClients.has(client.phone + client.email)
+                              ? `${client.phone} • ${client.email}`
+                              : `${maskPhone(client.phone || '')} • ${maskEmail(client.email || '')}`}
+                          </div>
+                          <div className='text-xs text-gray-500 mt-1'>
+                            Preferred:{' '}
+                            {client.preferred_contact === 'email'
+                              ? '📧 Email'
+                              : '💬 SMS'}{' '}
+                            • Newsletter: {client.newsletter_consent ? '✅' : '❌'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
 
               {!showCreateForm ? (
@@ -574,6 +579,16 @@ export function ClientStep({
                 </Button>
               ) : (
                 <form onSubmit={handleCreateClient} className='space-y-3'>
+                  <button
+                    type='button'
+                    onClick={() => setShowCreateForm(false)}
+                    className='flex items-center gap-1 text-sm text-primary-600 hover:text-primary-800 mb-2'
+                  >
+                    <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+                    </svg>
+                    Retour à la recherche
+                  </button>
                   <div className='grid grid-cols-2 gap-3'>
                     <div>
                       <label
