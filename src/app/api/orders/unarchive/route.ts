@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
       .from('order')
       .update({
         status: 'delivered',
+        is_archived: false,
+        archived_at: null,
       })
       .in('id', orderIds)
       .select('id, order_number');

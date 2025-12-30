@@ -214,7 +214,7 @@ export default function IntakePage() {
         return (
           <ClientStep
             data={formData.client as any}
-            {...(formData.measurements ? { measurements: formData.measurements } : {})}
+            measurements={formData.measurements}
             onUpdate={client => updateFormData({ client: client as any })}
             onMeasurementsUpdate={measurements => updateFormData({ measurements })}
             onNext={nextStep}
