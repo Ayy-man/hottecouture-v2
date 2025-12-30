@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createServiceRoleClient();
     const body = await request.json();
-    const { name, price, category, unit } = body;
+    const { name, price, category, unit, estimated_minutes } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -197,6 +197,7 @@ export async function POST(request: NextRequest) {
         base_price_cents: priceCents,
         category: normalizedCategory || null,
         unit: unit && unit.trim() ? unit.trim() : null,
+        estimated_minutes: estimated_minutes || 15,
         is_custom: false,
         display_order: displayOrder,
         is_active: true,
@@ -236,7 +237,7 @@ export async function PUT(request: NextRequest) {
   try {
     const supabase = await createServiceRoleClient();
     const body = await request.json();
-    const { id, name, price, category, unit } = body;
+    const { id, name, price, category, unit, estimated_minutes } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -312,6 +313,7 @@ export async function PUT(request: NextRequest) {
       base_price_cents: priceCents,
       category: normalizedCategory || null,
       unit: unit && unit.trim() ? unit.trim() : null,
+      estimated_minutes: estimated_minutes || 15,
     };
 
     const { data: updatedService, error: updateError } = await (

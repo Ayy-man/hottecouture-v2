@@ -79,11 +79,13 @@ export function ServicesStepNew({
   const [editServicePrice, setEditServicePrice] = useState('');
   const [editServiceCategory, setEditServiceCategory] = useState('');
   const [editServiceUnit, setEditServiceUnit] = useState('');
+  const [editServiceEstimatedMinutes, setEditServiceEstimatedMinutes] = useState<number>(15);
   const [showAddServiceForm, setShowAddServiceForm] = useState(false);
   const [newServiceName, setNewServiceName] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('');
   const [newServiceCategory, setNewServiceCategory] = useState('');
   const [newServiceUnit, setNewServiceUnit] = useState('');
+  const [newServiceEstimatedMinutes, setNewServiceEstimatedMinutes] = useState<number>(15);
   const [deleteServiceConfirmId, setDeleteServiceConfirmId] = useState<
     string | null
   >(null);
@@ -506,6 +508,7 @@ export function ServicesStepNew({
           price: price,
           category: newServiceCategory || activeTab || null,
           unit: newServiceUnit.trim() || null,
+          estimated_minutes: newServiceEstimatedMinutes || 15,
         }),
       });
 
@@ -524,6 +527,7 @@ export function ServicesStepNew({
       setNewServicePrice('');
       setNewServiceCategory('');
       setNewServiceUnit('');
+      setNewServiceEstimatedMinutes(15);
       setShowAddServiceForm(false);
     } catch (error) {
       console.error('Error creating service:', error);
@@ -539,6 +543,7 @@ export function ServicesStepNew({
       setEditServicePrice((service.base_price_cents / 100).toFixed(2));
       setEditServiceCategory(service.category || '');
       setEditServiceUnit((service as any).unit || '');
+      setEditServiceEstimatedMinutes((service as any).estimated_minutes || 15);
       setServiceContextMenuId(null);
     }
   };
@@ -567,6 +572,7 @@ export function ServicesStepNew({
           price: price,
           category: editServiceCategory || null,
           unit: editServiceUnit.trim() || null,
+          estimated_minutes: editServiceEstimatedMinutes || 15,
         }),
       });
 
@@ -585,6 +591,7 @@ export function ServicesStepNew({
       setEditServicePrice('');
       setEditServiceCategory('');
       setEditServiceUnit('');
+      setEditServiceEstimatedMinutes(15);
     } catch (error) {
       console.error('Error updating service:', error);
       alert('Failed to update service');
@@ -597,6 +604,7 @@ export function ServicesStepNew({
     setEditServicePrice('');
     setEditServiceCategory('');
     setEditServiceUnit('');
+    setEditServiceEstimatedMinutes(15);
   };
 
   const handleCheckServiceUsage = async (serviceId: string) => {
@@ -1260,11 +1268,12 @@ export function ServicesStepNew({
                             setNewServiceName('');
                             setNewServicePrice('');
                             setNewServiceUnit('');
+                            setNewServiceEstimatedMinutes(15);
                           }
                         }}
                       />
                     </div>
-                    <div className='grid grid-cols-2 gap-3'>
+                    <div className='grid grid-cols-3 gap-3'>
                       <div>
                         <label className='block text-xs font-medium text-gray-700 mb-1'>
                           Price ($) *
@@ -1281,13 +1290,28 @@ export function ServicesStepNew({
                       </div>
                       <div>
                         <label className='block text-xs font-medium text-gray-700 mb-1'>
+                          Temps estimé (min)
+                        </label>
+                        <input
+                          type='number'
+                          min='1'
+                          max='480'
+                          step='5'
+                          value={newServiceEstimatedMinutes}
+                          onChange={e => setNewServiceEstimatedMinutes(parseInt(e.target.value) || 15)}
+                          placeholder='15'
+                          className='w-full px-3 py-2 border border-gray-300 rounded text-sm min-h-[44px]'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-xs font-medium text-gray-700 mb-1'>
                           Unit (optional)
                         </label>
                         <input
                           type='text'
                           value={newServiceUnit}
                           onChange={e => setNewServiceUnit(e.target.value)}
-                          placeholder='e.g., meter, piece, hour...'
+                          placeholder='e.g., meter...'
                           maxLength={50}
                           className='w-full px-3 py-2 border border-gray-300 rounded text-sm min-h-[44px]'
                         />
@@ -1320,6 +1344,7 @@ export function ServicesStepNew({
                           setNewServicePrice('');
                           setNewServiceCategory('');
                           setNewServiceUnit('');
+                          setNewServiceEstimatedMinutes(15);
                         }}
                         className='flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded text-sm min-h-[44px] touch-manipulation'
                       >
@@ -1382,7 +1407,7 @@ export function ServicesStepNew({
                                   }}
                                 />
                               </div>
-                              <div className='grid grid-cols-2 gap-2'>
+                              <div className='grid grid-cols-3 gap-2'>
                                 <div>
                                   <label className='block text-xs font-medium text-gray-700 mb-1'>
                                     Price ($) *
@@ -1400,7 +1425,23 @@ export function ServicesStepNew({
                                 </div>
                                 <div>
                                   <label className='block text-xs font-medium text-gray-700 mb-1'>
-                                    Unit (optional)
+                                    Temps (min)
+                                  </label>
+                                  <input
+                                    type='number'
+                                    min='1'
+                                    max='480'
+                                    step='5'
+                                    value={editServiceEstimatedMinutes}
+                                    onChange={e =>
+                                      setEditServiceEstimatedMinutes(parseInt(e.target.value) || 15)
+                                    }
+                                    className='w-full px-2 py-1.5 border border-gray-300 rounded text-xs min-h-[36px]'
+                                  />
+                                </div>
+                                <div>
+                                  <label className='block text-xs font-medium text-gray-700 mb-1'>
+                                    Unit
                                   </label>
                                   <input
                                     type='text'
@@ -1408,7 +1449,7 @@ export function ServicesStepNew({
                                     onChange={e =>
                                       setEditServiceUnit(e.target.value)
                                     }
-                                    placeholder='e.g., meter, piece...'
+                                    placeholder='meter...'
                                     maxLength={50}
                                     className='w-full px-2 py-1.5 border border-gray-300 rounded text-xs min-h-[36px]'
                                   />
@@ -1486,7 +1527,7 @@ export function ServicesStepNew({
                                 </button>
                               </div>
                               <p className='text-xs text-gray-500 mb-2'>
-                                Fixed
+                                Fixed {(service as any).estimated_minutes ? `· ⏱️ ${(service as any).estimated_minutes} min` : ''}
                               </p>
                               <div className='text-right'>
                                 <div className='text-sm font-bold text-green-600'>

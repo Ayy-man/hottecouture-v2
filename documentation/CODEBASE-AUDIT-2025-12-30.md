@@ -24,6 +24,9 @@
 | Timer resume on completed | ✅ FIXED | Show TimerButton for completed tasks to allow resuming |
 | Stop paused timers | ✅ FIXED | Allow "Terminer" on paused timers, not just active ones |
 | Timer state sync | ✅ FIXED | Added cache busting to parent component to sync with child |
+| Timer state pass-through | ✅ FIXED | Child passes state directly to parent, eliminating refetch |
+| Touch-friendly UI | ✅ FIXED | Made hover-dependent elements visible on iPad/touch devices |
+| Workload assignment race | ✅ FIXED | Wait for staff to load before processing order assignments |
 
 ---
 
@@ -708,6 +711,25 @@ if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
 5. **Resume completed tasks**: TimerButton now shows for completed tasks (not hidden), allowing resume
 6. **Stop paused timers**: "Terminer" now works on paused timers, not just running ones
 7. **Timer state sync**: Cache busting added to `garment-task-summary.tsx` to sync badge with child `TimerButton`
+8. **Timer state pass-through**: Child now passes timer state directly to parent via callback, eliminating second fetch
+
+---
+
+## TOUCH/IPAD FIXES
+
+1. **Category context menu**: Changed from `opacity-0` to `opacity-40` - now visible on touch devices
+2. **Service context menu**: Changed from `opacity-0` to `opacity-40` - now visible on touch devices
+3. **Price edit pencil**: Changed from `opacity-0` to `opacity-40` - now visible on touch devices
+4. **Gantt drag handles**: Added base background color `bg-black/10` - now visible on touch devices
+5. **Removed useless title tooltip**: `title="Click to edit price"` doesn't work on touch
+
+---
+
+## WORKLOAD PAGE FIXES
+
+1. **Assignment race condition**: Page now waits for staff data to load before processing orders
+   - Previously: Orders processed with empty `SEAMSTRESSES` array → all orders "Unassigned"
+   - Now: `if (loading || staffLoading)` ensures both are loaded
 
 ---
 
