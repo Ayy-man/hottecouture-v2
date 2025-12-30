@@ -134,6 +134,7 @@ async function handleOrderStage(
   const updatePayload: Record<string, any> = { status: newStage };
   if (shouldAutoArchive) {
     updatePayload.status = 'archived';
+    updatePayload.is_archived = true;
     updatePayload.archived_at = now;
     console.log(`📦 Auto-archiving order #${orderData.order_number} (delivered + already paid)`);
   }

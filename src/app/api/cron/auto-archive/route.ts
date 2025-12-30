@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
   const { error: updateError } = await supabase
     .from('order')
-    .update({ status: 'archived' })
+    .update({ status: 'archived', is_archived: true, archived_at: new Date().toISOString() })
     .in('id', oldDeliveredOrders.map(o => o.id))
 
   if (updateError) {

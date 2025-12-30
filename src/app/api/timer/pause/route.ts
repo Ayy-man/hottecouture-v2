@@ -72,9 +72,27 @@ export async function POST(request: NextRequest) {
 
     if (garment.started_at) {
       const startTime = new Date(garment.started_at);
-      elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
-      const elapsedMinutes = elapsedSeconds / 60;
-      newActualMinutes += elapsedMinutes;
+
+      // Validate start time
+      if (isNaN(startTime.getTime())) {
+        console.warn('⚠️ Invalid started_at date found:', garment.started_at);
+        // Don't add any time if start date is invalid to prevent data corruption
+      } else {
+        elapsedSeconds = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
+        const elapsedMinutes = elapsedSeconds / 60;
+
+        if (isNaN(elapsedMinutes) || !isFinite(elapsedMinutes)) {
+          console.error('❌ Calculated invalid elapsed minutes:', elapsedMinutes);
+        } else {
+          newActualMinutes += elapsedMinutes;
+        }
+      }
+    }
+
+    // Safety check for final value
+    if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
+      console.error('❌ Invalid final actual_minutes:', newActualMinutes);
+      newActualMinutes = garment.actual_minutes || 0; // Fallback to previous value
     }
 
     // Update garment - keep assignee but mark as paused
@@ -88,7 +106,10 @@ export async function POST(request: NextRequest) {
       })
       .eq('id', garment.id);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Database update error:', updateError);
+      throw updateError;
+    }
 
     return NextResponse.json({
       success: true,

@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
       .from('order')
       .update({
         status: 'archived',
+        is_archived: true,
+        archived_at: new Date().toISOString(),
       })
       .in(
         'id',

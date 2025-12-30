@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
       // Auto-archive if order is delivered
       if (order.status === 'delivered') {
         updateData.status = 'archived';
+        updateData.is_archived = true;
         updateData.archived_at = paidAt;
         console.log(`📦 Auto-archiving order #${orderNumber} (delivered + paid)`);
       }
@@ -190,6 +191,7 @@ export async function POST(request: NextRequest) {
       // Auto-archive if order is delivered
       if (order.status === 'delivered') {
         updateData.status = 'archived';
+        updateData.is_archived = true;
         updateData.archived_at = paidAt;
         console.log(`📦 Auto-archiving order #${orderNumber} (delivered + paid)`);
       }
