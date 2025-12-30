@@ -60,6 +60,7 @@ interface IntakeFormData {
 
 const initialFormData: IntakeFormData = {
   client: null,
+  measurements: undefined,
   garments: [],
   order: {
     type: 'alteration',
