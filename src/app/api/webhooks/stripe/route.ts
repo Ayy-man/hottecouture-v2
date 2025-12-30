@@ -64,6 +64,19 @@ export async function POST(request: NextRequest) {
             updateData.payment_method = 'stripe';
             updateData.paid_at = now;
 
+            // Check if order is delivered - if so, auto-archive
+            const { data: currentOrder } = await supabase
+              .from('order')
+              .select('status')
+              .eq('id', orderId)
+              .single();
+
+            if (currentOrder?.status === 'delivered') {
+              updateData.status = 'archived';
+              updateData.archived_at = now;
+              console.log(`📦 Auto-archiving order #${orderNumber} (delivered + paid)`);
+            }
+
             console.log(`✅ Full payment of $${((session.amount_total || 0) / 100).toFixed(2)} completed for order #${orderNumber} (${orderId})`);
           }
 
@@ -90,6 +103,20 @@ export async function POST(request: NextRequest) {
               payment_intent_id: session.payment_intent,
             },
           });
+
+          // Log auto-archive if it happened
+          if (updateData.status === 'archived') {
+            await supabase.from('event_log').insert({
+              entity: 'order',
+              entity_id: orderId,
+              action: 'auto_archived_on_payment',
+              actor: 'stripe_webhook',
+              details: {
+                reason: 'Order was delivered and fully paid',
+                payment_type: paymentType,
+              },
+            });
+          }
 
           // Get full order and client data for webhook
           const { data: orderWithClient } = await supabase
@@ -153,7 +180,7 @@ export async function POST(request: NextRequest) {
           // Only update if this wasn't already handled by checkout.session.completed
           const { data: order } = await supabase
             .from('order')
-            .select('payment_status, stripe_payment_intent_id')
+            .select('payment_status, stripe_payment_intent_id, status')
             .eq('id', orderId)
             .single();
 
@@ -176,6 +203,13 @@ export async function POST(request: NextRequest) {
             updateData.payment_status = 'paid';
             updateData.payment_method = 'stripe';
             updateData.paid_at = now;
+
+            // Auto-archive if order is delivered
+            if (order?.status === 'delivered') {
+              updateData.status = 'archived';
+              updateData.archived_at = now;
+              console.log(`📦 Auto-archiving order ${orderId} (delivered + paid)`);
+            }
           }
 
           await supabase

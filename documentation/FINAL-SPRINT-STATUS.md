@@ -69,6 +69,8 @@
 | 5 stages (Pending→Working→Done→Ready→Delivered) | ✅ Complete | Exact workflow |
 | One-tap time tracking | ✅ Complete | Start/Pause/Resume/Stop |
 | Auto-archiving after 7 days | ✅ Complete | Cron job implemented |
+| **Manual archive/unarchive** | ✅ Complete | Hold-to-archive button in order modal |
+| **Auto-archive on payment** | ✅ Complete | Archives when delivered + paid |
 | Color-coded urgency | ✅ Complete | Rush orders highlighted red |
 | Priority ordering (FIFO + express) | ✅ Complete | Rush skips queue |
 | Printable daily to-do list | ✅ Complete | `/print/tasks` route |
@@ -80,6 +82,8 @@
 | Block Done until hours entered | ❌ Missing | No enforcement |
 
 **New in v2.1:** Staff authentication via 4-digit PIN. Each staff member clocks in with their PIN and sees their active task in the header with pause/stop controls. Only one active task per person is allowed.
+
+**New in v2.2:** Manual archive/unarchive via hold-to-confirm button in order detail modal. Orders auto-archive when both delivered AND fully paid.
 
 ---
 
@@ -341,3 +345,51 @@ UPDATE staff SET pin_hash = '1237' WHERE name = 'Audrey-Anne';
 - `POST /api/staff/verify-pin` - Verify staff PIN
 - `GET /api/staff/active-task` - Get staff's current active task
 - `POST /api/staff/set-pin` - Admin: set staff PIN
+
+---
+
+## ORDER ARCHIVE SYSTEM (NEW)
+
+**Added:** December 30, 2025
+
+### Overview
+Orders can now be archived manually at any time, and are automatically archived when both delivered AND fully paid.
+
+### Manual Archive/Unarchive
+- **Location:** Order detail modal → "Hold to Archive" button
+- **Hold Duration:** 2 seconds (prevents accidental archives)
+- **Works regardless of:** Payment status or order status
+- **Restore:** Archived orders can be restored via "Hold to Restore" button
+
+### Auto-Archive Triggers
+Orders are automatically archived when BOTH conditions are met:
+- `status === 'delivered'`
+- `payment_status === 'paid'`
+
+**Trigger Points:**
+| Event | Effect |
+|-------|--------|
+| Stripe payment completes on delivered order | Auto-archives |
+| GHL invoice paid on delivered order | Auto-archives |
+| Manual payment recorded on delivered order | Auto-archives |
+| Order marked as delivered when already paid | Auto-archives |
+
+### New Component
+- **`HoldToArchiveButton`** (`/components/ui/hold-and-release-button.tsx`)
+  - Hold-to-confirm button with progress animation
+  - 2-second hold duration
+  - Two variants: `archive` (amber) and `unarchive` (green)
+  - Touch-friendly for iPad
+
+### API Endpoints Modified
+- `POST /api/orders/archive` - Now supports any status (not just delivered)
+- `POST /api/orders/unarchive` - Restores to 'delivered' status
+- `POST /api/order/[id]/stage` - Auto-archives on delivered + paid
+- `POST /api/webhooks/stripe` - Auto-archives on payment + delivered
+- `POST /api/webhooks/ghl-invoice` - Auto-archives on payment + delivered
+- `POST /api/payments/record-manual` - Auto-archives on payment + delivered
+
+### Event Logging
+All archive actions are logged to `event_log` table:
+- `auto_archived_on_payment` - Auto-archive triggered by payment
+- `auto_archived_on_delivery` - Auto-archive triggered by delivery (when already paid)

@@ -51,7 +51,7 @@ async function handleOrderStage(
     .from('order')
     .select(
       `
-      id, 
+      id,
       order_number,
       status,
       type,
@@ -60,6 +60,7 @@ async function handleOrderStage(
       tvq_cents,
       total_cents,
       total_work_seconds,
+      payment_status,
       client_id,
       client:client_id (
         id,
@@ -124,14 +125,35 @@ async function handleOrderStage(
     );
   }
 
-  // Update order status
+  // Check if we should auto-archive: transitioning to 'delivered' and already paid
+  const orderData = order as any;
+  const shouldAutoArchive = newStage === 'delivered' && orderData.payment_status === 'paid';
+  const now = new Date().toISOString();
+
+  // Update order status (and auto-archive if conditions met)
+  const updatePayload: Record<string, any> = { status: newStage };
+  if (shouldAutoArchive) {
+    updatePayload.status = 'archived';
+    updatePayload.archived_at = now;
+    console.log(`📦 Auto-archiving order #${orderData.order_number} (delivered + already paid)`);
+  }
+
   const { error: updateError } = await (supabase as any)
     .from('order')
-    .update({ status: newStage })
+    .update(updatePayload)
     .eq('id', orderId);
 
   if (updateError) {
     throw new Error(`Failed to update order status: ${updateError.message}`);
+  }
+
+  // Log auto-archive if it happened
+  if (shouldAutoArchive) {
+    await logEvent('order', orderId, 'auto_archived_on_delivery', {
+      correlationId,
+      reason: 'Order was already paid when marked as delivered',
+      original_transition: `${currentStatus} → delivered`,
+    });
   }
 
   // Note: Auto-create tasks logic removed - garment_service records ARE the tasks
@@ -312,20 +334,26 @@ async function handleOrderStage(
     }
   }
 
+  // Determine the final status (could be 'archived' if auto-archived)
+  const finalStatus = shouldAutoArchive ? 'archived' : newStage;
+
   // Log the event
   await logEvent('order', orderId, 'status_changed', {
     correlationId,
     fromStatus: currentStatus,
-    toStatus: newStage,
+    toStatus: finalStatus,
     allTasksComplete,
     notes: validatedData.notes,
+    autoArchived: shouldAutoArchive,
   });
 
   const response: OrderStageResponse = {
     orderId,
-    status: newStage,
+    status: finalStatus,
     allTasksComplete,
-    message: `Order status updated from ${currentStatus} to ${newStage}`,
+    message: shouldAutoArchive
+      ? `Order status updated from ${currentStatus} to delivered and auto-archived (fully paid)`
+      : `Order status updated from ${currentStatus} to ${newStage}`,
   };
 
   return response;

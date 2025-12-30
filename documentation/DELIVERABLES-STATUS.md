@@ -58,6 +58,8 @@
 | Task stages (Pending→Working→Done→Ready→Delivered) | ✅ | 5-stage workflow |
 | One-tap time tracking | ✅ | Start/Pause/Resume/Stop |
 | Auto-archiving after 7 days | ✅ | Cron job |
+| **Manual archive/unarchive** | ✅ | Hold-to-archive button (2 sec) |
+| **Auto-archive on payment** | ✅ | Archives when delivered + paid |
 | Color-coded urgency levels | ✅ | Rush = red |
 | Simple priority ordering | ✅ | Rush skips queue |
 | **Staff PIN authentication** | ✅ | 4-digit PIN per staff |
@@ -297,12 +299,15 @@
 - [ ] Open order detail modal
 - [ ] Start/pause/stop timer
 - [ ] View tasks
+- [ ] Hold-to-archive button (2 second hold)
+- [ ] Archive order and verify it disappears from board
 
 ### Payments (GHL)
 - [ ] Click "Envoyer lien de paiement"
 - [ ] Verify GHL invoice created
 - [ ] Mark invoice as paid in GHL
 - [ ] Verify webhook updates order status
+- [ ] If order was "delivered", verify it auto-archives
 
 ### Customer Portal
 - [ ] Visit `/portal`
@@ -415,4 +420,38 @@ UPDATE staff SET pin_hash = '1237' WHERE name = 'Audrey-Anne';
 
 ---
 
-*Document generated: December 24, 2025*
+## ORDER ARCHIVE SYSTEM (NEW)
+
+**Added:** December 30, 2025
+
+### Manual Archive/Unarchive
+Orders can be manually archived from the order detail modal using a "hold-to-archive" button:
+- Hold the button for 2 seconds to confirm
+- Works regardless of payment status
+- Archived orders can be restored via "Hold to Restore" button
+- Located in the order detail modal actions section
+
+### Auto-Archive on Payment
+Orders are automatically archived when **BOTH** conditions are met:
+- Order status is `delivered`
+- Payment status is `paid`
+
+**Trigger Points:**
+- Stripe payment webhook (checkout completed)
+- GHL invoice webhook (invoice paid)
+- Manual payment recording (cash/card terminal)
+- Order stage transition to delivered (when already paid)
+
+### Testing Checklist
+- [ ] Hold-to-archive button shows 2-second progress animation
+- [ ] Releasing before 2 seconds cancels the action
+- [ ] Archive button appears for non-archived orders
+- [ ] Restore button appears for archived orders
+- [ ] Manual archive works regardless of payment status
+- [ ] Payment on delivered order triggers auto-archive
+- [ ] Marking delivered when already paid triggers auto-archive
+- [ ] Archived orders can be restored to 'delivered' status
+
+---
+
+*Document updated: December 30, 2025*

@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
     // Find order by order_number
     const { data: order, error: orderError } = await supabase
       .from('order')
-      .select('id, order_number, type, total_cents, deposit_cents, payment_status, deposit_paid_at')
+      .select('id, order_number, type, total_cents, deposit_cents, payment_status, deposit_paid_at, status')
       .eq('order_number', orderNumber)
       .single();
 
@@ -174,10 +174,26 @@ export async function POST(request: NextRequest) {
     } else if (order.deposit_paid_at || order.payment_status === 'deposit_paid') {
       // Balance payment (deposit was already paid)
       updateData.payment_status = 'paid';
+
+      // Auto-archive if order is delivered
+      if (order.status === 'delivered') {
+        updateData.status = 'archived';
+        updateData.archived_at = paidAt;
+        console.log(`📦 Auto-archiving order #${orderNumber} (delivered + paid)`);
+      }
+
       console.log(`✅ Balance payment recorded for order #${orderNumber}`);
     } else {
       // Full payment
       updateData.payment_status = 'paid';
+
+      // Auto-archive if order is delivered
+      if (order.status === 'delivered') {
+        updateData.status = 'archived';
+        updateData.archived_at = paidAt;
+        console.log(`📦 Auto-archiving order #${orderNumber} (delivered + paid)`);
+      }
+
       console.log(`✅ Full payment recorded for order #${orderNumber}`);
     }
 
@@ -207,6 +223,20 @@ export async function POST(request: NextRequest) {
         contact_id: invoice.contactId,
       },
     });
+
+    // Log auto-archive if it happened
+    if (updateData.status === 'archived') {
+      await supabase.from('event_log').insert({
+        actor: 'ghl-webhook',
+        entity: 'order',
+        entity_id: order.id,
+        action: 'auto_archived_on_payment',
+        details: {
+          reason: 'Order was delivered and fully paid',
+          invoice_number: invoiceNumber,
+        },
+      });
+    }
 
     console.log(`✅ Order #${orderNumber} payment status updated to: ${updateData.payment_status}`);
 

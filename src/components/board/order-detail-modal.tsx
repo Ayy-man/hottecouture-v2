@@ -10,6 +10,7 @@ import { TaskManagementModal } from '@/components/tasks/task-management-modal';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { RACK_CONFIG } from '@/lib/config/production';
 import { PaymentStatusSection } from '@/components/payments/payment-status-section';
+import { HoldToArchiveButton } from '@/components/ui/hold-and-release-button';
 
 interface OrderDetailModalProps {
   order: any;
@@ -36,6 +37,57 @@ export function OrderDetailModal({
   const [customRackPosition, setCustomRackPosition] = useState<string>('');
   const [savingRack, setSavingRack] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+
+  const handleArchive = async () => {
+    if (!order?.id) return;
+    setArchiving(true);
+    try {
+      const response = await fetch('/api/orders/archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderIds: [order.id] }),
+      });
+      if (response.ok) {
+        onClose();
+        // Trigger a page refresh to update the board
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to archive order');
+      }
+    } catch (error) {
+      console.error('Error archiving order:', error);
+      alert('Failed to archive order');
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  const handleUnarchive = async () => {
+    if (!order?.id) return;
+    setArchiving(true);
+    try {
+      const response = await fetch('/api/orders/unarchive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderIds: [order.id] }),
+      });
+      if (response.ok) {
+        onClose();
+        // Trigger a page refresh to update the board
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to restore order');
+      }
+    } catch (error) {
+      console.error('Error restoring order:', error);
+      alert('Failed to restore order');
+    } finally {
+      setArchiving(false);
+    }
+  };
 
   const fetchOrderDetails = useCallback(async () => {
     if (!order?.id) return;
@@ -870,12 +922,26 @@ export function OrderDetailModal({
               </div>
 
               {/* Actions */}
-              <div className='flex justify-end space-x-3'>
+              <div className='flex flex-wrap justify-end gap-3'>
+                {/* Archive/Unarchive Button */}
+                {displayOrder.status === 'archived' ? (
+                  <HoldToArchiveButton
+                    variant='unarchive'
+                    onComplete={handleUnarchive}
+                    disabled={archiving}
+                  />
+                ) : (
+                  <HoldToArchiveButton
+                    variant='archive'
+                    onComplete={handleArchive}
+                    disabled={archiving}
+                  />
+                )}
                 <Button variant='outline' onClick={onClose}>
                   Close
                 </Button>
                 <Button variant='outline' onClick={() => setShowTaskModal(true)}>
-                  📋 Manage Tasks
+                  Manage Tasks
                 </Button>
                 <Button asChild>
                   <a href={`/labels/${displayOrder.id}`} target='_blank'>

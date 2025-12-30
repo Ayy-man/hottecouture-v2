@@ -84,6 +84,14 @@ export async function POST(request: NextRequest) {
         updateData.payment_status = 'paid';
         updateData.payment_method = method;
         updateData.paid_at = now;
+
+        // Auto-archive if order is delivered
+        if (order.status === 'delivered') {
+          updateData.status = 'archived';
+          updateData.archived_at = now;
+          console.log(`📦 Auto-archiving order #${order.order_number} (delivered + paid)`);
+        }
+
         console.log(`💵 Recording ${method} balance payment for order ${order.order_number}`);
         break;
 
@@ -98,6 +106,14 @@ export async function POST(request: NextRequest) {
           updateData.deposit_paid_at = now;
           updateData.deposit_payment_method = method;
         }
+
+        // Auto-archive if order is delivered
+        if (order.status === 'delivered') {
+          updateData.status = 'archived';
+          updateData.archived_at = now;
+          console.log(`📦 Auto-archiving order #${order.order_number} (delivered + paid)`);
+        }
+
         console.log(`💵 Recording ${method} full payment for order ${order.order_number}`);
         break;
 
@@ -125,6 +141,21 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error('Update error:', updateError);
       throw updateError;
+    }
+
+    // Log auto-archive if it happened
+    if (updateData.status === 'archived') {
+      await supabase.from('event_log').insert({
+        actor: 'manual_payment',
+        entity: 'order',
+        entity_id: orderId,
+        action: 'auto_archived_on_payment',
+        details: {
+          reason: 'Order was delivered and fully paid',
+          payment_type: type,
+          payment_method: method,
+        },
+      });
     }
 
     // Update GHL tags (discrete - no detailed logging for cash)

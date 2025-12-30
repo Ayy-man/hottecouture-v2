@@ -34,7 +34,25 @@ export async function POST(request: NextRequest) {
 
       targetOrderIds = (deliveredOrders || []).map((order: any) => order.id);
     } else {
-      targetOrderIds = Array.isArray(orderIds) ? orderIds : [orderIds];
+      // Direct archive by orderIds - archive any non-archived order regardless of current status
+      const providedIds = Array.isArray(orderIds) ? orderIds : [orderIds];
+
+      // Filter out already archived orders
+      const { data: activeOrders, error: fetchError } = await supabase
+        .from('order')
+        .select('id')
+        .in('id', providedIds)
+        .neq('status', 'archived');
+
+      if (fetchError) {
+        console.error('Error fetching orders:', fetchError);
+        return NextResponse.json(
+          { error: 'Failed to fetch orders' },
+          { status: 500 }
+        );
+      }
+
+      targetOrderIds = (activeOrders || []).map((order: any) => order.id);
     }
 
     if (targetOrderIds.length === 0) {
@@ -44,11 +62,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Archive the orders (using status only for now)
+    // Archive the orders with timestamp
     const { data, error } = await (supabase as any)
       .from('order')
       .update({
         status: 'archived',
+        archived_at: new Date().toISOString(),
       })
       .in('id', targetOrderIds)
       .select('id, order_number');
