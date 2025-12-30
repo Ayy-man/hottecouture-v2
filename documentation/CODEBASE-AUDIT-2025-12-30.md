@@ -18,6 +18,9 @@
 | Stale timers | ✅ FIXED | Added `/api/cron/stale-timers` - auto-terminates after 10 hours |
 | Edit completed time | ✅ FIXED | Added edit button to completed timer state |
 | Restart completed work | ✅ FIXED | Added "Reprendre" button to restart finished tasks |
+| Stale timers column name | ✅ FIXED | Changed `garment_type` to `type` (correct column) |
+| Invoice creation error | ✅ FIXED | Added defensive checks for GHL API response validation |
+| Dynamic measurements | ✅ ADDED | Admin template management + dynamic fields in intake |
 
 ---
 
@@ -674,6 +677,22 @@ if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
 |------|---------|
 | `src/lib/utils/timing-safe.ts` | Timing-safe comparison utilities for secrets/tokens |
 | `src/app/api/cron/stale-timers/route.ts` | Auto-terminate timers running >10 hours |
+| `src/app/api/admin/measurement-templates/route.ts` | CRUD API for measurement templates (body, curtain, upholstery, bedding) |
+| `src/app/admin/measurements/page.tsx` | Admin UI to manage measurement templates by category |
+
+## RECENT IMPROVEMENTS
+
+### Dynamic Measurements System
+- **Admin Template Management**: `/admin/measurements` - Add/edit/delete/reorder measurement fields
+- **Category Support**: Body, Curtain, Upholstery, Bedding categories
+- **Dynamic Intake Form**: `client-step.tsx` now loads fields from templates API
+- **Per-Order Custom Measurements**: Staff can add one-off measurements per order
+- **Client Profile Storage**: Measurements saved to client profile, pre-filled for returning customers
+
+### GHL Invoice Error Handling
+- **Response Validation**: `invoices.ts` validates `result.data.invoice` exists before returning success
+- **Defensive Checks**: `create-checkout/route.ts` validates invoice object before accessing properties
+- **Better Logging**: Logs GHL API response keys to help diagnose unexpected formats
 
 ---
 
