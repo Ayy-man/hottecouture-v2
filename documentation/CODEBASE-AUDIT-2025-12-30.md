@@ -23,6 +23,7 @@
 | Dynamic measurements | ✅ ADDED | Admin template management + dynamic fields in intake |
 | Timer resume on completed | ✅ FIXED | Show TimerButton for completed tasks to allow resuming |
 | Stop paused timers | ✅ FIXED | Allow "Terminer" on paused timers, not just active ones |
+| Timer state sync | ✅ FIXED | Added cache busting to parent component to sync with child |
 
 ---
 
@@ -706,9 +707,10 @@ if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
 4. **Archive fix**: `is_archived: true` now set consistently in all archive operations
 5. **Resume completed tasks**: TimerButton now shows for completed tasks (not hidden), allowing resume
 6. **Stop paused timers**: "Terminer" now works on paused timers, not just running ones
+7. **Timer state sync**: Cache busting added to `garment-task-summary.tsx` to sync badge with child `TimerButton`
 
 ---
 
 *Document generated: December 30, 2025*
-*Last updated: December 30, 2025*
+*Last updated: December 31, 2025*
 *Next review recommended: Before production deployment*

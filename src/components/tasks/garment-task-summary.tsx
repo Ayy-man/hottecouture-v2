@@ -53,8 +53,11 @@ export function GarmentTaskSummary({
     try {
       const params = new URLSearchParams({ orderId });
       if (garmentId) params.append('garmentId', garmentId);
+      params.append('_t', Date.now().toString()); // Cache bust
 
-      const response = await fetch(`/api/timer/status?${params.toString()}`);
+      const response = await fetch(`/api/timer/status?${params.toString()}`, {
+        cache: 'no-store',
+      });
       if (response.ok) {
         const data = await response.json();
         setTimerState({
