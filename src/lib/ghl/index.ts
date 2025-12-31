@@ -68,4 +68,5 @@ export {
   createBalanceInvoice,
   createFullInvoice,
   getNextInvoiceNumber,
+  createText2PayInvoice,
 } from './invoices';

@@ -508,6 +508,89 @@ export async function recordManualPayment(
   return { success: true, data: result.data.invoice };
 }
 
+/**
+ * Create and send a Text2Pay invoice (creates + sends in one step)
+ * Use this if regular createInvoice + sendInvoice doesn't work
+ */
+export async function createText2PayInvoice(params: {
+  contactId: string;
+  contactName?: string | undefined;
+  contactEmail?: string | undefined;
+  contactPhone?: string | undefined;
+  name: string;
+  items: GHLInvoiceItem[];
+  dueDate?: Date | undefined;
+  orderNumber?: number | undefined;
+  invoiceNumber?: string | undefined;
+}): Promise<GHLResult<GHLInvoice>> {
+  const locationId = getLocationId();
+  const safeOrderNumber = params.orderNumber !== undefined ? Number(params.orderNumber) : undefined;
+
+  console.log('📱 [Text2Pay] Creating invoice...');
+
+  // Build items
+  const invoiceItems = params.items.map((item) => ({
+    name: String(item.name || 'Service'),
+    qty: Number(item.quantity) || 1,
+    amount: Number(item.price) || 0,
+    currency: 'CAD',
+  }));
+
+  // Format dates
+  const today = new Date().toISOString().substring(0, 10);
+  const dueDateStr = params.dueDate && params.dueDate instanceof Date && !isNaN(params.dueDate.getTime())
+    ? params.dueDate.toISOString().substring(0, 10)
+    : undefined;
+
+  // Build contactDetails
+  const contactDetails: { id: string; name?: string; email?: string; phoneNo?: string } = {
+    id: String(params.contactId),
+  };
+  if (params.contactName) contactDetails.name = params.contactName;
+  if (params.contactEmail) contactDetails.email = params.contactEmail;
+  if (params.contactPhone) {
+    const formattedPhone = formatPhoneE164(params.contactPhone);
+    if (formattedPhone) contactDetails.phoneNo = formattedPhone;
+  }
+
+  const requestBody = {
+    altId: locationId,
+    altType: 'location',
+    name: String(params.name),
+    contactDetails,
+    businessDetails: {
+      name: 'Hotte Couture',
+    },
+    currency: 'CAD',
+    items: invoiceItems,
+    discount: { value: 0, type: 'percentage' },
+    issueDate: today,
+    dueDate: dueDateStr,
+    sentTo: {
+      email: contactDetails.email ? [contactDetails.email] : [],
+      phoneNo: contactDetails.phoneNo ? [contactDetails.phoneNo] : [],
+    },
+    liveMode: true,
+    invoiceNumber: params.invoiceNumber || (safeOrderNumber ? `HC-${safeOrderNumber}` : undefined),
+  };
+
+  console.log('📱 [Text2Pay] Request:', JSON.stringify(requestBody, null, 2));
+
+  const result = await ghlFetch<GHLInvoice>({
+    method: 'POST',
+    path: '/invoices/text2pay',
+    body: requestBody,
+  });
+
+  if (!result.success || !result.data) {
+    console.error('❌ [Text2Pay] Failed:', result.error);
+    return { success: false, error: result.error || 'Failed to create Text2Pay invoice' };
+  }
+
+  console.log('✅ [Text2Pay] Success:', JSON.stringify(result.data, null, 2));
+  return { success: true, data: result.data };
+}
+
 // ============================================================================
 // Helper Functions for Hotte Couture
 // ============================================================================

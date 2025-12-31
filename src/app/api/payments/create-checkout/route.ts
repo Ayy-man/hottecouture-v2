@@ -5,13 +5,11 @@ import {
   findOrCreateContact,
   findInvoiceForOrder,
   getInvoice,
-  createDepositInvoice,
-  createBalanceInvoice,
-  createFullInvoice,
-  sendInvoice,
+  createText2PayInvoice,
   centsToDollars,
   type AppClient,
   type GHLInvoice,
+  type GHLInvoiceItem,
 } from '@/lib/ghl';
 import { calculateDepositCents } from '@/lib/payments/deposit-calculator';
 
@@ -230,123 +228,62 @@ export async function POST(request: NextRequest) {
         console.warn(`⚠️ Could not fetch full invoice details: ${fullInvoiceResult.error}`);
       }
     } else {
-      // Create new invoice
-      console.log('💳 [18] Creating new invoice for type:', type);
-      let invoiceResult;
+      // Create AND send invoice using Text2Pay (one API call)
+      console.log('💳 [18] Creating Text2Pay invoice for type:', type);
+
+      // Build invoice name and number based on type
+      let invoiceName: string;
+      let invoiceNumber: string;
 
       if (type === 'deposit') {
-        console.log('💳 [19] Creating deposit invoice with:', {
-          contactId: ghlContactId,
-          clientName,
-          orderNumber,
-          totalCents,
-          depositCents: amountCents,
-          hasDueDate: !!dueDate,
-        });
-        invoiceResult = await createDepositInvoice({
-          contactId: ghlContactId,
-          clientName,
-          clientEmail: client.email || undefined,
-          clientPhone: client.phone || undefined,
-          orderNumber,
-          totalCents,
-          depositCents: amountCents,
-          dueDate,
-        });
+        invoiceName = `Dépôt - Commande #${orderNumber}`;
+        invoiceNumber = `HC-${orderNumber}-DEPOSIT`;
       } else if (type === 'balance') {
-        console.log('💳 [19] Creating balance invoice with:', {
-          contactId: ghlContactId,
-          clientName,
-          orderNumber,
-          balanceCents: amountCents,
-          hasDueDate: !!dueDate,
-        });
-        invoiceResult = await createBalanceInvoice({
-          contactId: ghlContactId,
-          clientName,
-          clientEmail: client.email || undefined,
-          clientPhone: client.phone || undefined,
-          orderNumber,
-          balanceCents: amountCents,
-          dueDate,
-        });
+        invoiceName = `Solde - Commande #${orderNumber}`;
+        invoiceNumber = `HC-${orderNumber}-BALANCE`;
       } else {
-        // Full invoice - fetch garment services for line items
-        const { data: garments } = await supabase
-          .from('garment')
-          .select(`
-            id,
-            type,
-            garment_service (
-              id,
-              quantity,
-              custom_price_cents,
-              service:service_id (
-                name,
-                base_price_cents
-              ),
-              custom_service_name
-            )
-          `)
-          .eq('order_id', orderId);
-
-        // Build line items from garment services
-        const items: Array<{
-          name: string;
-          description?: string | undefined;
-          priceCents: number;
-          quantity?: number | undefined;
-        }> = [];
-
-        if (garments) {
-          for (const garment of garments) {
-            const garmentServices = (garment.garment_service || []) as any[];
-            for (const gs of garmentServices) {
-              const serviceName = gs.service?.name || gs.custom_service_name || 'Service';
-              const priceCents = gs.custom_price_cents || gs.service?.base_price_cents || 0;
-              const item: typeof items[number] = {
-                name: serviceName,
-                priceCents: priceCents * (gs.quantity || 1),
-                quantity: 1,
-              };
-              if (garment.type) {
-                item.description = `Pour ${garment.type}`;
-              }
-              items.push(item);
-            }
-          }
-        }
-
-        // If no items found, create a single line item for the total
-        const rushFeeCents = Number(order.rush_fee_cents) || 0;
-        if (items.length === 0) {
-          items.push({
-            name: `Commande #${orderNumber}`,
-            priceCents: totalCents - rushFeeCents,
-          });
-        }
-
-        invoiceResult = await createFullInvoice({
-          contactId: ghlContactId,
-          clientName,
-          clientEmail: client.email || undefined,
-          clientPhone: client.phone || undefined,
-          orderNumber,
-          items,
-          rushFeeCents,
-          dueDate,
-        });
+        invoiceName = `Commande #${orderNumber} - ${clientName}`;
+        invoiceNumber = `HC-${orderNumber}`;
       }
 
+      // Build items - convert cents to dollars for GHL
+      const amountDollars = Number(centsToDollars(amountCents));
+      const items: GHLInvoiceItem[] = [{
+        name: invoiceName,
+        description: type === 'deposit'
+          ? `Dépôt de 50% pour ${clientName}`
+          : type === 'balance'
+          ? `Solde dû pour ${clientName}`
+          : `Services pour ${clientName}`,
+        quantity: 1,
+        price: amountDollars,
+      }];
+
+      console.log('💳 [19] Text2Pay params:', {
+        contactId: ghlContactId,
+        clientName,
+        orderNumber,
+        invoiceNumber,
+        amountDollars,
+        hasDueDate: !!dueDate,
+        hasPhone: !!client.phone,
+        hasEmail: !!client.email,
+      });
+
+      const invoiceResult = await createText2PayInvoice({
+        contactId: ghlContactId,
+        contactName: clientName,
+        contactEmail: client.email || undefined,
+        contactPhone: client.phone || undefined,
+        name: invoiceName,
+        items,
+        dueDate,
+        orderNumber,
+        invoiceNumber,
+      });
+
       if (!invoiceResult.success || !invoiceResult.data) {
-        console.error('Failed to create GHL invoice:', invoiceResult.error);
-        console.error('Invoice params:', {
-          contactId: ghlContactId,
-          clientName,
-          orderNumber,
-          type,
-          amountCents,
-        });
+        console.error('❌ Text2Pay failed:', invoiceResult.error);
         return NextResponse.json(
           { error: `Failed to create invoice: ${invoiceResult.error || 'Unknown error'}` },
           { status: 500 }
@@ -361,35 +298,18 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
-      console.log(`✅ GHL Invoice created: ${invoice._id} for order #${orderNumber}`);
+      console.log(`✅ Text2Pay Invoice created and sent: ${invoice._id} for order #${orderNumber}`);
     }
 
-    // Send the invoice if requested
+    // Get invoice URL - Text2Pay should return it since invoice is sent
     let invoiceUrl = invoice.invoiceUrl;
-    console.log(`📋 Invoice URL from create response: ${invoiceUrl || 'N/A'}`);
+    console.log(`📋 Invoice URL from response: ${invoiceUrl || 'N/A'}`);
 
-    if (sendSms) {
-      const sendResult = await sendInvoice(invoice._id);
-      if (sendResult.success && sendResult.data) {
-        invoiceUrl = sendResult.data.invoiceUrl || invoiceUrl;
-        console.log(`✅ Invoice sent to ${clientName}, URL: ${invoiceUrl || 'N/A'}`);
-      } else {
-        console.warn(`⚠️ Failed to send invoice:`, sendResult.error);
-        // If send failed, try to construct the URL manually
-        // GHL invoice URLs typically follow this pattern
-        if (!invoiceUrl) {
-          const locationId = process.env.GHL_LOCATION_ID;
-          invoiceUrl = `https://payments.leadconnectorhq.com/v2/preview/${locationId}/${invoice._id}`;
-          console.log(`🔧 Constructed fallback URL: ${invoiceUrl}`);
-        }
-      }
-    }
-
-    // Final fallback if we still don't have a URL
+    // Fallback URL construction if needed
     if (!invoiceUrl && invoice._id) {
       const locationId = process.env.GHL_LOCATION_ID;
       invoiceUrl = `https://payments.leadconnectorhq.com/v2/preview/${locationId}/${invoice._id}`;
-      console.log(`🔧 Final fallback URL: ${invoiceUrl}`);
+      console.log(`🔧 Constructed fallback URL: ${invoiceUrl}`);
     }
 
     // Update order with invoice info and pending status
