@@ -348,11 +348,12 @@ export async function sendInvoice(invoiceId: string): Promise<GHLResult<GHLInvoi
 
 /**
  * Get an invoice by ID
+ * Note: GET returns invoice data directly, not wrapped in { invoice: ... }
  */
 export async function getInvoice(invoiceId: string): Promise<GHLResult<GHLInvoice>> {
   const locationId = getLocationId();
 
-  const result = await ghlFetch<GHLInvoiceResponse>({
+  const result = await ghlFetch<GHLInvoice>({
     method: 'GET',
     path: `/invoices/${invoiceId}`,
     queryParams: {
@@ -365,7 +366,8 @@ export async function getInvoice(invoiceId: string): Promise<GHLResult<GHLInvoic
     return { success: false, error: result.error || 'Failed to get invoice' };
   }
 
-  return { success: true, data: result.data.invoice };
+  // GET returns invoice directly (not wrapped like POST does)
+  return { success: true, data: result.data };
 }
 
 /**
