@@ -5,7 +5,7 @@
  * Stripe is connected to GHL, so payments flow through GHL's invoicing system.
  */
 
-import { ghlFetch, getLocationId, centsToDollars } from './client';
+import { ghlFetch, getLocationId, centsToDollars, formatPhoneE164 } from './client';
 import { GHLResult } from './types';
 import { encodePaymentTypeMetadata } from '@/lib/payments/deposit-calculator';
 
@@ -193,12 +193,14 @@ export async function createInvoice(params: {
 
     console.log('📧 [4] Building request body...');
     // Build items array using GHL API field names: qty and amount (not quantity/price)
+    // IMPORTANT: Each item MUST have a currency field
     const invoiceItems = params.items.map((item, idx) => {
       console.log(`📧 [4.${idx}] Processing item:`, item);
-      const invoiceItem: { name: string; qty: number; amount: number; description?: string } = {
+      const invoiceItem: { name: string; qty: number; amount: number; currency: string; description?: string } = {
         name: String(item.name || 'Service'),
         qty: Number(item.quantity) || 1,
         amount: Number(item.price) || 0,
+        currency: 'CAD', // Required by GHL API
       };
       // Only add optional fields if they have values
       if (item.description) {
@@ -215,12 +217,16 @@ export async function createInvoice(params: {
       : undefined;
 
     // Build contactDetails with all available info
+    // Phone MUST be E.164 format (e.g., +15149876543)
     const contactDetails: GHLInvoiceCreateRequest['contactDetails'] = {
       id: String(params.contactId || ''),
     };
     if (params.contactName) contactDetails.name = params.contactName;
     if (params.contactEmail) contactDetails.email = params.contactEmail;
-    if (params.contactPhone) contactDetails.phoneNo = params.contactPhone;
+    if (params.contactPhone) {
+      const formattedPhone = formatPhoneE164(params.contactPhone);
+      if (formattedPhone) contactDetails.phoneNo = formattedPhone;
+    }
 
     const requestBody: GHLInvoiceCreateRequest = {
       altId: locationId,
