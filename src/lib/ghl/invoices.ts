@@ -556,6 +556,7 @@ export async function createText2PayInvoice(params: {
   const requestBody = {
     altId: locationId,
     altType: 'location',
+    action: 'send', // Required enum: 'send' to create and send in one step
     name: String(params.name),
     contactDetails,
     businessDetails: {
