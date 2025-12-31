@@ -293,10 +293,21 @@ export async function POST(request: NextRequest) {
       invoice = invoiceResult.data;
       // Log full response to see what Text2Pay returns
       console.log('📋 Text2Pay full response:', JSON.stringify(invoice, null, 2));
+      console.log('📋 Text2Pay response keys:', Object.keys(invoice));
 
-      // Text2Pay may return different field names - check for _id or id
-      const invoiceId = invoice._id || (invoice as any).id || (invoice as any).invoiceId || 'unknown';
-      // Don't fail if no ID - Text2Pay succeeded, invoice exists in GHL
+      // Text2Pay may return different field names - check multiple possibilities
+      const invoiceId = invoice._id || (invoice as any).id || (invoice as any).invoiceId ||
+        (invoice as any).invoice?._id || (invoice as any).invoice?.id ||
+        (invoice as any).data?._id || (invoice as any).data?.id || 'unknown';
+
+      // Also try to get invoiceUrl from nested objects
+      if (!invoice.invoiceUrl) {
+        invoice.invoiceUrl = (invoice as any).invoice?.invoiceUrl ||
+          (invoice as any).data?.invoiceUrl ||
+          (invoice as any).paymentLink ||
+          (invoice as any).invoice?.paymentLink;
+      }
+
       invoice._id = invoiceId;
       console.log(`✅ Text2Pay Invoice created: ${invoiceId} for order #${orderNumber}`);
     }
@@ -307,12 +318,12 @@ export async function POST(request: NextRequest) {
 
     // Fallback URL construction if needed
     if (!invoiceUrl) {
-      const locationId = process.env.GHL_LOCATION_ID;
       if (invoice._id && invoice._id !== 'unknown') {
-        // Try payment URL pattern
-        invoiceUrl = `https://payments.leadconnectorhq.com/v2/preview/${locationId}/${invoice._id}`;
+        // Use customer's GHL domain pattern
+        invoiceUrl = `https://api.automatosolution.com/invoice/${invoice._id}`;
       } else {
         // Last resort: link to GHL invoices page
+        const locationId = process.env.GHL_LOCATION_ID;
         invoiceUrl = `https://app.gohighlevel.com/v2/location/${locationId}/payments/invoices`;
       }
       console.log(`🔧 Constructed fallback URL: ${invoiceUrl}`);
