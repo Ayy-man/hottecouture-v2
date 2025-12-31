@@ -204,7 +204,16 @@ export async function POST(request: NextRequest) {
 
     let invoice: GHLInvoice;
 
-    if (existingResult.success && existingResult.data) {
+    // If we failed to check for existing invoices, don't blindly create (would cause duplicates)
+    if (!existingResult.success) {
+      console.error('❌ Could not check for existing invoices:', existingResult.error);
+      return NextResponse.json(
+        { error: `Could not verify invoice status: ${existingResult.error}` },
+        { status: 500 }
+      );
+    }
+
+    if (existingResult.data) {
       // Use existing invoice
       invoice = existingResult.data;
       console.log(`✅ Found existing invoice: ${invoice.invoiceNumber} (${invoice.status})`);

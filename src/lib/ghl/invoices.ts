@@ -405,14 +405,21 @@ export async function findInvoiceForOrder(
     ? `HC-${orderNumber}`
     : `HC-${orderNumber}-${type.toUpperCase()}`;
 
+  console.log(`🔍 Looking for invoice: ${expectedNumber} for contact ${contactId}`);
+
   const listResult = await listInvoicesByContact(contactId);
   if (!listResult.success) {
-    // If we can't list invoices, return error
+    // If we can't list invoices, log and return error
+    console.error(`❌ Failed to list invoices for contact ${contactId}:`, listResult.error);
     return { success: false, error: listResult.error || 'Failed to list invoices' };
   }
 
+  const invoices = listResult.data || [];
+  console.log(`📋 Found ${invoices.length} invoices for contact. Invoice numbers:`,
+    invoices.map(inv => `${inv.invoiceNumber} (${inv.status})`));
+
   // Find matching invoice by number (GHL may prefix with INV-)
-  const existing = listResult.data?.find(inv =>
+  const existing = invoices.find(inv =>
     inv.invoiceNumber === expectedNumber ||
     inv.invoiceNumber === `INV-${expectedNumber}`
   );
@@ -423,7 +430,7 @@ export async function findInvoiceForOrder(
     return { success: true, data: existing };
   }
 
-  console.log(`📝 No existing invoice found for ${expectedNumber}, will create new`);
+  console.log(`📝 No existing invoice found matching ${expectedNumber} or INV-${expectedNumber}`);
   return { success: true, data: null };
 }
 
