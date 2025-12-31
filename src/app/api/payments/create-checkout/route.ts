@@ -291,18 +291,25 @@ export async function POST(request: NextRequest) {
       }
 
       invoice = invoiceResult.data;
-      if (!invoice || !invoice._id) {
-        console.error('❌ Invoice data is invalid:', invoice);
+      // Log full response to see what Text2Pay returns
+      console.log('📋 Text2Pay full response:', JSON.stringify(invoice, null, 2));
+
+      // Text2Pay may return different field names - check for _id or id
+      const invoiceId = invoice._id || (invoice as any).id || (invoice as any).invoiceId;
+      if (!invoice || !invoiceId) {
+        console.error('❌ Invoice data is invalid - no ID found:', invoice);
         return NextResponse.json(
           { error: 'Invoice was created but returned invalid data' },
           { status: 500 }
         );
       }
-      console.log(`✅ Text2Pay Invoice created and sent: ${invoice._id} for order #${orderNumber}`);
+      // Normalize the ID field
+      invoice._id = invoiceId;
+      console.log(`✅ Text2Pay Invoice created and sent: ${invoiceId} for order #${orderNumber}`);
     }
 
-    // Get invoice URL - Text2Pay should return it since invoice is sent
-    let invoiceUrl = invoice.invoiceUrl;
+    // Get invoice URL - Text2Pay may use different field names
+    let invoiceUrl = invoice.invoiceUrl || (invoice as any).paymentLink || (invoice as any).checkoutUrl || (invoice as any).url;
     console.log(`📋 Invoice URL from response: ${invoiceUrl || 'N/A'}`);
 
     // Fallback URL construction if needed
