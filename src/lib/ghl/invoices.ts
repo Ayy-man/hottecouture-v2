@@ -248,10 +248,10 @@ export async function createInvoice(params: {
       },
       // issueDate is REQUIRED
       issueDate: today,
-      // sentTo is required (empty arrays if not sending notification)
+      // sentTo - populate with contact info for send functionality
       sentTo: {
-        email: [],
-        phoneNo: [],
+        email: contactDetails.email ? [contactDetails.email] : [],
+        phoneNo: contactDetails.phoneNo ? [contactDetails.phoneNo] : [],
       },
       liveMode: true,
     };
