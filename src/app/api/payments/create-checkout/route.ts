@@ -3,12 +3,14 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import {
   isGHLConfigured,
   findOrCreateContact,
+  findInvoiceForOrder,
   createDepositInvoice,
   createBalanceInvoice,
   createFullInvoice,
   sendInvoice,
   centsToDollars,
   type AppClient,
+  type GHLInvoice,
 } from '@/lib/ghl';
 import { calculateDepositCents } from '@/lib/payments/deposit-calculator';
 
@@ -191,142 +193,155 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create GHL Invoice based on payment type
-    let invoiceResult;
+    // Find or create GHL Invoice based on payment type
     console.log('💳 [15] Processing due date:', order.due_date);
     const dueDate = order.due_date ? new Date(order.due_date) : undefined;
     console.log('💳 [16] Due date object:', dueDate, 'isValid:', dueDate ? !isNaN(dueDate.getTime()) : 'N/A');
 
-    console.log('💳 [17] Creating invoice for type:', type);
+    // Check for existing invoice first (find-or-create pattern)
+    console.log('💳 [17] Checking for existing invoice...');
+    const existingResult = await findInvoiceForOrder(ghlContactId, orderNumber, type);
 
-    if (type === 'deposit') {
-      console.log('💳 [18] Creating deposit invoice with:', {
-        contactId: ghlContactId,
-        clientName,
-        orderNumber,
-        totalCents,
-        depositCents: amountCents,
-        hasDueDate: !!dueDate,
-      });
-      invoiceResult = await createDepositInvoice({
-        contactId: ghlContactId,
-        clientName,
-        clientEmail: client.email || undefined,
-        clientPhone: client.phone || undefined,
-        orderNumber,
-        totalCents,
-        depositCents: amountCents,
-        dueDate,
-      });
-    } else if (type === 'balance') {
-      console.log('💳 [18] Creating balance invoice with:', {
-        contactId: ghlContactId,
-        clientName,
-        orderNumber,
-        balanceCents: amountCents,
-        hasDueDate: !!dueDate,
-      });
-      invoiceResult = await createBalanceInvoice({
-        contactId: ghlContactId,
-        clientName,
-        clientEmail: client.email || undefined,
-        clientPhone: client.phone || undefined,
-        orderNumber,
-        balanceCents: amountCents,
-        dueDate,
-      });
+    let invoice: GHLInvoice;
+
+    if (existingResult.success && existingResult.data) {
+      // Use existing invoice
+      invoice = existingResult.data;
+      console.log(`✅ Found existing invoice: ${invoice.invoiceNumber} (${invoice.status})`);
     } else {
-      // Full invoice - fetch garment services for line items
-      const { data: garments } = await supabase
-        .from('garment')
-        .select(`
-          id,
-          type,
-          garment_service (
+      // Create new invoice
+      console.log('💳 [18] Creating new invoice for type:', type);
+      let invoiceResult;
+
+      if (type === 'deposit') {
+        console.log('💳 [19] Creating deposit invoice with:', {
+          contactId: ghlContactId,
+          clientName,
+          orderNumber,
+          totalCents,
+          depositCents: amountCents,
+          hasDueDate: !!dueDate,
+        });
+        invoiceResult = await createDepositInvoice({
+          contactId: ghlContactId,
+          clientName,
+          clientEmail: client.email || undefined,
+          clientPhone: client.phone || undefined,
+          orderNumber,
+          totalCents,
+          depositCents: amountCents,
+          dueDate,
+        });
+      } else if (type === 'balance') {
+        console.log('💳 [19] Creating balance invoice with:', {
+          contactId: ghlContactId,
+          clientName,
+          orderNumber,
+          balanceCents: amountCents,
+          hasDueDate: !!dueDate,
+        });
+        invoiceResult = await createBalanceInvoice({
+          contactId: ghlContactId,
+          clientName,
+          clientEmail: client.email || undefined,
+          clientPhone: client.phone || undefined,
+          orderNumber,
+          balanceCents: amountCents,
+          dueDate,
+        });
+      } else {
+        // Full invoice - fetch garment services for line items
+        const { data: garments } = await supabase
+          .from('garment')
+          .select(`
             id,
-            quantity,
-            custom_price_cents,
-            service:service_id (
-              name,
-              base_price_cents
-            ),
-            custom_service_name
-          )
-        `)
-        .eq('order_id', orderId);
+            type,
+            garment_service (
+              id,
+              quantity,
+              custom_price_cents,
+              service:service_id (
+                name,
+                base_price_cents
+              ),
+              custom_service_name
+            )
+          `)
+          .eq('order_id', orderId);
 
-      // Build line items from garment services
-      const items: Array<{
-        name: string;
-        description?: string | undefined;
-        priceCents: number;
-        quantity?: number | undefined;
-      }> = [];
+        // Build line items from garment services
+        const items: Array<{
+          name: string;
+          description?: string | undefined;
+          priceCents: number;
+          quantity?: number | undefined;
+        }> = [];
 
-      if (garments) {
-        for (const garment of garments) {
-          const garmentServices = (garment.garment_service || []) as any[];
-          for (const gs of garmentServices) {
-            const serviceName = gs.service?.name || gs.custom_service_name || 'Service';
-            const priceCents = gs.custom_price_cents || gs.service?.base_price_cents || 0;
-            const item: typeof items[number] = {
-              name: serviceName,
-              priceCents: priceCents * (gs.quantity || 1),
-              quantity: 1,
-            };
-            if (garment.type) {
-              item.description = `Pour ${garment.type}`;
+        if (garments) {
+          for (const garment of garments) {
+            const garmentServices = (garment.garment_service || []) as any[];
+            for (const gs of garmentServices) {
+              const serviceName = gs.service?.name || gs.custom_service_name || 'Service';
+              const priceCents = gs.custom_price_cents || gs.service?.base_price_cents || 0;
+              const item: typeof items[number] = {
+                name: serviceName,
+                priceCents: priceCents * (gs.quantity || 1),
+                quantity: 1,
+              };
+              if (garment.type) {
+                item.description = `Pour ${garment.type}`;
+              }
+              items.push(item);
             }
-            items.push(item);
           }
         }
-      }
 
-      // If no items found, create a single line item for the total
-      const rushFeeCents = Number(order.rush_fee_cents) || 0;
-      if (items.length === 0) {
-        items.push({
-          name: `Commande #${orderNumber}`,
-          priceCents: totalCents - rushFeeCents,
+        // If no items found, create a single line item for the total
+        const rushFeeCents = Number(order.rush_fee_cents) || 0;
+        if (items.length === 0) {
+          items.push({
+            name: `Commande #${orderNumber}`,
+            priceCents: totalCents - rushFeeCents,
+          });
+        }
+
+        invoiceResult = await createFullInvoice({
+          contactId: ghlContactId,
+          clientName,
+          clientEmail: client.email || undefined,
+          clientPhone: client.phone || undefined,
+          orderNumber,
+          items,
+          rushFeeCents,
+          dueDate,
         });
       }
 
-      invoiceResult = await createFullInvoice({
-        contactId: ghlContactId,
-        clientName,
-        clientEmail: client.email || undefined,
-        clientPhone: client.phone || undefined,
-        orderNumber,
-        items,
-        rushFeeCents,
-        dueDate,
-      });
-    }
+      if (!invoiceResult.success || !invoiceResult.data) {
+        console.error('Failed to create GHL invoice:', invoiceResult.error);
+        console.error('Invoice params:', {
+          contactId: ghlContactId,
+          clientName,
+          orderNumber,
+          type,
+          amountCents,
+        });
+        return NextResponse.json(
+          { error: `Failed to create invoice: ${invoiceResult.error || 'Unknown error'}` },
+          { status: 500 }
+        );
+      }
 
-    if (!invoiceResult.success || !invoiceResult.data) {
-      console.error('Failed to create GHL invoice:', invoiceResult.error);
-      console.error('Invoice params:', {
-        contactId: ghlContactId,
-        clientName,
-        orderNumber,
-        type,
-        amountCents,
-      });
-      return NextResponse.json(
-        { error: `Failed to create invoice: ${invoiceResult.error || 'Unknown error'}` },
-        { status: 500 }
-      );
+      invoice = invoiceResult.data;
+      if (!invoice || !invoice._id) {
+        console.error('❌ Invoice data is invalid:', invoice);
+        return NextResponse.json(
+          { error: 'Invoice was created but returned invalid data' },
+          { status: 500 }
+        );
+      }
+      console.log(`✅ GHL Invoice created: ${invoice._id} for order #${orderNumber}`);
     }
-
-    const invoice = invoiceResult.data;
-    if (!invoice || !invoice._id) {
-      console.error('❌ Invoice data is invalid:', invoice);
-      return NextResponse.json(
-        { error: 'Invoice was created but returned invalid data' },
-        { status: 500 }
-      );
-    }
-    console.log(`✅ GHL Invoice created: ${invoice._id} for order #${orderNumber}`);
 
     // Send the invoice if requested
     let invoiceUrl = invoice.invoiceUrl;

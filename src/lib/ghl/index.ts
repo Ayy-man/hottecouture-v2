@@ -61,6 +61,7 @@ export {
   sendInvoice,
   getInvoice,
   listInvoicesByContact,
+  findInvoiceForOrder,
   voidInvoice,
   recordManualPayment,
   createDepositInvoice,

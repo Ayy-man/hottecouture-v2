@@ -161,6 +161,7 @@ export async function createInvoice(params: {
   items: GHLInvoiceItem[];
   dueDate?: Date | undefined;
   orderNumber?: number | undefined;
+  invoiceNumber?: string | undefined; // Custom invoice number (overrides auto-generated)
   notes?: string | undefined;
   sendNotification?: boolean | undefined;
 }): Promise<GHLResult<GHLInvoice>> {
@@ -263,10 +264,13 @@ export async function createInvoice(params: {
     }
 
     console.log('📧 [6] Processing invoice number...');
-    // Add invoice number based on order number
-    if (safeOrderNumber !== undefined && safeOrderNumber !== null && !isNaN(safeOrderNumber)) {
+    // Use custom invoice number if provided, otherwise generate from order number
+    if (params.invoiceNumber) {
+      requestBody.invoiceNumber = params.invoiceNumber;
+      console.log('📧 [6.1] Custom invoice number set:', requestBody.invoiceNumber);
+    } else if (safeOrderNumber !== undefined && safeOrderNumber !== null && !isNaN(safeOrderNumber)) {
       requestBody.invoiceNumber = `HC-${safeOrderNumber}`;
-      console.log('📧 [6.1] Invoice number set:', requestBody.invoiceNumber);
+      console.log('📧 [6.1] Auto invoice number set:', requestBody.invoiceNumber);
     }
 
     console.log('📧 [7] Processing notes...');
@@ -388,6 +392,42 @@ export async function listInvoicesByContact(contactId: string): Promise<GHLResul
 }
 
 /**
+ * Find an existing invoice for an order by type (deposit, balance, or full)
+ * Returns null if not found (so we can create a new one)
+ */
+export async function findInvoiceForOrder(
+  contactId: string,
+  orderNumber: number,
+  type: 'deposit' | 'balance' | 'full'
+): Promise<GHLResult<GHLInvoice | null>> {
+  // Build expected invoice number based on type
+  const expectedNumber = type === 'full'
+    ? `HC-${orderNumber}`
+    : `HC-${orderNumber}-${type.toUpperCase()}`;
+
+  const listResult = await listInvoicesByContact(contactId);
+  if (!listResult.success) {
+    // If we can't list invoices, return error
+    return { success: false, error: listResult.error || 'Failed to list invoices' };
+  }
+
+  // Find matching invoice by number (GHL may prefix with INV-)
+  const existing = listResult.data?.find(inv =>
+    inv.invoiceNumber === expectedNumber ||
+    inv.invoiceNumber === `INV-${expectedNumber}`
+  );
+
+  // Skip voided invoices - we'll create a new one
+  if (existing && existing.status !== 'void') {
+    console.log(`✅ Found existing invoice: ${existing.invoiceNumber} (${existing.status})`);
+    return { success: true, data: existing };
+  }
+
+  console.log(`📝 No existing invoice found for ${expectedNumber}, will create new`);
+  return { success: true, data: null };
+}
+
+/**
  * Void an invoice
  */
 export async function voidInvoice(invoiceId: string): Promise<GHLResult<GHLInvoice>> {
@@ -467,6 +507,7 @@ export async function createDepositInvoice(params: {
     contactPhone: params.clientPhone,
     name: `Dépôt - Commande #${params.orderNumber}`,
     orderNumber: params.orderNumber,
+    invoiceNumber: `HC-${params.orderNumber}-DEPOSIT`,
     items: [
       {
         name: `Dépôt pour commande #${params.orderNumber}`,
@@ -505,6 +546,7 @@ export async function createBalanceInvoice(params: {
     contactPhone: params.clientPhone,
     name: `Solde - Commande #${params.orderNumber}`,
     orderNumber: params.orderNumber,
+    invoiceNumber: `HC-${params.orderNumber}-BALANCE`,
     items: [
       {
         name: `Solde pour commande #${params.orderNumber}`,
@@ -568,6 +610,7 @@ export async function createFullInvoice(params: {
     contactPhone: params.clientPhone,
     name: `Commande #${params.orderNumber} - ${params.clientName}`,
     orderNumber: params.orderNumber,
+    invoiceNumber: `HC-${params.orderNumber}`,
     items: invoiceItems,
     dueDate: params.dueDate,
     notes: encodePaymentTypeMetadata('Merci pour votre confiance!', 'full'),
