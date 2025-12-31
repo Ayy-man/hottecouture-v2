@@ -4,6 +4,7 @@ import {
   isGHLConfigured,
   findOrCreateContact,
   findInvoiceForOrder,
+  getInvoice,
   createDepositInvoice,
   createBalanceInvoice,
   createFullInvoice,
@@ -214,9 +215,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (existingResult.data) {
-      // Use existing invoice
-      invoice = existingResult.data;
-      console.log(`✅ Found existing invoice: ${invoice.invoiceNumber} (${invoice.status})`);
+      // Use existing invoice - but fetch full details to get invoiceUrl
+      const existingInvoice = existingResult.data;
+      console.log(`✅ Found existing invoice: ${existingInvoice.invoiceNumber} (${existingInvoice.status})`);
+
+      // Fetch full invoice details (list API doesn't include invoiceUrl)
+      const fullInvoiceResult = await getInvoice(existingInvoice._id);
+      if (fullInvoiceResult.success && fullInvoiceResult.data) {
+        invoice = fullInvoiceResult.data;
+        console.log(`✅ Fetched invoice details, invoiceUrl: ${invoice.invoiceUrl || 'N/A'}`);
+      } else {
+        // Fall back to the partial data we have
+        invoice = existingInvoice;
+        console.warn(`⚠️ Could not fetch full invoice details: ${fullInvoiceResult.error}`);
+      }
     } else {
       // Create new invoice
       console.log('💳 [18] Creating new invoice for type:', type);
