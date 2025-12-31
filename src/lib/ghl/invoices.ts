@@ -337,6 +337,9 @@ export async function sendInvoice(invoiceId: string): Promise<GHLResult<GHLInvoi
       altId: locationId,
       altType: 'location',
     },
+    body: {
+      liveMode: true,
+    },
   });
 
   if (!result.success || !result.data) {
