@@ -557,6 +557,7 @@ export async function createText2PayInvoice(params: {
     altId: locationId,
     altType: 'location',
     action: 'send', // Required enum: 'send' to create and send in one step
+    userId: '36ZzURYSrDYgjnNgRo94', // GHL user ID for sending invoices
     name: String(params.name),
     contactDetails,
     businessDetails: {
