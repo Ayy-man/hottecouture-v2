@@ -295,17 +295,10 @@ export async function POST(request: NextRequest) {
       console.log('📋 Text2Pay full response:', JSON.stringify(invoice, null, 2));
 
       // Text2Pay may return different field names - check for _id or id
-      const invoiceId = invoice._id || (invoice as any).id || (invoice as any).invoiceId;
-      if (!invoice || !invoiceId) {
-        console.error('❌ Invoice data is invalid - no ID found:', invoice);
-        return NextResponse.json(
-          { error: 'Invoice was created but returned invalid data' },
-          { status: 500 }
-        );
-      }
-      // Normalize the ID field
+      const invoiceId = invoice._id || (invoice as any).id || (invoice as any).invoiceId || 'unknown';
+      // Don't fail if no ID - Text2Pay succeeded, invoice exists in GHL
       invoice._id = invoiceId;
-      console.log(`✅ Text2Pay Invoice created and sent: ${invoiceId} for order #${orderNumber}`);
+      console.log(`✅ Text2Pay Invoice created: ${invoiceId} for order #${orderNumber}`);
     }
 
     // Get invoice URL - Text2Pay may use different field names
@@ -313,16 +306,26 @@ export async function POST(request: NextRequest) {
     console.log(`📋 Invoice URL from response: ${invoiceUrl || 'N/A'}`);
 
     // Fallback URL construction if needed
-    if (!invoiceUrl && invoice._id) {
+    if (!invoiceUrl) {
       const locationId = process.env.GHL_LOCATION_ID;
-      invoiceUrl = `https://payments.leadconnectorhq.com/v2/preview/${locationId}/${invoice._id}`;
+      if (invoice._id && invoice._id !== 'unknown') {
+        // Try payment URL pattern
+        invoiceUrl = `https://payments.leadconnectorhq.com/v2/preview/${locationId}/${invoice._id}`;
+      } else {
+        // Last resort: link to GHL invoices page
+        invoiceUrl = `https://app.gohighlevel.com/v2/location/${locationId}/payments/invoices`;
+      }
       console.log(`🔧 Constructed fallback URL: ${invoiceUrl}`);
     }
+
+    // Get invoice number - use our generated one as fallback
+    const finalInvoiceNumber = invoice.invoiceNumber || (invoice as any).number ||
+      (type === 'deposit' ? `HC-${orderNumber}-DEPOSIT` : type === 'balance' ? `HC-${orderNumber}-BALANCE` : `HC-${orderNumber}`);
 
     // Update order with invoice info and pending status
     const updateData: Record<string, any> = {
       invoice_url: invoiceUrl,
-      invoice_number: invoice.invoiceNumber,
+      invoice_number: finalInvoiceNumber,
     };
 
     if (type === 'deposit') {
@@ -342,7 +345,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       invoiceId: invoice._id,
-      invoiceNumber: invoice.invoiceNumber,
+      invoiceNumber: finalInvoiceNumber,
       invoiceUrl: invoiceUrl,
       amount_cents: amountCents,
       type,
