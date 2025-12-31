@@ -289,7 +289,8 @@ export async function createInvoice(params: {
     }
 
     console.log('📧 [10] Calling ghlFetch...');
-    const result = await ghlFetch<GHLInvoiceResponse>({
+    // POST returns invoice directly (not wrapped in { invoice: ... })
+    const result = await ghlFetch<GHLInvoice>({
       method: 'POST',
       path: '/invoices/',
       body: requestBody,
@@ -306,8 +307,9 @@ export async function createInvoice(params: {
     }
 
     // Validate the invoice object exists in the response
+    // POST returns invoice directly (same as GET), not wrapped in { invoice: ... }
     console.log('📧 [12] Validating response...');
-    const invoice = result.data.invoice;
+    const invoice = result.data;
     if (!invoice || !invoice._id) {
       console.error('❌ GHL API returned unexpected response:', JSON.stringify(result.data));
       return { success: false, error: 'GHL API returned invalid invoice response' };
