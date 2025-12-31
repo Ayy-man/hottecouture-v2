@@ -82,6 +82,7 @@ export interface GHLInvoiceCreateRequest {
   termsNotes?: string;
   invoiceNumber?: string;
   title?: string;
+  status?: 'draft' | 'sent'; // Try to create as sent directly
 }
 
 export interface GHLInvoice {
@@ -254,6 +255,8 @@ export async function createInvoice(params: {
         phoneNo: contactDetails.phoneNo ? [contactDetails.phoneNo] : [],
       },
       liveMode: true,
+      // Try to create as 'sent' directly to skip draft status
+      status: 'sent',
     };
 
     console.log('📧 [5] Processing due date...');
