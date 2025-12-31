@@ -366,14 +366,30 @@ export async function POST(request: NextRequest) {
 
     // Send the invoice if requested
     let invoiceUrl = invoice.invoiceUrl;
+    console.log(`📋 Invoice URL from create response: ${invoiceUrl || 'N/A'}`);
+
     if (sendSms) {
       const sendResult = await sendInvoice(invoice._id);
       if (sendResult.success && sendResult.data) {
         invoiceUrl = sendResult.data.invoiceUrl || invoiceUrl;
-        console.log(`✅ Invoice sent to ${clientName}`);
+        console.log(`✅ Invoice sent to ${clientName}, URL: ${invoiceUrl || 'N/A'}`);
       } else {
         console.warn(`⚠️ Failed to send invoice:`, sendResult.error);
+        // If send failed, try to construct the URL manually
+        // GHL invoice URLs typically follow this pattern
+        if (!invoiceUrl) {
+          const locationId = process.env.GHL_LOCATION_ID;
+          invoiceUrl = `https://payments.leadconnectorhq.com/v2/preview/${locationId}/${invoice._id}`;
+          console.log(`🔧 Constructed fallback URL: ${invoiceUrl}`);
+        }
       }
+    }
+
+    // Final fallback if we still don't have a URL
+    if (!invoiceUrl && invoice._id) {
+      const locationId = process.env.GHL_LOCATION_ID;
+      invoiceUrl = `https://payments.leadconnectorhq.com/v2/preview/${locationId}/${invoice._id}`;
+      console.log(`🔧 Final fallback URL: ${invoiceUrl}`);
     }
 
     // Update order with invoice info and pending status

@@ -316,6 +316,8 @@ export async function createInvoice(params: {
     }
 
     console.log('📧 [13] Invoice created successfully:', invoice._id);
+    // Log ALL fields to see what URL fields GHL returns
+    console.log('📧 [14] Full invoice response fields:', JSON.stringify(invoice, null, 2));
     return { success: true, data: invoice };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -328,11 +330,14 @@ export async function createInvoice(params: {
 
 /**
  * Send an invoice to the customer (via email/SMS)
+ * Note: This may return 403 on some GHL accounts - use Text2Pay as fallback
  */
 export async function sendInvoice(invoiceId: string): Promise<GHLResult<GHLInvoice>> {
   const locationId = getLocationId();
 
-  const result = await ghlFetch<GHLInvoiceResponse>({
+  console.log(`📤 Attempting to send invoice: ${invoiceId}`);
+
+  const result = await ghlFetch<GHLInvoice>({
     method: 'POST',
     path: `/invoices/${invoiceId}/send`,
     queryParams: {
@@ -345,10 +350,13 @@ export async function sendInvoice(invoiceId: string): Promise<GHLResult<GHLInvoi
   });
 
   if (!result.success || !result.data) {
+    console.error(`❌ Send invoice failed: ${result.error}`);
     return { success: false, error: result.error || 'Failed to send invoice' };
   }
 
-  return { success: true, data: result.data.invoice };
+  // Send endpoint also returns invoice directly (not wrapped)
+  console.log(`✅ Invoice sent, response:`, JSON.stringify(result.data, null, 2));
+  return { success: true, data: result.data };
 }
 
 /**
