@@ -381,6 +381,8 @@ export async function listInvoicesByContact(contactId: string): Promise<GHLResul
       altId: locationId,
       altType: 'location',
       contactId,
+      limit: '100',  // Required by GHL API
+      offset: '0',   // Required by GHL API
     },
   });
 
