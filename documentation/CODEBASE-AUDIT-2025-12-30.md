@@ -702,6 +702,156 @@ if (isNaN(newActualMinutes) || !isFinite(newActualMinutes)) {
 
 ---
 
+## GHL INVOICE INTEGRATION - DEEP DIVE (December 31, 2025)
+
+### Overview
+Attempted to implement invoice creation and payment link generation via GHL (GoHighLevel) API. The goal is: Staff clicks "Send Payment Request" → Invoice created in GHL → Payment link sent to customer via SMS → Customer pays via Stripe (connected to GHL).
+
+### The Problem
+Multiple approaches tried, none fully working. Invoices ARE being created in GHL, but:
+1. **Send Invoice API returns 403 Forbidden** - even with `invoices.write` scope
+2. **Text2Pay creates invoices but response lacks expected fields** (no `_id`, no `invoiceUrl`)
+3. **Draft invoices have no payment URL** until sent
+
+### What We Tried
+
+#### Attempt 1: Regular Invoice + Send
+**Flow:** `POST /invoices/` (creates draft) → `POST /invoices/{id}/send` (sends to customer)
+
+**Issue:** Send endpoint returns `403 Forbidden`
+```
+❌ GHL API Error: POST /invoices/{id}/send
+❌ Status: 403 Forbidden
+```
+
+**Possible causes:**
+- Missing scope (but user has `invoices.write`)
+- GHL platform limitation
+- Requires different authentication method
+
+#### Attempt 2: Create with status: 'sent'
+**Hypothesis:** Maybe we can skip the send step by creating with `status: 'sent'`
+
+**Result:** GHL ignores the status field - invoice still created as draft
+
+#### Attempt 3: Text2Pay Endpoint
+**Flow:** `POST /invoices/text2pay` with `action: 'send'`
+
+**What it does:** Creates a non-draft invoice (better than draft!)
+
+**Issues:**
+1. Response doesn't include `_id` field (or uses different field name)
+2. Response doesn't include `invoiceUrl`
+3. Invoice IS created in GHL dashboard but we can't get the URL programmatically
+4. SMS not sent automatically despite `action: 'send'`
+
+**Error:** `Invoice was created but returned invalid data` (no ID found in response)
+
+#### Attempt 4: Relaxed Validation + Fallback URL
+**Changes made:**
+- Don't fail if no `_id` in response
+- Construct fallback URL using pattern: `https://api.automatosolution.com/invoice/{id}`
+- Check multiple possible field names for ID and URL
+
+**Current state:** Invoice created, but can't get ID to construct URL
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `src/lib/ghl/invoices.ts` | Added `createText2PayInvoice()`, `userId` field, `action: 'send'`, enhanced logging |
+| `src/app/api/payments/create-checkout/route.ts` | Switched to Text2Pay, relaxed validation, fallback URL construction |
+| `src/lib/ghl/index.ts` | Exported new invoice functions |
+
+### Key Code Locations
+
+**Text2Pay implementation:** `src/lib/ghl/invoices.ts:515-593`
+```typescript
+export async function createText2PayInvoice(params) {
+  const requestBody = {
+    altId: locationId,
+    altType: 'location',
+    action: 'send',  // Required enum
+    userId: '36ZzURYSrDYgjnNgRo94',  // GHL user ID
+    // ... rest of invoice fields
+  };
+
+  const result = await ghlFetch<GHLInvoice>({
+    method: 'POST',
+    path: '/invoices/text2pay',
+    body: requestBody,
+  });
+}
+```
+
+**Response handling:** `src/app/api/payments/create-checkout/route.ts:293-319`
+- Checks for `_id`, `id`, `invoiceId`, plus nested `invoice.*` and `data.*`
+- Checks for `invoiceUrl`, `paymentLink`, `checkoutUrl`, `url`
+- Fallback URL: `https://api.automatosolution.com/invoice/{id}`
+
+### GHL API Notes
+
+**Base URL:** `https://services.leadconnectorhq.com`
+**Version Header:** `2021-07-28`
+**Auth:** Bearer token (Private Integration Token)
+
+**Endpoints used:**
+- `POST /invoices/` - Create invoice (returns draft)
+- `POST /invoices/{id}/send` - Send invoice (403 error)
+- `GET /invoices/{id}` - Get invoice details
+- `GET /invoices/` - List invoices (requires `limit` and `offset`)
+- `POST /invoices/text2pay` - Create and send (partially working)
+
+**Required Text2Pay fields:**
+- `altId` (location ID)
+- `altType` ('location')
+- `action` ('send' or 'draft')
+- `userId` (GHL user ID - required!)
+- `contactDetails.id` (GHL contact ID)
+- `items` (array with `name`, `qty`, `amount`, `currency`)
+- `businessDetails.name`
+- `issueDate` (YYYY-MM-DD)
+- `sentTo.email[]` and `sentTo.phoneNo[]`
+- `liveMode` (true for real transactions)
+
+### Customer's GHL Setup
+
+**Location ID:** `L0Ade4d7G92D31vhySgi`
+**User ID:** `36ZzURYSrDYgjnNgRo94`
+**Custom Domain:** `api.automatosolution.com`
+**Invoice URL Pattern:** `https://api.automatosolution.com/invoice/{invoiceId}`
+
+### Next Steps to Try
+
+1. **Check Vercel Logs** - Look for `📋 Text2Pay full response:` to see exact response structure
+2. **Try different response field names** - Maybe GHL uses `invoice._id` or nested structure
+3. **Contact GHL Support** - Ask why send returns 403 despite having scope
+4. **Use GHL Workflows** - Create automation in GHL that sends invoice when created
+5. **Manual workaround** - Return link to GHL dashboard, staff copies payment link manually
+
+### Workaround Options
+
+1. **Staff copies link from GHL dashboard** - Invoice created, staff finds it in GHL and copies URL
+2. **GHL Workflow trigger** - Set up GHL automation to send SMS when invoice created via API
+3. **Direct Stripe checkout** - Bypass GHL invoicing, create Stripe checkout session directly
+
+### Environment Variables
+
+```env
+GHL_API_KEY=***         # Private Integration Token
+GHL_LOCATION_ID=L0Ade4d7G92D31vhySgi
+# Optional future:
+GHL_USER_ID=36ZzURYSrDYgjnNgRo94  # Could move to env var
+```
+
+### Related Documentation
+
+- [GHL Invoice API](https://marketplace.gohighlevel.com/docs/ghl/invoices/)
+- [GHL Text2Pay](https://marketplace.gohighlevel.com/docs/ghl/invoices/text-2-pay/)
+- [GHL GitHub Docs](https://github.com/GoHighLevel/highlevel-api-docs)
+
+---
+
 ## TIMER IMPROVEMENTS ADDED
 
 1. **Auto-terminate stale timers**: Cron job runs hourly, stops timers >10 hours, caps at 10h max
