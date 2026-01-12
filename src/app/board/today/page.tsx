@@ -87,26 +87,26 @@ function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing touch-none p-1 text-gray-400 hover:text-gray-600 no-print"
+          className="cursor-grab active:cursor-grabbing touch-none p-1 text-muted-foreground/70 hover:text-muted-foreground no-print"
         >
           <GripVertical className="h-5 w-5" />
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <span className="font-semibold text-gray-900">
+            <span className="font-semibold text-foreground">
               {index + 1}. #{task.order_number} - {task.client_name}
             </span>
             <span className={`text-sm px-2 py-0.5 rounded ${
               isToday(new Date(task.due_date)) 
                 ? 'bg-red-100 text-red-700' 
-                : 'bg-gray-100 text-gray-600'
+                : 'bg-muted text-muted-foreground'
             }`}>
               {formatDueDate(task.due_date)}
             </span>
           </div>
           
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             {task.garments.map((g, i) => (
               <div key={i} className="ml-4">
                 └─ {g.type}: {g.services.map(s => s.service?.name || 'Service').join(', ')}
@@ -114,7 +114,7 @@ function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
             ))}
           </div>
           
-          <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
             <span>Est: {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}min</span>
             {task.assigned_to && (
@@ -252,7 +252,7 @@ export default function TodayTasksPage() {
               </Link>
               <div>
                 <h1 className="text-xl font-semibold">📋 Travail du jour</h1>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {format(new Date(), "EEEE d MMMM", { locale: fr })}
                 </p>
               </div>
@@ -291,7 +291,7 @@ export default function TodayTasksPage() {
 
           {filteredOrders.length === 0 ? (
             <Card>
-              <CardContent className="py-12 text-center text-gray-500">
+              <CardContent className="py-12 text-center text-muted-foreground">
                 Aucune tâche pour les 3 prochains jours
               </CardContent>
             </Card>
@@ -313,11 +313,11 @@ export default function TodayTasksPage() {
           )}
 
           <div className="mt-6 p-4 bg-white rounded-lg border text-center">
-            <div className="text-sm text-gray-500">Temps total estimé</div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-sm text-muted-foreground">Temps total estimé</div>
+            <div className="text-2xl font-bold text-foreground">
               {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}min
             </div>
-            <div className="text-sm text-gray-500 mt-1">
+            <div className="text-sm text-muted-foreground mt-1">
               {filteredOrders.length} commande{filteredOrders.length !== 1 ? 's' : ''}
             </div>
           </div>

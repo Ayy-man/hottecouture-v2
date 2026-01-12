@@ -25,7 +25,7 @@ export function AssignmentStep({
   return (
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header */}
-      <div className='flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
+      <div className='flex items-center justify-between px-4 py-3 border-b border-border bg-white flex-shrink-0'>
         <div className='w-1/3'>
           <Button
             onClick={onPrev}
@@ -49,7 +49,7 @@ export function AssignmentStep({
             Retour
           </Button>
         </div>
-        <h2 className='text-lg font-semibold text-gray-900'>
+        <h2 className='text-lg font-semibold text-foreground'>
           Assigner la commande
         </h2>
         <div className='w-1/3 flex justify-end'>
@@ -64,10 +64,10 @@ export function AssignmentStep({
       </div>
 
       {/* Main Content Area */}
-      <div className='flex-1 overflow-y-auto p-4 bg-gray-50 min-h-0'>
+      <div className='flex-1 overflow-y-auto p-4 bg-muted/50 min-h-0'>
         <div className='max-w-md mx-auto space-y-4'>
           <div className='text-center mb-6'>
-            <p className='text-sm text-gray-600'>
+            <p className='text-sm text-muted-foreground'>
               Qui travaillera sur cette commande?
             </p>
           </div>
@@ -98,8 +98,8 @@ export function AssignmentStep({
                             {member.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <h3 className='font-semibold text-gray-900'>{member.name}</h3>
-                            <p className='text-sm text-gray-500'>Staff</p>
+                            <h3 className='font-semibold text-foreground'>{member.name}</h3>
+                            <p className='text-sm text-muted-foreground'>Staff</p>
                           </div>
                         </div>
                         {isSelected && (

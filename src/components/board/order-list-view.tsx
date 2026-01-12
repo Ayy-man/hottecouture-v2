@@ -22,7 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
   working: 'bg-blue-100 text-blue-800 border-blue-300',
   done: 'bg-purple-100 text-purple-800 border-purple-300',
   ready: 'bg-green-100 text-green-800 border-green-300',
-  delivered: 'bg-gray-100 text-gray-800 border-gray-300',
+  delivered: 'bg-muted text-foreground border-border',
 };
 
 export function OrderListView({
@@ -45,40 +45,40 @@ export function OrderListView({
   };
 
   return (
-    <div className='bg-white rounded-lg shadow overflow-hidden'>
-      <table className='min-w-full divide-y divide-gray-200'>
-        <thead className='bg-gray-50'>
+    <div className='bg-card rounded-lg shadow overflow-hidden'>
+      <table className='min-w-full divide-y divide-border'>
+        <thead className='bg-muted/50'>
           <tr>
-            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
               #
             </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
               Client
             </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
               Type
             </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
               Items
             </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
               Due Date
             </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
               Status
             </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
               Position rack
             </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
               Total
             </th>
           </tr>
         </thead>
-        <tbody className='bg-white divide-y divide-gray-200'>
+        <tbody className='bg-card divide-y divide-border'>
           {orders.length === 0 ? (
             <tr>
-              <td colSpan={8} className='text-center py-8 text-gray-500'>
+              <td colSpan={8} className='text-center py-8 text-muted-foreground'>
                 No orders found
               </td>
             </tr>
@@ -86,7 +86,7 @@ export function OrderListView({
             orders.map(order => (
               <tr
                 key={order.id}
-                className={`hover:bg-gray-50 ${updatingOrders.has(order.id) ? 'opacity-50' : ''}`}
+                className={`hover:bg-muted/50 ${updatingOrders.has(order.id) ? 'opacity-50' : ''}`}
               >
                 <td className='px-4 py-3 whitespace-nowrap'>
                   <div className='flex items-center gap-2'>
@@ -133,7 +133,7 @@ export function OrderListView({
                       📍 {order.rack_position}
                     </span>
                   ) : (
-                    <span className='text-gray-400'>—</span>
+                    <span className='text-muted-foreground/70'>—</span>
                   )}
                 </td>
                 <td className='px-4 py-3 whitespace-nowrap font-medium'>

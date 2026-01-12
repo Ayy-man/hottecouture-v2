@@ -28,7 +28,7 @@ export function OrderSummary({
   if (!order) {
     return (
       <div className='text-center py-8'>
-        <div className='text-lg text-gray-600'>No order data available</div>
+        <div className='text-lg text-muted-foreground'>No order data available</div>
       </div>
     );
   }
@@ -36,15 +36,15 @@ export function OrderSummary({
   return (
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header */}
-      <div className='flex items-center justify-center px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
+      <div className='flex items-center justify-center px-1 py-3 border-b border-border bg-white flex-shrink-0'>
         <div className='text-center'>
           <div className='flex items-center justify-center mb-2'>
             <HLogo size='sm' variant='round' />
           </div>
-          <h2 className='text-lg font-semibold text-gray-900'>
+          <h2 className='text-lg font-semibold text-foreground'>
             Confirmation de commande
           </h2>
-          <p className='text-sm text-gray-500'>
+          <p className='text-sm text-muted-foreground'>
             Votre commande a été créée avec succès
           </p>
         </div>
@@ -98,7 +98,7 @@ export function OrderSummary({
                   </h3>
                   <div className='space-y-1'>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-gray-600'>
+                      <span className='text-xs text-muted-foreground'>
                         Order Number:
                       </span>
                       <span className='text-xs font-medium'>
@@ -106,11 +106,11 @@ export function OrderSummary({
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-gray-600'>Order ID:</span>
+                      <span className='text-xs text-muted-foreground'>Order ID:</span>
                       <span className='font-mono text-xs'>{order.orderId}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-gray-600'>Status:</span>
+                      <span className='text-xs text-muted-foreground'>Status:</span>
                       <span className='px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs'>
                         Pending
                       </span>
@@ -122,14 +122,14 @@ export function OrderSummary({
                   <h3 className='font-medium text-sm mb-2'>Pricing Summary</h3>
                   <div className='space-y-1'>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-gray-600'>Subtotal:</span>
+                      <span className='text-xs text-muted-foreground'>Subtotal:</span>
                       <span className='text-xs font-medium'>
                         {formatCurrency(order.totals.subtotal_cents)}
                       </span>
                     </div>
                     {order.totals.rush_fee_cents > 0 && (
                       <div className='flex justify-between'>
-                        <span className='text-xs text-gray-600'>Rush Fee:</span>
+                        <span className='text-xs text-muted-foreground'>Rush Fee:</span>
                         <span className='text-xs font-medium'>
                           {formatCurrency(order.totals.rush_fee_cents)}
                         </span>
@@ -139,7 +139,7 @@ export function OrderSummary({
                     order.totals.tvq_cents !== undefined ? (
                       <>
                         <div className='flex justify-between'>
-                          <span className='text-xs text-gray-600'>
+                          <span className='text-xs text-muted-foreground'>
                             TPS: Canada tax
                           </span>
                           <span className='text-xs font-medium'>
@@ -147,7 +147,7 @@ export function OrderSummary({
                           </span>
                         </div>
                         <div className='flex justify-between'>
-                          <span className='text-xs text-gray-600'>
+                          <span className='text-xs text-muted-foreground'>
                             TVQ: Québec tax
                           </span>
                           <span className='text-xs font-medium'>
@@ -157,7 +157,7 @@ export function OrderSummary({
                       </>
                     ) : (
                       <div className='flex justify-between'>
-                        <span className='text-xs text-gray-600'>Tax:</span>
+                        <span className='text-xs text-muted-foreground'>Tax:</span>
                         <span className='text-xs font-medium'>
                           {formatCurrency(order.totals.tax_cents)}
                         </span>
@@ -189,9 +189,9 @@ export function OrderSummary({
                   <img
                     src={order.qrcode}
                     alt='Order QR Code'
-                    className='w-24 h-24 mx-auto border border-gray-300 rounded'
+                    className='w-24 h-24 mx-auto border border-border rounded'
                   />
-                  <p className='text-xs text-gray-600 mt-2'>
+                  <p className='text-xs text-muted-foreground mt-2'>
                     Order #{order.orderNumber}
                   </p>
                 </div>
@@ -210,7 +210,7 @@ export function OrderSummary({
             <Button
               onClick={onNewOrder}
               variant='outline'
-              className='flex-1 py-2 text-sm btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 touch-manipulation'
+              className='flex-1 py-2 text-sm btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border touch-manipulation'
             >
               New Order
             </Button>
@@ -229,7 +229,7 @@ export function OrderSummary({
                   </div>
                   <div>
                     <h4 className='font-medium text-sm'>Print Labels</h4>
-                    <p className='text-xs text-gray-600'>
+                    <p className='text-xs text-muted-foreground'>
                       Print labels for each garment to track them through the
                       process
                     </p>
@@ -241,7 +241,7 @@ export function OrderSummary({
                   </div>
                   <div>
                     <h4 className='font-medium text-sm'>Start Work</h4>
-                    <p className='text-xs text-gray-600'>
+                    <p className='text-xs text-muted-foreground'>
                       Begin working on the garments according to the selected
                       services
                     </p>
@@ -253,7 +253,7 @@ export function OrderSummary({
                   </div>
                   <div>
                     <h4 className='font-medium text-sm'>Update Status</h4>
-                    <p className='text-xs text-gray-600'>
+                    <p className='text-xs text-muted-foreground'>
                       Update the order status as work progresses
                     </p>
                   </div>

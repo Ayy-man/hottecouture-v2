@@ -140,7 +140,7 @@ export function InternalChat() {
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-muted/50">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -154,7 +154,7 @@ export function InternalChat() {
                     'max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap',
                     message.role === 'user'
                       ? 'bg-primary-500 text-white'
-                      : 'bg-white border border-gray-200 text-gray-800'
+                      : 'bg-white border border-border text-foreground'
                   )}
                 >
                   {message.content}
@@ -163,7 +163,7 @@ export function InternalChat() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 rounded-lg px-3 py-2">
+                <div className="bg-white border border-border rounded-lg px-3 py-2">
                   <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
                 </div>
               </div>
@@ -180,7 +180,7 @@ export function InternalChat() {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre question..."
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 disabled={isLoading}
               />
               <Button

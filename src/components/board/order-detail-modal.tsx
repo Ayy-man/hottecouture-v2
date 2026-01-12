@@ -297,7 +297,7 @@ export function OrderDetailModal({
           {/* Header */}
           <div className='flex flex-col sm:flex-row justify-between items-start mb-6 gap-4'>
             <div className='flex-1'>
-              <h2 className='text-xl sm:text-2xl font-bold text-gray-900'>
+              <h2 className='text-xl sm:text-2xl font-bold text-foreground'>
                 Order #{displayOrder.order_number}
                 {displayOrder.rush && (
                   <span className='ml-2 sm:ml-3 px-2 sm:px-3 py-1 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-accent-contrast to-primary-500 rounded-full'>
@@ -308,7 +308,7 @@ export function OrderDetailModal({
                   </span>
                 )}
               </h2>
-              <p className='text-gray-600 mt-1 text-sm sm:text-base'>
+              <p className='text-muted-foreground mt-1 text-sm sm:text-base'>
                 {displayOrder.client_name || 'Unknown Client'}
               </p>
             </div>
@@ -333,43 +333,43 @@ export function OrderDetailModal({
               <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6'>
                 {/* Basic Info */}
                 <div className='space-y-4'>
-                  <h3 className='text-lg font-semibold text-gray-900'>
+                  <h3 className='text-lg font-semibold text-foreground'>
                     Order Information
                   </h3>
                   <div className='space-y-2'>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Type:</span>
+                      <span className='text-muted-foreground'>Type:</span>
                       <span className='font-medium capitalize'>
                         {order.type}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Status:</span>
+                      <span className='text-muted-foreground'>Status:</span>
                       <span className='font-medium capitalize'>
                         {order.status}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Priority:</span>
+                      <span className='text-muted-foreground'>Priority:</span>
                       <span className='font-medium capitalize'>
                         {order.priority || 'Normal'}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Due Date:</span>
+                      <span className='text-muted-foreground'>Due Date:</span>
                       <span className='font-medium'>
                         {formatDate(order.due_date)}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Created:</span>
+                      <span className='text-muted-foreground'>Created:</span>
                       <span className='font-medium'>
                         {formatDate(order.created_at)}
                       </span>
                     </div>
                     {RACK_CONFIG.editableStatuses.includes(order.status) ? (
-                      <div className='space-y-2 pt-2 border-t border-gray-200'>
-                        <label className='block text-sm font-medium text-gray-700'>
+                      <div className='space-y-2 pt-2 border-t border-border'>
+                        <label className='block text-sm font-medium text-muted-foreground'>
                           {RACK_CONFIG.label}
                         </label>
                         <div className='flex gap-2'>
@@ -398,7 +398,7 @@ export function OrderDetailModal({
                               }
                             }}
                             disabled={savingRack}
-                            className='flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500'
+                            className='flex-1 px-3 py-2 border border-border rounded-md text-sm focus:ring-2 focus:ring-blue-500'
                           >
                             <option value=''>{RACK_CONFIG.placeholder}</option>
                             {RACK_CONFIG.positions.map(pos => (
@@ -413,7 +413,7 @@ export function OrderDetailModal({
                                 value={customRackPosition}
                                 onChange={(e) => setCustomRackPosition(e.target.value)}
                                 placeholder={RACK_CONFIG.placeholder}
-                                className='w-24 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500'
+                                className='w-24 px-3 py-2 border border-border rounded-md text-sm focus:ring-2 focus:ring-blue-500'
                                 disabled={savingRack}
                               />
                               <Button
@@ -450,7 +450,7 @@ export function OrderDetailModal({
                       </div>
                     ) : order.rack_position ? (
                       <div className='flex justify-between'>
-                        <span className='text-gray-600'>{RACK_CONFIG.label}:</span>
+                        <span className='text-muted-foreground'>{RACK_CONFIG.label}:</span>
                         <span className='font-medium'>
                           {order.rack_position}
                         </span>
@@ -461,40 +461,40 @@ export function OrderDetailModal({
 
                 {/* Client Info */}
                 <div className='space-y-4'>
-                  <h3 className='text-lg font-semibold text-gray-900'>
+                  <h3 className='text-lg font-semibold text-foreground'>
                     Client Information
                   </h3>
                   <div className='space-y-2'>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Name:</span>
+                      <span className='text-muted-foreground'>Name:</span>
                       <span className='font-medium'>
                         {order.client_name || 'Unknown Client'}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Phone:</span>
+                      <span className='text-muted-foreground'>Phone:</span>
                       <span className='font-medium'>
                         {order.client_phone || 'Not provided'}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Email:</span>
+                      <span className='text-muted-foreground'>Email:</span>
                       <span className='font-medium'>
                         {order.client_email || 'Not provided'}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Language:</span>
+                      <span className='text-muted-foreground'>Language:</span>
                       <span className='font-medium'>
                         {order.client_language || 'English'}
                       </span>
                     </div>
                     {order.client_notes && (
-                      <div className='mt-3 pt-3 border-t border-gray-200'>
-                        <span className='text-gray-600 text-sm font-medium'>
+                      <div className='mt-3 pt-3 border-t border-border'>
+                        <span className='text-muted-foreground text-sm font-medium'>
                           Client Notes:
                         </span>
-                        <div className='mt-1 p-2 bg-yellow-50 rounded text-sm text-gray-700'>
+                        <div className='mt-1 p-2 bg-yellow-50 rounded text-sm text-muted-foreground'>
                           {order.client_notes}
                         </div>
                       </div>
@@ -506,7 +506,7 @@ export function OrderDetailModal({
               {/* Measurements Section - Only show if there are measurements */}
               {Object.keys(orderMeasurements).length > 0 && (
                 <div className='mb-6'>
-                  <h3 className='text-lg font-semibold text-gray-900 mb-4'>
+                  <h3 className='text-lg font-semibold text-foreground mb-4'>
                     📏 Mesures
                   </h3>
                   <div className='bg-purple-50 rounded-lg p-4'>
@@ -520,9 +520,9 @@ export function OrderDetailModal({
                         <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
                           {(items as any[]).map((m: any) => (
                             <div key={m.id} className='bg-white rounded p-2 text-center'>
-                              <p className='text-xs text-gray-500'>{m.name_fr || m.name}</p>
-                              <p className='text-lg font-semibold text-gray-900'>
-                                {m.value} <span className='text-xs font-normal text-gray-500'>{m.unit}</span>
+                              <p className='text-xs text-muted-foreground'>{m.name_fr || m.name}</p>
+                              <p className='text-lg font-semibold text-foreground'>
+                                {m.value} <span className='text-xs font-normal text-muted-foreground'>{m.unit}</span>
                               </p>
                             </div>
                           ))}
@@ -535,14 +535,14 @@ export function OrderDetailModal({
 
               {/* Garments */}
               <div className='mb-6'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-4'>
+                <h3 className='text-lg font-semibold text-foreground mb-4'>
                   Garments ({displayOrder.garments?.length || 0})
                 </h3>
                 <div className='space-y-4'>
                   {displayOrder.garments?.map((garment: any, index: number) => (
                     <div
                       key={garment.id || index}
-                      className='border border-gray-200 rounded-lg p-4'
+                      className='border border-border rounded-lg p-4'
                     >
                       <div className='flex justify-between items-start mb-3'>
                         <div className='flex items-center gap-2'>
@@ -551,16 +551,16 @@ export function OrderDetailModal({
                               {garment.garment_type.icon}
                             </span>
                           )}
-                          <h4 className='font-medium text-gray-900'>
+                          <h4 className='font-medium text-foreground'>
                             {garment.type}
                           </h4>
                           {garment.garment_type?.category && (
-                            <span className='text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded'>
+                            <span className='text-xs bg-muted text-muted-foreground px-2 py-1 rounded'>
                               {garment.garment_type.category}
                             </span>
                           )}
                         </div>
-                        <span className='text-sm text-gray-500'>
+                        <span className='text-sm text-muted-foreground'>
                           Label: {garment.label_code}
                         </span>
                       </div>
@@ -582,20 +582,20 @@ export function OrderDetailModal({
                         </div>
                       )}
                       {!garment.photo_path && (
-                        <div className='mb-3 text-sm text-gray-500'>
+                        <div className='mb-3 text-sm text-muted-foreground'>
                           No photo available
                         </div>
                       )}
 
                       <div className='grid grid-cols-2 gap-4 text-sm mb-3'>
                         <div>
-                          <span className='text-gray-600'>Color:</span>
+                          <span className='text-muted-foreground'>Color:</span>
                           <span className='ml-2'>
                             {garment.color || 'Not specified'}
                           </span>
                         </div>
                         <div>
-                          <span className='text-gray-600'>Brand:</span>
+                          <span className='text-muted-foreground'>Brand:</span>
                           <span className='ml-2'>
                             {garment.brand || 'Not specified'}
                           </span>
@@ -604,7 +604,7 @@ export function OrderDetailModal({
 
                       {/* Notes Section - Always Visible */}
                       <div className='mb-3'>
-                        <label className='block text-sm font-medium text-gray-700 mb-2'>
+                        <label className='block text-sm font-medium text-muted-foreground mb-2'>
                           Notes:
                         </label>
                         {editingGarmentId === garment.id ? (
@@ -644,7 +644,7 @@ export function OrderDetailModal({
                               value={garment.notes || ''}
                               readOnly
                               rows={4}
-                              className='w-full min-h-[100px] text-sm bg-gray-50 cursor-not-allowed'
+                              className='w-full min-h-[100px] text-sm bg-muted/50 cursor-not-allowed'
                               placeholder='No notes added yet. Click "Edit Notes" to add notes.'
                             />
                             <Button
@@ -755,7 +755,7 @@ export function OrderDetailModal({
 
                       {/* Services for this garment */}
                       {garment.services && garment.services.length > 0 && (
-                        <div className='mt-3 pt-3 border-t border-gray-100'>
+                        <div className='mt-3 pt-3 border-t border-border'>
                           <h5 className='text-sm font-medium text-blue-600 mb-2'>
                             Services Required:
                           </h5>
@@ -768,32 +768,32 @@ export function OrderDetailModal({
                                 >
                                   <div className='flex justify-between items-start'>
                                     <div className='flex-1'>
-                                      <h6 className='font-medium text-gray-900'>
+                                      <h6 className='font-medium text-foreground'>
                                         {service.service?.name ||
                                           service.custom_service_name ||
                                           'Service'}
                                       </h6>
                                       {service.service?.description && (
-                                        <p className='text-sm text-gray-600 mt-1'>
+                                        <p className='text-sm text-muted-foreground mt-1'>
                                           {service.service.description}
                                         </p>
                                       )}
                                       {service.notes && (
                                         <div className='mt-2'>
-                                          <span className='text-xs font-medium text-gray-600'>
+                                          <span className='text-xs font-medium text-muted-foreground'>
                                             Service Notes:
                                           </span>
-                                          <p className='text-xs text-gray-700 mt-1 bg-white rounded p-2'>
+                                          <p className='text-xs text-muted-foreground mt-1 bg-white rounded p-2'>
                                             {service.notes}
                                           </p>
                                         </div>
                                       )}
                                     </div>
                                     <div className='text-right text-sm ml-4'>
-                                      <div className='text-gray-600'>
+                                      <div className='text-muted-foreground'>
                                         Qty: {service.quantity}
                                       </div>
-                                      <div className='font-medium text-gray-900'>
+                                      <div className='font-medium text-foreground'>
                                         {service.custom_price_cents
                                           ? `$${(service.custom_price_cents / 100).toFixed(2)}`
                                           : service.service?.base_price_cents
@@ -801,7 +801,7 @@ export function OrderDetailModal({
                                             : 'Price TBD'}
                                       </div>
                                       {service.service?.estimated_minutes && (
-                                        <div className='text-xs text-gray-500 mt-1'>
+                                        <div className='text-xs text-muted-foreground mt-1'>
                                           Est:{' '}
                                           {Math.floor(
                                             service.service.estimated_minutes /
@@ -825,7 +825,7 @@ export function OrderDetailModal({
                       )}
 
                       {/* Garment Task Summary */}
-                      <div className='mt-4 pt-3 border-t border-gray-100'>
+                      <div className='mt-4 pt-3 border-t border-border'>
                         <GarmentTaskSummary
                           garmentId={garment.id}
                           orderId={displayOrder.id}
@@ -840,20 +840,20 @@ export function OrderDetailModal({
 
               {/* Pricing */}
               <div className='mb-6'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-4'>
+                <h3 className='text-lg font-semibold text-foreground mb-4'>
                   Pricing
                 </h3>
-                <div className='bg-gray-50 rounded-lg p-4'>
+                <div className='bg-muted/50 rounded-lg p-4'>
                   <div className='space-y-2'>
                     <div className='flex justify-between'>
-                      <span className='text-gray-600'>Subtotal:</span>
+                      <span className='text-muted-foreground'>Subtotal:</span>
                       <span className='font-medium'>
                         {formatCurrency(displayOrder.subtotal_cents || 0)}
                       </span>
                     </div>
                     {displayOrder.rush_fee_cents > 0 && (
                       <div className='flex justify-between'>
-                        <span className='text-gray-600'>
+                        <span className='text-muted-foreground'>
                           Rush Fee{' '}
                           {displayOrder.rush_fee_type
                             ? `(${displayOrder.rush_fee_type})`
@@ -869,13 +869,13 @@ export function OrderDetailModal({
                       displayOrder.tvq_cents !== undefined ? (
                       <>
                         <div className='flex justify-between'>
-                          <span className='text-gray-600'>TPS: Canada tax</span>
+                          <span className='text-muted-foreground'>TPS: Canada tax</span>
                           <span className='font-medium'>
                             {formatCurrency(displayOrder.tps_cents || 0)}
                           </span>
                         </div>
                         <div className='flex justify-between'>
-                          <span className='text-gray-600'>TVQ: Québec tax</span>
+                          <span className='text-muted-foreground'>TVQ: Québec tax</span>
                           <span className='font-medium'>
                             {formatCurrency(displayOrder.tvq_cents || 0)}
                           </span>
@@ -883,30 +883,30 @@ export function OrderDetailModal({
                       </>
                     ) : (
                       <div className='flex justify-between'>
-                        <span className='text-gray-600'>Tax:</span>
+                        <span className='text-muted-foreground'>Tax:</span>
                         <span className='font-medium'>
                           {formatCurrency(displayOrder.tax_cents || 0)}
                         </span>
                       </div>
                     )}
-                    <div className='flex justify-between border-t border-gray-300 pt-2'>
-                      <span className='text-lg font-semibold text-gray-900'>
+                    <div className='flex justify-between border-t border-border pt-2'>
+                      <span className='text-lg font-semibold text-foreground'>
                         Total:
                       </span>
-                      <span className='text-lg font-semibold text-gray-900'>
+                      <span className='text-lg font-semibold text-foreground'>
                         {formatCurrency(displayOrder.total_cents || 0)}
                       </span>
                     </div>
                     {displayOrder.deposit_cents > 0 && (
                       <div className='flex justify-between text-sm'>
-                        <span className='text-gray-600'>Deposit Paid:</span>
+                        <span className='text-muted-foreground'>Deposit Paid:</span>
                         <span className='font-medium'>
                           {formatCurrency(displayOrder.deposit_cents)}
                         </span>
                       </div>
                     )}
                     <div className='flex justify-between text-sm'>
-                      <span className='text-gray-600'>Balance Due:</span>
+                      <span className='text-muted-foreground'>Balance Due:</span>
                       <span className='font-medium'>
                         {formatCurrency(
                           displayOrder.balance_due_cents ||

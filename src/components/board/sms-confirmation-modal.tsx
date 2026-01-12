@@ -25,7 +25,7 @@ export function SmsConfirmationModal({
         className='absolute inset-0 bg-black/50'
         onClick={onCancel}
       />
-      <div className='relative bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4'>
+      <div className='relative bg-card rounded-lg shadow-xl p-6 max-w-md w-full mx-4'>
         <div className='text-center mb-4'>
           <div className='w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4'>
             <svg
@@ -42,14 +42,14 @@ export function SmsConfirmationModal({
               />
             </svg>
           </div>
-          <h3 className='text-lg font-semibold text-gray-900 mb-2'>
+          <h3 className='text-lg font-semibold text-foreground mb-2'>
             Send Pickup Notification?
           </h3>
-          <p className='text-sm text-gray-600'>
+          <p className='text-sm text-muted-foreground'>
             Order <span className='font-semibold'>#{orderNumber}</span> for{' '}
             <span className='font-semibold'>{clientName}</span> is ready.
           </p>
-          <p className='text-sm text-gray-600 mt-2'>
+          <p className='text-sm text-muted-foreground mt-2'>
             This will send an SMS to notify the customer their order is ready for pickup.
           </p>
         </div>

@@ -330,7 +330,7 @@ export default function IntakePage() {
           </div>
 
           {/* Compact Vertical Progress Indicator */}
-          <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-2'>
+          <div className='bg-white rounded-lg shadow-sm border border-border p-2'>
             <div className='flex flex-col items-center gap-2'>
               {steps.map((step, index) => {
                 const isActive = step.key === currentStep;
@@ -344,7 +344,7 @@ export default function IntakePage() {
                         ? 'bg-gradient-to-r from-primary-500 to-accent-clay text-white shadow-lg'
                         : isCompleted
                           ? 'bg-gradient-to-r from-secondary-500 to-accent-olive text-white'
-                          : 'bg-gray-100 text-gray-500'
+                          : 'bg-muted text-muted-foreground'
                         }`}
                     >
                       {isCompleted ? (
@@ -366,7 +366,7 @@ export default function IntakePage() {
                     {index < steps.length - 1 && (
                       <div className='flex items-center mt-1 mb-1'>
                         <div
-                          className={`w-0.5 h-6 ${isCompleted ? 'bg-green-400' : 'bg-gray-200'
+                          className={`w-0.5 h-6 ${isCompleted ? 'bg-green-400' : 'bg-muted'
                             }`}
                         />
                       </div>

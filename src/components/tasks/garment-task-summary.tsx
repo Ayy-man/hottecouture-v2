@@ -122,23 +122,23 @@ export function GarmentTaskSummary({
       case 'paused':
         return 'bg-yellow-100 text-yellow-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
 
   if (loading) {
-    return <div className="animate-pulse h-16 bg-gray-100 rounded"></div>;
+    return <div className="animate-pulse h-16 bg-muted rounded"></div>;
   }
 
   const stage = getStage();
   const canTrackTime = orderStatus === 'working' || orderStatus === 'pending';
 
   return (
-    <div className="bg-stone-50 rounded-lg p-4 space-y-3">
+    <div className="bg-muted/50 rounded-lg p-4 space-y-3">
       {/* Header with time summary */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-stone-700">⏱️ Chrono</span>
+          <span className="text-sm font-medium text-muted-foreground">⏱️ Chrono</span>
           <Badge className={`text-xs ${getStageColor(stage)}`}>
             {getStageLabel(stage)}
           </Badge>
@@ -148,7 +148,7 @@ export function GarmentTaskSummary({
             </Badge>
           )}
         </div>
-        <div className="text-xs text-stone-500">
+        <div className="text-xs text-muted-foreground">
           <span>Planifié: {formatMinutes(plannedMinutes)}</span>
           <span className="mx-2">|</span>
           <span>Réel: {formatMinutes(actualMinutes)}</span>
@@ -165,27 +165,27 @@ export function GarmentTaskSummary({
 
       {/* Services list */}
       {services.length > 0 ? (
-        <div className="text-xs text-stone-600 space-y-1">
+        <div className="text-xs text-muted-foreground space-y-1">
           {services.map((s, idx) => {
             const serviceName = s.service?.name || s.custom_service_name || 'Service';
             const serviceMinutes = s.service?.estimated_minutes || 15;
             return (
               <div key={idx} className="flex justify-between">
                 <span>• {serviceName} {s.quantity > 1 ? `(×${s.quantity})` : ''}</span>
-                <span className="text-stone-400">{serviceMinutes * (s.quantity || 1)} min</span>
+                <span className="text-muted-foreground/70">{serviceMinutes * (s.quantity || 1)} min</span>
               </div>
             );
           })}
         </div>
       ) : (
-        <div className="text-xs text-stone-400 italic">
+        <div className="text-xs text-muted-foreground/70 italic">
           Aucun service associé
         </div>
       )}
 
       {/* Timer button - show for working/pending orders, including completed tasks */}
       {canTrackTime && (
-        <div className="pt-2 border-t border-stone-200">
+        <div className="pt-2 border-t border-border">
           <TimerButton
             orderId={orderId}
             garmentId={garmentId}

@@ -103,14 +103,14 @@ export default function PrintTasksPage() {
   if (loading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
-        <p className='text-gray-500'>Chargement...</p>
+        <p className='text-muted-foreground'>Chargement...</p>
       </div>
     );
   }
 
   return (
     <div className='min-h-screen bg-white'>
-      <div className='no-print p-4 bg-gray-50 border-b flex items-center justify-between'>
+      <div className='no-print p-4 bg-muted/50 border-b flex items-center justify-between'>
         <h1 className='text-lg font-semibold'>Aperçu avant impression</h1>
         <Button onClick={() => window.print()} className='bg-blue-600 hover:bg-blue-700'>
           <Printer className='w-4 h-4 mr-2' />
@@ -120,22 +120,22 @@ export default function PrintTasksPage() {
 
       <div className='p-8 print:p-4'>
         <div className='text-center mb-6'>
-          <h1 className='text-2xl font-bold text-gray-900'>
+          <h1 className='text-2xl font-bold text-foreground'>
             {PRINT_TASKS_CONFIG.title} {todayDate}
           </h1>
-          <p className='text-sm text-gray-500 mt-1'>
+          <p className='text-sm text-muted-foreground mt-1'>
             {sortedOrders.length} tâche{sortedOrders.length !== 1 ? 's' : ''} à compléter
           </p>
         </div>
 
         {sortedOrders.length === 0 ? (
-          <p className='text-center text-gray-500 py-12'>
+          <p className='text-center text-muted-foreground py-12'>
             Aucune tâche en attente ou en cours.
           </p>
         ) : (
           <table className='w-full border-collapse'>
             <thead>
-              <tr className='border-b-2 border-gray-800'>
+              <tr className='border-b-2 border-foreground'>
                 <th className='w-8 py-2 text-left'>☐</th>
                 <th className='py-2 text-left text-sm font-semibold'>#</th>
                 <th className='py-2 text-left text-sm font-semibold'>Client</th>
@@ -149,10 +149,10 @@ export default function PrintTasksPage() {
               {sortedOrders.map((order, index) => (
                 <tr
                   key={order.id}
-                  className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-gray-50 print:bg-gray-100' : ''}`}
+                  className={`border-b border-border ${index % 2 === 0 ? 'bg-muted/50 print:bg-gray-100' : ''}`}
                 >
                   <td className='py-3 align-top'>
-                    <div className='w-5 h-5 border-2 border-gray-400 rounded'></div>
+                    <div className='w-5 h-5 border-2 border-border rounded'></div>
                   </td>
                   <td className='py-3 align-top font-medium'>{order.order_number}</td>
                   <td className='py-3 align-top'>{order.client_name || '—'}</td>
@@ -161,7 +161,7 @@ export default function PrintTasksPage() {
                   <td className='py-3 align-top text-sm font-medium'>
                     {getPriorityBadge(order.priority)}
                   </td>
-                  <td className='py-3 align-top text-xs text-gray-600 max-w-[200px]'>
+                  <td className='py-3 align-top text-xs text-muted-foreground max-w-[200px]'>
                     {getNotes(order)}
                   </td>
                 </tr>
@@ -170,7 +170,7 @@ export default function PrintTasksPage() {
           </table>
         )}
 
-        <div className='mt-8 pt-4 border-t border-gray-300 text-center text-xs text-gray-500 print:mt-4'>
+        <div className='mt-8 pt-4 border-t border-border text-center text-xs text-muted-foreground print:mt-4'>
           Imprimé le {format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
         </div>
       </div>

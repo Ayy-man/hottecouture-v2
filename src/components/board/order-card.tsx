@@ -82,7 +82,7 @@ export function OrderCard({
             )}
           </div>
           {order.rack_position && (
-            <span className='px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded'>
+            <span className='px-2 py-1 text-xs bg-muted text-muted-foreground rounded'>
               Rack: {order.rack_position}
             </span>
           )}
@@ -90,21 +90,21 @@ export function OrderCard({
 
         {/* Client */}
         <div className='mb-2'>
-          <p className='text-sm font-medium text-gray-900'>
+          <p className='text-sm font-medium text-foreground'>
             {order.client_name || 'Unknown Client'}
           </p>
         </div>
 
         {/* Garments */}
         <div className='mb-2'>
-          <p className='text-sm text-gray-600'>
+          <p className='text-sm text-muted-foreground'>
             <span className='font-medium'>Garments:</span> {garmentTypes}
           </p>
         </div>
 
         {/* Services */}
         <div className='mb-2'>
-          <p className='text-sm text-gray-600'>
+          <p className='text-sm text-muted-foreground'>
             <span className='font-medium'>Services:</span>{' '}
             {serviceNames.length > 0 ? (
               <span>
@@ -127,7 +127,7 @@ export function OrderCard({
                   ? 'text-red-600 font-medium'
                   : isDueToday
                     ? 'text-orange-600 font-medium'
-                    : 'text-gray-600'
+                    : 'text-muted-foreground'
               }`}
             >
               <span className='font-medium'>Due:</span>{' '}
@@ -141,7 +141,7 @@ export function OrderCard({
         {/* Assignees */}
         {assignees.length > 0 && (
           <div className='mb-3'>
-            <p className='text-sm text-gray-600'>
+            <p className='text-sm text-muted-foreground'>
               <span className='font-medium'>Assignee:</span>{' '}
               {assignees.join(', ')}
             </p>
@@ -178,8 +178,8 @@ export function OrderCard({
 
         {/* Loading indicator */}
         {isUpdating && (
-          <div className='absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg'>
-            <div className='text-sm text-gray-600'>Updating...</div>
+          <div className='absolute inset-0 bg-card bg-opacity-75 flex items-center justify-center rounded-lg'>
+            <div className='text-sm text-muted-foreground'>Updating...</div>
           </div>
         )}
       </CardContent>

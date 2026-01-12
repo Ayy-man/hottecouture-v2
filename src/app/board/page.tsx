@@ -226,7 +226,7 @@ export default function BoardPage() {
 
   if (loading) {
     return (
-      <div className='flex items-center justify-center h-screen bg-stone-50'>
+      <div className='flex items-center justify-center h-screen bg-background'>
         <LoadingLogo />
       </div>
     );
@@ -234,12 +234,12 @@ export default function BoardPage() {
 
   if (error) {
     return (
-      <div className='flex items-center justify-center h-screen bg-stone-50'>
+      <div className='flex items-center justify-center h-screen bg-background'>
         <div className='text-center'>
           <h1 className='text-2xl font-bold text-red-600 mb-4'>
             Unable to load orders
           </h1>
-          <p className='text-gray-600 mb-4'>{error}</p>
+          <p className='text-muted-foreground mb-4'>{error}</p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
@@ -248,23 +248,23 @@ export default function BoardPage() {
 
   return (
     <AuthGuard>
-      <div className='h-screen bg-stone-50 overflow-hidden'>
+      <div className='h-screen bg-background overflow-hidden'>
         <MuralBackground>
           <div className='flex flex-col h-full relative z-10'>
             {/* Header */}
-            <header className='bg-white/80 backdrop-blur-md border-b border-stone-200 px-4 sm:px-6 py-4 shadow-sm flex-none'>
+            <header className='bg-white/80 backdrop-blur-md border-b border-border px-4 sm:px-6 py-4 shadow-sm flex-none'>
               <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 max-w-[1920px] mx-auto w-full'>
                 <div className='flex items-center gap-4'>
-                  <h1 className='text-xl sm:text-2xl font-bold text-stone-800 tracking-tight'>
+                  <h1 className='text-xl sm:text-2xl font-bold text-foreground tracking-tight'>
                     Production Board
                   </h1>
-                  <div className='h-6 w-px bg-stone-300 hidden sm:block' />
-                  <div className='flex bg-stone-100 p-1 rounded-lg border border-stone-200'>
+                  <div className='h-6 w-px bg-border hidden sm:block' />
+                  <div className='flex bg-muted p-1 rounded-lg border border-border'>
                     <Button
                       variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
                       size='sm'
                       onClick={() => setViewMode('kanban')}
-                      className={`gap-2 h-8 ${viewMode === 'kanban' ? 'shadow-sm ring-1 ring-black/5' : 'text-stone-500 hover:text-stone-900'}`}
+                      className={`gap-2 h-8 ${viewMode === 'kanban' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                       <LayoutGrid className='w-4 h-4' />
                       <span className='hidden sm:inline'>Board</span>
@@ -273,7 +273,7 @@ export default function BoardPage() {
                       variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                       size='sm'
                       onClick={() => setViewMode('list')}
-                      className={`gap-2 h-8 ${viewMode === 'list' ? 'shadow-sm ring-1 ring-black/5' : 'text-stone-500 hover:text-stone-900'}`}
+                      className={`gap-2 h-8 ${viewMode === 'list' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                       <List className='w-4 h-4' />
                       <span className='hidden sm:inline'>List</span>
@@ -301,7 +301,7 @@ export default function BoardPage() {
                       <Button
                         variant='outline'
                         size='sm'
-                        className='hidden sm:flex border-stone-300 hover:bg-stone-50 h-8 px-2'
+                        className='hidden sm:flex border-border hover:bg-background h-8 px-2'
                       >
                         <MoreHorizontal className='w-4 h-4' />
                       </Button>
@@ -321,7 +321,7 @@ export default function BoardPage() {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button asChild size='sm' className='bg-stone-900 hover:bg-black text-white shadow-lg shadow-stone-900/20 h-8'>
+                  <Button asChild size='sm' className='bg-foreground hover:bg-black text-white shadow-lg shadow-foreground/20 h-8'>
                     <Link href='/intake'>New Order</Link>
                   </Button>
                 </div>
@@ -368,7 +368,7 @@ export default function BoardPage() {
             <Button
               variant='secondary'
               size='sm'
-              className='bg-white/90 backdrop-blur border border-stone-200 shadow-sm hover:bg-white text-xs'
+              className='bg-white/90 backdrop-blur border border-border shadow-sm hover:bg-white text-xs'
               onClick={() => setShowWorkListExport(true)}
             >
               Export Work List
@@ -379,16 +379,16 @@ export default function BoardPage() {
           {showWorkListExport && (
             <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
               <div className='bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto'>
-                <div className='p-4 border-b border-gray-200'>
+                <div className='p-4 border-b border-border'>
                   <div className='flex items-center justify-between'>
-                    <h3 className='text-lg font-semibold text-gray-900'>
+                    <h3 className='text-lg font-semibold text-foreground'>
                       Export Work List
                     </h3>
                     <Button
                       variant='ghost'
                       size='sm'
                       onClick={() => setShowWorkListExport(false)}
-                      className='text-gray-400 hover:text-gray-600'
+                      className='text-muted-foreground/70 hover:text-muted-foreground'
                     >
                       ✕
                     </Button>

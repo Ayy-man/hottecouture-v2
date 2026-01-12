@@ -191,7 +191,7 @@ export function PaymentForm({
                 <span>{formatPaymentAmount(summary.totalAmount)}</span>
               </div>
             </div>
-            <div className='text-sm text-gray-600'>
+            <div className='text-sm text-muted-foreground'>
               Deposit Required: {formatPaymentAmount(summary.depositAmount)} (
               {DEFAULT_PAYMENT_CONFIG.depositPercentage}%)
             </div>
@@ -215,7 +215,7 @@ export function PaymentForm({
                 className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                   selectedProvider === provider.id
                     ? 'border-primary bg-primary/5'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-border hover:border-muted-foreground/30'
                 }`}
                 onClick={() => setSelectedProvider(provider.id)}
               >
@@ -225,7 +225,7 @@ export function PaymentForm({
                   </div>
                   <div>
                     <h3 className='font-medium'>{provider.name}</h3>
-                    <p className='text-sm text-gray-600'>{provider.type}</p>
+                    <p className='text-sm text-muted-foreground'>{provider.type}</p>
                   </div>
                 </div>
               </div>
@@ -250,7 +250,7 @@ export function PaymentForm({
                   className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                     selectedMethod === method.id
                       ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-border hover:border-muted-foreground/30'
                   }`}
                   onClick={() => setSelectedMethod(method.id)}
                 >
@@ -258,7 +258,7 @@ export function PaymentForm({
                     {getPaymentMethodIcon(method)}
                     <div>
                       <h3 className='font-medium'>{method.name}</h3>
-                      <p className='text-sm text-gray-600'>
+                      <p className='text-sm text-muted-foreground'>
                         {method.description}
                       </p>
                       {method.processingFee > 0 && (

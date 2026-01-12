@@ -113,7 +113,7 @@ export function RushOrderCard({
   children: React.ReactNode;
   className?: string;
 }) {
-  const borderClass = isRush ? 'border-red-300' : 'border-gray-200';
+  const borderClass = isRush ? 'border-red-300' : 'border-border';
   const bgClass = isRush ? 'bg-red-50' : 'bg-white';
 
   return (
@@ -157,7 +157,7 @@ export function RushOrderTimeline({
   return (
     <div className={`space-y-2 ${className}`}>
       <div className='flex items-center justify-between'>
-        <span className='text-sm font-medium text-gray-600'>Timeline:</span>
+        <span className='text-sm font-medium text-muted-foreground'>Timeline:</span>
         <div className='flex items-center space-x-2'>
           {isRush && (
             <RushIndicator
@@ -167,7 +167,7 @@ export function RushOrderTimeline({
             />
           )}
           <span
-            className={`font-bold ${isRush ? 'text-red-600' : 'text-gray-900'}`}
+            className={`font-bold ${isRush ? 'text-red-600' : 'text-foreground'}`}
           >
             {rushDays} day{rushDays !== 1 ? 's' : ''}
           </span>
@@ -204,7 +204,7 @@ export function RushOrderPricing({
   return (
     <div className={`space-y-2 ${className}`}>
       <div className='flex items-center justify-between'>
-        <span className='text-sm font-medium text-gray-600'>Base Price:</span>
+        <span className='text-sm font-medium text-muted-foreground'>Base Price:</span>
         <span className='font-medium'>${(basePrice / 100).toFixed(2)}</span>
       </div>
 
@@ -219,9 +219,9 @@ export function RushOrderPricing({
 
       <div className='border-t pt-2'>
         <div className='flex items-center justify-between'>
-          <span className='font-bold text-gray-900'>Total:</span>
+          <span className='font-bold text-foreground'>Total:</span>
           <span
-            className={`font-bold text-lg ${isRush ? 'text-red-600' : 'text-gray-900'}`}
+            className={`font-bold text-lg ${isRush ? 'text-red-600' : 'text-foreground'}`}
           >
             ${(totalPrice / 100).toFixed(2)}
           </span>

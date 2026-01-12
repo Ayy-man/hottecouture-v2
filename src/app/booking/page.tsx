@@ -127,19 +127,19 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-muted/50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t.success}</h1>
-          <p className="text-gray-600">{t.successMessage}</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t.success}</h1>
+          <p className="text-muted-foreground">{t.successMessage}</p>
           {selectedSlot && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="font-medium text-gray-900">
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+              <p className="font-medium text-foreground">
                 {format(new Date(selectedSlot.start), 'EEEE d MMMM yyyy', { locale })}
               </p>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {format(new Date(selectedSlot.start), 'HH:mm')} - {format(new Date(selectedSlot.end), 'HH:mm')}
               </p>
             </div>
@@ -150,18 +150,18 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-muted/50 p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
           <div className="text-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{t.title}</h1>
-            <p className="text-gray-600">{t.subtitle}</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t.title}</h1>
+            <p className="text-muted-foreground">{t.subtitle}</p>
           </div>
 
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
-              <Calendar className="w-5 h-5 text-gray-500" />
-              <h2 className="font-semibold text-gray-900">{t.selectDate}</h2>
+              <Calendar className="w-5 h-5 text-muted-foreground" />
+              <h2 className="font-semibold text-foreground">{t.selectDate}</h2>
             </div>
             <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
               {dates.map(date => (
@@ -174,7 +174,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
                   className={`p-3 rounded-lg text-center transition-all ${
                     selectedDate === date
                       ? 'bg-black text-white'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                      : 'bg-muted hover:bg-accent text-foreground'
                   }`}
                 >
                   <div className="text-xs uppercase">
@@ -194,8 +194,8 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
           {selectedDate && (
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-4">
-                <Clock className="w-5 h-5 text-gray-500" />
-                <h2 className="font-semibold text-gray-900">{t.selectTime}</h2>
+                <Clock className="w-5 h-5 text-muted-foreground" />
+                <h2 className="font-semibold text-foreground">{t.selectTime}</h2>
               </div>
 
               {loading ? (
@@ -203,7 +203,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
                 </div>
               ) : slots.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">{t.noSlots}</p>
+                <p className="text-center text-muted-foreground py-8">{t.noSlots}</p>
               ) : (
                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                   {slots.map(slot => (
@@ -213,7 +213,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
                       className={`p-3 rounded-lg text-center transition-all ${
                         selectedSlot?.start === slot.start
                           ? 'bg-black text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                          : 'bg-muted hover:bg-accent text-foreground'
                       }`}
                     >
                       {format(new Date(slot.start), 'HH:mm')}
@@ -226,7 +226,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
 
           {selectedSlot && (
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 {t.notes}
               </label>
               <textarea
@@ -251,7 +251,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
           <button
             onClick={handleBook}
             disabled={!selectedSlot || booking || !searchParams.order_id}
-            className="w-full py-4 bg-black text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+            className="w-full py-4 bg-black text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-foreground/90 transition-colors"
           >
             {booking ? t.booking : t.book}
           </button>

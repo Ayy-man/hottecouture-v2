@@ -135,9 +135,9 @@ export function TaskManagementModal({
       case 'working':
         return 'bg-blue-100 text-blue-800';
       case 'pending':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
 
@@ -161,7 +161,7 @@ export function TaskManagementModal({
       <div className="space-y-4 max-h-[70vh] overflow-y-auto">
         {/* Task count header */}
         <div className="flex justify-between items-center pb-4 border-b">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {tasks.length} task(s) found
           </p>
         </div>
@@ -172,7 +172,7 @@ export function TaskManagementModal({
           </div>
         ) : Object.keys(tasksByGarment).length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               No services for this order. Add services during order intake.
             </p>
           </div>
@@ -195,7 +195,7 @@ export function TaskManagementModal({
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Stage
                           </label>
                           <Select
@@ -218,7 +218,7 @@ export function TaskManagementModal({
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Assignee
                           </label>
                           <Select
@@ -241,7 +241,7 @@ export function TaskManagementModal({
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Planned (min)
                           </label>
                           <Input
@@ -258,7 +258,7 @@ export function TaskManagementModal({
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium text-muted-foreground mb-1">
                             Actual (min)
                           </label>
                           <Input
@@ -277,7 +277,7 @@ export function TaskManagementModal({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">
                           Notes
                         </label>
                         <Textarea
@@ -314,7 +314,7 @@ export function TaskManagementModal({
                           </Badge>
                           <div className="flex-1">
                             <p className="font-medium text-sm">{task.operation}</p>
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {formatMinutes(task.planned_minutes)} planned
@@ -352,7 +352,7 @@ export function TaskManagementModal({
                       </div>
 
                       {task.notes && (
-                        <p className="text-xs text-gray-600 mt-2 bg-gray-50 p-2 rounded">
+                        <p className="text-xs text-muted-foreground mt-2 bg-muted/50 p-2 rounded">
                           {task.notes}
                         </p>
                       )}

@@ -105,7 +105,7 @@ export default function ClientsPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-lg text-gray-600">Loading clients...</p>
+            <p className="text-lg text-muted-foreground">Loading clients...</p>
           </div>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function ClientsPage() {
       <div className="p-8">
         <div className="text-center">
           <div className="text-red-500 text-lg mb-4">Error loading clients</div>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-muted-foreground mb-4">{error}</p>
           <Link href="/board">
             <Button>Back to Board</Button>
           </Link>
@@ -139,10 +139,10 @@ export default function ClientsPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
               Client Directory
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Search and view order history for any client
             </p>
           </div>
@@ -150,7 +150,7 @@ export default function ClientsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4" />
           <Input
             placeholder="Search clients by name, phone, or email..."
             value={searchTerm}
@@ -165,9 +165,9 @@ export default function ClientsPage() {
         {filteredClients.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
-              <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No clients found</h3>
-              <p className="text-gray-600">
+              <User className="w-12 h-12 text-muted-foreground/70 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No clients found</h3>
+              <p className="text-muted-foreground">
                 {searchTerm 
                   ? 'Try adjusting your search criteria.'
                   : 'No clients have been added yet.'
@@ -182,7 +182,7 @@ export default function ClientsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex-1 mb-4 sm:mb-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-900">
+                      <h3 className="text-xl font-semibold text-foreground">
                         {client.first_name} {client.last_name}
                       </h3>
                       <Badge variant="outline">
@@ -190,7 +190,7 @@ export default function ClientsPage() {
                       </Badge>
                     </div>
                     
-                    <div className="space-y-1 text-sm text-gray-600">
+                    <div className="space-y-1 text-sm text-muted-foreground">
                       {(client.phone || client.email) && (
                         <div className="flex items-center gap-2 mb-2">
                           <button

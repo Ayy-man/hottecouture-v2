@@ -299,10 +299,10 @@ export default function MeasurementTemplatesPage() {
 
   if (loading) {
     return (
-      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+      <div className='min-h-screen bg-muted/50 flex items-center justify-center'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4'></div>
-          <p className='text-gray-600'>Chargement...</p>
+          <p className='text-muted-foreground'>Chargement...</p>
         </div>
       </div>
     );
@@ -310,7 +310,7 @@ export default function MeasurementTemplatesPage() {
 
   if (error) {
     return (
-      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+      <div className='min-h-screen bg-muted/50 flex items-center justify-center'>
         <div className='text-center'>
           <p className='text-red-600 mb-4'>{error}</p>
           <Button onClick={loadTemplates}>Réessayer</Button>
@@ -320,13 +320,13 @@ export default function MeasurementTemplatesPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 py-8'>
+    <div className='min-h-screen bg-muted/50 py-8'>
       <div className='container mx-auto px-4 max-w-4xl'>
         <div className='mb-8'>
           <h1 className='text-3xl font-bold text-center mb-2'>
             Gestion des Mesures
           </h1>
-          <p className='text-center text-gray-600'>
+          <p className='text-center text-muted-foreground'>
             Gérez les champs de mesure disponibles pour chaque catégorie
           </p>
         </div>
@@ -340,7 +340,7 @@ export default function MeasurementTemplatesPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
                 activeCategory === cat
                   ? 'bg-primary-500 text-white shadow-md'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                  : 'bg-white text-foreground hover:bg-accent border border-border'
               }`}
             >
               <span>{CATEGORY_ICONS[cat] || '📏'}</span>
@@ -349,7 +349,7 @@ export default function MeasurementTemplatesPage() {
                 className={`text-xs px-2 py-0.5 rounded-full ${
                   activeCategory === cat
                     ? 'bg-white/20 text-white'
-                    : 'bg-gray-200 text-gray-600'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {templates.filter(t => t.category === cat).length}
@@ -396,7 +396,7 @@ export default function MeasurementTemplatesPage() {
                       value={newName}
                       onChange={e => setNewName(e.target.value)}
                       placeholder='ex: Tour de biceps'
-                      className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500'
+                      className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500'
                       autoFocus
                       onKeyDown={e => {
                         if (e.key === 'Enter') handleAddTemplate();
@@ -415,7 +415,7 @@ export default function MeasurementTemplatesPage() {
                       value={newUnit}
                       onChange={e => setNewUnit(e.target.value)}
                       placeholder='cm'
-                      className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500'
+                      className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500'
                     />
                   </div>
                 </div>
@@ -444,7 +444,7 @@ export default function MeasurementTemplatesPage() {
 
             {/* Templates List */}
             {filteredTemplates.length === 0 ? (
-              <div className='text-center py-12 text-gray-500'>
+              <div className='text-center py-12 text-muted-foreground'>
                 <p className='text-4xl mb-4'>📏</p>
                 <p>Aucun champ de mesure dans cette catégorie</p>
                 <p className='text-sm mt-2'>
@@ -456,14 +456,14 @@ export default function MeasurementTemplatesPage() {
                 {filteredTemplates.map((template, index) => (
                   <div
                     key={template.id}
-                    className='flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors'
+                    className='flex items-center gap-3 p-3 bg-white border border-border rounded-lg hover:border-border transition-colors'
                   >
                     {/* Reorder buttons */}
                     <div className='flex flex-col gap-1'>
                       <button
                         onClick={() => handleMoveUp(template)}
                         disabled={index === 0}
-                        className='p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed'
+                        className='p-1 text-muted-foreground/70 hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed'
                         title='Monter'
                       >
                         <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -473,7 +473,7 @@ export default function MeasurementTemplatesPage() {
                       <button
                         onClick={() => handleMoveDown(template)}
                         disabled={index === filteredTemplates.length - 1}
-                        className='p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed'
+                        className='p-1 text-muted-foreground/70 hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed'
                         title='Descendre'
                       >
                         <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -515,7 +515,7 @@ export default function MeasurementTemplatesPage() {
                         </button>
                         <button
                           onClick={handleCancelEdit}
-                          className='p-2 text-gray-400 hover:text-gray-600'
+                          className='p-2 text-muted-foreground/70 hover:text-muted-foreground'
                           title='Annuler'
                         >
                           <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -527,14 +527,14 @@ export default function MeasurementTemplatesPage() {
                       <>
                         <div className='flex-1'>
                           <span className='font-medium'>{template.name_fr}</span>
-                          <span className='text-gray-500 text-sm ml-2'>
+                          <span className='text-muted-foreground text-sm ml-2'>
                             ({template.unit})
                           </span>
                         </div>
                         <div className='flex items-center gap-2'>
                           <button
                             onClick={() => handleStartEdit(template)}
-                            className='p-2 text-gray-400 hover:text-primary-600 transition-colors'
+                            className='p-2 text-muted-foreground/70 hover:text-primary-600 transition-colors'
                             title='Modifier'
                           >
                             <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -543,7 +543,7 @@ export default function MeasurementTemplatesPage() {
                           </button>
                           <button
                             onClick={() => handleCheckDelete(template.id)}
-                            className='p-2 text-gray-400 hover:text-red-600 transition-colors'
+                            className='p-2 text-muted-foreground/70 hover:text-red-600 transition-colors'
                             title='Supprimer'
                           >
                             <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -568,7 +568,7 @@ export default function MeasurementTemplatesPage() {
                 Supprimer ce champ de mesure ?
               </h3>
               {deleteUsageCount !== null && (
-                <p className='text-sm text-gray-600 mb-4'>
+                <p className='text-sm text-muted-foreground mb-4'>
                   {deleteUsageCount > 0 ? (
                     <span className='text-red-600 font-semibold'>
                       Ce champ est utilisé par {deleteUsageCount} mesure(s).

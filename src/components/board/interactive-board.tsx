@@ -223,24 +223,24 @@ export function InteractiveBoard({
                 <div className='p-2 sm:p-3'>
                   <div className='flex justify-between items-start mb-2'>
                     <div className='flex items-center gap-2'>
-                      <div className='text-gray-400 text-xs'>⋮⋮</div>
+                      <div className='text-muted-foreground/70 text-xs'>⋮⋮</div>
                       <h4 className='font-semibold text-sm sm:text-base'>
                         #{activeOrder.order_number}
                       </h4>
                     </div>
                   </div>
 
-                  <p className='text-xs sm:text-sm text-gray-600 mb-1'>
+                  <p className='text-xs sm:text-sm text-muted-foreground mb-1'>
                     {activeOrder.client_name || 'Unknown Client'}
                   </p>
 
-                  <p className='text-xs text-gray-500 mb-1'>
+                  <p className='text-xs text-muted-foreground mb-1'>
                     {activeOrder.garments?.map((g: any) => g.type).join(', ') ||
                       'No garments'}
                   </p>
 
                   {activeOrder.due_date && (
-                    <p className='text-xs text-gray-500 mb-1'>
+                    <p className='text-xs text-muted-foreground mb-1'>
                       Due: {new Date(activeOrder.due_date).toLocaleDateString()}
                     </p>
                   )}
@@ -251,7 +251,7 @@ export function InteractiveBoard({
                     </p>
                   )}
 
-                  <div className='mt-2 pt-2 border-t border-gray-100'>
+                  <div className='mt-2 pt-2 border-t border-border'>
                     <div className='w-full text-xs sm:text-sm py-1 sm:py-2 text-center text-blue-600 font-medium'>
                       Moving to new stage...
                     </div>

@@ -191,7 +191,7 @@ export function PricingStep({
   return (
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header with Navigation */}
-      <div className='flex items-center justify-between px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
+      <div className='flex items-center justify-between px-1 py-3 border-b border-border bg-white flex-shrink-0'>
         <Button
           variant='ghost'
           onClick={onPrev}
@@ -214,10 +214,10 @@ export function PricingStep({
         </Button>
 
         <div className='flex-1 text-center'>
-          <h2 className='text-lg font-semibold text-gray-900'>
+          <h2 className='text-lg font-semibold text-foreground'>
             Tarification
           </h2>
-          <p className='text-sm text-gray-500'>Tarification et date de livraison</p>
+          <p className='text-sm text-muted-foreground'>Tarification et date de livraison</p>
         </div>
 
         <Button
@@ -246,7 +246,7 @@ export function PricingStep({
                 value={data.due_date || ''}
                 onChange={e => handleInputChange('due_date', e.target.value)}
                 min={getMinDate()}
-                className='w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[40px] touch-manipulation'
+                className='w-full px-3 py-2 text-sm border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[40px] touch-manipulation'
               />
             </CardContent>
           </Card>
@@ -270,7 +270,7 @@ export function PricingStep({
                       onChange={e =>
                         handleInputChange('rush', e.target.checked)
                       }
-                      className='w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary touch-manipulation'
+                      className='w-5 h-5 text-primary border-border rounded focus:ring-primary touch-manipulation'
                     />
                     <label htmlFor='rush' className='text-sm font-medium'>
                       Ceci est un service express
@@ -280,7 +280,7 @@ export function PricingStep({
                   {data.rush && (
                     <div className='ml-8 space-y-2'>
                       <div>
-                        <label className='text-xs font-medium text-gray-700 mb-2 block'>
+                        <label className='text-xs font-medium text-muted-foreground mb-2 block'>
                           Type de service express
                         </label>
                         <div className='space-y-2'>
@@ -299,7 +299,7 @@ export function PricingStep({
                                   e.target.value
                                 )
                               }
-                              className='w-4 h-4 text-primary border-gray-300 focus:ring-primary touch-manipulation'
+                              className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
                               Service express - 30,00$ (1-2 jours plus rapide)
@@ -317,7 +317,7 @@ export function PricingStep({
                                   e.target.value
                                 )
                               }
-                              className='w-4 h-4 text-primary border-gray-300 focus:ring-primary touch-manipulation'
+                              className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
                               Service express pour complets et robes de soirée -
@@ -351,9 +351,9 @@ export function PricingStep({
 
           {/* Garments & Services Summary */}
           {garments && garments.length > 0 && (
-            <Card className='bg-gray-50 border-gray-200'>
+            <Card className='bg-muted/50 border-border'>
               <CardHeader className='pb-3'>
-                <CardTitle className='text-gray-900 text-lg'>
+                <CardTitle className='text-foreground text-lg'>
                   Articles
                 </CardTitle>
                 <CardDescription className='text-sm'>
@@ -366,7 +366,7 @@ export function PricingStep({
                     key={index}
                     className='mb-3 p-3 bg-white rounded-lg border'
                   >
-                    <div className='font-semibold text-gray-900 text-sm mb-2'>
+                    <div className='font-semibold text-foreground text-sm mb-2'>
                       {garment.type}
                     </div>
                     {garment.services.map((service, sIndex) => {
@@ -383,7 +383,7 @@ export function PricingStep({
                       return (
                         <div
                           key={sIndex}
-                          className='ml-3 text-xs text-gray-700 mb-1'
+                          className='ml-3 text-xs text-muted-foreground mb-1'
                         >
                           • {getServiceName(service.serviceId)}: {isHourly ? `${service.qty}h` : `Qté ${service.qty}`} × ${(unitPrice / 100).toFixed(2)}{isHourly ? '/h' : ''}
                         </div>
@@ -444,7 +444,7 @@ export function PricingStep({
                         <div className='flex items-center gap-2'>
                           <span className='text-lg font-bold'>Total:</span>
                           <div className='flex items-center gap-1'>
-                            <span className='text-gray-500'>$</span>
+                            <span className='text-muted-foreground'>$</span>
                             <input
                               type='text'
                               inputMode='decimal'
@@ -496,7 +496,7 @@ export function PricingStep({
                               {formatCurrency(totalOverrideCents ?? calculation.total_cents)}
                             </span>
                             {totalOverrideCents && (
-                              <div className='text-xs text-gray-500 line-through'>
+                              <div className='text-xs text-muted-foreground line-through'>
                                 Calculé: {formatCurrency(calculation.total_cents)}
                               </div>
                             )}
@@ -511,7 +511,7 @@ export function PricingStep({
                               );
                               setIsEditingTotal(true);
                             }}
-                            className='text-xs text-gray-500 hover:text-primary'
+                            className='text-xs text-muted-foreground hover:text-primary'
                           >
                             Modifier
                           </Button>
@@ -543,7 +543,7 @@ export function PricingStep({
                       onChange={e =>
                         handleInputChange('deposit_required', e.target.checked)
                       }
-                      className='w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary touch-manipulation'
+                      className='w-5 h-5 text-primary border-border rounded focus:ring-primary touch-manipulation'
                     />
                     <label htmlFor='deposit_required' className='text-sm font-medium'>
                       Dépôt requis
@@ -552,11 +552,11 @@ export function PricingStep({
 
                   {data.deposit_required && (
                     <div className='ml-8'>
-                      <label className='text-xs font-medium text-gray-700 mb-1 block'>
+                      <label className='text-xs font-medium text-muted-foreground mb-1 block'>
                         Montant du dépôt ($)
                       </label>
                       <div className='flex items-center gap-2'>
-                        <span className='text-gray-500'>$</span>
+                        <span className='text-muted-foreground'>$</span>
                         <input
                           type='text'
                           inputMode='numeric'
@@ -567,12 +567,12 @@ export function PricingStep({
                             const cents = value ? parseInt(value, 10) * 100 : 0;
                             handleInputChange('deposit_amount_cents', cents);
                           }}
-                          className='w-32 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
+                          className='w-32 px-3 py-2 text-sm border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
                           placeholder='0'
                         />
                       </div>
                       {calculation && data.deposit_amount_cents && (
-                        <p className='text-xs text-gray-500 mt-2'>
+                        <p className='text-xs text-muted-foreground mt-2'>
                           Solde restant: {formatCurrency(calculation.total_cents - data.deposit_amount_cents)}
                         </p>
                       )}
@@ -590,7 +590,7 @@ export function PricingStep({
                 <div className='flex items-center justify-between'>
                   <div>
                     <span className='text-sm font-medium'>Impression automatique</span>
-                    <p className='text-xs text-gray-500'>
+                    <p className='text-xs text-muted-foreground'>
                       Ouvrir automatiquement l'impression des étiquettes
                     </p>
                   </div>
@@ -601,7 +601,7 @@ export function PricingStep({
                       onChange={e => onAutoPrintChange(e.target.checked)}
                       className='sr-only peer'
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
               </CardContent>

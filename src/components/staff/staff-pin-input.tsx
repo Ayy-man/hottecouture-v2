@@ -54,8 +54,8 @@ export function StaffPinInput({ onComplete, disabled, error }: StaffPinInputProp
             key={i}
             className={`w-4 h-4 rounded-full border-2 transition-all ${
               i < pin.length
-                ? 'bg-stone-800 border-stone-800'
-                : 'bg-transparent border-stone-300'
+                ? 'bg-foreground border-foreground'
+                : 'bg-transparent border-border'
             }`}
           />
         ))}
@@ -76,7 +76,7 @@ export function StaffPinInput({ onComplete, disabled, error }: StaffPinInputProp
             size="lg"
             onClick={() => handleDigit(digit)}
             disabled={disabled}
-            className="h-14 text-xl font-semibold hover:bg-stone-100"
+            className="h-14 text-xl font-semibold hover:bg-accent"
           >
             {digit}
           </Button>
@@ -87,7 +87,7 @@ export function StaffPinInput({ onComplete, disabled, error }: StaffPinInputProp
           size="lg"
           onClick={handleClear}
           disabled={disabled || pin.length === 0}
-          className="h-14 text-sm hover:bg-stone-100"
+          className="h-14 text-sm hover:bg-accent"
         >
           Effacer
         </Button>
@@ -97,7 +97,7 @@ export function StaffPinInput({ onComplete, disabled, error }: StaffPinInputProp
           size="lg"
           onClick={() => handleDigit('0')}
           disabled={disabled}
-          className="h-14 text-xl font-semibold hover:bg-stone-100"
+          className="h-14 text-xl font-semibold hover:bg-accent"
         >
           0
         </Button>
@@ -107,7 +107,7 @@ export function StaffPinInput({ onComplete, disabled, error }: StaffPinInputProp
           size="lg"
           onClick={handleBackspace}
           disabled={disabled || pin.length === 0}
-          className="h-14 hover:bg-stone-100"
+          className="h-14 hover:bg-accent"
         >
           <Delete className="w-5 h-5" />
         </Button>

@@ -34,7 +34,7 @@ export function PipelineFilter({
       type: 'all' as const,
       name: 'All Orders',
       icon: Filter,
-      color: 'bg-gray-100 text-gray-800',
+      color: 'bg-muted text-foreground',
       count: totalOrders,
       description: 'View all orders across all pipelines',
     },
@@ -61,7 +61,7 @@ export function PipelineFilter({
       {/* Ultra Compact Filter Bar */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center space-x-1'>
-          <span className='text-xs font-medium text-gray-700'>Pipeline:</span>
+          <span className='text-xs font-medium text-foreground'>Pipeline:</span>
           <div className='flex items-center space-x-1'>
             {pipelines.map(pipeline => {
               const Icon = pipeline.icon;
@@ -76,7 +76,7 @@ export function PipelineFilter({
                   className={`btn-press flex items-center space-x-1 font-semibold shadow-md hover:shadow-lg transition-all duration-300 px-2 py-1 text-xs ${
                     isSelected
                       ? 'bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white'
-                      : 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 border-gray-300'
+                      : 'bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-foreground border-border'
                   }`}
                 >
                   <Icon className='w-3 h-3' />
@@ -86,7 +86,7 @@ export function PipelineFilter({
                     className={`ml-1 ${
                       isSelected
                         ? 'bg-white/20 text-white border-white/30'
-                        : 'bg-gray-200 text-gray-600 border-gray-300'
+                        : 'bg-muted text-muted-foreground border-border'
                     }`}
                   >
                     {pipeline.count}
@@ -101,7 +101,7 @@ export function PipelineFilter({
           variant='ghost'
           size='sm'
           onClick={() => setIsExpanded(!isExpanded)}
-          className='text-gray-500 hover:text-gray-700 p-1 h-6 w-6'
+          className='text-muted-foreground hover:text-foreground p-1 h-6 w-6'
         >
           {isExpanded ? (
             <X className='w-3 h-3' />
@@ -133,7 +133,7 @@ export function PipelineFilter({
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       isSelected
                         ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-border hover:border-border'
                     }`}
                     onClick={() => onPipelineChange(pipeline.type)}
                   >
@@ -145,7 +145,7 @@ export function PipelineFilter({
                       </div>
                       <div>
                         <h3 className='font-semibold'>{pipeline.name}</h3>
-                        <p className='text-sm text-gray-600'>
+                        <p className='text-sm text-muted-foreground'>
                           {pipeline.description}
                         </p>
                       </div>
@@ -155,7 +155,7 @@ export function PipelineFilter({
                       <div className='text-2xl font-bold text-primary'>
                         {pipeline.count}
                       </div>
-                      <div className='text-right text-sm text-gray-500'>
+                      <div className='text-right text-sm text-muted-foreground'>
                         {config && (
                           <>
                             <div>{config.estimatedDays} days avg</div>
@@ -180,22 +180,22 @@ export function PipelineFilter({
               <h4 className='font-semibold mb-3'>Pipeline Statistics</h4>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4 text-sm'>
                 <div className='text-center'>
-                  <div className='text-lg font-bold text-gray-900'>
+                  <div className='text-lg font-bold text-foreground'>
                     {totalOrders}
                   </div>
-                  <div className='text-gray-600'>Total Orders</div>
+                  <div className='text-muted-foreground'>Total Orders</div>
                 </div>
                 <div className='text-center'>
                   <div className='text-lg font-bold text-blue-600'>
                     {pipelineStats.alteration || 0}
                   </div>
-                  <div className='text-gray-600'>Alterations</div>
+                  <div className='text-muted-foreground'>Alterations</div>
                 </div>
                 <div className='text-center'>
                   <div className='text-lg font-bold text-purple-600'>
                     {pipelineStats.custom || 0}
                   </div>
-                  <div className='text-gray-600'>Custom Design</div>
+                  <div className='text-muted-foreground'>Custom Design</div>
                 </div>
                 <div className='text-center'>
                   <div className='text-lg font-bold text-green-600'>
@@ -204,7 +204,7 @@ export function PipelineFilter({
                     ) || 0}
                     %
                   </div>
-                  <div className='text-gray-600'>Alteration %</div>
+                  <div className='text-muted-foreground'>Alteration %</div>
                 </div>
               </div>
             </div>

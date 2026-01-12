@@ -73,10 +73,10 @@ export function WorkListExport({ onExportComplete }: WorkListExportProps) {
   if (isExporting) {
     return (
       <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-        <div className='bg-white rounded-lg p-6 max-w-sm w-full mx-4'>
+        <div className='bg-card rounded-lg p-6 max-w-sm w-full mx-4'>
           <div className='text-center'>
             <LoadingLogo size='lg' text='Generating work list...' />
-            <p className='text-sm text-gray-600 mt-4'>
+            <p className='text-sm text-muted-foreground mt-4'>
               Please wait while we generate your work list...
             </p>
           </div>
@@ -86,8 +86,8 @@ export function WorkListExport({ onExportComplete }: WorkListExportProps) {
   }
 
   return (
-    <div className='bg-white rounded-lg p-4 shadow-sm border border-gray-200'>
-      <h3 className='text-lg font-semibold text-gray-800 mb-4'>
+    <div className='bg-card rounded-lg p-4 shadow-sm border border-border'>
+      <h3 className='text-lg font-semibold text-foreground mb-4'>
         Export Work List
       </h3>
 
@@ -96,7 +96,7 @@ export function WorkListExport({ onExportComplete }: WorkListExportProps) {
         <div>
           <label
             htmlFor='export-category'
-            className='block text-sm font-medium text-gray-700 mb-2'
+            className='block text-sm font-medium text-foreground mb-2'
           >
             Category Filter
           </label>
@@ -104,7 +104,7 @@ export function WorkListExport({ onExportComplete }: WorkListExportProps) {
             id='export-category'
             value={selectedCategory}
             onChange={e => setSelectedCategory(e.target.value)}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm'
+            className='w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm'
           >
             {categories.map(category => (
               <option key={category.value} value={category.value}>

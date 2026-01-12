@@ -114,7 +114,7 @@ export function ActiveTaskIndicator() {
 
   if (!hasActiveTask) {
     return (
-      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 text-stone-500 text-sm">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm">
         <Clock className="w-3.5 h-3.5" />
         <span>Aucune tâche</span>
       </div>
@@ -147,19 +147,19 @@ export function ActiveTaskIndicator() {
             <div className="font-semibold text-sm">
               Commande #{activeTask?.orderNumber || '?'}
             </div>
-            <div className="text-sm text-stone-600">
+            <div className="text-sm text-muted-foreground">
               {activeTask?.garmentType}
             </div>
             {activeTask?.clientName && (
-              <div className="text-xs text-stone-500">
+              <div className="text-xs text-muted-foreground">
                 {activeTask.clientName}
               </div>
             )}
           </div>
 
           {/* Time display */}
-          <div className="flex items-center gap-2 p-2 bg-stone-50 rounded-lg">
-            <Clock className="w-4 h-4 text-stone-500" />
+          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+            <Clock className="w-4 h-4 text-muted-foreground" />
             <span className="font-mono text-lg font-semibold">
               {formatTime(elapsedTime)}
             </span>

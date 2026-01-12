@@ -89,13 +89,13 @@ export default function PricingManagementPage() {
   };
 
   return (
-    <div className='min-h-screen bg-gray-50 py-8'>
+    <div className='min-h-screen bg-muted/50 py-8'>
       <div className='container mx-auto px-4 max-w-4xl'>
         <div className='mb-8'>
           <h1 className='text-3xl font-bold text-center mb-2'>
             Pricing Management
           </h1>
-          <p className='text-center text-gray-600'>
+          <p className='text-center text-muted-foreground'>
             Import and manage your service pricing from Excel/CSV files
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function PricingManagementPage() {
               {/* Sample Data Import */}
               <div className='space-y-4'>
                 <h3 className='text-lg font-semibold'>Quick Start</h3>
-                <p className='text-sm text-gray-600'>
+                <p className='text-sm text-muted-foreground'>
                   Import sample pricing data to get started quickly
                 </p>
                 <Button
@@ -191,8 +191,8 @@ export default function PricingManagementPage() {
             </CardHeader>
             <CardContent>
               {!importResult ? (
-                <div className='text-center py-8 text-gray-500'>
-                  <Upload className='w-12 h-12 mx-auto mb-4 text-gray-300' />
+                <div className='text-center py-8 text-muted-foreground'>
+                  <Upload className='w-12 h-12 mx-auto mb-4 text-muted-foreground/50' />
                   <p>No import results yet</p>
                   <p className='text-sm'>
                     Import pricing data to see results here
@@ -292,7 +292,7 @@ export default function PricingManagementPage() {
                 <h3 className='font-semibold mb-2'>
                   1. Prepare Your Excel/CSV File
                 </h3>
-                <p className='text-sm text-gray-600 mb-2'>
+                <p className='text-sm text-muted-foreground mb-2'>
                   Your file should have these columns (in order):
                 </p>
                 <div className='grid grid-cols-2 md:grid-cols-4 gap-2 text-sm'>
@@ -308,7 +308,7 @@ export default function PricingManagementPage() {
 
               <div>
                 <h3 className='font-semibold mb-2'>2. Categories</h3>
-                <p className='text-sm text-gray-600 mb-2'>
+                <p className='text-sm text-muted-foreground mb-2'>
                   Use these standard categories:
                 </p>
                 <div className='flex flex-wrap gap-2 text-sm'>
@@ -324,7 +324,7 @@ export default function PricingManagementPage() {
 
               <div>
                 <h3 className='font-semibold mb-2'>3. Price Format</h3>
-                <p className='text-sm text-gray-600'>
+                <p className='text-sm text-muted-foreground'>
                   Enter prices in dollars (e.g., 15.00 for $15.00). The system
                   will automatically convert to cents.
                 </p>

@@ -167,7 +167,7 @@ function OrderHistoryContent() {
         <div className='flex items-center justify-center min-h-[400px]'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4'></div>
-            <p className='text-lg text-gray-600'>Loading order history...</p>
+            <p className='text-lg text-muted-foreground'>Loading order history...</p>
           </div>
         </div>
       </div>
@@ -181,7 +181,7 @@ function OrderHistoryContent() {
           <div className='text-red-500 text-lg mb-4'>
             Error loading order history
           </div>
-          <p className='text-gray-600 mb-4'>{error}</p>
+          <p className='text-muted-foreground mb-4'>{error}</p>
           <Link href='/board'>
             <Button>Back to Board</Button>
           </Link>
@@ -194,7 +194,7 @@ function OrderHistoryContent() {
     return (
       <div className='p-8'>
         <div className='text-center'>
-          <div className='text-gray-500 text-lg mb-4'>Client not found</div>
+          <div className='text-muted-foreground text-lg mb-4'>Client not found</div>
           <Link href='/board'>
             <Button>Back to Board</Button>
           </Link>
@@ -216,17 +216,17 @@ function OrderHistoryContent() {
               </Button>
             </Link>
             <div>
-              <h1 className='text-3xl sm:text-4xl font-bold text-gray-900'>
+              <h1 className='text-3xl sm:text-4xl font-bold text-foreground'>
                 Order History
               </h1>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 {client.first_name} {client.last_name}
               </p>
               {client.phone && (
-                <p className='text-sm text-gray-500'>{client.phone}</p>
+                <p className='text-sm text-muted-foreground'>{client.phone}</p>
               )}
               {client.email && (
-                <p className='text-sm text-gray-500'>{client.email}</p>
+                <p className='text-sm text-muted-foreground'>{client.email}</p>
               )}
             </div>
           </div>
@@ -238,7 +238,7 @@ function OrderHistoryContent() {
                 <div className='flex items-center'>
                   <Package className='w-8 h-8 text-blue-500 mr-3' />
                   <div>
-                    <p className='text-sm text-gray-600'>Total Orders</p>
+                    <p className='text-sm text-muted-foreground'>Total Orders</p>
                     <p className='text-2xl font-bold'>{orders.length}</p>
                   </div>
                 </div>
@@ -250,7 +250,7 @@ function OrderHistoryContent() {
                 <div className='flex items-center'>
                   <DollarSign className='w-8 h-8 text-green-500 mr-3' />
                   <div>
-                    <p className='text-sm text-gray-600'>Total Value</p>
+                    <p className='text-sm text-muted-foreground'>Total Value</p>
                     <p className='text-2xl font-bold'>
                       {formatCurrency(
                         orders.reduce(
@@ -269,7 +269,7 @@ function OrderHistoryContent() {
                 <div className='flex items-center'>
                   <Calendar className='w-8 h-8 text-purple-500 mr-3' />
                   <div>
-                    <p className='text-sm text-gray-600'>First Order</p>
+                    <p className='text-sm text-muted-foreground'>First Order</p>
                     <p className='text-lg font-semibold'>
                       {orders.length > 0
                         ? formatDate(
@@ -287,7 +287,7 @@ function OrderHistoryContent() {
         {/* Filters */}
         <div className='mb-6 flex flex-col sm:flex-row gap-4'>
           <div className='relative flex-1'>
-            <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+            <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
             <Input
               placeholder='Search orders by number, garment type, color, or brand...'
               value={searchTerm}
@@ -299,7 +299,7 @@ function OrderHistoryContent() {
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className='px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+            className='px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
           >
             <option value='all'>All Statuses</option>
             <option value='pending'>Pending</option>
@@ -315,11 +315,11 @@ function OrderHistoryContent() {
           {filteredOrders.length === 0 ? (
             <Card>
               <CardContent className='p-8 text-center'>
-                <Package className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-                <h3 className='text-lg font-semibold text-gray-900 mb-2'>
+                <Package className='w-12 h-12 text-muted-foreground/70 mx-auto mb-4' />
+                <h3 className='text-lg font-semibold text-foreground mb-2'>
                   No orders found
                 </h3>
-                <p className='text-gray-600'>
+                <p className='text-muted-foreground'>
                   {searchTerm || statusFilter !== 'all'
                     ? 'Try adjusting your search or filter criteria.'
                     : 'This client has no order history yet.'}
@@ -350,7 +350,7 @@ function OrderHistoryContent() {
                       </Badge>
                     </div>
 
-                    <div className='flex items-center gap-4 text-sm text-gray-600'>
+                    <div className='flex items-center gap-4 text-sm text-muted-foreground'>
                       <span>Created: {formatDate(order.created_at)}</span>
                       {order.due_date && (
                         <span>Due: {formatDate(order.due_date)}</span>
@@ -364,9 +364,9 @@ function OrderHistoryContent() {
                   {/* Garments */}
                   <div className='space-y-2'>
                     {order.garments.map((garment, index) => (
-                      <div key={index} className='bg-gray-50 rounded-lg p-3'>
+                      <div key={index} className='bg-muted/50 rounded-lg p-3'>
                         <div className='flex items-center justify-between mb-2'>
-                          <h4 className='font-medium text-gray-900'>
+                          <h4 className='font-medium text-foreground'>
                             {garment.type}
                             {garment.color && ` - ${garment.color}`}
                             {garment.brand && ` (${garment.brand})`}
@@ -379,7 +379,7 @@ function OrderHistoryContent() {
                               key={serviceIndex}
                               className='flex justify-between text-sm'
                             >
-                              <span className='text-gray-600'>
+                              <span className='text-muted-foreground'>
                                 {service.service.name} x{service.quantity}
                               </span>
                               <span className='font-medium'>
@@ -395,7 +395,7 @@ function OrderHistoryContent() {
                   </div>
 
                   {/* Actions */}
-                  <div className='mt-4 pt-4 border-t border-gray-200'>
+                  <div className='mt-4 pt-4 border-t border-border'>
                     <div className='flex gap-2'>
                       <Link href={`/board?orderId=${order.id}`}>
                         <Button variant='outline' size='sm'>
@@ -403,7 +403,7 @@ function OrderHistoryContent() {
                         </Button>
                       </Link>
                       {order.status === 'delivered' && order.completed_at && (
-                        <span className='text-sm text-gray-500 self-center'>
+                        <span className='text-sm text-muted-foreground self-center'>
                           Completed: {formatDate(order.completed_at)}
                         </span>
                       )}
@@ -427,7 +427,7 @@ export default function OrderHistoryPage() {
           <div className='flex items-center justify-center min-h-[400px]'>
             <div className='text-center'>
               <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4'></div>
-              <p className='text-lg text-gray-600'>Loading...</p>
+              <p className='text-lg text-muted-foreground'>Loading...</p>
             </div>
           </div>
         </div>

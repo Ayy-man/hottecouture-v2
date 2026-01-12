@@ -16,7 +16,7 @@ export function AuthButton() {
 
   if (isLoading) {
     return (
-      <div className="w-20 h-8 bg-gray-200 rounded animate-pulse" />
+      <div className="w-20 h-8 bg-muted rounded animate-pulse" />
     )
   }
 
@@ -33,7 +33,7 @@ export function AuthButton() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-600 flex items-center gap-1">
+      <span className="text-sm text-muted-foreground flex items-center gap-1">
         <User className="w-4 h-4" />
         {username}
       </span>

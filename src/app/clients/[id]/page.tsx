@@ -131,7 +131,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-            <p className="text-lg text-gray-600">Chargement...</p>
+            <p className="text-lg text-muted-foreground">Chargement...</p>
           </div>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 p-8">
         <div className="text-center">
           <div className="text-red-500 text-lg mb-4">Erreur</div>
-          <p className="text-gray-600 mb-4">{error || 'Client non trouvé'}</p>
+          <p className="text-muted-foreground mb-4">{error || 'Client non trouvé'}</p>
           <Link href="/clients">
             <Button>Retour aux clients</Button>
           </Link>
@@ -171,10 +171,10 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-foreground">
                 {client.first_name} {client.last_name}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Client depuis {formatDate(client.created_at)}
               </p>
             </div>
@@ -190,7 +190,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                 activeTab === tab.key
                   ? 'bg-primary-500 text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
+                  : 'bg-white text-muted-foreground hover:bg-accent'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -217,19 +217,19 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {client.phone && (
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                      <Phone className="w-5 h-5 text-gray-500" />
+                    <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                      <Phone className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-gray-500">Téléphone</p>
+                        <p className="text-sm text-muted-foreground">Téléphone</p>
                         <p className="font-mono">{revealed ? client.phone : maskPhone(client.phone)}</p>
                       </div>
                     </div>
                   )}
                   {client.email && (
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                      <Mail className="w-5 h-5 text-gray-500" />
+                    <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                      <Mail className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-gray-500">Courriel</p>
+                        <p className="text-sm text-muted-foreground">Courriel</p>
                         <p className="font-mono">{revealed ? client.email : maskEmail(client.email)}</p>
                       </div>
                     </div>
@@ -237,16 +237,16 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-500">Langue</p>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Langue</p>
                     <p className="font-medium">{client.language === 'en' ? 'English' : 'Français'}</p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-500">Contact préféré</p>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Contact préféré</p>
                     <p className="font-medium">{client.preferred_contact === 'email' ? '📧 Courriel' : '💬 SMS'}</p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-500">Infolettre</p>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Infolettre</p>
                     <p className="font-medium">{client.newsletter_consent ? '✅ Abonné' : '❌ Non abonné'}</p>
                   </div>
                 </div>
@@ -257,18 +257,18 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold mb-4">Historique des commandes</h2>
                 {orders.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-muted-foreground">
                     <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>Aucune commande</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {orders.map(order => (
-                      <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div key={order.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-accent transition-colors">
                         <div className="flex items-center gap-4">
                           <div>
                             <p className="font-semibold">Commande #{order.order_number}</p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Calendar className="w-3 h-3" />
                               {formatDate(order.created_at)}
                             </div>
@@ -283,7 +283,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                         <div className="text-right">
                           <p className="font-semibold">{formatCurrency(order.total_cents)}</p>
                           {order.due_date && (
-                            <p className="text-sm text-gray-500">Prévu: {formatDate(order.due_date)}</p>
+                            <p className="text-sm text-muted-foreground">Prévu: {formatDate(order.due_date)}</p>
                           )}
                         </div>
                       </div>
@@ -297,7 +297,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold mb-4">Mesures du client</h2>
                 {Object.keys(measurements).length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-muted-foreground">
                     <Ruler className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>Aucune mesure enregistrée</p>
                     <p className="text-sm mt-2">Les mesures seront ajoutées lors de la création d&apos;une commande</p>
@@ -305,17 +305,17 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                 ) : (
                   Object.entries(measurements).map(([category, items]) => (
                     <div key={category} className="space-y-3">
-                      <h3 className="font-medium text-gray-700 capitalize">
+                      <h3 className="font-medium text-foreground capitalize">
                         {category === 'body' ? 'Mesures corporelles' :
                          category === 'curtain' ? 'Rideaux' :
                          category === 'upholstery' ? 'Rembourrage' : category}
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {items.map((m: Measurement) => (
-                          <div key={m.id} className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-gray-500">{m.name_fr || m.name}</p>
+                          <div key={m.id} className="p-3 bg-muted/50 rounded-lg">
+                            <p className="text-xs text-muted-foreground">{m.name_fr || m.name}</p>
                             <p className="text-lg font-semibold">
-                              {m.value} <span className="text-sm font-normal text-gray-500">{m.unit}</span>
+                              {m.value} <span className="text-sm font-normal text-muted-foreground">{m.unit}</span>
                             </p>
                           </div>
                         ))}

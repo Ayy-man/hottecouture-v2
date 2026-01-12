@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
     <AuthGuard>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 p-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-8">Analytics Dashboard</h1>
 
           {/* Revenue Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -309,7 +309,7 @@ export default function AnalyticsPage() {
                         </div>
                         <div>
                           <p className="font-medium">{customer.name}</p>
-                          <p className="text-sm text-gray-500">{customer.orderCount} orders</p>
+                          <p className="text-sm text-muted-foreground">{customer.orderCount} orders</p>
                         </div>
                       </div>
                       <div className="text-right">

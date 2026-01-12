@@ -70,7 +70,7 @@ export function LoadingLogo({
         <div className='text-center'>
           <p
             className={cn(
-              'font-medium text-gray-600 animate-pulse',
+              'font-medium text-muted-foreground animate-pulse',
               textSizeClasses[size]
             )}
           >
@@ -101,7 +101,7 @@ export function FullScreenLoading({ text = 'Loading...' }: { text?: string }) {
       <div className='text-center'>
         <LoadingLogo size='xl' text={text} />
         <div className='mt-8'>
-          <div className='w-32 h-1 bg-gray-200 rounded-full overflow-hidden'>
+          <div className='w-32 h-1 bg-muted rounded-full overflow-hidden'>
             <div className='h-full bg-gradient-to-r from-primary-500 to-accent-clay rounded-full animate-pulse'></div>
           </div>
         </div>

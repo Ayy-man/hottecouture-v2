@@ -358,7 +358,7 @@ export function TimerButton({
   // Don't show timer if status not loaded yet
   if (!timerStatus) {
     return (
-      <div className='flex items-center justify-center p-4 bg-gray-50 rounded-lg'>
+      <div className='flex items-center justify-center p-4 bg-muted/50 rounded-lg'>
         <LoadingLogo size='sm' text='Chargement...' />
       </div>
     );
@@ -377,7 +377,7 @@ export function TimerButton({
             size='sm'
             variant='ghost'
             onClick={handleStartEdit}
-            className='h-8 px-2 text-gray-500 hover:text-gray-700'
+            className='h-8 px-2 text-muted-foreground hover:text-muted-foreground'
             title='Modifier le temps'
           >
             <Pencil className='w-3 h-3' />
@@ -416,7 +416,7 @@ export function TimerButton({
             className='w-16 h-8 text-center text-sm'
             disabled={savingEdit}
           />
-          <span className='text-sm text-gray-600'>h</span>
+          <span className='text-sm text-muted-foreground'>h</span>
           <Input
             type='number'
             min='0'
@@ -426,7 +426,7 @@ export function TimerButton({
             className='w-16 h-8 text-center text-sm'
             disabled={savingEdit}
           />
-          <span className='text-sm text-gray-600'>m</span>
+          <span className='text-sm text-muted-foreground'>m</span>
         </div>
         <div className='flex gap-1'>
           <Button
@@ -469,7 +469,7 @@ export function TimerButton({
               size='sm'
               variant='ghost'
               onClick={handleStartEdit}
-              className='h-8 px-2 text-gray-500 hover:text-gray-700'
+              className='h-8 px-2 text-muted-foreground hover:text-muted-foreground'
               title='Edit time'
             >
               <Pencil className='w-3 h-3' />

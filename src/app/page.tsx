@@ -220,7 +220,7 @@ export default function HomePage() {
                 <h3 className='text-2xl font-bold text-white mb-4'>
                   🚀 Ready to Test!
                 </h3>
-                <p className='text-gray-300 mb-6 text-lg max-w-2xl mx-auto'>
+                <p className='text-muted-foreground mb-6 text-lg max-w-2xl mx-auto'>
                   The application is running in development mode. You can test
                   all features without Supabase:
                 </p>
@@ -316,7 +316,7 @@ export default function HomePage() {
                     </span>
                   </div>
                 </div>
-                <p className='text-gray-300 text-sm mt-6 max-w-2xl mx-auto'>
+                <p className='text-muted-foreground text-sm mt-6 max-w-2xl mx-auto'>
                   When you get Supabase access, just update the environment
                   variables and the app will automatically switch to real mode.
                 </p>

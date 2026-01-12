@@ -140,7 +140,7 @@ export default function ArchivedOrdersPage() {
             <div className='flex items-center justify-center min-h-[400px]'>
               <div className='text-center'>
                 <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4'></div>
-                <p className='text-lg text-gray-600'>
+                <p className='text-lg text-muted-foreground'>
                   Loading archived orders...
                 </p>
               </div>
@@ -180,7 +180,7 @@ export default function ArchivedOrdersPage() {
             <h1 className='text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2'>
               Archived Orders
             </h1>
-            <p className='text-sm sm:text-base text-gray-600 max-w-2xl mx-auto'>
+            <p className='text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto'>
               View and manage archived orders - {orders.length} total archived
             </p>
           </div>
@@ -189,13 +189,13 @@ export default function ArchivedOrdersPage() {
           <div className='mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between'>
             <div className='flex items-center gap-4'>
               <div className='relative'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
                 <input
                   type='text'
                   placeholder='Search orders...'
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className='pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                 />
               </div>
 
@@ -232,7 +232,7 @@ export default function ArchivedOrdersPage() {
               <Button
                 asChild
                 variant='outline'
-                className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
+                className='btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border'
               >
                 <Link href='/board'>
                   <ArrowLeft className='w-4 h-4 mr-2' />
@@ -245,13 +245,13 @@ export default function ArchivedOrdersPage() {
           {/* Orders Grid */}
           {filteredOrders.length === 0 ? (
             <div className='text-center py-12'>
-              <Archive className='w-16 h-16 text-gray-400 mx-auto mb-4' />
-              <h3 className='text-xl font-semibold text-gray-600 mb-2'>
+              <Archive className='w-16 h-16 text-muted-foreground/70 mx-auto mb-4' />
+              <h3 className='text-xl font-semibold text-muted-foreground mb-2'>
                 {searchTerm
                   ? 'No orders match your search'
                   : 'No archived orders'}
               </h3>
-              <p className='text-gray-500'>
+              <p className='text-muted-foreground'>
                 {searchTerm
                   ? 'Try adjusting your search terms'
                   : 'Orders will appear here after being archived'}
@@ -294,16 +294,16 @@ export default function ArchivedOrdersPage() {
                     </div>
 
                     <div className='space-y-2 mb-4'>
-                      <p className='text-sm font-medium text-gray-900'>
+                      <p className='text-sm font-medium text-foreground'>
                         {order.client_name}
                       </p>
 
-                      <p className='text-sm text-gray-600'>
+                      <p className='text-sm text-muted-foreground'>
                         {order.garments.map(g => g.type).join(', ') ||
                           'No garments'}
                       </p>
 
-                      <p className='text-sm text-gray-500'>
+                      <p className='text-sm text-muted-foreground'>
                         Total: {formatCurrency(order.total_cents)}
                       </p>
 
@@ -314,7 +314,7 @@ export default function ArchivedOrdersPage() {
                       )}
                     </div>
 
-                    <div className='border-t pt-2 text-xs text-gray-500'>
+                    <div className='border-t pt-2 text-xs text-muted-foreground'>
                       <p>Created: {formatDate(order.created_at)}</p>
                     </div>
                   </CardContent>

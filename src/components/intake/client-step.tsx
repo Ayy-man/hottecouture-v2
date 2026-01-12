@@ -455,17 +455,17 @@ export function ClientStep({
               <div className='w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3'>
                 <span className='text-2xl'>⚠️</span>
               </div>
-              <h3 className='text-lg font-bold text-gray-900'>Client existant trouvé!</h3>
-              <p className='text-sm text-gray-600 mt-1'>Un client avec ce numéro de téléphone existe déjà.</p>
+              <h3 className='text-lg font-bold text-foreground'>Client existant trouvé!</h3>
+              <p className='text-sm text-muted-foreground mt-1'>Un client avec ce numéro de téléphone existe déjà.</p>
             </div>
             
-            <div className='bg-gray-50 rounded-lg p-4 mb-4'>
-              <p className='font-medium text-gray-900'>
+            <div className='bg-muted/50 rounded-lg p-4 mb-4'>
+              <p className='font-medium text-foreground'>
                 {duplicateClient.first_name} {duplicateClient.last_name}
               </p>
-              <p className='text-sm text-gray-600'>{duplicateClient.phone}</p>
+              <p className='text-sm text-muted-foreground'>{duplicateClient.phone}</p>
               {duplicateClient.email && (
-                <p className='text-sm text-gray-600'>{duplicateClient.email}</p>
+                <p className='text-sm text-muted-foreground'>{duplicateClient.email}</p>
               )}
             </div>
             
@@ -479,7 +479,7 @@ export function ClientStep({
               <Button
                 variant='outline'
                 onClick={handleCreateAnyway}
-                className='flex-1 border-gray-300 text-gray-700'
+                className='flex-1 border-border text-muted-foreground'
               >
                 Créer nouveau
               </Button>
@@ -489,7 +489,7 @@ export function ClientStep({
       )}
 
       {/* iOS-style Header with Navigation */}
-      <div className='flex items-center justify-between px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
+      <div className='flex items-center justify-between px-1 py-3 border-b border-border bg-white flex-shrink-0'>
         <div className='w-1/4'>
           {onPrev && (
             <Button
@@ -516,10 +516,10 @@ export function ClientStep({
         </div>
 
         <div className='flex-1 text-center'>
-          <h2 className='text-lg font-semibold text-gray-900'>
+          <h2 className='text-lg font-semibold text-foreground'>
             Information Client
           </h2>
-          <p className='text-sm text-gray-500'>
+          <p className='text-sm text-muted-foreground'>
             Rechercher un client existant ou en créer un nouveau
           </p>
         </div>
@@ -555,14 +555,14 @@ export function ClientStep({
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       placeholder='Entrer téléphone ou courriel'
-                      className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[40px] text-sm touch-manipulation'
+                      className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[40px] text-sm touch-manipulation'
                     />
                   </div>
 
                   {isSearching && (
                     <div className='text-center py-2'>
                       <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500 mx-auto'></div>
-                      <p className='mt-1 text-xs text-gray-600'>Recherche...</p>
+                      <p className='mt-1 text-xs text-muted-foreground'>Recherche...</p>
                     </div>
                   )}
 
@@ -572,14 +572,14 @@ export function ClientStep({
                       {searchResults.map((client, index) => (
                         <div
                           key={client.first_name + client.last_name + index}
-                          className='p-2 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer'
+                          className='p-2 border border-border rounded-md hover:bg-muted/50 cursor-pointer'
                           onClick={() => handleSelectClient(client)}
                         >
                           <div className='font-medium text-sm'>
                             {client.first_name} {client.last_name}
                           </div>
                           <div
-                            className='text-xs text-gray-600 cursor-pointer hover:text-gray-800'
+                            className='text-xs text-muted-foreground cursor-pointer hover:text-foreground'
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleReveal(client.phone + client.email);
@@ -590,7 +590,7 @@ export function ClientStep({
                               ? `${client.phone} • ${client.email}`
                               : `${maskPhone(client.phone || '')} • ${maskEmail(client.email || '')}`}
                           </div>
-                          <div className='text-xs text-gray-500 mt-1'>
+                          <div className='text-xs text-muted-foreground mt-1'>
                             Preferred:{' '}
                             {client.preferred_contact === 'email'
                               ? '📧 Email'
@@ -645,7 +645,7 @@ export function ClientStep({
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${
                           errors.first_name
                             ? 'border-red-500'
-                            : 'border-gray-300'
+                            : 'border-border'
                         }`}
                       />
                       {errors.first_name && (
@@ -674,7 +674,7 @@ export function ClientStep({
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${
                           errors.last_name
                             ? 'border-red-500'
-                            : 'border-gray-300'
+                            : 'border-border'
                         }`}
                       />
                       {errors.last_name && (
@@ -699,7 +699,7 @@ export function ClientStep({
                         value={formData.phone}
                         onChange={e => handlePhoneChange(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${
-                          errors.phone ? 'border-red-500' : 'border-gray-300'
+                          errors.phone ? 'border-red-500' : 'border-border'
                         }`}
                         placeholder='+1 (555) 123-4567'
                       />
@@ -723,7 +723,7 @@ export function ClientStep({
                         value={formData.email}
                         onChange={e => handleEmailChange(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation ${
-                          errors.email ? 'border-red-500' : 'border-gray-300'
+                          errors.email ? 'border-red-500' : 'border-border'
                         }`}
                         placeholder='client@example.com'
                       />
@@ -752,7 +752,7 @@ export function ClientStep({
                             language: e.target.value as 'fr' | 'en',
                           }))
                         }
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation'
+                        className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation'
                       >
                         <option value='fr'>Français</option>
                         <option value='en'>English</option>
@@ -776,7 +776,7 @@ export function ClientStep({
                               | 'sms',
                           }))
                         }
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation'
+                        className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation'
                       >
                         <option value='email'>📧 Email</option>
                         <option value='sms'>💬 SMS</option>
@@ -795,11 +795,11 @@ export function ClientStep({
                           newsletter_consent: e.target.checked,
                         }))
                       }
-                      className='h-3 w-3 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'
+                      className='h-3 w-3 text-primary-600 focus:ring-primary-500 border-border rounded'
                     />
                     <label
                       htmlFor='newsletterConsent'
-                      className='text-xs font-medium text-gray-700'
+                      className='text-xs font-medium text-muted-foreground'
                     >
                       Abonner à l'infolettre
                     </label>
@@ -817,7 +817,7 @@ export function ClientStep({
                       type='button'
                       variant='outline'
                       onClick={() => setShowCreateForm(false)}
-                      className='flex-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-sm py-2'
+                      className='flex-1 btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border text-sm py-2'
                       disabled={isCreating}
                     >
                       Annuler
@@ -861,7 +861,7 @@ export function ClientStep({
                       setSearchQuery('');
                       setSearchResults([]);
                     }}
-                    className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-xs px-2 py-1'
+                    className='btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border text-xs px-2 py-1'
                   >
                     Changer Client
                   </Button>
@@ -869,15 +869,15 @@ export function ClientStep({
               </div>
 
               {/* Measurements Section */}
-              <div className='border border-gray-200 rounded-md overflow-hidden'>
+              <div className='border border-border rounded-md overflow-hidden'>
                 <button
                   type='button'
                   onClick={() => setShowMeasurements(!showMeasurements)}
-                  className='w-full px-3 py-2 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors'
+                  className='w-full px-3 py-2 flex items-center justify-between bg-muted/50 hover:bg-muted transition-colors'
                 >
-                  <span className='text-sm font-medium text-gray-700'>📏 Mesures du client</span>
+                  <span className='text-sm font-medium text-muted-foreground'>📏 Mesures du client</span>
                   <svg
-                    className={`w-4 h-4 text-gray-500 transition-transform ${showMeasurements ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-muted-foreground transition-transform ${showMeasurements ? 'rotate-180' : ''}`}
                     fill='none'
                     stroke='currentColor'
                     viewBox='0 0 24 24'
@@ -889,7 +889,7 @@ export function ClientStep({
                 {showMeasurements && (
                   <div className='p-3 space-y-3'>
                     <div className='flex items-center justify-between'>
-                      <p className='text-xs text-gray-500'>Pour projets sur mesure (optionnel)</p>
+                      <p className='text-xs text-muted-foreground'>Pour projets sur mesure (optionnel)</p>
                       {(isLoadingMeasurements || isLoadingTemplates) && (
                         <div className='flex items-center gap-1 text-xs text-primary-600'>
                           <div className='animate-spin w-3 h-3 border border-primary-500 border-t-transparent rounded-full'></div>
@@ -902,14 +902,14 @@ export function ClientStep({
                     <div className='grid grid-cols-2 gap-2'>
                       {measurementTemplates.map(template => (
                         <div key={template.id}>
-                          <label className='block text-xs text-gray-600 mb-1'>
+                          <label className='block text-xs text-muted-foreground mb-1'>
                             {template.name_fr} ({template.unit})
                           </label>
                           <input
                             type='number'
                             value={measurements[template.name] || ''}
                             onChange={e => updateMeasurement(template.name, e.target.value)}
-                            className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                            className='w-full px-2 py-1 text-sm border border-border rounded focus:ring-1 focus:ring-primary-500'
                             placeholder={`ex: ${template.name === 'height' ? '170' : '0'}`}
                           />
                         </div>
@@ -918,19 +918,19 @@ export function ClientStep({
 
                     {/* Custom per-order measurements */}
                     {customMeasurements.length > 0 && (
-                      <div className='border-t border-gray-200 pt-2'>
-                        <p className='text-xs text-gray-500 mb-2'>Mesures personnalisées</p>
+                      <div className='border-t border-border pt-2'>
+                        <p className='text-xs text-muted-foreground mb-2'>Mesures personnalisées</p>
                         <div className='grid grid-cols-2 gap-2'>
                           {customMeasurements.map((custom, index) => (
                             <div key={index} className='relative'>
-                              <label className='block text-xs text-gray-600 mb-1 flex items-center justify-between'>
+                              <label className='block text-xs text-muted-foreground mb-1 flex items-center justify-between'>
                                 <span>{custom.name}</span>
                                 <button
                                   type='button'
                                   onClick={() => {
                                     setCustomMeasurements(prev => prev.filter((_, i) => i !== index));
                                   }}
-                                  className='text-gray-400 hover:text-red-500'
+                                  className='text-muted-foreground/70 hover:text-red-500'
                                 >
                                   <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
@@ -948,7 +948,7 @@ export function ClientStep({
                                   // Update parent with custom measurement
                                   updateMeasurement(`custom_${custom.name.toLowerCase().replace(/\s+/g, '_')}`, newValue);
                                 }}
-                                className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                                className='w-full px-2 py-1 text-sm border border-border rounded focus:ring-1 focus:ring-primary-500'
                               />
                             </div>
                           ))}
@@ -958,15 +958,15 @@ export function ClientStep({
 
                     {/* Add custom measurement */}
                     {showAddCustom ? (
-                      <div className='border-t border-gray-200 pt-2'>
-                        <p className='text-xs text-gray-500 mb-2'>Ajouter une mesure personnalisée</p>
+                      <div className='border-t border-border pt-2'>
+                        <p className='text-xs text-muted-foreground mb-2'>Ajouter une mesure personnalisée</p>
                         <div className='grid grid-cols-2 gap-2'>
                           <input
                             type='text'
                             value={newCustomName}
                             onChange={e => setNewCustomName(e.target.value)}
                             placeholder='Nom (ex: Biceps)'
-                            className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                            className='w-full px-2 py-1 text-sm border border-border rounded focus:ring-1 focus:ring-primary-500'
                             autoFocus
                             onKeyDown={e => {
                               if (e.key === 'Escape') {
@@ -981,7 +981,7 @@ export function ClientStep({
                             value={newCustomValue}
                             onChange={e => setNewCustomValue(e.target.value)}
                             placeholder='Valeur (cm)'
-                            className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                            className='w-full px-2 py-1 text-sm border border-border rounded focus:ring-1 focus:ring-primary-500'
                             onKeyDown={e => {
                               if (e.key === 'Enter' && newCustomName.trim()) {
                                 setCustomMeasurements(prev => [...prev, { name: newCustomName.trim(), value: newCustomValue }]);
@@ -1002,7 +1002,7 @@ export function ClientStep({
                               setNewCustomName('');
                               setNewCustomValue('');
                             }}
-                            className='text-xs text-gray-500 hover:text-gray-700'
+                            className='text-xs text-muted-foreground hover:text-muted-foreground'
                           >
                             Annuler
                           </button>
@@ -1019,7 +1019,7 @@ export function ClientStep({
                               }
                             }}
                             disabled={!newCustomName.trim()}
-                            className='text-xs text-primary-600 hover:text-primary-700 disabled:text-gray-400'
+                            className='text-xs text-primary-600 hover:text-primary-700 disabled:text-muted-foreground/70'
                           >
                             Ajouter
                           </button>
@@ -1040,11 +1040,11 @@ export function ClientStep({
 
                     {/* Notes */}
                     <div>
-                      <label className='block text-xs text-gray-600 mb-1'>Notes de mesures</label>
+                      <label className='block text-xs text-muted-foreground mb-1'>Notes de mesures</label>
                       <textarea
                         value={measurements['notes'] || ''}
                         onChange={e => updateMeasurement('notes', e.target.value)}
-                        className='w-full px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-primary-500'
+                        className='w-full px-2 py-1 text-sm border border-border rounded focus:ring-1 focus:ring-primary-500'
                         rows={2}
                         placeholder='Notes additionnelles...'
                       />

@@ -229,7 +229,7 @@ export default function LabelsPage() {
     return (
       <div className='min-h-screen flex items-center justify-center'>
         <div className='text-center'>
-          <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto'></div>
+          <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-foreground mx-auto'></div>
           <p className='mt-4 text-lg'>Loading labels...</p>
         </div>
       </div>
@@ -241,7 +241,7 @@ export default function LabelsPage() {
       <div className='min-h-screen flex items-center justify-center'>
         <div className='text-center'>
           <h1 className='text-2xl font-bold text-red-600 mb-4'>Error</h1>
-          <p className='text-gray-600'>{error || 'Order not found'}</p>
+          <p className='text-muted-foreground'>{error || 'Order not found'}</p>
         </div>
       </div>
     );
@@ -255,7 +255,7 @@ export default function LabelsPage() {
           <button
             onClick={downloadAsImage}
             disabled={downloading}
-            className='bg-stone-800 hover:bg-stone-900 text-white px-6 py-3 rounded-xl text-lg font-semibold shadow-lg active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50'
+            className='bg-foreground hover:bg-foreground/90 text-white px-6 py-3 rounded-xl text-lg font-semibold shadow-lg active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50'
           >
             <Download className='w-5 h-5' />
             {downloading ? 'Téléchargement...' : 'Télécharger PNG'}
@@ -271,10 +271,10 @@ export default function LabelsPage() {
 
         {/* Header */}
         <div className='text-center mb-8 no-print'>
-          <h1 className='text-3xl font-bold text-gray-900 mb-2'>
+          <h1 className='text-3xl font-bold text-foreground mb-2'>
             Order #{orderData.orderNumber} - Labels
           </h1>
-          <p className='text-gray-600'>
+          <p className='text-muted-foreground'>
             Client: {orderData.client.first_name} {orderData.client.last_name}
           </p>
           {orderData.rush && (
@@ -290,17 +290,17 @@ export default function LabelsPage() {
             Array.from({ length: LABEL_CONFIG.copyCount }, (_, copyIndex) => (
               <div
                 key={`${garment.id}-copy-${copyIndex + 1}`}
-                className='border-2 border-gray-300 rounded-lg p-4 print:border-black print:break-inside-avoid print:min-h-[45vh] relative'
+                className='border-2 border-border rounded-lg p-4 print:border-black print:break-inside-avoid print:min-h-[45vh] relative'
               >
                 {/* Copy indicator */}
                 {LABEL_CONFIG.showCopyIndicator && LABEL_CONFIG.copyCount > 1 && (
-                  <div className='absolute top-2 right-2 text-xs text-gray-400'>
+                  <div className='absolute top-2 right-2 text-xs text-muted-foreground/70'>
                     {LABEL_CONFIG.copyIndicatorFormat(copyIndex + 1, LABEL_CONFIG.copyCount)}
                   </div>
                 )}
 
                 {/* QR Code with Status */}
-                <div className='w-24 h-24 mx-auto mb-3 border-2 border-gray-300 rounded print:border-black'>
+                <div className='w-24 h-24 mx-auto mb-3 border-2 border-border rounded print:border-black'>
                   <img
                     src={garment.qrCode}
                     alt={`QR Code for ${garment.label_code}`}
@@ -313,8 +313,8 @@ export default function LabelsPage() {
                   <div className='font-bold text-lg'>
                     #{orderData.orderNumber}
                   </div>
-                  <div className='text-sm text-gray-600'>{garment.type}</div>
-                  <div className='text-xs text-gray-500'>
+                  <div className='text-sm text-muted-foreground'>{garment.type}</div>
+                  <div className='text-xs text-muted-foreground'>
                     {garment.label_code}
                   </div>
                   <div className='text-xs'>
@@ -326,7 +326,7 @@ export default function LabelsPage() {
                 </div>
 
                 {/* Status Bar */}
-                <div className='mt-3 pt-2 border-t border-gray-200 print:border-black'>
+                <div className='mt-3 pt-2 border-t border-border print:border-black'>
                   <div className='flex justify-between text-xs'>
                     <span>Statut:</span>
                     <span className='font-medium capitalize'>
@@ -348,7 +348,7 @@ export default function LabelsPage() {
         </div>
 
         {/* Print Instructions */}
-        <div className='mt-8 text-center text-sm text-gray-500 no-print'>
+        <div className='mt-8 text-center text-sm text-muted-foreground no-print'>
           <p>Utilisez du papier autocollant pour de meilleurs résultats</p>
           <p className='text-xs mt-1'>{LABEL_CONFIG.copyCount} copie{LABEL_CONFIG.copyCount > 1 ? 's' : ''} par étiquette</p>
         </div>

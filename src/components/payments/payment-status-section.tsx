@@ -164,8 +164,8 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
-      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+    <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
+      <h3 className="font-semibold text-foreground flex items-center gap-2">
         💳 Paiement
         {order.payment_status === 'pending' && (
           <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">En attente</span>
@@ -179,16 +179,16 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       </h3>
 
       {/* Totals */}
-      <div className="space-y-2 text-sm border-b border-gray-200 pb-3">
+      <div className="space-y-2 text-sm border-b border-border pb-3">
         <div className="flex justify-between">
-          <span className="text-gray-600">Total:</span>
+          <span className="text-muted-foreground">Total:</span>
           <span className="font-medium">{formatCurrency(order.total_cents)}</span>
         </div>
 
         {isCustomOrder && (
           <>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Dépôt (50%):</span>
+              <span className="text-muted-foreground">Dépôt (50%):</span>
               <div className="flex items-center gap-2">
                 <span className={depositPaid ? 'text-green-600 font-medium' : 'text-amber-600'}>
                   {formatCurrency(depositAmount)}
@@ -198,9 +198,9 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
                 )}
               </div>
             </div>
-            <div className="flex justify-between pt-2 border-t border-gray-100">
-              <span className="text-gray-700 font-medium">Solde dû:</span>
-              <span className="font-semibold text-gray-900">
+            <div className="flex justify-between pt-2 border-t border-border">
+              <span className="text-muted-foreground font-medium">Solde dû:</span>
+              <span className="font-semibold text-foreground">
                 {formatCurrency(depositPaid ? balanceDue : order.total_cents - depositAmount)}
               </span>
             </div>
@@ -208,9 +208,9 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
         )}
 
         {!isCustomOrder && (
-          <div className="flex justify-between pt-2 border-t border-gray-100">
-            <span className="text-gray-700 font-medium">À payer:</span>
-            <span className="font-semibold text-gray-900">
+          <div className="flex justify-between pt-2 border-t border-border">
+            <span className="text-muted-foreground font-medium">À payer:</span>
+            <span className="font-semibold text-foreground">
               {formatCurrency(order.balance_due_cents || order.total_cents)}
             </span>
           </div>
@@ -343,12 +343,12 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
 
       {/* Payment History Note */}
       {depositPaid && !fullyPaid && (
-        <div className="text-xs text-gray-500 pt-2 border-t border-gray-200">
+        <div className="text-xs text-muted-foreground pt-2 border-t border-border">
           <div className="flex items-center gap-1">
             <span>✓</span>
             <span>Dépôt de {formatCurrency(depositAmount)} reçu le {formatDate(order.deposit_paid_at!)}</span>
             {order.deposit_payment_method && (
-              <span className="text-gray-400">({order.deposit_payment_method})</span>
+              <span className="text-muted-foreground/70">({order.deposit_payment_method})</span>
             )}
           </div>
         </div>

@@ -26,13 +26,13 @@ export function PhotoGallery({ photos, className = '' }: PhotoGalleryProps) {
         <img
           src={photos[0].url}
           alt={photos[0].alt}
-          className='w-full h-48 object-cover rounded-lg border border-gray-200'
+          className='w-full h-48 object-cover rounded-lg border border-border'
           onError={e => {
             e.currentTarget.style.display = 'none';
           }}
         />
         {photos[0].caption && (
-          <p className='text-sm text-gray-600 mt-2 text-center'>
+          <p className='text-sm text-muted-foreground mt-2 text-center'>
             {photos[0].caption}
           </p>
         )}
@@ -57,7 +57,7 @@ export function PhotoGallery({ photos, className = '' }: PhotoGalleryProps) {
         <img
           src={currentPhoto.url}
           alt={currentPhoto.alt}
-          className='w-full h-48 object-cover rounded-lg border border-gray-200'
+          className='w-full h-48 object-cover rounded-lg border border-border'
           onError={e => {
             e.currentTarget.style.display = 'none';
           }}
@@ -86,7 +86,7 @@ export function PhotoGallery({ photos, className = '' }: PhotoGalleryProps) {
       </div>
 
       {currentPhoto.caption && (
-        <p className='text-sm text-gray-600 mt-2 text-center'>
+        <p className='text-sm text-muted-foreground mt-2 text-center'>
           {currentPhoto.caption}
         </p>
       )}
@@ -97,7 +97,7 @@ export function PhotoGallery({ photos, className = '' }: PhotoGalleryProps) {
             <button
               key={index}
               className={`w-2 h-2 rounded-full ${
-                index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'
+                index === currentIndex ? 'bg-blue-500' : 'bg-muted'
               }`}
               onClick={() => setCurrentIndex(index)}
             />

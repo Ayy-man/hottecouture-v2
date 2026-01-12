@@ -63,7 +63,7 @@ export function DraggableOrderCard({
         <div className='ipad-landscape:hidden'>
           <div className='flex justify-between items-start mb-1.5 ipad:mb-1 lg:mb-2'>
             <div className='flex items-center gap-1.5 ipad:gap-1 lg:gap-2'>
-              <div className='text-gray-400 text-xs cursor-grab active:cursor-grabbing hover:text-gray-600 transition-colors duration-200'>
+              <div className='text-muted-foreground/70 text-xs cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors duration-200'>
                 ⋮⋮
               </div>
               <h4 className='font-semibold text-xs sm:text-sm ipad:text-xs lg:text-base'>
@@ -78,17 +78,17 @@ export function DraggableOrderCard({
             </div>
           </div>
 
-          <p className='text-xs ipad:text-xs lg:text-sm text-gray-600 mb-0.5 ipad:mb-1 lg:mb-1'>
+          <p className='text-xs ipad:text-xs lg:text-sm text-muted-foreground mb-0.5 ipad:mb-1 lg:mb-1'>
             {order.client_name || 'Unknown Client'}
           </p>
 
-          <p className='text-xs text-gray-500 mb-0.5 ipad:mb-1 lg:mb-1'>
+          <p className='text-xs text-muted-foreground mb-0.5 ipad:mb-1 lg:mb-1'>
             {order.garments?.map((g: any) => g.type).join(', ') ||
               'No garments'}
           </p>
 
           {order.due_date && (
-            <p className='text-xs text-gray-500 mb-0.5 ipad:mb-1 lg:mb-1'>
+            <p className='text-xs text-muted-foreground mb-0.5 ipad:mb-1 lg:mb-1'>
               Due: {new Date(order.due_date).toLocaleDateString()}
             </p>
           )}
@@ -99,11 +99,11 @@ export function DraggableOrderCard({
             </p>
           )}
 
-          <div className='mt-1.5 ipad:mt-1 lg:mt-2 pt-1.5 ipad:pt-1 lg:pt-2 border-t border-gray-100'>
+          <div className='mt-1.5 ipad:mt-1 lg:mt-2 pt-1.5 ipad:pt-1 lg:pt-2 border-t border-border'>
             <Button
               variant='ghost'
               size='sm'
-              className='w-full text-xs ipad:text-xs lg:text-sm py-1 ipad:py-1.5 lg:py-2 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300'
+              className='w-full text-xs ipad:text-xs lg:text-sm py-1 ipad:py-1.5 lg:py-2 btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300'
               onMouseDown={e => e.stopPropagation()}
               onTouchStart={e => e.stopPropagation()}
               onClick={e => {
@@ -121,7 +121,7 @@ export function DraggableOrderCard({
         <div className='hidden ipad-landscape:block'>
           <div className='flex justify-between items-center mb-1'>
             <div className='flex items-center gap-1'>
-              <div className='text-gray-400 text-xs cursor-grab active:cursor-grabbing hover:text-gray-600 transition-colors duration-200'>
+              <div className='text-muted-foreground/70 text-xs cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors duration-200'>
                 ⋮⋮
               </div>
               <h4 className='font-semibold text-xs'>#{order.order_number}</h4>
@@ -131,17 +131,17 @@ export function DraggableOrderCard({
             </div>
           </div>
 
-          <p className='text-xs text-gray-600 mb-1 truncate'>
+          <p className='text-xs text-muted-foreground mb-1 truncate'>
             {order.client_name || 'Unknown Client'}
           </p>
 
-          <p className='text-xs text-gray-500 mb-1 truncate'>
+          <p className='text-xs text-muted-foreground mb-1 truncate'>
             {order.garments?.map((g: any) => g.type).join(', ') ||
               'No garments'}
           </p>
 
           {order.due_date && (
-            <p className='text-xs text-gray-500 mb-1'>
+            <p className='text-xs text-muted-foreground mb-1'>
               Due:{' '}
               {new Date(order.due_date).toLocaleDateString('en-US', {
                 month: 'short',
@@ -156,11 +156,11 @@ export function DraggableOrderCard({
             </p>
           )}
 
-          <div className='mt-1 pt-1 border-t border-gray-100'>
+          <div className='mt-1 pt-1 border-t border-border'>
             <Button
               variant='ghost'
               size='sm'
-              className='w-full text-xs py-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300'
+              className='w-full text-xs py-1 btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300'
               onMouseDown={e => e.stopPropagation()}
               onTouchStart={e => e.stopPropagation()}
               onClick={e => {

@@ -406,7 +406,7 @@ export function GarmentsStep({
   if (loading) {
     return (
       <div className='h-full flex flex-col overflow-hidden min-h-0'>
-        <div className='flex items-center justify-between px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
+        <div className='flex items-center justify-between px-1 py-3 border-b border-border bg-white flex-shrink-0'>
           <Button
             variant='ghost'
             onClick={onPrev}
@@ -428,15 +428,15 @@ export function GarmentsStep({
             <span className='font-medium'>Previous</span>
           </Button>
           <div className='flex-1 text-center'>
-            <h2 className='text-lg font-semibold text-gray-900'>
+            <h2 className='text-lg font-semibold text-foreground'>
               Add Garments
             </h2>
-            <p className='text-sm text-gray-500'>Loading garment types...</p>
+            <p className='text-sm text-muted-foreground'>Loading garment types...</p>
           </div>
           <Button
             onClick={onNext}
             disabled={true}
-            className='bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+            className='bg-muted text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
           >
             Next
           </Button>
@@ -444,7 +444,7 @@ export function GarmentsStep({
         <div className='flex-1 overflow-y-auto min-h-0 flex items-center justify-center'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4'></div>
-            <p className='text-gray-600'>Loading garment types...</p>
+            <p className='text-muted-foreground'>Loading garment types...</p>
           </div>
         </div>
       </div>
@@ -454,7 +454,7 @@ export function GarmentsStep({
   return (
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header with Navigation */}
-      <div className='flex items-center justify-between px-1 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
+      <div className='flex items-center justify-between px-1 py-3 border-b border-border bg-white flex-shrink-0'>
         <Button
           variant='ghost'
           onClick={onPrev}
@@ -477,8 +477,8 @@ export function GarmentsStep({
         </Button>
 
         <div className='flex-1 text-center'>
-          <h2 className='text-lg font-semibold text-gray-900'>Add Garments</h2>
-          <p className='text-sm text-gray-500'>
+          <h2 className='text-lg font-semibold text-foreground'>Add Garments</h2>
+          <p className='text-sm text-muted-foreground'>
             Add garments that need alterations or custom work
           </p>
         </div>
@@ -503,7 +503,7 @@ export function GarmentsStep({
               Add Garment
             </Button>
           ) : (
-            <div className='space-y-3 p-3 border border-gray-200 rounded-lg'>
+            <div className='space-y-3 p-3 border border-border rounded-lg'>
               <div className='garment-type-dropdown'>
                 <label
                   htmlFor='garmentType'
@@ -516,7 +516,7 @@ export function GarmentsStep({
                   <button
                     type='button'
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className='w-full px-3 py-3 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-left transition-all duration-200 hover:border-gray-400 touch-manipulation min-h-[44px] flex items-center justify-between'
+                    className='w-full px-3 py-3 text-sm border-2 border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-left transition-all duration-200 hover:border-border touch-manipulation min-h-[44px] flex items-center justify-between'
                   >
                     <span className='truncate'>
                       {currentGarment.garment_type_id
@@ -524,7 +524,7 @@ export function GarmentsStep({
                         : 'Choose a garment type...'}
                     </span>
                     <svg
-                      className={`w-5 h-5 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                      className={`w-5 h-5 text-muted-foreground/70 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                       fill='none'
                       stroke='currentColor'
                       viewBox='0 0 24 24'
@@ -540,7 +540,7 @@ export function GarmentsStep({
 
                   {/* Custom Dropdown Menu */}
                   {isDropdownOpen && (
-                    <div className='absolute z-50 w-full mt-1 bg-white border-2 border-gray-300 rounded-lg shadow-lg max-h-[400px] overflow-y-auto overflow-x-visible'>
+                    <div className='absolute z-50 w-full mt-1 bg-white border-2 border-border rounded-lg shadow-lg max-h-[400px] overflow-y-auto overflow-x-visible'>
                       {/* Garment Types List */}
                       {Object.entries(groupedTypes).map(([category, types]) => {
                         const activeTypes = types
@@ -552,7 +552,7 @@ export function GarmentsStep({
                         return (
                           <div key={category}>
                             {/* Category Header */}
-                            <div className='px-3 py-2 bg-gray-100 text-xs font-semibold text-gray-700 sticky top-0'>
+                            <div className='px-3 py-2 bg-muted text-xs font-semibold text-muted-foreground sticky top-0'>
                               {category.charAt(0).toUpperCase() +
                                 category.slice(1).replace('_', ' ')}
                             </div>
@@ -567,7 +567,7 @@ export function GarmentsStep({
                               return (
                                 <div
                                   key={type.id}
-                                  className={`relative group hover:bg-gray-50 ${
+                                  className={`relative group hover:bg-muted/50 ${
                                     isSelected ? 'bg-primary-50' : ''
                                   }`}
                                   style={{
@@ -585,7 +585,7 @@ export function GarmentsStep({
                                         onChange={e =>
                                           setEditName(e.target.value)
                                         }
-                                        className='flex-1 px-2 py-2 border border-gray-300 rounded text-sm min-h-[44px]'
+                                        className='flex-1 px-2 py-2 border border-border rounded text-sm min-h-[44px]'
                                         autoFocus
                                         onKeyDown={e => {
                                           if (e.key === 'Enter')
@@ -603,7 +603,7 @@ export function GarmentsStep({
                                       </button>
                                       <button
                                         onClick={handleCancelEdit}
-                                        className='px-3 py-2 bg-gray-300 text-gray-700 rounded text-sm min-h-[44px] touch-manipulation'
+                                        className='px-3 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                                       >
                                         Cancel
                                       </button>
@@ -623,7 +623,7 @@ export function GarmentsStep({
                                         <span className='text-sm'>
                                           {type.name}
                                           {type.is_custom && (
-                                            <span className='ml-1 text-xs text-gray-500'>
+                                            <span className='ml-1 text-xs text-muted-foreground'>
                                               ✨
                                             </span>
                                           )}
@@ -641,7 +641,7 @@ export function GarmentsStep({
                                               : type.id
                                           );
                                         }}
-                                        className='p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 touch-manipulation'
+                                        className='p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground touch-manipulation'
                                       >
                                         <svg
                                           className='w-5 h-5'
@@ -655,7 +655,7 @@ export function GarmentsStep({
                                       {/* Context Menu */}
                                       {contextMenuId === type.id && (
                                         <div
-                                          className={`absolute right-0 bg-white border border-gray-300 rounded-lg shadow-xl z-[60] min-w-[180px] ${
+                                          className={`absolute right-0 bg-white border border-border rounded-lg shadow-xl z-[60] min-w-[180px] ${
                                             isFirstItem
                                               ? 'top-full mt-1'
                                               : 'bottom-full mb-1'
@@ -668,7 +668,7 @@ export function GarmentsStep({
                                               e.stopPropagation();
                                               handleStartEdit(type.id);
                                             }}
-                                            className='w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-2 min-h-[44px] touch-manipulation'
+                                            className='w-full px-4 py-3 text-left text-sm hover:bg-muted flex items-center gap-2 min-h-[44px] touch-manipulation'
                                           >
                                             <span>✏️</span>
                                             <span>Edit Name</span>
@@ -679,7 +679,7 @@ export function GarmentsStep({
                                               e.stopPropagation();
                                               handleCheckUsage(type.id);
                                             }}
-                                            className='w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-2 min-h-[44px] touch-manipulation text-red-600'
+                                            className='w-full px-4 py-3 text-left text-sm hover:bg-muted flex items-center gap-2 min-h-[44px] touch-manipulation text-red-600'
                                           >
                                             <span>🗑️</span>
                                             <span>Delete</span>
@@ -696,15 +696,15 @@ export function GarmentsStep({
                       })}
 
                       {/* Add Custom Type Section */}
-                      <div className='border-t border-gray-200'>
+                      <div className='border-t border-border'>
                         {showAddCustomForm ? (
-                          <div className='p-3 space-y-2 bg-gray-50'>
+                          <div className='p-3 space-y-2 bg-muted/50'>
                             <input
                               type='text'
                               value={customTypeName}
                               onChange={e => setCustomTypeName(e.target.value)}
                               placeholder='Custom garment type name...'
-                              className='w-full px-3 py-2 border border-gray-300 rounded text-sm min-h-[44px]'
+                              className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                               autoFocus
                               onKeyDown={e => {
                                 if (e.key === 'Enter') handleCreateCustomType();
@@ -719,7 +719,7 @@ export function GarmentsStep({
                               onChange={e =>
                                 setCustomTypeCategory(e.target.value)
                               }
-                              className='w-full px-3 py-2 border border-gray-300 rounded text-sm min-h-[44px]'
+                              className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                             >
                               <option value='other'>Other</option>
                               <option value='home'>Home</option>
@@ -736,7 +736,7 @@ export function GarmentsStep({
                                   setShowAddCustomForm(false);
                                   setCustomTypeName('');
                                 }}
-                                className='flex-1 px-3 py-2 bg-gray-300 text-gray-700 rounded text-sm min-h-[44px] touch-manipulation'
+                                className='flex-1 px-3 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                               >
                                 Cancel
                               </button>
@@ -762,7 +762,7 @@ export function GarmentsStep({
                             type='button'
                             onClick={() => setShowAddCustomForm(true)}
                             disabled={customTypesCount >= 10}
-                            className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-gray-50 flex items-center gap-2 min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
+                            className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-muted/50 flex items-center gap-2 min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
                           >
                             <span>+</span>
                             <span>Add Custom Type...</span>
@@ -784,11 +784,11 @@ export function GarmentsStep({
                         <h3 className='text-lg font-semibold mb-4'>
                           Delete Garment Type?
                         </h3>
-                        <p className='text-sm text-gray-600 mb-2'>
+                        <p className='text-sm text-muted-foreground mb-2'>
                           Are you sure you want to delete this garment type?
                         </p>
                         {usageCount !== null && (
-                          <p className='text-sm text-gray-600 mb-4'>
+                          <p className='text-sm text-muted-foreground mb-4'>
                             {usageCount > 0 ? (
                               <span className='text-red-600 font-semibold'>
                                 This type is used in {usageCount} order(s).
@@ -808,7 +808,7 @@ export function GarmentsStep({
                               setDeleteConfirmId(null);
                               setUsageCount(null);
                             }}
-                            className='flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded text-sm min-h-[44px] touch-manipulation'
+                            className='flex-1 px-4 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                           >
                             Cancel
                           </button>
@@ -854,10 +854,10 @@ export function GarmentsStep({
                   type='text'
                   value={currentGarment.labelCode}
                   readOnly
-                  className='w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 min-h-[36px] text-sm'
+                  className='w-full px-3 py-2 border border-border rounded-md bg-muted/50 text-muted-foreground min-h-[36px] text-sm'
                   placeholder='Auto-generated'
                 />
-                <p className='text-xs text-gray-500 mt-1'>
+                <p className='text-xs text-muted-foreground mt-1'>
                   This code will be used to identify the garment
                 </p>
               </div>
@@ -874,7 +874,7 @@ export function GarmentsStep({
                   value={currentGarment.notes}
                   onChange={e => updateGarmentField('notes', e.target.value)}
                   rows={2}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[60px] text-sm touch-manipulation'
+                  className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[60px] text-sm touch-manipulation'
                   placeholder='Special instructions, damage notes, etc.'
                 />
               </div>
@@ -896,7 +896,7 @@ export function GarmentsStep({
                     <img
                       src={photoPreview}
                       alt='Garment preview'
-                      className='w-24 h-24 object-cover rounded-lg border border-gray-300'
+                      className='w-24 h-24 object-cover rounded-lg border border-border'
                     />
                     <button
                       type='button'
@@ -916,13 +916,13 @@ export function GarmentsStep({
                     type='button'
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingPhoto}
-                    className='flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors min-h-[44px] touch-manipulation'
+                    className='flex items-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-primary-400 hover:text-primary-600 transition-colors min-h-[44px] touch-manipulation'
                   >
                     <Camera className='w-5 h-5' />
                     <span className='text-sm'>Prendre une photo</span>
                   </button>
                 )}
-                <p className='text-xs text-gray-500 mt-1'>
+                <p className='text-xs text-muted-foreground mt-1'>
                   Prenez une photo du vêtement pour référence
                 </p>
               </div>
@@ -931,7 +931,7 @@ export function GarmentsStep({
                 <Button
                   variant='outline'
                   onClick={() => setShowAddForm(false)}
-                  className='flex-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300 text-sm py-2'
+                  className='flex-1 btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border text-sm py-2'
                 >
                   Cancel
                 </Button>
@@ -955,14 +955,14 @@ export function GarmentsStep({
               </h3>
               {data.map((garment, index) => {
                 return (
-                  <div key={index} className='p-3 bg-gray-50 rounded-lg'>
+                  <div key={index} className='p-3 bg-muted/50 rounded-lg'>
                     <div className='flex gap-3'>
                       {garment.photo_path && (
                         <div className='flex-shrink-0'>
                           <img
                             src={`/api/photo/${garment.photo_path}`}
                             alt={garment.type}
-                            className='w-16 h-16 object-cover rounded-lg border border-gray-300'
+                            className='w-16 h-16 object-cover rounded-lg border border-border'
                           />
                         </div>
                       )}
@@ -975,30 +975,30 @@ export function GarmentsStep({
                               )?.icon || '👕'}
                             </span>
                           )}
-                          <div className='font-medium text-gray-900 text-sm'>
+                          <div className='font-medium text-foreground text-sm'>
                             {garment.type}
                           </div>
                           {garment.photo_path && (
                             <ImageIcon className='w-3 h-3 text-green-500' />
                           )}
                         </div>
-                        <div className='text-xs text-gray-600 font-mono bg-gray-100 px-2 py-1 rounded inline-block'>
+                        <div className='text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded inline-block'>
                           #{garment.labelCode}
                         </div>
                         {garment.color && (
-                          <div className='text-xs text-gray-500'>
+                          <div className='text-xs text-muted-foreground'>
                             <span className='font-medium'>Color:</span>{' '}
                             {garment.color}
                           </div>
                         )}
                         {garment.brand && (
-                          <div className='text-xs text-gray-500'>
+                          <div className='text-xs text-muted-foreground'>
                             <span className='font-medium'>Brand:</span>{' '}
                             {garment.brand}
                           </div>
                         )}
                         {garment.notes && (
-                          <div className='text-xs text-gray-500 italic'>
+                          <div className='text-xs text-muted-foreground italic'>
                             <span className='font-medium'>Notes:</span>{' '}
                             {garment.notes}
                           </div>

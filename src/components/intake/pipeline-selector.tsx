@@ -65,7 +65,7 @@ export function PipelineSelector({
   return (
     <div className='h-full flex flex-col overflow-hidden min-h-0'>
       {/* iOS-style Header */}
-      <div className='flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0'>
+      <div className='flex items-center justify-between px-4 py-3 border-b border-border bg-white flex-shrink-0'>
         <div className='w-1/3'>
           {onPrev && (
             <Button
@@ -91,7 +91,7 @@ export function PipelineSelector({
             </Button>
           )}
         </div>
-        <h2 className='text-lg font-semibold text-gray-900'>
+        <h2 className='text-lg font-semibold text-foreground'>
           Choose Your Service Type
         </h2>
         <Button
@@ -118,10 +118,10 @@ export function PipelineSelector({
       </div>
 
       {/* Main Content Area */}
-      <div className='flex-1 overflow-y-auto p-4 bg-gray-50 min-h-0'>
+      <div className='flex-1 overflow-y-auto p-4 bg-muted/50 min-h-0'>
         <div className='max-w-4xl mx-auto space-y-4'>
           <div className='text-center mb-6'>
-            <p className='text-sm text-gray-600'>
+            <p className='text-sm text-muted-foreground'>
               Select the type of work you need done
             </p>
           </div>
@@ -166,20 +166,20 @@ export function PipelineSelector({
                     </div>
 
                     {/* Time Estimate */}
-                    <div className='bg-gray-50 rounded-lg p-2'>
+                    <div className='bg-muted/50 rounded-lg p-2'>
                       <div className='flex items-center justify-between mb-1'>
-                        <span className='text-xs font-medium text-gray-600'>
+                        <span className='text-xs font-medium text-muted-foreground'>
                           Estimated Time
                         </span>
                       </div>
                       <div className='flex items-center space-x-2'>
                         <div className='flex items-center text-xs'>
-                          <Clock className='w-3 h-3 mr-1 text-gray-500' />
+                          <Clock className='w-3 h-3 mr-1 text-muted-foreground' />
                           <span className='font-medium'>
                             {estimate.days} days
                           </span>
                         </div>
-                        <div className='text-xs text-gray-500'>
+                        <div className='text-xs text-muted-foreground'>
                           ~{estimate.hours} hours
                         </div>
                       </div>
@@ -199,7 +199,7 @@ export function PipelineSelector({
                           ✓ Selected
                         </div>
                       ) : (
-                        <div className='w-full py-1.5 px-3 bg-gray-100 text-gray-600 font-medium rounded-lg text-center border border-gray-200 text-xs'>
+                        <div className='w-full py-1.5 px-3 bg-muted text-muted-foreground font-medium rounded-lg text-center border border-border text-xs'>
                           Select This Option
                         </div>
                       )}
@@ -227,13 +227,13 @@ export function PipelineSelector({
                     </div>
                     <div className='space-y-1 text-xs'>
                       <div className='flex justify-between'>
-                        <span className='text-gray-600'>Timeline:</span>
+                        <span className='text-muted-foreground'>Timeline:</span>
                         <span className='font-medium'>
                           {config.estimatedDays} days
                         </span>
                       </div>
                       <div className='flex justify-between'>
-                        <span className='text-gray-600'>Assignee:</span>
+                        <span className='text-muted-foreground'>Assignee:</span>
                         <span className='font-medium capitalize'>
                           {config.defaultAssignee}
                         </span>

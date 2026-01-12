@@ -46,7 +46,7 @@ export function DroppableColumn({
         ${
           isOver
             ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-2xl scale-[1.02] ring-4 ring-blue-200 ring-opacity-50'
-            : 'hover:border-gray-400 hover:shadow-xl'
+            : 'hover:border-border hover:shadow-xl'
         }
       `}
     >
@@ -85,7 +85,7 @@ export function DroppableColumn({
           ))
         ) : (
           <div
-            className={`py-8 text-center transition-colors duration-200 ${isOver ? 'text-blue-500' : 'text-gray-400'}`}
+            className={`py-8 text-center transition-colors duration-200 ${isOver ? 'text-blue-500' : 'text-muted-foreground/70'}`}
           >
             <p className='text-xs'>No orders</p>
             {isOver && (

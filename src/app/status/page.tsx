@@ -105,7 +105,7 @@ export default function OrderStatusPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
       case 'working':
         return 'bg-blue-100 text-blue-800';
       case 'done':
@@ -115,7 +115,7 @@ export default function OrderStatusPage() {
       case 'delivered':
         return 'bg-purple-100 text-purple-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
 
@@ -161,7 +161,7 @@ export default function OrderStatusPage() {
               <Button
                 variant='outline'
                 size='sm'
-                className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
+                className='btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border'
               >
                 <ArrowLeft className='w-4 h-4 mr-2' />
                 Back to Home
@@ -171,7 +171,7 @@ export default function OrderStatusPage() {
               Order Status
             </h1>
           </div>
-          <p className='text-lg text-gray-600 max-w-2xl mx-auto'>
+          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
             Check the status of your order by entering your phone number and
             last name
           </p>
@@ -182,11 +182,11 @@ export default function OrderStatusPage() {
           {/* Search Form */}
           <Card className='mb-8 shadow-lg bg-white/80 backdrop-blur-sm border-0'>
             <CardHeader>
-              <CardTitle className='flex items-center gap-2 text-xl font-bold text-gray-800'>
+              <CardTitle className='flex items-center gap-2 text-xl font-bold text-foreground'>
                 <Search className='w-5 h-5 text-blue-600' />
                 Search Order
               </CardTitle>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 Enter your phone number and last name to find your order
               </p>
             </CardHeader>
@@ -196,12 +196,12 @@ export default function OrderStatusPage() {
                   <div>
                     <label
                       htmlFor='phone'
-                      className='block text-sm font-medium text-gray-700 mb-2'
+                      className='block text-sm font-medium text-foreground mb-2'
                     >
                       Phone Number *
                     </label>
                     <div className='relative'>
-                      <Phone className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+                      <Phone className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
                       <Input
                         id='phone'
                         type='tel'
@@ -217,12 +217,12 @@ export default function OrderStatusPage() {
                   <div>
                     <label
                       htmlFor='lastName'
-                      className='block text-sm font-medium text-gray-700 mb-2'
+                      className='block text-sm font-medium text-foreground mb-2'
                     >
                       Last Name *
                     </label>
                     <div className='relative'>
-                      <User className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+                      <User className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
                       <Input
                         id='lastName'
                         type='text'
@@ -260,7 +260,7 @@ export default function OrderStatusPage() {
                       type='button'
                       variant='outline'
                       onClick={handleNewSearch}
-                      className='btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
+                      className='btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border'
                     >
                       New Search
                     </Button>
@@ -290,7 +290,7 @@ export default function OrderStatusPage() {
                   <h2 className='text-2xl font-semibold bg-gradient-to-r from-accent-taupe to-accent-contrast bg-clip-text text-transparent mb-2'>
                     Found {orders.length} order{orders.length !== 1 ? 's' : ''}
                   </h2>
-                  <p className='text-gray-600 font-medium'>
+                  <p className='text-muted-foreground font-medium'>
                     for {orders[0]?.client_name} • {orders[0]?.client_phone}
                   </p>
                 </div>
@@ -307,7 +307,7 @@ export default function OrderStatusPage() {
                     {/* Order Header */}
                     <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6'>
                       <div className='flex items-center gap-3 mb-2 sm:mb-0'>
-                        <h3 className='text-2xl font-bold text-gray-900'>
+                        <h3 className='text-2xl font-bold text-foreground'>
                           #{order.order_number}
                         </h3>
                         <RushIndicator
@@ -323,10 +323,10 @@ export default function OrderStatusPage() {
                       </div>
 
                       <div className='text-right'>
-                        <div className='text-2xl font-bold text-gray-900'>
+                        <div className='text-2xl font-bold text-foreground'>
                           {formatCurrency(order.total_cents)}
                         </div>
-                        <div className='text-sm text-gray-600'>
+                        <div className='text-sm text-muted-foreground'>
                           Created: {formatDate(order.created_at)}
                         </div>
                       </div>
@@ -335,10 +335,10 @@ export default function OrderStatusPage() {
                     {/* Order Details */}
                     <div className='grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6'>
                       <div>
-                        <h4 className='font-semibold text-gray-900 mb-2'>
+                        <h4 className='font-semibold text-foreground mb-2'>
                           Customer Information
                         </h4>
-                        <div className='space-y-1 text-sm text-gray-600'>
+                        <div className='space-y-1 text-sm text-muted-foreground'>
                           <div className='flex items-center gap-2'>
                             <User className='w-4 h-4' />
                             <span>{order.client_name}</span>
@@ -357,10 +357,10 @@ export default function OrderStatusPage() {
                       </div>
 
                       <div>
-                        <h4 className='font-semibold text-gray-900 mb-2'>
+                        <h4 className='font-semibold text-foreground mb-2'>
                           Order Information
                         </h4>
-                        <div className='space-y-1 text-sm text-gray-600'>
+                        <div className='space-y-1 text-sm text-muted-foreground'>
                           <div className='flex items-center gap-2'>
                             <Calendar className='w-4 h-4' />
                             <span>
@@ -391,13 +391,13 @@ export default function OrderStatusPage() {
 
                     {/* Garments */}
                     <div className='space-y-4'>
-                      <h4 className='font-semibold text-gray-900'>
+                      <h4 className='font-semibold text-foreground'>
                         Garments & Services
                       </h4>
                       {order.garments.map((garment, index) => (
-                        <div key={index} className='bg-gray-50 rounded-lg p-4'>
+                        <div key={index} className='bg-muted/50 rounded-lg p-4'>
                           <div className='flex items-center justify-between mb-3'>
-                            <h5 className='font-medium text-gray-900'>
+                            <h5 className='font-medium text-foreground'>
                               {garment.type}
                               {garment.color && ` - ${garment.color}`}
                               {garment.brand && ` (${garment.brand})`}
@@ -415,10 +415,10 @@ export default function OrderStatusPage() {
                                 key={serviceIndex}
                                 className='flex justify-between items-center text-sm'
                               >
-                                <span className='text-gray-600'>
+                                <span className='text-muted-foreground'>
                                   {service.service.name} x{service.quantity}
                                 </span>
-                                <span className='font-medium text-gray-900'>
+                                <span className='font-medium text-foreground'>
                                   {formatCurrency(
                                     service.custom_price_cents || 0
                                   )}
@@ -431,7 +431,7 @@ export default function OrderStatusPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className='mt-6 pt-4 border-t border-gray-200'>
+                    <div className='mt-6 pt-4 border-t border-border'>
                       <div className='flex flex-col sm:flex-row gap-3'>
                         <Button
                           asChild
@@ -444,7 +444,7 @@ export default function OrderStatusPage() {
                         <Button
                           variant='outline'
                           onClick={handleNewSearch}
-                          className='flex-1 btn-press bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-gray-300'
+                          className='flex-1 btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border'
                         >
                           New Search
                         </Button>

@@ -51,8 +51,8 @@ export function OneTaskWarningModal({
         </div>
 
         {/* Current task info */}
-        <div className="bg-stone-50 rounded-lg p-4 space-y-2">
-          <p className="text-sm text-stone-600">
+        <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+          <p className="text-sm text-muted-foreground">
             Vous travaillez déjà sur:
           </p>
           <div className="font-medium">
@@ -64,14 +64,14 @@ export function OneTaskWarningModal({
             {' - '}
             <span>{activeTask.garmentType}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-sm text-stone-500">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Clock className="w-4 h-4" />
             <span>Minuteur en cours</span>
           </div>
         </div>
 
         {/* Instructions */}
-        <p className="text-sm text-stone-600 text-center">
+        <p className="text-sm text-muted-foreground text-center">
           Vous devez terminer cette tâche avant d&apos;en commencer une autre.
         </p>
 

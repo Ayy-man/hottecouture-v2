@@ -161,11 +161,11 @@ export default function CustomerPortalPage() {
   };
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-stone-100 to-stone-200'>
+    <div className='min-h-screen bg-gradient-to-br from-background to-muted'>
       <div className='container mx-auto px-4 py-8 max-w-lg'>
         <div className='text-center mb-8'>
-          <h1 className='text-3xl font-bold text-stone-800 mb-2'>Hotte Couture</h1>
-          <p className='text-stone-600'>Vérifiez le statut de votre commande</p>
+          <h1 className='text-3xl font-bold text-foreground mb-2'>Hotte Couture</h1>
+          <p className='text-muted-foreground'>Vérifiez le statut de votre commande</p>
         </div>
 
         <Card className='shadow-xl border-0'>
@@ -178,8 +178,8 @@ export default function CustomerPortalPage() {
                     onClick={() => setSearchType('phone')}
                     className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                       searchType === 'phone'
-                        ? 'bg-stone-800 text-white'
-                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                        ? 'bg-foreground text-white'
+                        : 'bg-muted text-muted-foreground hover:bg-accent'
                     }`}
                   >
                     <Phone className='w-4 h-4 inline mr-2' />
@@ -190,8 +190,8 @@ export default function CustomerPortalPage() {
                     onClick={() => setSearchType('order')}
                     className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                       searchType === 'order'
-                        ? 'bg-stone-800 text-white'
-                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                        ? 'bg-foreground text-white'
+                        : 'bg-muted text-muted-foreground hover:bg-accent'
                     }`}
                   >
                     <Hash className='w-4 h-4 inline mr-2' />
@@ -202,7 +202,7 @@ export default function CustomerPortalPage() {
                 <form onSubmit={handleSearch} className='space-y-4'>
                   {searchType === 'phone' ? (
                     <div>
-                      <label className='block text-sm font-medium text-stone-700 mb-1'>
+                      <label className='block text-sm font-medium text-foreground mb-1'>
                         Numéro de téléphone
                       </label>
                       <Input
@@ -215,7 +215,7 @@ export default function CustomerPortalPage() {
                     </div>
                   ) : (
                     <div>
-                      <label className='block text-sm font-medium text-stone-700 mb-1'>
+                      <label className='block text-sm font-medium text-foreground mb-1'>
                         Numéro de commande
                       </label>
                       <Input
@@ -231,7 +231,7 @@ export default function CustomerPortalPage() {
                   <Button
                     type='submit'
                     disabled={loading}
-                    className='w-full py-6 text-lg bg-stone-800 hover:bg-stone-900'
+                    className='w-full py-6 text-lg bg-foreground hover:bg-foreground/90'
                   >
                     {loading ? (
                       <RefreshCw className='w-5 h-5 animate-spin mr-2' />
@@ -250,18 +250,18 @@ export default function CustomerPortalPage() {
 
                 {hasSearched && orders.length > 1 && (
                   <div className='mt-6 space-y-3'>
-                    <h2 className='font-semibold text-stone-800'>
+                    <h2 className='font-semibold text-foreground'>
                       {orders.length} commandes trouvées
                     </h2>
                     {orders.map(order => (
                       <button
                         key={order.order_number}
                         onClick={() => setSelectedOrder(order)}
-                        className='w-full p-3 bg-stone-50 rounded-lg border border-stone-200 hover:bg-stone-100 transition-colors text-left'
+                        className='w-full p-3 bg-muted/50 rounded-lg border border-border hover:bg-muted transition-colors text-left'
                       >
                         <div className='flex items-center justify-between'>
-                          <span className='font-bold text-stone-800'>#{order.order_number}</span>
-                          <span className='text-sm text-stone-500'>
+                          <span className='font-bold text-foreground'>#{order.order_number}</span>
+                          <span className='text-sm text-muted-foreground'>
                             {order.garment_count} article{order.garment_count > 1 ? 's' : ''}
                           </span>
                         </div>
@@ -274,10 +274,10 @@ export default function CustomerPortalPage() {
               <div className='space-y-6'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <h2 className='text-2xl font-bold text-stone-800'>
+                    <h2 className='text-2xl font-bold text-foreground'>
                       Commande #{selectedOrder.order_number}
                     </h2>
-                    <div className='flex items-center gap-3 mt-1 text-sm text-stone-500'>
+                    <div className='flex items-center gap-3 mt-1 text-sm text-muted-foreground'>
                       <span className='flex items-center gap-1'>
                         <Package className='w-4 h-4' />
                         {selectedOrder.garment_count} article{selectedOrder.garment_count > 1 ? 's' : ''}
@@ -292,8 +292,8 @@ export default function CustomerPortalPage() {
                   </div>
                 </div>
 
-                <div className='bg-stone-50 rounded-xl p-4'>
-                  <h3 className='font-semibold text-stone-700 mb-4'>Suivi de commande</h3>
+                <div className='bg-muted/50 rounded-xl p-4'>
+                  <h3 className='font-semibold text-foreground mb-4'>Suivi de commande</h3>
                   <TrackingTimeline items={buildTimelineItems(selectedOrder)} />
                 </div>
 
@@ -310,7 +310,7 @@ export default function CustomerPortalPage() {
           </CardContent>
         </Card>
 
-        <div className='text-center mt-6 text-stone-500 text-sm'>
+        <div className='text-center mt-6 text-muted-foreground text-sm'>
           <p>Des questions? Appelez-nous au <a href='tel:+15145551234' className='underline'>514-555-1234</a></p>
         </div>
       </div>
