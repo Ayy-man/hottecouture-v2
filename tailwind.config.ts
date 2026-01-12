@@ -9,21 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Mural-inspired color palette
-        background: '#F4EFE9',
-        surface: '#FFFFFF',
-        muted: '#E9E4DF',
-        text: '#2C2C2C',
-        'text-secondary': '#6B6B6B',
-
-        // Accent colors
-        'accent-clay': '#B57C6C',
-        'accent-olive': '#7B8360',
-        'accent-taupe': '#D5B9A0',
-        'accent-contrast': '#4E3B31',
-
-        // Primary (Clay-based)
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
           50: '#FDF7F4',
           100: '#F9EDE7',
           200: '#F2D5C7',
@@ -35,9 +28,9 @@ const config: Config = {
           800: '#70483C',
           900: '#4E3B31',
         },
-
-        // Secondary (Olive-based)
         secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
           50: '#F7F8F4',
           100: '#EEF0E8',
           200: '#DDE2D1',
@@ -49,19 +42,39 @@ const config: Config = {
           800: '#4A4D32',
           900: '#3A3C27',
         },
-
-        // Neutral (Muted-based)
-        neutral: {
-          50: '#F4EFE9',
-          100: '#E9E4DF',
-          200: '#D5D0CB',
-          300: '#C1BCB7',
-          400: '#9A9590',
-          500: '#6B6B6B',
-          600: '#5A5A5A',
-          700: '#4A4A4A',
-          800: '#3A3A3A',
-          900: '#2C2C2C',
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar-background))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          primary: 'hsl(var(--sidebar-primary))',
+          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+          accent: 'hsl(var(--sidebar-accent))',
+          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+          border: 'hsl(var(--sidebar-border))',
+          ring: 'hsl(var(--sidebar-ring))',
+        },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
         },
       },
       fontFamily: {
