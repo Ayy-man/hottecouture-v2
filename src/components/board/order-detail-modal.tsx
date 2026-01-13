@@ -227,20 +227,20 @@ export function OrderDetailModal({
   const handleSaveTime = async (garmentId: string) => {
     setSavingTime(garmentId);
     const totalMinutes = editingTimeHours * 60 + editingTimeMinutes;
-    console.log('⏱️ Saving estimated time:', { garmentId, hours: editingTimeHours, minutes: editingTimeMinutes, totalMinutes });
+    console.log('⏱️ Saving actual time:', { garmentId, hours: editingTimeHours, minutes: editingTimeMinutes, totalMinutes });
     try {
       const response = await fetch(`/api/garment/${garmentId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ estimated_minutes: totalMinutes }),
+        body: JSON.stringify({ actual_minutes: totalMinutes }),
       });
 
       if (!response.ok) {
         const error = await response.json();
         console.error('❌ Failed to save time:', error);
-        throw new Error(error.error || 'Failed to save time estimate');
+        throw new Error(error.error || 'Failed to save actual time');
       }
 
       const result = await response.json();
@@ -250,7 +250,7 @@ export function OrderDetailModal({
         setDetailedOrder({
           ...detailedOrder,
           garments: detailedOrder.garments.map((g: any) =>
-            g.id === garmentId ? { ...g, estimated_minutes: result.garment.estimated_minutes } : g
+            g.id === garmentId ? { ...g, actual_minutes: result.garment.actual_minutes } : g
           ),
         });
       }
@@ -713,12 +713,13 @@ export function OrderDetailModal({
                         ) : (
                           <div className='flex items-center justify-between'>
                             <span className='text-xs font-medium text-purple-700'>
-                              Est. Time:{' '}
+                              Work Hours:{' '}
                               {(() => {
-                                const customMinutes = garment.estimated_minutes;
-                                if (customMinutes && customMinutes > 0) {
-                                  const h = Math.floor(customMinutes / 60);
-                                  const m = customMinutes % 60;
+                                // Prefer actual_minutes (recorded work), fallback to estimated
+                                const workMinutes = garment.actual_minutes || garment.estimated_minutes;
+                                if (workMinutes && workMinutes > 0) {
+                                  const h = Math.floor(workMinutes / 60);
+                                  const m = workMinutes % 60;
                                   return h > 0 ? `${h}h ${m}m` : `${m}m`;
                                 }
                                 const totalMinutes = garment.services?.reduce(
@@ -728,7 +729,7 @@ export function OrderDetailModal({
                                   },
                                   0
                                 ) || 0;
-                                if (totalMinutes === 0) return 'TBD';
+                                if (totalMinutes === 0) return 'Not recorded';
                                 const h = Math.floor(totalMinutes / 60);
                                 const m = totalMinutes % 60;
                                 return h > 0 ? `${h}h ${m}m` : `${m}m`;
@@ -738,7 +739,8 @@ export function OrderDetailModal({
                               size='sm'
                               variant='ghost'
                               onClick={() => {
-                                const currentMinutes = garment.estimated_minutes || 
+                                // Load actual_minutes first, then estimated, then service defaults
+                                const currentMinutes = garment.actual_minutes || garment.estimated_minutes ||
                                   garment.services?.reduce(
                                     (sum: number, s: any) => sum + (s.service?.estimated_minutes || 0) * (s.quantity || 1),
                                     0

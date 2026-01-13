@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
- * PATCH - Update garment notes and/or estimated_minutes
+ * PATCH - Update garment notes, estimated_minutes, and/or actual_minutes
  */
 export async function PATCH(
   request: NextRequest,
@@ -15,7 +15,7 @@ export async function PATCH(
     const supabase = await createServiceRoleClient();
     const { id: garmentId } = await params;
     const body = await request.json();
-    const { notes, estimated_minutes } = body;
+    const { notes, estimated_minutes, actual_minutes } = body;
 
     if (!garmentId) {
       return NextResponse.json(
@@ -38,6 +38,13 @@ export async function PATCH(
       );
     }
 
+    if (actual_minutes !== undefined && (typeof actual_minutes !== 'number' || actual_minutes < 0)) {
+      return NextResponse.json(
+        { error: 'Actual minutes must be a non-negative number' },
+        { status: 400 }
+      );
+    }
+
     const { data: existingGarment, error: checkError } = await (
       supabase.from('garment') as any
     )
@@ -56,6 +63,9 @@ export async function PATCH(
     if (estimated_minutes !== undefined) {
       updateData.estimated_minutes = estimated_minutes;
     }
+    if (actual_minutes !== undefined) {
+      updateData.actual_minutes = actual_minutes;
+    }
 
     console.log('🔧 Garment PATCH: Updating garment', garmentId, 'with data:', updateData);
 
@@ -64,7 +74,7 @@ export async function PATCH(
     )
       .update(updateData)
       .eq('id', garmentId)
-      .select('id, notes, type, color, brand, label_code, estimated_minutes')
+      .select('id, notes, type, color, brand, label_code, estimated_minutes, actual_minutes')
       .single();
 
     if (updateError) {
