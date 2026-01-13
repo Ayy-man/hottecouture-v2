@@ -57,6 +57,7 @@ export async function GET(request: Request) {
       id: order.id,
       order_number: order.order_number,
       client_id: order.client_id,
+      type: order.type,
       status: order.status,
       rush: order.rush,
       due_date: order.due_date,

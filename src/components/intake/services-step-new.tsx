@@ -113,9 +113,9 @@ export function ServicesStepNew({
   const filteredCategories = useMemo(() => {
     let result;
     if (orderType === 'alteration') {
-      // Hide curtains and custom for alterations
+      // Only show wearable categories for alterations
       result = categories.filter(
-        cat => cat.key !== 'curtains' && cat.key !== 'custom'
+        cat => ['alterations', 'accessories', 'outdoor'].includes(cat.key)
       );
     } else {
       // Show all categories for custom design

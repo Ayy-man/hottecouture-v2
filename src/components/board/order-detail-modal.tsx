@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -552,6 +553,16 @@ export function OrderDetailModal({
                       >
                         {revealedContact ? '🙈 Masquer' : '👁️ Afficher'}
                       </button>
+                    )}
+                    {order.client_id && (
+                      <div className='mt-2'>
+                        <Link
+                          href={`/orders/history?clientId=${order.client_id}`}
+                          className='text-sm text-primary-600 hover:text-primary-800 hover:underline transition-colors'
+                        >
+                          📋 Voir l'historique des commandes
+                        </Link>
+                      </div>
                     )}
                     <div className='flex justify-between'>
                       <span className='text-muted-foreground'>Language:</span>
