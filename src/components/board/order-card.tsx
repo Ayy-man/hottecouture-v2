@@ -75,13 +75,15 @@ export function OrderCard({
         <div className='flex items-center justify-between mb-3'>
           <div className='flex items-center space-x-2'>
             <h4 className='font-semibold text-lg'>#{order.order_number}</h4>
-            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-              order.type === 'alteration'
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-purple-100 text-purple-700'
-            }`}>
-              {order.type === 'alteration' ? 'Altération' : 'Sur mesure'}
-            </span>
+            {order.type && (
+              <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                order.type === 'alteration'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-purple-100 text-purple-700'
+              }`}>
+                {order.type === 'alteration' ? 'Altération' : 'Sur mesure'}
+              </span>
+            )}
             {order.rush && (
               <span className='px-2 py-1 text-xs font-bold text-white bg-gradient-to-r from-accent-contrast to-primary-500 rounded'>
                 Rush
