@@ -33,6 +33,8 @@ Votre commande #${data.orderNumber} nécessite un dépôt de ${data.deposit}$.
 
 Payez ici: ${data.paymentUrl}
 
+Suivez votre commande: ${data.trackingUrl}
+
 Merci,
 Hotte Couture`,
     en: (data: MessageData) =>
@@ -41,6 +43,8 @@ Hotte Couture`,
 Your order #${data.orderNumber} requires a deposit of $${data.deposit}.
 
 Pay here: ${data.paymentUrl}
+
+Track your order: ${data.trackingUrl}
 
 Thank you,
 Hotte Couture`,
@@ -56,6 +60,8 @@ Solde à payer: ${data.balance}$
 
 Payez ici: ${data.paymentUrl}
 
+Suivez votre commande: ${data.trackingUrl}
+
 Merci,
 Hotte Couture`,
     en: (data: MessageData) =>
@@ -67,6 +73,8 @@ Balance due: $${data.balance}
 
 Pay here: ${data.paymentUrl}
 
+Track your order: ${data.trackingUrl}
+
 Thank you,
 Hotte Couture`,
   },
@@ -77,12 +85,16 @@ Hotte Couture`,
 
 Bonne nouvelle! Votre commande #${data.orderNumber} est prête à ramasser.
 
+Suivez votre commande: ${data.trackingUrl}
+
 Merci,
 Hotte Couture`,
     en: (data: MessageData) =>
       `Hello ${data.firstName},
 
 Great news! Your order #${data.orderNumber} is ready for pickup.
+
+Track your order: ${data.trackingUrl}
 
 Thank you,
 Hotte Couture`,
@@ -332,6 +344,7 @@ export async function sendDepositRequest(
       orderNumber: order.order_number,
       deposit: parseFloat(centsToDollars(order.deposit_cents)),
       paymentUrl: checkoutUrl,
+      trackingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/track/${order.id}`,
     },
     tagsToAdd: ['depot_en_attente'],
     tagsToRemove: [],
@@ -369,6 +382,7 @@ export async function sendReadyPickup(
       orderNumber: order.order_number,
       balance: parseFloat(centsToDollars(balanceCents)),
       paymentUrl: checkoutUrl,
+      trackingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/track/${order.id}`,
     },
     tagsToAdd,
     tagsToRemove,

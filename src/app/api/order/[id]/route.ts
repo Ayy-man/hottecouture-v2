@@ -12,7 +12,7 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { rack_position, due_date, assigned_to } = body;
+    const { rack_position, due_date, assigned_to, total_cents } = body;
 
     const updateFields: Record<string, unknown> = {};
 
@@ -26,6 +26,10 @@ export async function PATCH(
 
     if (assigned_to !== undefined) {
       updateFields.assigned_to = assigned_to || null;
+    }
+
+    if (total_cents !== undefined) {
+      updateFields.total_cents = total_cents;
     }
 
     if (Object.keys(updateFields).length === 0) {

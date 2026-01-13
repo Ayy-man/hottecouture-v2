@@ -118,6 +118,7 @@ export interface MessageData {
   balance?: number;
   total?: number;
   paymentUrl?: string | null;
+  trackingUrl?: string;
 }
 
 export interface SendMessageParams {

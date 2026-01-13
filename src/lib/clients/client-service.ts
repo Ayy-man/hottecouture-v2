@@ -137,18 +137,24 @@ export class ClientService {
 
     let query = supabase.from('client').select('*', { count: 'exact' });
 
+    // Build OR conditions for all search filters
+    const orConditions: string[] = [];
+
     if (filters.name) {
-      query = query.or(
-        `first_name.ilike.%${filters.name}%,last_name.ilike.%${filters.name}%`
-      );
+      orConditions.push(`first_name.ilike.%${filters.name}%`);
+      orConditions.push(`last_name.ilike.%${filters.name}%`);
     }
 
     if (filters.email) {
-      query = query.ilike('email', `%${filters.email}%`);
+      orConditions.push(`email.ilike.%${filters.email}%`);
     }
 
     if (filters.phone) {
-      query = query.ilike('phone', `%${filters.phone}%`);
+      orConditions.push(`phone.ilike.%${filters.phone}%`);
+    }
+
+    if (orConditions.length > 0) {
+      query = query.or(orConditions.join(','));
     }
 
     const { data, error, count } = await query

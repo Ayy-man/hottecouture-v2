@@ -21,12 +21,11 @@ export async function GET(request: NextRequest) {
     
     const supabase = await createServiceRoleClient()
     
-    // First, find the client by phone and last name
+    // First, find the client by phone OR last name
     const { data: clients, error: clientError } = await supabase
       .from('client')
       .select('id, first_name, last_name, phone, email')
-      .eq('phone', phone.trim())
-      .ilike('last_name', `%${lastName.trim()}%`) as { data: any[] | null, error: any }
+      .or(`phone.eq.${phone.trim()},last_name.ilike.%${lastName.trim()}%`) as { data: any[] | null, error: any }
 
     if (clientError) {
       console.error('❌ Error searching clients:', clientError)

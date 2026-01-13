@@ -39,6 +39,28 @@ export function OrderDetailModal({
   const [savingRack, setSavingRack] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [editPriceCents, setEditPriceCents] = useState(0);
+  const [savingPrice, setSavingPrice] = useState(false);
+  const [revealedContact, setRevealedContact] = useState(false);
+
+  // Privacy masking functions
+  const maskPhone = (phone: string): string => {
+    if (!phone || phone.length <= 4) return '****';
+    return phone.slice(0, -4).replace(/./g, '*') + phone.slice(-4);
+  };
+
+  const maskEmail = (email: string): string => {
+    if (!email) return '****@****';
+    const parts = email.split('@');
+    const local = parts[0];
+    const domain = parts[1];
+    if (!local || !domain) return '****@****';
+    const maskedLocal = local.length > 2
+      ? local[0] + '*'.repeat(local.length - 2) + local[local.length - 1]
+      : '*'.repeat(local.length);
+    return `${maskedLocal}@${domain}`;
+  };
 
   const handleArchive = async () => {
     if (!order?.id) return;
@@ -266,6 +288,42 @@ export function OrderDetailModal({
     }
   };
 
+  const handleStartEditPrice = () => {
+    setEditPriceCents(displayOrder?.total_cents || 0);
+    setEditingPrice(true);
+  };
+
+  const handleCancelEditPrice = () => {
+    setEditingPrice(false);
+    setEditPriceCents(0);
+  };
+
+  const handleSavePrice = async () => {
+    if (!order?.id) return;
+    setSavingPrice(true);
+    try {
+      const response = await fetch(`/api/order/${order.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ total_cents: editPriceCents }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Échec de la mise à jour du prix');
+      }
+      // Update local state
+      if (detailedOrder) {
+        setDetailedOrder({ ...detailedOrder, total_cents: editPriceCents });
+      }
+      setEditingPrice(false);
+    } catch (error) {
+      console.error('Error saving price:', error);
+      alert(error instanceof Error ? error.message : 'Échec de la mise à jour du prix');
+    } finally {
+      setSavingPrice(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   const formatCurrency = (cents: number) => {
@@ -471,18 +529,30 @@ export function OrderDetailModal({
                         {order.client_name || 'Unknown Client'}
                       </span>
                     </div>
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between items-center'>
                       <span className='text-muted-foreground'>Phone:</span>
-                      <span className='font-medium'>
-                        {order.client_phone || 'Not provided'}
+                      <span className='font-medium font-mono'>
+                        {order.client_phone
+                          ? (revealedContact ? order.client_phone : maskPhone(order.client_phone))
+                          : 'Not provided'}
                       </span>
                     </div>
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between items-center'>
                       <span className='text-muted-foreground'>Email:</span>
-                      <span className='font-medium'>
-                        {order.client_email || 'Not provided'}
+                      <span className='font-medium font-mono'>
+                        {order.client_email
+                          ? (revealedContact ? order.client_email : maskEmail(order.client_email))
+                          : 'Not provided'}
                       </span>
                     </div>
+                    {(order.client_phone || order.client_email) && (
+                      <button
+                        onClick={() => setRevealedContact(!revealedContact)}
+                        className='flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors mt-1'
+                      >
+                        {revealedContact ? '🙈 Masquer' : '👁️ Afficher'}
+                      </button>
+                    )}
                     <div className='flex justify-between'>
                       <span className='text-muted-foreground'>Language:</span>
                       <span className='font-medium'>
@@ -891,13 +961,54 @@ export function OrderDetailModal({
                         </span>
                       </div>
                     )}
-                    <div className='flex justify-between border-t border-border pt-2'>
+                    <div className='flex justify-between items-center border-t border-border pt-2'>
                       <span className='text-lg font-semibold text-foreground'>
                         Total:
                       </span>
-                      <span className='text-lg font-semibold text-foreground'>
-                        {formatCurrency(displayOrder.total_cents || 0)}
-                      </span>
+                      {editingPrice ? (
+                        <div className='flex items-center gap-2'>
+                          <span className='text-sm text-muted-foreground'>$</span>
+                          <input
+                            type='number'
+                            step='0.01'
+                            value={(editPriceCents / 100).toFixed(2)}
+                            onChange={(e) => setEditPriceCents(Math.round(parseFloat(e.target.value || '0') * 100))}
+                            className='w-24 px-2 py-1 text-sm border border-primary-300 rounded focus:ring-2 focus:ring-primary-500'
+                            disabled={savingPrice}
+                          />
+                          <Button
+                            size='sm'
+                            onClick={handleSavePrice}
+                            disabled={savingPrice}
+                            className='bg-primary-600 hover:bg-primary-700 text-xs h-7 px-2'
+                          >
+                            {savingPrice ? '...' : 'OK'}
+                          </Button>
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            onClick={handleCancelEditPrice}
+                            disabled={savingPrice}
+                            className='text-xs h-7 px-2'
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className='flex items-center gap-2'>
+                          <span className='text-lg font-semibold text-foreground'>
+                            {formatCurrency(displayOrder.total_cents || 0)}
+                          </span>
+                          <Button
+                            size='sm'
+                            variant='ghost'
+                            onClick={handleStartEditPrice}
+                            className='text-xs text-primary-600 hover:text-primary-800 h-6 px-2'
+                          >
+                            Modifier
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     {displayOrder.deposit_cents > 0 && (
                       <div className='flex justify-between text-sm'>

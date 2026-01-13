@@ -18,12 +18,11 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // First, find the client by phone and last name
+    // First, find the client by phone OR last name
     const { data: clients, error: clientError } = await supabase
       .from('client')
       .select('id, first_name, last_name, phone')
-      .eq('phone', phone)
-      .ilike('last_name', `%${lastName}%`)
+      .or(`phone.eq.${phone},last_name.ilike.%${lastName}%`)
       .limit(1)
 
     console.log('Client search result:', { clients, clientError })

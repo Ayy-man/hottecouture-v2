@@ -56,6 +56,25 @@ export default function OrderStatusPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [revealedContact, setRevealedContact] = useState(false);
+
+  // Privacy masking functions
+  const maskPhone = (phone: string): string => {
+    if (!phone || phone.length <= 4) return '****';
+    return phone.slice(0, -4).replace(/./g, '*') + phone.slice(-4);
+  };
+
+  const maskEmail = (email: string): string => {
+    if (!email) return '****@****';
+    const parts = email.split('@');
+    const local = parts[0];
+    const domain = parts[1];
+    if (!local || !domain) return '****@****';
+    const maskedLocal = local.length > 2
+      ? local[0] + '*'.repeat(local.length - 2) + local[local.length - 1]
+      : '*'.repeat(local.length);
+    return `${maskedLocal}@${domain}`;
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,7 +310,7 @@ export default function OrderStatusPage() {
                     Found {orders.length} order{orders.length !== 1 ? 's' : ''}
                   </h2>
                   <p className='text-muted-foreground font-medium'>
-                    for {orders[0]?.client_name} • {orders[0]?.client_phone}
+                    pour {orders[0]?.client_name} • {revealedContact ? orders[0]?.client_phone : maskPhone(orders[0]?.client_phone || '')}
                   </p>
                 </div>
               )}
@@ -345,14 +364,24 @@ export default function OrderStatusPage() {
                           </div>
                           <div className='flex items-center gap-2'>
                             <Phone className='w-4 h-4' />
-                            <span>{order.client_phone}</span>
+                            <span className='font-mono'>
+                              {revealedContact ? order.client_phone : maskPhone(order.client_phone)}
+                            </span>
                           </div>
                           {order.client_email && (
                             <div className='flex items-center gap-2'>
                               <span className='w-4 h-4'>📧</span>
-                              <span>{order.client_email}</span>
+                              <span className='font-mono'>
+                                {revealedContact ? order.client_email : maskEmail(order.client_email)}
+                              </span>
                             </div>
                           )}
+                          <button
+                            onClick={() => setRevealedContact(!revealedContact)}
+                            className='flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors mt-1'
+                          >
+                            {revealedContact ? '🙈 Masquer' : '👁️ Afficher'}
+                          </button>
                         </div>
                       </div>
 

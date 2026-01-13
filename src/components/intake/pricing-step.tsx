@@ -335,7 +335,11 @@ export function PricingStep({
                     <RushOrderTimeline
                       isRush={data.rush}
                       orderType={data.type}
-                      estimatedDays={data.type === 'alteration' ? 3 : 14}
+                      estimatedDays={
+                        data.rush_fee_type === 'large'
+                          ? (data.type === 'alteration' ? 1 : 4)   // 3+ days faster
+                          : (data.type === 'alteration' ? 2 : 10)  // 1-2 days faster (small/default)
+                      }
                     />
 
                     <div className='p-4 bg-red-50 border border-red-200 rounded-lg'>

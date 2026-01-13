@@ -49,8 +49,10 @@ export function useActiveTask(staffName: string | null) {
 
   // Fetch on mount and when staff changes
   useEffect(() => {
-    fetchActiveTask();
-  }, [fetchActiveTask]);
+    if (staffName) {
+      fetchActiveTask();
+    }
+  }, [staffName, fetchActiveTask]);
 
   // Poll every 5 seconds when there's an active task
   useEffect(() => {

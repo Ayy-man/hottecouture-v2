@@ -157,7 +157,7 @@ export function InternalChat() {
                       : 'bg-white border border-border text-foreground'
                   )}
                 >
-                  {message.content}
+                  {message.content.replace(/^["']|["']$/g, '').trim()}
                 </div>
               </div>
             ))}
