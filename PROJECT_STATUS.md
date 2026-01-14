@@ -1,7 +1,7 @@
 # Hotte Couture - Project Status
 
-**Last Updated**: December 31, 2024
-**Overall Completion**: ~85%
+**Last Updated**: January 14, 2026
+**Overall Completion**: ~90%
 
 ---
 
@@ -154,6 +154,13 @@ GOOGLE_CALENDAR_ID=
 ---
 
 ## Recent Changes
+
+### January 14, 2026
+- **Order Type Badges** - Blue "Alt" for alterations, purple "Sur m." for custom design on board cards
+- **Duration Display Fix** - Fixed `estimated_minutes` read priority (garment_service > service table)
+- **Privacy Masking** - Standardized phone (`***-***-1234`) and email (`j***@domain.com`) across all pages
+- **API Fixes** - Fixed `completed_at` column error in orders/history, nullable assignee in tasks API
+- **Git Recovery** - Recovered corrupted repository from remote
 
 ### December 31, 2024
 - Added `estimated_minutes` to service admin UI
