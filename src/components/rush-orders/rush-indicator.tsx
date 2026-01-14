@@ -117,7 +117,7 @@ export function RushOrderCard({
   const bgClass = isRush ? 'bg-red-50' : 'bg-white';
 
   return (
-    <div className={`relative overflow-hidden rounded-lg ${className}`}>
+    <div className={`relative rounded-lg ${className}`}>
       {isRush && <RushRibbon isRush={isRush} orderType={orderType} />}
       <div
         className={`
