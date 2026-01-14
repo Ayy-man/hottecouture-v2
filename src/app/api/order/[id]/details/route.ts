@@ -154,6 +154,7 @@ export async function GET(
               custom_price_cents: gs.custom_price_cents,
               custom_service_name: null, // Will be added after migration
               notes: gs.notes,
+              estimated_minutes: gs.estimated_minutes, // Include garment_service.estimated_minutes
               service: gs.service,
             })
           ),
@@ -184,9 +185,10 @@ export async function GET(
     const client_notes = (order as any).client?.notes || null;
 
     // Calculate estimated time from services
+    // Priority: garment_service.estimated_minutes > service.estimated_minutes
     const totalEstimatedMinutes = allServices.reduce(
       (sum: number, service: any) => {
-        const serviceMinutes = service.service?.estimated_minutes || 60;
+        const serviceMinutes = service.estimated_minutes || service.service?.estimated_minutes || 60;
         return sum + serviceMinutes * service.quantity;
       },
       0

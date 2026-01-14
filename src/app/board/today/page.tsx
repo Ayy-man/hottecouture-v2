@@ -42,6 +42,7 @@ interface TaskOrder {
   garments: Array<{
     type: string;
     services: Array<{
+      estimated_minutes?: number; // From garment_service table
       service?: {
         name: string;
         estimated_minutes?: number;
@@ -66,7 +67,8 @@ function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
   };
 
   const totalMinutes = task.garments.reduce((sum, g) => {
-    return sum + g.services.reduce((sSum, s) => sSum + (s.service?.estimated_minutes || 30), 0);
+    // Priority: garment_service.estimated_minutes > service.estimated_minutes
+    return sum + g.services.reduce((sSum, s) => sSum + (s.estimated_minutes || s.service?.estimated_minutes || 30), 0);
   }, 0);
 
   const formatDueDate = (date: string) => {
@@ -186,7 +188,8 @@ export default function TodayTasksPage() {
   const totalMinutes = useMemo(() => {
     return filteredOrders.reduce((sum, order) => {
       return sum + order.garments.reduce((gSum, g) => {
-        return gSum + g.services.reduce((sSum, s) => sSum + (s.service?.estimated_minutes || 30), 0);
+        // Priority: garment_service.estimated_minutes > service.estimated_minutes
+        return gSum + g.services.reduce((sSum, s) => sSum + (s.estimated_minutes || s.service?.estimated_minutes || 30), 0);
       }, 0);
     }, 0);
   }, [filteredOrders]);

@@ -45,22 +45,19 @@ export function OrderDetailModal({
   const [savingPrice, setSavingPrice] = useState(false);
   const [revealedContact, setRevealedContact] = useState(false);
 
-  // Privacy masking functions
+  // Privacy masking functions (standardized format)
   const maskPhone = (phone: string): string => {
-    if (!phone || phone.length <= 4) return '****';
-    return phone.slice(0, -4).replace(/./g, '*') + phone.slice(-4);
+    if (!phone) return '';
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length <= 4) return '***';
+    return '***-***-' + digits.slice(-4);
   };
 
   const maskEmail = (email: string): string => {
-    if (!email) return '****@****';
+    if (!email) return '';
     const parts = email.split('@');
-    const local = parts[0];
-    const domain = parts[1];
-    if (!local || !domain) return '****@****';
-    const maskedLocal = local.length > 2
-      ? local[0] + '*'.repeat(local.length - 2) + local[local.length - 1]
-      : '*'.repeat(local.length);
-    return `${maskedLocal}@${domain}`;
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return '***';
+    return parts[0].charAt(0) + '***@' + parts[1];
   };
 
   const handleArchive = async () => {
@@ -805,7 +802,8 @@ export function OrderDetailModal({
                                 }
                                 const totalMinutes = garment.services?.reduce(
                                   (sum: number, s: any) => {
-                                    const mins = s.service?.estimated_minutes || 0;
+                                    // Priority: garment_service.estimated_minutes > service.estimated_minutes
+                                    const mins = s.estimated_minutes || s.service?.estimated_minutes || 0;
                                     return sum + mins * (s.quantity || 1);
                                   },
                                   0
@@ -823,7 +821,7 @@ export function OrderDetailModal({
                                 // Load actual_minutes first, then estimated, then service defaults
                                 const currentMinutes = garment.actual_minutes || garment.estimated_minutes ||
                                   garment.services?.reduce(
-                                    (sum: number, s: any) => sum + (s.service?.estimated_minutes || 0) * (s.quantity || 1),
+                                    (sum: number, s: any) => sum + (s.estimated_minutes || s.service?.estimated_minutes || 0) * (s.quantity || 1),
                                     0
                                   ) || 0;
                                 handleStartEditTime(garment.id, currentMinutes);

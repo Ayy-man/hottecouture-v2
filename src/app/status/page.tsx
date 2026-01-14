@@ -58,22 +58,19 @@ export default function OrderStatusPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [revealedContact, setRevealedContact] = useState(false);
 
-  // Privacy masking functions
+  // Privacy masking functions (standardized format)
   const maskPhone = (phone: string): string => {
-    if (!phone || phone.length <= 4) return '****';
-    return phone.slice(0, -4).replace(/./g, '*') + phone.slice(-4);
+    if (!phone) return '';
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length <= 4) return '***';
+    return '***-***-' + digits.slice(-4);
   };
 
   const maskEmail = (email: string): string => {
-    if (!email) return '****@****';
+    if (!email) return '';
     const parts = email.split('@');
-    const local = parts[0];
-    const domain = parts[1];
-    if (!local || !domain) return '****@****';
-    const maskedLocal = local.length > 2
-      ? local[0] + '*'.repeat(local.length - 2) + local[local.length - 1]
-      : '*'.repeat(local.length);
-    return `${maskedLocal}@${domain}`;
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return '***';
+    return parts[0].charAt(0) + '***@' + parts[1];
   };
 
   const handleSearch = async (e: React.FormEvent) => {

@@ -10,6 +10,7 @@ interface ServiceProp {
   notes?: string;
   custom_service_name?: string;
   custom_price_cents?: number;
+  estimated_minutes?: number; // From garment_service table
   service?: {
     id?: string;
     name: string;
@@ -82,8 +83,9 @@ export function GarmentTaskSummary({
   };
 
   // Calculate planned minutes from passed services
+  // Priority: garment_service.estimated_minutes > service.estimated_minutes
   const plannedMinutes = services.reduce((sum, s) => {
-    const mins = s.service?.estimated_minutes || 15; // Default 15 min
+    const mins = s.estimated_minutes || s.service?.estimated_minutes || 15; // Default 15 min
     return sum + (mins * (s.quantity || 1));
   }, 0);
 
@@ -168,7 +170,8 @@ export function GarmentTaskSummary({
         <div className="text-xs text-muted-foreground space-y-1">
           {services.map((s, idx) => {
             const serviceName = s.service?.name || s.custom_service_name || 'Service';
-            const serviceMinutes = s.service?.estimated_minutes || 15;
+            // Priority: garment_service.estimated_minutes > service.estimated_minutes
+            const serviceMinutes = s.estimated_minutes || s.service?.estimated_minutes || 15;
             return (
               <div key={idx} className="flex justify-between">
                 <span>• {serviceName} {s.quantity > 1 ? `(×${s.quantity})` : ''}</span>
