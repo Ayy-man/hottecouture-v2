@@ -69,6 +69,15 @@ export function DraggableOrderCard({
               <h4 className='font-semibold text-xs sm:text-sm ipad:text-xs lg:text-base'>
                 #{order.order_number}
               </h4>
+              {order.type && (
+                <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${
+                  order.type === 'alteration'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-purple-100 text-purple-700'
+                }`}>
+                  {order.type === 'alteration' ? 'Alt' : 'Sur m.'}
+                </span>
+              )}
               {isUpdating && (
                 <div className='flex items-center gap-1'>
                   <div className='w-1.5 h-1.5 ipad:w-2 ipad:h-2 bg-blue-500 rounded-full animate-pulse'></div>
@@ -125,6 +134,15 @@ export function DraggableOrderCard({
                 ⋮⋮
               </div>
               <h4 className='font-semibold text-xs'>#{order.order_number}</h4>
+              {order.type && (
+                <span className={`px-1 py-0.5 text-[10px] font-medium rounded-full ${
+                  order.type === 'alteration'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-purple-100 text-purple-700'
+                }`}>
+                  {order.type === 'alteration' ? 'Alt' : 'Sur m.'}
+                </span>
+              )}
               {isUpdating && (
                 <div className='w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse'></div>
               )}
