@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
         total_cents,
         created_at,
         due_date,
-        completed_at,
         client_id
       `)
       .eq('client_id', clientId)

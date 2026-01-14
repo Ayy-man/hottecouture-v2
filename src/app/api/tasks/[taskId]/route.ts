@@ -7,7 +7,7 @@ const updateTaskSchema = z.object({
   stage: z.enum(['pending', 'working', 'done', 'ready', 'delivered']).optional(),
   planned_minutes: z.number().min(0).optional(),
   actual_minutes: z.number().min(0).optional(),
-  assignee: z.string().optional(),
+  assignee: z.string().nullable().optional(),
   notes: z.string().optional(),
 });
 
