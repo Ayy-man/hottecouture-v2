@@ -8,21 +8,21 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 1 - Item-Level Assignment in progress
+**Current focus:** Phase 1 - Item-Level Assignment COMPLETE
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements)
-- **Phase:** 1 of 10 (Item-Level Assignment)
-- **Plan:** 2 of 4 complete
+- **Phase:** 1 of 10 (Item-Level Assignment) - COMPLETE
+- **Plan:** 4 of 4 complete
 - **Deadline:** Thursday, January 23, 2026
 
 ## Progress
 
 | Phase | Status | Plans |
 |-------|--------|-------|
-| 1 - Item-Level Assignment | * In Progress | 2/4 |
-| 2 - Item-Level Pricing | o Pending | 0/? |
+| 1 - Item-Level Assignment | COMPLETE | 4/4 |
+| 2 - Item-Level Pricing | COMPLETE | 3/3 |
 | 3 - Merge Steps | o Pending | 0/? |
 | 4 - Reduce Space | o Pending | 0/? |
 | 5 - List View | o Pending | 0/? |
@@ -36,8 +36,8 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 ```
 WAVE 1 (Sequential - Must complete first)
-|-- Phase 1: Item-Level Assignment * (2/4 plans)
-+-- Phase 2: Item-Level Pricing o
++-- Phase 1: Item-Level Assignment COMPLETE (4/4)
++-- Phase 2: Item-Level Pricing COMPLETE (3/3)
 
 WAVE 2 (Parallel - Run in separate terminals)
 |-- Phase 3: Merge Steps o
@@ -59,16 +59,19 @@ WAVE 2 (Parallel - Run in separate terminals)
 | Case-insensitive migration | 01-01 | TRIM() + LOWER() for matching name strings to staff |
 | Active staff validation | 01-02 | API rejects assignment to inactive staff (400 error) |
 | useStaff hook reused | 01-02 | Existing hook meets requirements - no new implementation |
+| Allow unassigned items | 01-04 | Users can proceed without assigning all items - assignments can be made later |
+| First assignee for calendar | 01-04 | Calendar event uses first assigned seamstress rather than creating multiple events |
+| Deprecate order.assigned_to | 01-04 | Mark as deprecated, use garment_service.assigned_seamstress_id instead |
 
 ## Next Action
 
-Execute `01-03-PLAN.md` - UI Components for assignment
+Phase 1 complete. Start Wave 2 phases (3-10) in parallel or continue with remaining work.
 
 ## Session Continuity
 
-- **Last session:** 2026-01-19T20:23:06Z
-- **Stopped at:** Completed 01-02-PLAN.md
-- **Resume:** Execute 01-03-PLAN.md
+- **Last session:** 2026-01-19T20:33:24Z
+- **Stopped at:** Completed 01-04-PLAN.md (Phase 1 complete)
+- **Resume:** Start Wave 2 phases
 
 ## Session Notes
 
@@ -82,6 +85,17 @@ Execute `01-03-PLAN.md` - UI Components for assignment
   - Added staff table types to database.ts
   - Created PATCH /api/garment-service/[id]/assign endpoint
   - useStaff hook already existed (Task 3 skipped)
+
+- 2026-01-20: Completed Phase 2 (Item-Level Pricing)
+  - 02-01: Database schema (final_price_cents, price_change_log table)
+  - 02-02: Pricing logic (3-tier hierarchy) + API endpoint (PATCH /api/garment-service/[id]/price)
+  - 02-03: UI for item-level price editing in order-detail-modal
+
+- 2026-01-19: Completed 01-04 (Intake flow and order cards)
+  - Refactored AssignmentStep for per-item assignment
+  - Added "Assign All" quick action
+  - Intake API saves assigned_seamstress_id per garment_service
+  - Order cards display item-level assignees with counts
 
 ---
 *State updated: 2026-01-19*
