@@ -10,10 +10,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Architecture (P1 - CRITICAL)
 
-- [ ] **ARCH-01**: Change data model so each item/service can be assigned to a different seamstress (not order-level)
-- [ ] **ARCH-02**: Add `assigned_seamstress_id` field to Items/Services table
-- [ ] **ARCH-03**: Migrate existing orders with global assignment to item-level assignment
-- [ ] **ARCH-04**: Update all queries to filter by item assignment, not order assignment
+- [x] **ARCH-01**: Change data model so each item/service can be assigned to a different seamstress (not order-level)
+- [x] **ARCH-02**: Add `assigned_seamstress_id` field to Items/Services table
+- [x] **ARCH-03**: Migrate existing orders with global assignment to item-level assignment
+- [x] **ARCH-04**: Update all queries to filter by item assignment, not order assignment
 - [ ] **ARCH-05**: Add `final_price` field to Items table (editable after invoice)
 - [ ] **ARCH-06**: Recalculate order total when item price changes
 - [ ] **ARCH-07**: Log price changes for audit trail (who, when, old value, new value)
@@ -97,10 +97,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ARCH-01 | Phase 1 | Pending |
-| ARCH-02 | Phase 1 | Pending |
-| ARCH-03 | Phase 1 | Pending |
-| ARCH-04 | Phase 1 | Pending |
+| ARCH-01 | Phase 1 | Complete |
+| ARCH-02 | Phase 1 | Complete |
+| ARCH-03 | Phase 1 | Complete |
+| ARCH-04 | Phase 1 | Complete |
 | ARCH-05 | Phase 2 | Pending |
 | ARCH-06 | Phase 2 | Pending |
 | ARCH-07 | Phase 2 | Pending |

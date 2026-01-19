@@ -63,13 +63,14 @@ WAVE 2 (Parallel - Can run simultaneously)
 **Blocked by:** Nothing
 **Blocks:** Phase 2, Phase 3 (assignment dropdown), Phase 6 (manage task per item)
 
-**Plans:** 4 plans
+**Status:** ✓ Complete
+**Plans:** 4/4 complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Database schema migration (add assigned_seamstress_id, migrate data, update RPC)
-- [ ] 01-02-PLAN.md — TypeScript types and assignment API endpoint
-- [ ] 01-03-PLAN.md — Board filtering and workload page updates
-- [ ] 01-04-PLAN.md — Intake flow and order card UI updates
+- [x] 01-01-PLAN.md — Database schema migration (add assigned_seamstress_id, migrate data, update RPC)
+- [x] 01-02-PLAN.md — TypeScript types and assignment API endpoint
+- [x] 01-03-PLAN.md — Board filtering and workload page updates
+- [x] 01-04-PLAN.md — Intake flow and order card UI updates
 
 ---
 
