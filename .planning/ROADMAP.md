@@ -93,6 +93,13 @@ Plans:
 **Blocked by:** Phase 1
 **Blocks:** Phase 6 (final price in manage task modal)
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Database schema (final_price_cents column, price_change_log table, TypeScript types)
+- [ ] 02-02-PLAN.md — Pricing logic update and API endpoint for item price changes
+- [ ] 02-03-PLAN.md — UI for item-level price editing in order detail modal
+
 ---
 
 ## Phase 3: Merge Garment/Service Steps
