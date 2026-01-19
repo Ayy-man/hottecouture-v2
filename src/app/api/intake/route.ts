@@ -240,6 +240,20 @@ export async function POST(request: NextRequest) {
       hasOverride: !!total_override_cents,
     });
 
+    // Determine first assigned seamstress for backward compatibility with order.assigned_to
+    // DEPRECATED: order.assigned_to is kept for backward compatibility
+    // New code should use garment_service.assigned_seamstress_id for item-level assignment
+    let firstAssignedSeamstress: string | null = null;
+    for (const garment of garments) {
+      for (const service of garment.services || []) {
+        if (service.assignedSeamstressId) {
+          firstAssignedSeamstress = service.assignedSeamstressId;
+          break;
+        }
+      }
+      if (firstAssignedSeamstress) break;
+    }
+
     const { data: newOrder, error: orderError } = await supabase
       .from('order')
       .insert({
@@ -255,7 +269,9 @@ export async function POST(request: NextRequest) {
         total_cents: final_total_cents,
         rush_fee_cents: rush_fee_cents,
         notes: JSON.stringify(notes || {}),
-        assigned_to: order.assigned_to || null,
+        // DEPRECATED: assigned_to kept for backward compatibility
+        // Use first assigned seamstress from items if available
+        assigned_to: order.assigned_to || firstAssignedSeamstress || null,
         deposit_cents: order.deposit_amount_cents || 0,
       } as any)
       .select('id, order_number')
@@ -370,7 +386,7 @@ export async function POST(request: NextRequest) {
               // Now create the garment_service link with the new custom service ID
               // Custom services default to 30 min per quantity
               const customEstimatedMinutes = (service.qty || 1) * 30;
-              
+
               const { error: garmentServiceError } = await supabase
                 .from('garment_service')
                 .insert({
@@ -380,6 +396,7 @@ export async function POST(request: NextRequest) {
                   custom_price_cents: service.customPriceCents || null,
                   notes: service.notes || null,
                   estimated_minutes: customEstimatedMinutes,
+                  assigned_seamstress_id: service.assignedSeamstressId || null, // Per-item assignment
                 } as any);
 
               if (garmentServiceError) {
@@ -433,7 +450,7 @@ export async function POST(request: NextRequest) {
               ? (service.qty || 1) * 60  // qty hours → minutes
               : (existingService as any).estimated_minutes || 30;
 
-            // Insert regular service
+            // Insert regular service with per-item assignment
             const { error: garmentServiceError } = await supabase
               .from('garment_service')
               .insert({
@@ -443,6 +460,7 @@ export async function POST(request: NextRequest) {
                 custom_price_cents: service.customPriceCents || null,
                 notes: service.notes || null,
                 estimated_minutes: estimatedMinutes,
+                assigned_seamstress_id: service.assignedSeamstressId || null, // Per-item assignment
               } as any);
 
             if (garmentServiceError) {
@@ -601,14 +619,16 @@ export async function POST(request: NextRequest) {
       console.log('ℹ️ GHL not configured - skipping contact sync');
     }
 
-    // Push to calendar if assigned
-    if (order.assigned_to && dueDate) {
+    // Push to calendar if any items are assigned
+    // Use first assigned seamstress for the calendar event (simpler than multiple events)
+    const calendarAssignee = order.assigned_to || firstAssignedSeamstress;
+    if (calendarAssignee && dueDate) {
       try {
         const calendarData = formatOrderForCalendar({
           id: (newOrder as any).id,
           order_number: (newOrder as any).order_number,
           due_date: dueDate,
-          assigned_to: order.assigned_to,
+          assigned_to: calendarAssignee,
           type: order.type || 'alteration',
           client: {
             first_name: client.first_name,
