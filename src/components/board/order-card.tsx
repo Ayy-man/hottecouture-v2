@@ -4,6 +4,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 // import { useTranslations } from 'next-intl'
 import { format, parseISO, isAfter, isToday } from 'date-fns';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BoardOrder } from '@/lib/board/types';
@@ -46,9 +47,51 @@ export function OrderCard({
   const isDueToday = order.due_date && isToday(parseISO(order.due_date));
 
   const garmentTypes = order.garments.map(g => g.type).join(', ');
-  const assignees = Array.from(
-    new Set(order.tasks.map(t => t.assignee).filter(Boolean))
-  );
+
+  // Extract item-level assignments from garment services
+  const { uniqueAssignees, assigneeGroups, hasUnassigned } = useMemo(() => {
+    const itemAssignments = order.garments
+      .flatMap(g =>
+        (g.services || []).map(s => ({
+          garmentType: g.type,
+          serviceName: s.service?.name || s.custom_service_name || 'Service',
+          assigneeName: s.assigned_seamstress_name,
+          assigneeId: s.assigned_seamstress_id,
+        }))
+      );
+
+    // Group by assignee for display
+    const groups = itemAssignments
+      .filter(item => item.assigneeName)
+      .reduce(
+        (acc, item) => {
+          const name = item.assigneeName!;
+          if (!acc[name]) acc[name] = [];
+          acc[name].push(item);
+          return acc;
+        },
+        {} as Record<string, typeof itemAssignments>
+      );
+
+    const unique = Object.keys(groups);
+    const unassigned = itemAssignments.some(item => !item.assigneeId);
+
+    return {
+      uniqueAssignees: unique,
+      assigneeGroups: groups,
+      hasUnassigned: unassigned,
+    };
+  }, [order.garments]);
+
+  // Fall back to task-based assignees if no item-level assignments exist
+  const legacyAssignees = useMemo(() => {
+    return Array.from(
+      new Set(order.tasks.map(t => t.assignee).filter(Boolean))
+    );
+  }, [order.tasks]);
+
+  // Use item-level assignees if available, otherwise fall back to legacy
+  const hasItemLevelAssignees = uniqueAssignees.length > 0 || hasUnassigned;
 
   // Extract service names from garments
   const serviceNames = order.garments
@@ -81,7 +124,7 @@ export function OrderCard({
                   ? 'bg-blue-100 text-blue-700'
                   : 'bg-purple-100 text-purple-700'
               }`}>
-                {order.type === 'alteration' ? 'Altération' : 'Sur mesure'}
+                {order.type === 'alteration' ? 'Alteration' : 'Sur mesure'}
               </span>
             )}
             {order.rush && (
@@ -147,12 +190,46 @@ export function OrderCard({
           </div>
         )}
 
-        {/* Assignees */}
-        {assignees.length > 0 && (
+        {/* Item-Level Assignments */}
+        {hasItemLevelAssignees && (
+          <div className='mb-3'>
+            <p className='text-sm font-medium text-muted-foreground mb-1'>Assigned:</p>
+            <div className='space-y-1'>
+              {uniqueAssignees.map(name => (
+                <div key={name} className='flex items-center text-sm'>
+                  <span className='w-2 h-2 rounded-full bg-primary mr-2' />
+                  <span className='font-medium'>{name}</span>
+                  <span className='text-muted-foreground ml-1'>
+                    ({assigneeGroups[name]?.length || 0} item
+                    {(assigneeGroups[name]?.length || 0) > 1 ? 's' : ''})
+                  </span>
+                </div>
+              ))}
+              {hasUnassigned && (
+                <div className='flex items-center text-sm text-amber-600'>
+                  <span className='w-2 h-2 rounded-full bg-amber-400 mr-2' />
+                  <span>Some items unassigned</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Show unassigned warning if no assignees at all (no item-level, no legacy) */}
+        {!hasItemLevelAssignees && legacyAssignees.length === 0 && (
+          <div className='mb-3'>
+            <p className='text-sm text-amber-600'>
+              <span className='font-medium'>Unassigned</span>
+            </p>
+          </div>
+        )}
+
+        {/* Legacy Assignees (fallback when no item-level assignments) */}
+        {!hasItemLevelAssignees && legacyAssignees.length > 0 && (
           <div className='mb-3'>
             <p className='text-sm text-muted-foreground'>
               <span className='font-medium'>Assignee:</span>{' '}
-              {assignees.join(', ')}
+              {legacyAssignees.join(', ')}
             </p>
           </div>
         )}
@@ -172,17 +249,20 @@ export function OrderCard({
           >
             View Details
           </Button>
-          {assignees.length === 0 && onAssign && (
-            <Button
-              size='sm'
-              variant='outline'
-              className='flex-1 text-xs'
-              disabled={isUpdating}
-              onClick={() => onAssign(order.id)}
-            >
-              Assign to Me
-            </Button>
-          )}
+          {/* Show "Assign to Me" only when there are unassigned items and onAssign is provided */}
+          {((hasItemLevelAssignees && hasUnassigned) ||
+            (!hasItemLevelAssignees && legacyAssignees.length === 0)) &&
+            onAssign && (
+              <Button
+                size='sm'
+                variant='outline'
+                className='flex-1 text-xs'
+                disabled={isUpdating}
+                onClick={() => onAssign(order.id)}
+              >
+                Assign to Me
+              </Button>
+            )}
         </div>
 
         {/* Loading indicator */}
