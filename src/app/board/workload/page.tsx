@@ -27,6 +27,23 @@ const STATUS_COLORS: Record<string, string> = {
   delivered: '#6b7280',
 };
 
+interface ServiceItem {
+  garment_service_id: string;
+  service_id?: string;
+  assigned_seamstress_id: string | null;
+  assigned_seamstress_name: string | null;
+  service_name: string;
+  estimated_minutes?: number;
+}
+
+interface GarmentItem {
+  garment_id?: string;
+  type?: string;
+  assignee?: string | null;
+  estimated_minutes?: number;
+  services?: ServiceItem[];
+}
+
 interface Order {
   id: string;
   order_number: number;
@@ -36,22 +53,29 @@ interface Order {
   assigned_to: string | null;
   client_name?: string;
   total_estimated_minutes?: number;
-  garments?: Array<{
-    garment_id?: string;
-    assignee?: string | null;
-    estimated_minutes?: number;
-    services?: Array<{
-      service?: {
-        estimated_minutes?: number;
-      };
-    }>;
-  }>;
+  garments?: GarmentItem[];
+}
+
+// New interface for item-level workload tracking
+interface WorkloadItem {
+  garmentServiceId: string;
+  orderId: string;
+  orderNumber: number;
+  clientName: string;
+  garmentType: string;
+  serviceName: string;
+  estimatedMinutes: number;
+  dueDate?: string;
+  seamstressId: string | null;
+  seamstressName: string;
 }
 
 interface SeamstressWorkload {
+  seamstressId: string | null; // null = unassigned
   name: string;
   totalHours: number;
-  orders: Order[];
+  items: WorkloadItem[];
+  orders: Order[]; // Keep for backward compat with Gantt
   dailyHours: Record<string, number>;
 }
 
@@ -84,7 +108,6 @@ export default function WorkloadPage() {
   const [error, setError] = useState<string | null>(null);
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
   const { staff: staffMembers, loading: staffLoading } = useStaff();
-  const SEAMSTRESSES = [...staffMembers.map(s => s.name), 'Unassigned'];
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -174,41 +197,112 @@ export default function WorkloadPage() {
     );
   }, [orders]);
 
+  // Build a map of staff ID to name for quick lookups
+  const staffIdToName = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const s of staffMembers) {
+      map[s.id] = s.name;
+    }
+    return map;
+  }, [staffMembers]);
+
+  // NEW: Group items (garment_services) by assigned seamstress - item-level workload
   const workloadBySeamstress = useMemo((): Record<string, SeamstressWorkload> => {
     const workloads: Record<string, SeamstressWorkload> = {};
 
-    for (const name of SEAMSTRESSES) {
-      workloads[name] = {
-        name,
+    // Initialize workloads for each seamstress + Unassigned
+    for (const staff of staffMembers) {
+      workloads[staff.id] = {
+        seamstressId: staff.id,
+        name: staff.name,
         totalHours: 0,
+        items: [],
         orders: [],
         dailyHours: {},
       };
     }
+    // Add "Unassigned" bucket
+    workloads['unassigned'] = {
+      seamstressId: null,
+      name: 'Unassigned',
+      totalHours: 0,
+      items: [],
+      orders: [],
+      dailyHours: {},
+    };
+
+    // Track which orders are assigned to which seamstresses (for Gantt)
+    const seamstressOrders: Record<string, Set<string>> = {};
 
     for (const order of activeOrders) {
-      // Check garment-level assignees first (from task management), then order-level
-      const garmentAssignees = order.garments
-        ?.map(g => g.assignee)
-        .filter((a): a is string => !!a) || [];
-      const assignee = garmentAssignees[0] || order.assigned_to || 'Unassigned';
-      const seamstress = SEAMSTRESSES.includes(assignee) ? assignee : 'Unassigned';
-      const hours = calculateEstimatedHours(order);
+      const garments = order.garments || [];
 
-      const workload = workloads[seamstress];
-      if (workload) {
-        workload.orders.push(order);
-        workload.totalHours += hours;
+      for (const garment of garments) {
+        const services = garment.services || [];
 
-        if (order.due_date) {
-          const dateKey = format(new Date(order.due_date), 'yyyy-MM-dd');
-          workload.dailyHours[dateKey] = (workload.dailyHours[dateKey] || 0) + hours;
+        for (const service of services) {
+          // Use assigned_seamstress_id (UUID) for grouping
+          const seamstressId = service.assigned_seamstress_id;
+          const seamstressName = service.assigned_seamstress_name || (seamstressId ? staffIdToName[seamstressId] : null) || 'Unassigned';
+          const workloadKey = seamstressId || 'unassigned';
+
+          // Ensure workload exists (for dynamically discovered staff)
+          if (!workloads[workloadKey]) {
+            workloads[workloadKey] = {
+              seamstressId: seamstressId || null,
+              name: seamstressName,
+              totalHours: 0,
+              items: [],
+              orders: [],
+              dailyHours: {},
+            };
+          }
+
+          // Calculate estimated time for this service
+          const estimatedMinutes = service.estimated_minutes || 30;
+          const hours = estimatedMinutes / 60;
+
+          // Create workload item
+          const workloadItem: WorkloadItem = {
+            garmentServiceId: service.garment_service_id,
+            orderId: order.id,
+            orderNumber: order.order_number,
+            clientName: order.client_name || 'Unknown Client',
+            garmentType: garment.type || 'Unknown',
+            serviceName: service.service_name || 'Service',
+            estimatedMinutes,
+            dueDate: order.due_date || undefined,
+            seamstressId: seamstressId || null,
+            seamstressName,
+          };
+
+          const workload = workloads[workloadKey];
+          workload.items.push(workloadItem);
+          workload.totalHours += hours;
+
+          if (order.due_date) {
+            const dateKey = format(new Date(order.due_date), 'yyyy-MM-dd');
+            workload.dailyHours[dateKey] = (workload.dailyHours[dateKey] || 0) + hours;
+          }
+
+          // Track orders for Gantt (backwards compat)
+          if (!seamstressOrders[workloadKey]) {
+            seamstressOrders[workloadKey] = new Set();
+          }
+          seamstressOrders[workloadKey].add(order.id);
         }
       }
     }
 
+    // Add orders to workloads for Gantt (de-duplicated)
+    for (const [key, orderIds] of Object.entries(seamstressOrders)) {
+      if (workloads[key]) {
+        workloads[key].orders = activeOrders.filter(o => orderIds.has(o.id));
+      }
+    }
+
     return workloads;
-  }, [activeOrders, SEAMSTRESSES]);
+  }, [activeOrders, staffMembers, staffIdToName]);
 
   const ganttFeatures = useMemo((): GanttFeature[] => {
     const features: GanttFeature[] = [];
@@ -231,11 +325,25 @@ export default function WorkloadPage() {
 
       const statusColor = STATUS_COLORS[order.status] ?? STATUS_COLORS.pending ?? '#f59e0b';
 
-      // Check garment-level assignees first (from task management), then order-level
-      const garmentAssignees = order.garments
-        ?.map(g => g.assignee)
-        .filter((a): a is string => !!a) || [];
-      const ownerName = garmentAssignees[0] || order.assigned_to || 'Unassigned';
+      // Check item-level (garment_service) assignees first, then garment-level, then order-level
+      let ownerName = 'Unassigned';
+      // First try item-level assignment
+      for (const garment of order.garments || []) {
+        for (const service of garment.services || []) {
+          if (service.assigned_seamstress_name) {
+            ownerName = service.assigned_seamstress_name;
+            break;
+          }
+        }
+        if (ownerName !== 'Unassigned') break;
+      }
+      // Fallback to old garment-level assignee or order-level
+      if (ownerName === 'Unassigned') {
+        const garmentAssignees = order.garments
+          ?.map(g => g.assignee)
+          .filter((a): a is string => !!a) || [];
+        ownerName = garmentAssignees[0] || order.assigned_to || 'Unassigned';
+      }
 
       features.push({
         id: order.id,
@@ -274,10 +382,10 @@ export default function WorkloadPage() {
   const overloadedDays = useMemo(() => {
     const issues: Array<{ seamstress: string; date: string; hours: number }> = [];
 
-    for (const [name, workload] of Object.entries(workloadBySeamstress)) {
+    for (const [, workload] of Object.entries(workloadBySeamstress)) {
       for (const [date, hours] of Object.entries(workload.dailyHours)) {
         if (hours > HOURS_PER_DAY) {
-          issues.push({ seamstress: name, date, hours });
+          issues.push({ seamstress: workload.name, date, hours });
         }
       }
     }
@@ -287,17 +395,17 @@ export default function WorkloadPage() {
 
   const totalCapacityUsed = useMemo(() => {
     const totalAssignedHours = Object.values(workloadBySeamstress)
-      .filter(w => w.name !== 'Unassigned')
+      .filter(w => w.seamstressId !== null) // Exclude unassigned
       .reduce((sum, w) => sum + w.totalHours, 0);
 
     const workingDays = 5;
-    const seamstressCount = SEAMSTRESSES.length - 1;
+    const seamstressCount = Math.max(1, staffMembers.length);
     const weeklyCapacity = workingDays * HOURS_PER_DAY * seamstressCount;
 
     return Math.min(100, (totalAssignedHours / weeklyCapacity) * 100);
-  }, [workloadBySeamstress, SEAMSTRESSES]);
+  }, [workloadBySeamstress, staffMembers]);
 
-  const unassignedWorkload = workloadBySeamstress['Unassigned'];
+  const unassignedWorkload = workloadBySeamstress['unassigned'];
 
   if (loading || staffLoading) {
     return (
@@ -361,17 +469,18 @@ export default function WorkloadPage() {
               </CardContent>
             </Card>
 
-            {SEAMSTRESSES.filter(s => s !== 'Unassigned').map((name) => {
-              const workload = workloadBySeamstress[name];
+            {staffMembers.map((staff) => {
+              const workload = workloadBySeamstress[staff.id];
               if (!workload) return null;
 
               const weeklyCapacity = 5 * HOURS_PER_DAY;
               const utilization = Math.min(100, (workload.totalHours / weeklyCapacity) * 100);
+              const itemCount = workload.items.length;
 
               return (
-                <Card key={name}>
+                <Card key={staff.id}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">{name}</CardTitle>
+                    <CardTitle className="text-sm font-medium">{staff.name}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
@@ -381,8 +490,8 @@ export default function WorkloadPage() {
                         primaryColor={utilization > 100 ? 'stroke-red-500' : 'stroke-green-500'}
                       />
                       <div className="text-right">
-                        <div className="text-2xl font-bold">{workload.orders.length}</div>
-                        <div className="text-xs text-muted-foreground">orders</div>
+                        <div className="text-2xl font-bold">{itemCount}</div>
+                        <div className="text-xs text-muted-foreground">items</div>
                         <div className="text-sm">{workload.totalHours.toFixed(1)}h</div>
                       </div>
                     </div>
@@ -391,7 +500,7 @@ export default function WorkloadPage() {
               );
             })}
 
-            {unassignedWorkload && unassignedWorkload.orders.length > 0 && (
+            {unassignedWorkload && unassignedWorkload.items.length > 0 && (
               <Card className="border-amber-200 bg-amber-50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-amber-700 flex items-center gap-2">
@@ -401,30 +510,50 @@ export default function WorkloadPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-amber-700">
-                    {unassignedWorkload.orders.length}
+                    {unassignedWorkload.items.length}
                   </div>
-                  <div className="text-xs text-amber-600 mb-3">orders need assignment</div>
+                  <div className="text-xs text-amber-600 mb-3">items need assignment</div>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {unassignedWorkload.orders.slice(0, 5).map(order => (
-                      <div key={order.id} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="font-medium">#{order.order_number}</span>
+                    {unassignedWorkload.items.slice(0, 5).map(item => (
+                      <div key={item.garmentServiceId} className="flex items-center justify-between gap-2 text-xs">
+                        <span className="font-medium truncate max-w-[120px]" title={`#${item.orderNumber} - ${item.serviceName}`}>
+                          #{item.orderNumber} - {item.serviceName}
+                        </span>
                         <select
                           className="text-xs border rounded px-1 py-0.5 bg-white"
                           value=""
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             if (e.target.value) {
-                              handleAssignOrder(order.id, e.target.value);
+                              // Use the item-level assignment API
+                              try {
+                                const response = await fetch(`/api/garment-service/${item.garmentServiceId}/assign`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ assigned_seamstress_id: e.target.value }),
+                                });
+                                if (response.ok) {
+                                  // Refresh the page to show updated assignments
+                                  window.location.reload();
+                                }
+                              } catch (err) {
+                                console.error('Error assigning item:', err);
+                              }
                             }
                           }}
-                          disabled={updatingOrder === order.id}
+                          disabled={updatingOrder === item.orderId}
                         >
                           <option value="">Assign...</option>
                           {staffMembers.map(s => (
-                            <option key={s.name} value={s.name}>{s.name}</option>
+                            <option key={s.id} value={s.id}>{s.name}</option>
                           ))}
                         </select>
                       </div>
                     ))}
+                    {unassignedWorkload.items.length > 5 && (
+                      <div className="text-xs text-amber-600 pt-1">
+                        +{unassignedWorkload.items.length - 5} more items
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
