@@ -87,6 +87,7 @@ export async function recalculateAllOrderPricing() {
             service_id: garmentService.service_id,
             quantity: garmentService.quantity,
             custom_price_cents: garmentService.custom_price_cents,
+            final_price_cents: garmentService.final_price_cents ?? null,
             base_price_cents: garmentService.service?.base_price_cents || 0,
           });
         }

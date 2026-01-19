@@ -41,12 +41,6 @@ export function AssignmentStep({
 }: AssignmentStepProps) {
   const { staff, loading } = useStaff();
 
-  // Get the name of a seamstress by ID
-  const getSeamstressName = (id: string | null): string => {
-    if (!id) return '';
-    const member = staff.find(s => s.id === id);
-    return member?.name || '';
-  };
 
   // Handle "Assign All" action
   const handleAssignAll = (seamstressId: string) => {
@@ -162,9 +156,7 @@ export function AssignmentStep({
                             }
                           >
                             <SelectTrigger className='w-full'>
-                              <SelectValue placeholder='Non assigne'>
-                                {getSeamstressName(item.assignedSeamstressId) || 'Non assigne'}
-                              </SelectValue>
+                              <SelectValue placeholder='Non assigne' />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value=''>Non assigne</SelectItem>

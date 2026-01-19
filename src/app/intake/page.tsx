@@ -149,12 +149,21 @@ export default function IntakePage() {
       setFormData(prev => {
         const newGarments = [...prev.garments];
         const garment = newGarments[garmentIndex];
-        if (garment && garment.services[serviceIndex]) {
+        const existingService = garment?.services[serviceIndex];
+        if (garment && existingService) {
           garment.services = [...garment.services];
-          garment.services[serviceIndex] = {
-            ...garment.services[serviceIndex],
+          const updatedService: typeof existingService = {
+            serviceId: existingService.serviceId,
+            qty: existingService.qty,
             assignedSeamstressId: seamstressId,
           };
+          if (existingService.serviceName !== undefined) {
+            updatedService.serviceName = existingService.serviceName;
+          }
+          if (existingService.customPriceCents !== undefined) {
+            updatedService.customPriceCents = existingService.customPriceCents;
+          }
+          garment.services[serviceIndex] = updatedService;
         }
         return { ...prev, garments: newGarments };
       });

@@ -180,6 +180,7 @@ export async function POST(request: NextRequest) {
           quantity: service.qty,
           base_price_cents: basePrice,
           custom_price_cents: service.customPriceCents || null,
+          final_price_cents: null, // Set later after work is complete
         });
       }
     }

@@ -93,7 +93,7 @@ function calculateEstimatedHours(order: Order): number {
       } else {
         // Fallback: Sum service estimated minutes
         for (const service of garment.services || []) {
-          totalMinutes += service.service?.estimated_minutes || 30;
+          totalMinutes += service.estimated_minutes || 30;
         }
       }
     }
@@ -158,33 +158,6 @@ export default function WorkloadPage() {
     } catch (err) {
       console.error('Error updating order due date:', err);
       alert('Erreur lors de la mise à jour de la date');
-    } finally {
-      setUpdatingOrder(null);
-    }
-  };
-
-  const handleAssignOrder = async (orderId: string, assignee: string | null) => {
-    setUpdatingOrder(orderId);
-
-    try {
-      const response = await fetch(`/api/order/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assigned_to: assignee }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to assign order');
-      }
-
-      setOrders(prev => prev.map(o =>
-        o.id === orderId
-          ? { ...o, assigned_to: assignee }
-          : o
-      ));
-    } catch (err) {
-      console.error('Error assigning order:', err);
-      alert('Erreur lors de l\'assignation');
     } finally {
       setUpdatingOrder(null);
     }
@@ -271,7 +244,7 @@ export default function WorkloadPage() {
             garmentType: garment.type || 'Unknown',
             serviceName: service.service_name || 'Service',
             estimatedMinutes,
-            dueDate: order.due_date || undefined,
+            ...(order.due_date && { dueDate: order.due_date }),
             seamstressId: seamstressId || null,
             seamstressName,
           };
