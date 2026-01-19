@@ -86,6 +86,12 @@ Phase 1 complete. Start Wave 2 phases (3-10) in parallel or continue with remain
   - Created PATCH /api/garment-service/[id]/assign endpoint
   - useStaff hook already existed (Task 3 skipped)
 
+- 2026-01-19: Completed 01-03 (Board filtering and data hooks)
+  - Updated useBoardData to fetch from API route with assignment data
+  - Added assignedSeamstressId filter for UUID-based filtering
+  - Workload page now groups items by assigned seamstress (not orders)
+  - Added quick-assign feature in workload unassigned section
+
 - 2026-01-20: Completed Phase 2 (Item-Level Pricing)
   - 02-01: Database schema (final_price_cents, price_change_log table)
   - 02-02: Pricing logic (3-tier hierarchy) + API endpoint (PATCH /api/garment-service/[id]/price)
