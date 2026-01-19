@@ -45,7 +45,8 @@ export interface BoardOrder {
 export interface BoardFilters {
   rush: boolean;
   dueToday: boolean;
-  assignee?: string;
+  assignee?: string; // Keep for backward compatibility (string name)
+  assignedSeamstressId?: string; // New: UUID-based filtering for item-level assignment
   pipeline?: OrderType;
   search: string;
 }

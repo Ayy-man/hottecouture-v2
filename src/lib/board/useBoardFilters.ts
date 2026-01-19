@@ -26,8 +26,20 @@ export function useBoardFilters(orders: BoardOrder[]) {
         }
       }
 
-      // Assignee filter
-      if (filters.assignee) {
+      // Assignee filter - now supports item-level assignment via UUID
+      if (filters.assignedSeamstressId) {
+        // Check if ANY garment_service in this order is assigned to this seamstress (by UUID)
+        const hasAssignedItem = order.garments?.some(g =>
+          g.services?.some(s => s.assigned_seamstress_id === filters.assignedSeamstressId)
+        ) || order.tasks.some(t => t.assigned_seamstress_id === filters.assignedSeamstressId)
+
+        if (!hasAssignedItem) {
+          return false
+        }
+      }
+
+      // Keep old string-based filter for backward compatibility
+      if (filters.assignee && !filters.assignedSeamstressId) {
         const assignees = order.tasks.map(t => t.assignee).filter(Boolean)
         if (!assignees.includes(filters.assignee)) {
           return false
