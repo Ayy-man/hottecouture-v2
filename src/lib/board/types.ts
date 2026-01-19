@@ -22,12 +22,15 @@ export interface BoardOrder {
     id: string;
     type: string;
     services: Array<{
+      id: string;
       service?: {
         name: string;
       };
       custom_service_name?: string;
       custom_price_cents?: number;
       quantity: number;
+      assigned_seamstress_id?: string | null;
+      assigned_seamstress_name?: string | null;
     }>;
   }>;
   tasks: Array<{

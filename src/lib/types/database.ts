@@ -149,6 +149,7 @@ export type Database = {
           quantity: number;
           custom_price_cents: number | null;
           notes: string | null;
+          assigned_seamstress_id: string | null;
         };
         Insert: {
           id?: string;
@@ -158,6 +159,7 @@ export type Database = {
           quantity?: number;
           custom_price_cents?: number | null;
           notes?: string | null;
+          assigned_seamstress_id?: string | null;
         };
         Update: {
           id?: string;
@@ -167,6 +169,7 @@ export type Database = {
           quantity?: number;
           custom_price_cents?: number | null;
           notes?: string | null;
+          assigned_seamstress_id?: string | null;
         };
       };
       order: {
@@ -530,6 +533,32 @@ export type Database = {
           created_at?: string;
         };
       };
+      staff: {
+        Row: {
+          id: string;
+          name: string;
+          is_active: boolean;
+          pin_hash: string | null;
+          last_clock_in: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          is_active?: boolean;
+          pin_hash?: string | null;
+          last_clock_in?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          is_active?: boolean;
+          pin_hash?: string | null;
+          last_clock_in?: string | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -577,6 +606,7 @@ export type EventLog = Tables<'event_log'>;
 export type MeasurementTemplate = Tables<'measurement_template'>;
 export type ClientMeasurement = Tables<'client_measurement'>;
 export type OrderMeasurement = Tables<'order_measurement'>;
+export type Staff = Tables<'staff'>;
 
 // Insert types
 export type ClientInsert = Database['public']['Tables']['client']['Insert'];
@@ -597,6 +627,7 @@ export type ClientMeasurementInsert =
   Database['public']['Tables']['client_measurement']['Insert'];
 export type OrderMeasurementInsert =
   Database['public']['Tables']['order_measurement']['Insert'];
+export type StaffInsert = Database['public']['Tables']['staff']['Insert'];
 
 // Update types
 export type ClientUpdate = Database['public']['Tables']['client']['Update'];
@@ -617,6 +648,7 @@ export type ClientMeasurementUpdate =
   Database['public']['Tables']['client_measurement']['Update'];
 export type OrderMeasurementUpdate =
   Database['public']['Tables']['order_measurement']['Update'];
+export type StaffUpdate = Database['public']['Tables']['staff']['Update'];
 
 // Notification and Chat Log types (Agent C)
 export type NotificationLog = {
