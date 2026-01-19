@@ -27,6 +27,8 @@ interface Garment {
     qty: number;
     customPriceCents?: number;
     customServiceName?: string; // Added for custom services
+    serviceName?: string; // For display in assignment step
+    assignedSeamstressId?: string | null; // Per-item assignment
   }>;
 }
 
@@ -684,11 +686,12 @@ export function ServicesStepNew({
         existingService.qty += 1;
       }
     } else {
-      // Add new service
+      // Add new service with name for display in assignment step
       garment.services.push({
         serviceId,
         qty: 1,
         customPriceCents: service.base_price_cents,
+        serviceName: service.name, // For display in assignment step
       });
     }
 
@@ -719,6 +722,7 @@ export function ServicesStepNew({
         serviceId,
         qty: 1,
         customPriceCents: mainService.base_price_cents,
+        serviceName: mainService.name, // For display in assignment step
       });
     }
 
@@ -737,6 +741,7 @@ export function ServicesStepNew({
             serviceId: zipServiceId,
             qty: 1,
             customPriceCents: zipService.base_price_cents,
+            serviceName: zipService.name, // For display in assignment step
           });
         }
       }

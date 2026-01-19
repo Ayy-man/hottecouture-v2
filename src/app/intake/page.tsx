@@ -7,7 +7,7 @@ import { ClientStep } from '@/components/intake/client-step';
 import { GarmentsStep } from '@/components/intake/garments-step';
 import { ServicesStepNew } from '@/components/intake/services-step-new';
 import { PricingStep } from '@/components/intake/pricing-step';
-import { AssignmentStep } from '@/components/intake/assignment-step';
+import { AssignmentStep, AssignmentItem } from '@/components/intake/assignment-step';
 import { OrderSummary } from '@/components/intake/order-summary';
 import { IntakeRequest, IntakeResponse, MeasurementsData } from '@/lib/dto';
 import { usePricing } from '@/lib/pricing/usePricing';
@@ -43,8 +43,10 @@ interface IntakeFormData {
     labelCode: string;
     services: Array<{
       serviceId: string;
+      serviceName?: string; // For display in assignment step
       qty: number;
       customPriceCents?: number;
+      assignedSeamstressId?: string | null; // Per-item assignment
     }>;
   }>;
   order: {
@@ -52,7 +54,7 @@ interface IntakeFormData {
     due_date?: string;
     rush: boolean;
     rush_fee_type?: 'small' | 'large';
-    assigned_to?: string;
+    assigned_to?: string; // Deprecated: kept for backward compatibility
     deposit_required?: boolean;
     deposit_amount_cents?: number;
   };
@@ -123,6 +125,42 @@ export default function IntakePage() {
   const updateFormData = useCallback((updates: Partial<IntakeFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
   }, []);
+
+  // Compute assignment items from garments and services
+  const assignmentItems: AssignmentItem[] = useMemo(() => {
+    const items: AssignmentItem[] = [];
+    formData.garments.forEach((garment, garmentIndex) => {
+      garment.services.forEach((service, serviceIndex) => {
+        items.push({
+          garmentIndex,
+          garmentType: garment.type,
+          serviceIndex,
+          serviceName: service.serviceName || 'Service',
+          assignedSeamstressId: service.assignedSeamstressId || null,
+        });
+      });
+    });
+    return items;
+  }, [formData.garments]);
+
+  // Handle per-item assignment change
+  const handleItemAssignmentChange = useCallback(
+    (garmentIndex: number, serviceIndex: number, seamstressId: string | null) => {
+      setFormData(prev => {
+        const newGarments = [...prev.garments];
+        const garment = newGarments[garmentIndex];
+        if (garment && garment.services[serviceIndex]) {
+          garment.services = [...garment.services];
+          garment.services[serviceIndex] = {
+            ...garment.services[serviceIndex],
+            assignedSeamstressId: seamstressId,
+          };
+        }
+        return { ...prev, garments: newGarments };
+      });
+    },
+    []
+  );
 
   const nextStep = useCallback(() => {
     const stepIndex = steps.findIndex(step => step.key === currentStep);
@@ -273,10 +311,8 @@ export default function IntakePage() {
       case 'assignment':
         return (
           <AssignmentStep
-            selectedAssignee={formData.order.assigned_to || null}
-            onAssigneeChange={assignee =>
-              updateFormData({ order: { ...formData.order, assigned_to: assignee } })
-            }
+            items={assignmentItems}
+            onItemAssignmentChange={handleItemAssignmentChange}
             onNext={handleSubmit}
             onPrev={prevStep}
             isSubmitting={isSubmitting}
