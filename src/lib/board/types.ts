@@ -37,6 +37,7 @@ export interface BoardOrder {
     id: string;
     stage: TaskStage;
     assignee?: string;
+    assigned_seamstress_id?: string; // UUID for item-level assignment
   }>;
   services_count: number;
 }
