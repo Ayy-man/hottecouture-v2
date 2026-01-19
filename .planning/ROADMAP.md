@@ -63,6 +63,13 @@ WAVE 2 (Parallel - Can run simultaneously)
 **Blocked by:** Nothing
 **Blocks:** Phase 2, Phase 3 (assignment dropdown), Phase 6 (manage task per item)
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Database schema migration (add assigned_seamstress_id, migrate data)
+- [ ] 01-02-PLAN.md — TypeScript types and assignment API endpoint
+- [ ] 01-03-PLAN.md — Board filtering and workload page updates
+
 ---
 
 ## Phase 2: Item-Level Pricing
@@ -113,8 +120,8 @@ WAVE 2 (Parallel - Can run simultaneously)
 **Goal:** Reduce page height by 40% to eliminate "endless scrolling" complaint.
 
 **Requirements:**
-- UI-03: Reduce vertical spacing between sections (24px → 12px)
-- UI-04: Reduce form field spacing (16px → 8px)
+- UI-03: Reduce vertical spacing between sections (24px -> 12px)
+- UI-04: Reduce form field spacing (16px -> 8px)
 - UI-05: Make Notes fields collapsible (collapsed by default)
 - UI-06: Use 2-column layouts for form fields
 
