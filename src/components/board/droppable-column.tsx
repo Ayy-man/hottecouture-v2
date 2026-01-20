@@ -41,7 +41,7 @@ export function DroppableColumn({
       ref={setNodeRef}
       className={`
         flex min-h-0 flex-col rounded-2xl border bg-white shadow-sm
-        w-full h-full
+        min-w-[260px] md:min-w-0 w-full h-full
         transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl
         ${
           isOver

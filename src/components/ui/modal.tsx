@@ -59,8 +59,10 @@ export function Modal({
       {/* Modal */}
       <div
         className={cn(
-          "relative w-full mx-4 bg-card rounded-lg shadow-modal",
-          "max-h-[90vh] overflow-y-auto",
+          "relative w-full bg-card shadow-modal",
+          "h-full md:h-auto md:max-h-[90vh] overflow-y-auto",
+          "rounded-none md:rounded-lg",
+          "mx-0 md:mx-4",
           sizeClasses[size],
           className
         )}
@@ -70,7 +72,7 @@ export function Modal({
           <h2 className="text-xl font-semibold">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-accent transition-colors"
+            className="p-2 -mr-2 rounded-md hover:bg-accent transition-colors touch-target"
           >
             <X className="h-5 w-5" />
           </button>

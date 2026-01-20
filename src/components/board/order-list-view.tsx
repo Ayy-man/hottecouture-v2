@@ -44,46 +44,120 @@ export function OrderListView({
     return '';
   };
 
+  if (orders.length === 0) {
+    return (
+      <div className='bg-card rounded-lg shadow p-8 text-center text-muted-foreground'>
+        No orders found
+      </div>
+    );
+  }
+
   return (
-    <div className='bg-card rounded-lg shadow overflow-hidden'>
-      <table className='min-w-full divide-y divide-border'>
-        <thead className='bg-muted/50'>
-          <tr>
-            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-              #
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-              Client
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-              Type
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-              Items
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-              Due Date
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-              Status
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-              Position rack
-            </th>
-            <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
-              Total
-            </th>
-          </tr>
-        </thead>
-        <tbody className='bg-card divide-y divide-border'>
-          {orders.length === 0 ? (
+    <>
+      {/* Mobile Card View */}
+      <div className='md:hidden space-y-3'>
+        {orders.map(order => (
+          <div
+            key={order.id}
+            className={`bg-card rounded-lg shadow p-4 ${updatingOrders.has(order.id) ? 'opacity-50' : ''}`}
+          >
+            <div className='flex items-center justify-between mb-3'>
+              <div className='flex items-center gap-2'>
+                <span className='font-semibold'>#{order.order_number}</span>
+                {order.rush && (
+                  <Badge variant='destructive' className='text-xs'>
+                    Rush
+                  </Badge>
+                )}
+              </div>
+              <span className='font-medium'>
+                ${((order.total_cents || 0) / 100).toFixed(2)}
+              </span>
+            </div>
+
+            <div className='space-y-2 text-sm'>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Client</span>
+                <span>{order.client_name || 'Unknown'}</span>
+              </div>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Type</span>
+                <span className='capitalize'>{order.type}</span>
+              </div>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Items</span>
+                <span>
+                  {order.garments?.length || 0} garment
+                  {(order.garments?.length || 0) !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Due Date</span>
+                <span className={getDueDateStyle(order.due_date)}>
+                  {formatDate(order.due_date)}
+                </span>
+              </div>
+              {order.rack_position && ['ready', 'delivered'].includes(order.status) && (
+                <div className='flex justify-between'>
+                  <span className='text-muted-foreground'>Rack</span>
+                  <span className='inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded'>
+                    📍 {order.rack_position}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className='mt-3 pt-3 border-t'>
+              <select
+                value={order.status}
+                onChange={e => onOrderUpdate(order.id, e.target.value)}
+                disabled={updatingOrders.has(order.id)}
+                className={`w-full px-3 py-2 rounded text-sm border ${STATUS_COLORS[order.status] || ''} cursor-pointer touch-target`}
+              >
+                {STATUS_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className='hidden md:block bg-card rounded-lg shadow overflow-hidden'>
+        <table className='min-w-full divide-y divide-border'>
+          <thead className='bg-muted/50'>
             <tr>
-              <td colSpan={8} className='text-center py-8 text-muted-foreground'>
-                No orders found
-              </td>
+              <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+                #
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+                Client
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+                Type
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+                Items
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+                Due Date
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+                Status
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+                Position rack
+              </th>
+              <th className='px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+                Total
+              </th>
             </tr>
-          ) : (
-            orders.map(order => (
+          </thead>
+          <tbody className='bg-card divide-y divide-border'>
+            {orders.map(order => (
               <tr
                 key={order.id}
                 className={`hover:bg-muted/50 ${updatingOrders.has(order.id) ? 'opacity-50' : ''}`}
@@ -140,10 +214,10 @@ export function OrderListView({
                   ${((order.total_cents || 0) / 100).toFixed(2)}
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

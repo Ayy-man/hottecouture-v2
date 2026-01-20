@@ -196,9 +196,9 @@ export function InteractiveBoard({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {/* Board content - Grid layout to fit all columns */}
-        <div className='h-full min-h-0 overflow-y-auto'>
-          <div className='grid grid-cols-5 gap-2 md:gap-2 lg:gap-4 w-full'>
+        {/* Board content - Horizontally scrollable on mobile, grid on desktop */}
+        <div className='h-full min-h-0 overflow-x-auto overflow-y-auto'>
+          <div className='flex md:grid md:grid-cols-5 gap-2 md:gap-2 lg:gap-4 min-w-max md:min-w-0 md:w-full'>
             {COLUMNS.map(column => (
               <DroppableColumn
                 key={column.id}

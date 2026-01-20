@@ -546,3 +546,62 @@ body {
     }
   }
 }
+
+/* Mobile-specific utilities */
+@layer utilities {
+  /* Safe area insets for iPhone notch/home indicator */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Touch-friendly minimum sizes */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target-sm {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* Mobile touch target enforcement */
+@media (max-width: 767px) {
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+
+  /* Stack grids on mobile */
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* iPad Portrait specific fixes */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Narrower kanban columns for iPad portrait */
+  .kanban-column {
+    min-width: 260px;
+  }
+}

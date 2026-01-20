@@ -625,7 +625,7 @@ export function ClientStep({
                     </svg>
                     Retour à la recherche
                   </button>
-                  <div className='grid grid-cols-2 gap-3'>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                     <div>
                       <label
                         htmlFor='firstName'
@@ -686,7 +686,7 @@ export function ClientStep({
                     </div>
                   </div>
 
-                  <div className='grid grid-cols-2 gap-3'>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                     <div>
                       <label
                         htmlFor='phone'
@@ -762,7 +762,7 @@ export function ClientStep({
                     </p>
                   </div>
 
-                  <div className='grid grid-cols-2 gap-3'>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                     <div>
                       <label
                         htmlFor='language'
@@ -926,7 +926,7 @@ export function ClientStep({
                     </div>
 
                     {/* Dynamic measurement fields from templates */}
-                    <div className='grid grid-cols-2 gap-2'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
                       {measurementTemplates.map(template => (
                         <div key={template.id}>
                           <label className='block text-xs text-muted-foreground mb-1'>
@@ -947,7 +947,7 @@ export function ClientStep({
                     {customMeasurements.length > 0 && (
                       <div className='border-t border-border pt-2'>
                         <p className='text-xs text-muted-foreground mb-2'>Mesures personnalisées</p>
-                        <div className='grid grid-cols-2 gap-2'>
+                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
                           {customMeasurements.map((custom, index) => (
                             <div key={index} className='relative'>
                               <label className='block text-xs text-muted-foreground mb-1 flex items-center justify-between'>
@@ -987,7 +987,7 @@ export function ClientStep({
                     {showAddCustom ? (
                       <div className='border-t border-border pt-2'>
                         <p className='text-xs text-muted-foreground mb-2'>Ajouter une mesure personnalisée</p>
-                        <div className='grid grid-cols-2 gap-2'>
+                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
                           <input
                             type='text'
                             value={newCustomName}
