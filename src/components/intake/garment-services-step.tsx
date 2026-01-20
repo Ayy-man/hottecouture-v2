@@ -43,7 +43,7 @@ interface Category {
 
 interface GarmentService {
   serviceId: string;
-  serviceName: string;
+  serviceName?: string;
   qty: number;
   customPriceCents?: number;
   customServiceName?: string;
@@ -746,7 +746,7 @@ export function GarmentServicesStep({
                       className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg"
                     >
                       {/* Service Name */}
-                      <span className="flex-1 text-sm font-medium truncate">{svc.serviceName}</span>
+                      <span className="flex-1 text-sm font-medium truncate">{svc.serviceName || 'Service'}</span>
 
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-1">

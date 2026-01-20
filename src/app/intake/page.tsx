@@ -4,8 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PipelineSelector } from '@/components/intake/pipeline-selector';
 import { ClientStep } from '@/components/intake/client-step';
-import { GarmentsStep } from '@/components/intake/garments-step';
-import { ServicesStepNew } from '@/components/intake/services-step-new';
+import { GarmentServicesStep } from '@/components/intake/garment-services-step';
 import { PricingStep } from '@/components/intake/pricing-step';
 import { AssignmentStep, AssignmentItem } from '@/components/intake/assignment-step';
 import { OrderSummary } from '@/components/intake/order-summary';
@@ -16,8 +15,7 @@ import { MuralBackground } from '@/components/ui/mural-background';
 type IntakeStep =
   | 'pipeline'
   | 'client'
-  | 'garments'
-  | 'services'
+  | 'garment-services'  // Merged: replaces 'garments' and 'services'
   | 'pricing'
   | 'assignment'
   | 'summary';
@@ -99,14 +97,9 @@ export default function IntakePage() {
           description: 'Choose alteration or custom design',
         },
         {
-          key: 'garments',
-          title: 'Garments',
-          description: 'Add garments and take photos',
-        },
-        {
-          key: 'services',
-          title: 'Services',
-          description: 'Select services and pricing',
+          key: 'garment-services',
+          title: 'Articles',
+          description: 'Add garments, services, and assign',
         },
         {
           key: 'pricing',
@@ -116,7 +109,7 @@ export default function IntakePage() {
         {
           key: 'assignment',
           title: 'Assignment',
-          description: 'Assign to seamstress',
+          description: 'Review assignments',
         },
       ],
       []
@@ -281,25 +274,16 @@ export default function IntakePage() {
             onPrev={prevStep}
           />
         );
-      case 'garments':
+      case 'garment-services':
         return (
-          <GarmentsStep
+          <GarmentServicesStep
             data={formData.garments}
             onUpdate={garments => updateFormData({ garments })}
             onNext={nextStep}
             onPrev={prevStep}
-          />
-        );
-      case 'services':
-        return (
-          <ServicesStepNew
-            data={formData.garments}
-            client={formData.client}
-            onUpdate={garments => updateFormData({ garments })}
-            onNext={nextStep}
-            onPrev={prevStep}
-            onChangeCustomer={() => setCurrentStep('client')}
             orderType={formData.order.type}
+            client={formData.client}
+            onChangeCustomer={() => setCurrentStep('client')}
           />
         );
       case 'pricing':
