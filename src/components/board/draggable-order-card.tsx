@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Button } from '@/components/ui/button';
 import { RushOrderCard } from '@/components/rush-orders/rush-indicator';
@@ -19,6 +20,41 @@ export function DraggableOrderCard({
 }: DraggableOrderCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: order.id });
+
+  // Extract item-level assignments from garment services
+  const { uniqueAssignees, assigneeGroups, hasUnassigned } = useMemo(() => {
+    const itemAssignments = (order.garments || [])
+      .flatMap((g: any) =>
+        (g.services || []).map((s: any) => ({
+          assigneeName: s.assigned_seamstress_name,
+          assigneeId: s.assigned_seamstress_id,
+        }))
+      );
+
+    // Group by assignee for display
+    const groups = itemAssignments
+      .filter((item: any) => item.assigneeName)
+      .reduce(
+        (acc: Record<string, any[]>, item: any) => {
+          const name = item.assigneeName!;
+          if (!acc[name]) acc[name] = [];
+          acc[name].push(item);
+          return acc;
+        },
+        {} as Record<string, any[]>
+      );
+
+    const unique = Object.keys(groups);
+    const unassigned = itemAssignments.some((item: any) => !item.assigneeId);
+
+    return {
+      uniqueAssignees: unique,
+      assigneeGroups: groups,
+      hasUnassigned: unassigned,
+    };
+  }, [order.garments]);
+
+  const hasItemLevelAssignees = uniqueAssignees.length > 0 || hasUnassigned;
 
   const style = {
     transform: transform
@@ -108,6 +144,32 @@ export function DraggableOrderCard({
             </p>
           )}
 
+          {/* Item-Level Assignments */}
+          {hasItemLevelAssignees && (
+            <div className='mb-1 text-xs'>
+              {uniqueAssignees.map(name => (
+                <div key={name} className='flex items-center gap-1'>
+                  <span className='w-1.5 h-1.5 rounded-full bg-primary' />
+                  <span className='font-medium'>{name}</span>
+                  <span className='text-muted-foreground'>
+                    ({assigneeGroups[name]?.length || 0})
+                  </span>
+                </div>
+              ))}
+              {hasUnassigned && (
+                <div className='flex items-center gap-1 text-amber-600'>
+                  <span className='w-1.5 h-1.5 rounded-full bg-amber-400' />
+                  <span>Unassigned items</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Show warning if completely unassigned */}
+          {!hasItemLevelAssignees && (
+            <p className='text-xs text-amber-600 mb-1'>Unassigned</p>
+          )}
+
           <div className='mt-1.5 ipad:mt-1 lg:mt-2 pt-1.5 ipad:pt-1 lg:pt-2 border-t border-border'>
             <Button
               variant='ghost'
@@ -172,6 +234,34 @@ export function DraggableOrderCard({
             <p className='text-xs text-blue-600 font-medium mb-1 flex items-center gap-1'>
               <span>📍</span> {order.rack_position}
             </p>
+          )}
+
+          {/* Item-Level Assignments - iPad Landscape */}
+          {hasItemLevelAssignees && (
+            <div className='mb-1 text-[10px]'>
+              {uniqueAssignees.slice(0, 2).map(name => (
+                <div key={name} className='flex items-center gap-1'>
+                  <span className='w-1 h-1 rounded-full bg-primary' />
+                  <span className='font-medium truncate'>{name}</span>
+                  <span className='text-muted-foreground'>
+                    ({assigneeGroups[name]?.length || 0})
+                  </span>
+                </div>
+              ))}
+              {uniqueAssignees.length > 2 && (
+                <span className='text-muted-foreground'>+{uniqueAssignees.length - 2} more</span>
+              )}
+              {hasUnassigned && (
+                <div className='flex items-center gap-1 text-amber-600'>
+                  <span className='w-1 h-1 rounded-full bg-amber-400' />
+                  <span>Unassigned</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!hasItemLevelAssignees && (
+            <p className='text-[10px] text-amber-600 mb-1'>Unassigned</p>
           )}
 
           <div className='mt-1 pt-1 border-t border-border'>

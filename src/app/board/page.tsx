@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { InteractiveBoard } from '@/components/board/interactive-board';
 import { OrderListView } from '@/components/board/order-list-view';
 import { PipelineFilter } from '@/components/board/pipeline-filter';
+import { AssigneeFilter } from '@/components/board/assignee-filter';
 import { OrderType } from '@/lib/types/database';
 import { useRealtimeOrders } from '@/lib/hooks/useRealtimeOrders';
 import { AuthGuard } from '@/components/auth/auth-guard';
@@ -37,6 +38,7 @@ export default function BoardPage() {
   const [selectedPipeline, setSelectedPipeline] = useState<OrderType | 'all'>(
     'all'
   );
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
   const [refreshKey] = useState(0);
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
   const [showWorkListExport, setShowWorkListExport] = useState(false);
@@ -246,6 +248,37 @@ export default function BoardPage() {
     );
   }
 
+  // Filter orders helper function
+  const filterOrders = (ordersToFilter: any[]) => {
+    return ordersToFilter.filter(o => {
+      // Pipeline filter
+      if (selectedPipeline !== 'all' && o.type !== selectedPipeline) {
+        return false;
+      }
+
+      // Assignee filter
+      if (selectedAssigneeId) {
+        if (selectedAssigneeId === 'unassigned') {
+          // Show orders with NO assigned items
+          const hasAssignment = (o.garments || []).some((g: any) =>
+            (g.services || []).some((s: any) => s.assigned_seamstress_id)
+          );
+          return !hasAssignment;
+        } else {
+          // Show orders that have at least one item assigned to the selected seamstress
+          const hasMatchingAssignment = (o.garments || []).some((g: any) =>
+            (g.services || []).some((s: any) => s.assigned_seamstress_id === selectedAssigneeId)
+          );
+          return hasMatchingAssignment;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  const filteredOrders = filterOrders(orders);
+
   return (
     <AuthGuard>
       <div className='h-screen bg-background overflow-hidden'>
@@ -279,21 +312,31 @@ export default function BoardPage() {
                       <span className='hidden sm:inline'>List</span>
                     </Button>
                   </div>
-                  <div className='hidden md:block'>
+                  <div className='hidden md:flex items-center gap-2'>
                     <PipelineFilter
                       orders={orders}
                       selectedPipeline={selectedPipeline}
                       onPipelineChange={setSelectedPipeline}
                     />
+                    <AssigneeFilter
+                      orders={orders}
+                      selectedAssigneeId={selectedAssigneeId}
+                      onAssigneeChange={setSelectedAssigneeId}
+                    />
                   </div>
                 </div>
 
                 <div className='flex items-center gap-2 w-full sm:w-auto'>
-                  <div className='md:hidden flex-1'>
+                  <div className='md:hidden flex-1 flex items-center gap-2'>
                     <PipelineFilter
                       orders={orders}
                       selectedPipeline={selectedPipeline}
                       onPipelineChange={setSelectedPipeline}
+                    />
+                    <AssigneeFilter
+                      orders={orders}
+                      selectedAssigneeId={selectedAssigneeId}
+                      onAssigneeChange={setSelectedAssigneeId}
                     />
                   </div>
                   <DropdownMenu>
@@ -333,20 +376,14 @@ export default function BoardPage() {
               <div className='h-full w-full max-w-[1920px] mx-auto p-4 sm:p-6'>
                 {viewMode === 'kanban' ? (
                   <InteractiveBoard
-                    orders={orders.filter(
-                      o =>
-                        selectedPipeline === 'all' || o.type === selectedPipeline
-                    )}
+                    orders={filteredOrders}
                     onOrderUpdate={handleOrderUpdate}
                     updatingOrders={updatingOrders}
                     initialOrderNumber={initialOrderNumber}
                   />
                 ) : (
                   <OrderListView
-                    orders={orders.filter(
-                      o =>
-                        selectedPipeline === 'all' || o.type === selectedPipeline
-                    )}
+                    orders={filteredOrders}
                     onOrderUpdate={handleOrderUpdate}
                     updatingOrders={updatingOrders}
                   />
