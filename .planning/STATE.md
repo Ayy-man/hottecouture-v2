@@ -8,13 +8,13 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 3 - Merge Steps IN PROGRESS
+**Current focus:** Phase 3 - Merge Steps COMPLETE
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements)
-- **Phase:** 3 of 10 (Merge Steps) - IN PROGRESS
-- **Plan:** 1 of ? complete
+- **Phase:** 3 of 10 (Merge Steps) - COMPLETE
+- **Plan:** 2 of 2 complete
 - **Deadline:** Thursday, January 23, 2026
 
 ## Progress
@@ -23,7 +23,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 |-------|--------|-------|
 | 1 - Item-Level Assignment | COMPLETE | 4/4 |
 | 2 - Item-Level Pricing | COMPLETE | 3/3 |
-| 3 - Merge Steps | IN PROGRESS | 1/? |
+| 3 - Merge Steps | COMPLETE | 2/2 |
 | 4 - Reduce Space | o Pending | 0/? |
 | 5 - List View | o Pending | 0/? |
 | 6 - Manage Task | o Pending | 0/? |
@@ -40,7 +40,7 @@ WAVE 1 (Sequential - Must complete first) DONE
 +-- Phase 2: Item-Level Pricing COMPLETE (3/3)
 
 WAVE 2 (Parallel - Run in separate terminals)
-|-- Phase 3: Merge Steps IN PROGRESS (1/?)
+|-- Phase 3: Merge Steps COMPLETE (2/2)
 |-- Phase 4: Reduce Space o
 |-- Phase 5: List View o
 |-- Phase 6: Manage Task o
@@ -65,16 +65,17 @@ WAVE 2 (Parallel - Run in separate terminals)
 | Read-only garment types in merged step | 03-01 | Keep CRUD out of merged component to reduce complexity |
 | Inline assignment pattern | 03-01 | Assignment dropdown appears immediately when service added |
 | Two-phase garment creation | 03-01 | User configures garment fully before clicking "Add to Order" |
+| Keep old component files | 03-02 | Retained garments-step.tsx and services-step-new.tsx for rollback safety |
 
 ## Next Action
 
-Continue Phase 3 - next plan will integrate GarmentServicesStep into intake wizard.
+Phase 3 complete. Continue Wave 2 with remaining parallel phases (4-10).
 
 ## Session Continuity
 
-- **Last session:** 2026-01-20T14:19:30Z
-- **Stopped at:** Completed 03-01-PLAN.md (GarmentServicesStep component)
-- **Resume:** Continue Phase 3 with integration plan
+- **Last session:** 2026-01-20T14:37:00Z
+- **Stopped at:** Completed 03-02-PLAN.md (Intake wizard integration)
+- **Resume:** Continue Wave 2 parallel phases
 
 ## Session Notes
 
@@ -122,6 +123,12 @@ Continue Phase 3 - next plan will integrate GarmentServicesStep into intake wiza
   - Inline staff assignment dropdown per service
   - Photo capture and notes fields
   - "Add to Order" pattern for committing configured garments
+
+- 2026-01-20: Completed 03-02 (Intake wizard integration)
+  - Integrated GarmentServicesStep into intake/page.tsx
+  - Reduced intake flow from 6 to 5 steps
+  - Human verified: all functionality works (garment dropdown, service tabs, quantity, assignment, add to order, proceed to pricing)
+  - Phase 3 COMPLETE
 
 ---
 *State updated: 2026-01-20*
