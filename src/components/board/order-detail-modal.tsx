@@ -1237,7 +1237,7 @@ export function OrderDetailModal({
           setShowTaskModal(false);
           setSelectedGarmentForTasks(null);
         }}
-        garmentId={selectedGarmentForTasks || undefined}
+        {...(selectedGarmentForTasks ? { garmentId: selectedGarmentForTasks } : {})}
         onSaveAndClose={() => {
           setShowTaskModal(false);
           setSelectedGarmentForTasks(null);
