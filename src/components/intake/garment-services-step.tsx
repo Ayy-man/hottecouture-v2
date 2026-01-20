@@ -15,7 +15,8 @@ import { Service } from '@/lib/types/database';
 import { useStaff } from '@/lib/hooks/useStaff';
 import { formatCurrency } from '@/lib/pricing/calcTotal';
 import { nanoid } from 'nanoid';
-import { Camera, X, Search, Plus, Minus, Trash2 } from 'lucide-react';
+import { Camera, X, Search, Plus, Minus, Trash2, LayoutGrid, List } from 'lucide-react';
+import { useViewPreference } from '@/lib/hooks/useViewPreference';
 
 // ============================================================================
 // Type Definitions
@@ -120,6 +121,11 @@ export function GarmentServicesStep({
   // State: Staff Assignment (from assignment-step.tsx)
   // ===========================================================================
   const { staff } = useStaff();
+
+  // ===========================================================================
+  // State: View Mode (grid/list toggle)
+  // ===========================================================================
+  const { viewMode, setViewMode } = useViewPreference('grid');
 
   const supabase = createClient();
 
@@ -668,9 +674,32 @@ export function GarmentServicesStep({
           {/* Section 2: Service Selection */}
           <Card>
             <CardContent className="p-4 space-y-4">
-              <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                2. Services
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                  2. Services
+                </h3>
+                {/* View Toggle */}
+                <div className="flex bg-muted p-1 rounded-lg border border-border">
+                  <Button
+                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className={`gap-2 h-8 ${viewMode === 'grid' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    <span className="hidden sm:inline">Grille</span>
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className={`gap-2 h-8 ${viewMode === 'list' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <List className="w-4 h-4" />
+                    <span className="hidden sm:inline">Liste</span>
+                  </Button>
+                </div>
+              </div>
 
               {/* Category Tabs */}
               <div className="flex flex-wrap gap-2">
@@ -701,28 +730,86 @@ export function GarmentServicesStep({
                 />
               </div>
 
-              {/* Service List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
-                {getServicesByCategory(activeTab).map(service => (
-                  <button
-                    key={service.id}
-                    onClick={() => addServiceToCurrentGarment(service)}
-                    className="p-3 bg-muted/50 hover:bg-muted rounded-lg text-left transition-colors"
-                  >
-                    <div className="flex justify-between items-start">
-                      <span className="text-sm font-medium">{service.name}</span>
-                      <span className="text-sm text-primary-600 font-medium">
-                        {formatCurrency(service.base_price_cents)}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-                {getServicesByCategory(activeTab).length === 0 && (
-                  <p className="col-span-2 text-center text-sm text-muted-foreground py-4">
-                    Aucun service trouve
-                  </p>
-                )}
-              </div>
+              {/* Service List - Grid or List View */}
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
+                  {getServicesByCategory(activeTab).map(service => (
+                    <button
+                      key={service.id}
+                      onClick={() => addServiceToCurrentGarment(service)}
+                      className="p-3 bg-muted/50 hover:bg-muted rounded-lg text-left transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium">{service.name}</span>
+                        <span className="text-sm text-primary-600 font-medium">
+                          {formatCurrency(service.base_price_cents)}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                  {getServicesByCategory(activeTab).length === 0 && (
+                    <p className="col-span-2 text-center text-sm text-muted-foreground py-4">
+                      Aucun service trouve
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-card rounded-lg shadow overflow-hidden max-h-[200px] overflow-y-auto">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-muted/50 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Service
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Prix
+                        </th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-card divide-y divide-border">
+                      {getServicesByCategory(activeTab).length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="text-center py-4 text-sm text-muted-foreground">
+                            Aucun service trouve
+                          </td>
+                        </tr>
+                      ) : (
+                        getServicesByCategory(activeTab).map(service => (
+                          <tr
+                            key={service.id}
+                            className="hover:bg-muted/50"
+                          >
+                            <td className="px-4 py-2 whitespace-nowrap">
+                              <span
+                                className="text-sm font-medium truncate max-w-[200px] inline-block"
+                                title={service.name}
+                              >
+                                {service.name}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm text-primary-600 font-medium">
+                              {formatCurrency(service.base_price_cents)}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => addServiceToCurrentGarment(service)}
+                                className="h-7 px-3 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50"
+                              >
+                                Ajouter
+                              </Button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
 
