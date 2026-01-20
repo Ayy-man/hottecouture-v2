@@ -149,5 +149,11 @@ Continue Phase 8 with 08-02-PLAN.md (Import cleanup).
   - Total: 13 files deleted, 2050 lines removed
   - Build will fail until imports cleaned up in 08-02
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Fix build errors | 2026-01-21 | d4b6eaa | [001-fix-build-errors](./quick/001-fix-build-errors/) |
+
 ---
-*State updated: 2026-01-20*
+*State updated: 2026-01-21*
