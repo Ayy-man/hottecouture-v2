@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { ChevronDown } from "lucide-react"
+import { createPortal } from "react-dom"
+import { ChevronDown, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface SelectContextValue {
@@ -9,6 +10,7 @@ interface SelectContextValue {
   onValueChange?: (value: string) => void
   open: boolean
   setOpen: (open: boolean) => void
+  triggerRef: React.RefObject<HTMLButtonElement>
 }
 
 const SelectContext = React.createContext<SelectContextValue | undefined>(undefined)
@@ -34,6 +36,7 @@ const Select = ({
 }) => {
   const [internalValue, setInternalValue] = React.useState(defaultValue || "")
   const [open, setOpen] = React.useState(false)
+  const triggerRef = React.useRef<HTMLButtonElement>(null)
 
   const currentValue = value !== undefined ? value : internalValue
   const handleChange = onValueChange || setInternalValue
@@ -44,7 +47,8 @@ const Select = ({
         value: currentValue,
         onValueChange: handleChange,
         open,
-        setOpen
+        setOpen,
+        triggerRef
       }}
     >
       {children}
@@ -58,11 +62,21 @@ const SelectTrigger = React.forwardRef<
     placeholder?: string
   }
 >(({ className, children, placeholder, ...props }, ref) => {
-  const { value, open, setOpen } = useSelectContext()
+  const { value, open, setOpen, triggerRef } = useSelectContext()
+
+  // Merge refs
+  const mergedRef = React.useCallback(
+    (node: HTMLButtonElement | null) => {
+      if (typeof ref === 'function') ref(node)
+      else if (ref) ref.current = node
+      ;(triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node
+    },
+    [ref, triggerRef]
+  )
 
   return (
     <button
-      ref={ref}
+      ref={mergedRef}
       type="button"
       className={cn(
         "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
@@ -72,7 +86,7 @@ const SelectTrigger = React.forwardRef<
       {...props}
     >
       {children || (value ? value : <span className="text-muted-foreground">{placeholder}</span>)}
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform", open && "rotate-180")} />
     </button>
   )
 })
@@ -88,46 +102,92 @@ const SelectContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-  const { open, setOpen } = useSelectContext()
+  const { open, setOpen, triggerRef } = useSelectContext()
   const contentRef = React.useRef<HTMLDivElement>(null)
+  const [position, setPosition] = React.useState({ top: 0, left: 0, width: 0 })
+  const [mounted, setMounted] = React.useState(false)
 
   React.useImperativeHandle(ref, () => contentRef.current!)
 
+  // Update position when opening
   React.useEffect(() => {
+    if (open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      })
+    }
+  }, [open, triggerRef])
+
+  // Handle click outside
+  React.useEffect(() => {
+    if (!open) return
+
     const handleClickOutside = (event: MouseEvent) => {
-      if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
+      if (
+        contentRef.current &&
+        !contentRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
         setOpen(false)
       }
     }
 
-    if (open) {
+    // Delay to prevent immediate close
+    const timer = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside)
-    }
-
+    }, 0)
     return () => {
+      clearTimeout(timer)
       document.removeEventListener('mousedown', handleClickOutside)
     }
+  }, [open, setOpen, triggerRef])
+
+  // Handle escape key
+  React.useEffect(() => {
+    if (!open) return
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
   }, [open, setOpen])
 
-  if (!open) return null
+  // Check if mounted for portal
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
-  return (
-    <div className="fixed inset-0 z-50" onClick={() => setOpen(false)}>
-      <div
-        ref={contentRef}
-        className={cn(
-          "relative z-50 min-w-[8rem] max-h-60 overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
-          "absolute top-full mt-1",
-          className
-        )}
-        onClick={(e) => e.stopPropagation()}
-        {...props}
-      >
-        <div className="p-1">
-          {children}
-        </div>
+  if (!open || !mounted) return null
+
+  return createPortal(
+    <div
+      ref={contentRef}
+      className={cn(
+        "z-[9999] min-w-[8rem] max-h-60 overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md",
+        "animate-in fade-in-0 zoom-in-95",
+        className
+      )}
+      style={{
+        position: 'absolute',
+        top: position.top,
+        left: position.left,
+        width: position.width
+      }}
+      {...props}
+    >
+      <div className="p-1">
+        {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 })
 SelectContent.displayName = "SelectContent"
@@ -138,13 +198,15 @@ const SelectItem = React.forwardRef<
     value: string
   }
 >(({ className, children, value, ...props }, ref) => {
-  const { onValueChange, setOpen } = useSelectContext()
+  const { value: selectedValue, onValueChange, setOpen } = useSelectContext()
+  const isSelected = selectedValue === value
 
   return (
     <div
       ref={ref}
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground hover:bg-accent cursor-pointer",
+        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+        isSelected && "bg-accent/50",
         className
       )}
       onClick={() => {
@@ -154,7 +216,7 @@ const SelectItem = React.forwardRef<
       {...props}
     >
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-        {/* You can add a check icon here if needed */}
+        {isSelected && <Check className="h-4 w-4" />}
       </span>
       {children}
     </div>
