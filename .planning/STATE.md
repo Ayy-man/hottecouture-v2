@@ -8,13 +8,13 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 7 - Exports IN PROGRESS
+**Current focus:** Phase 8 - Timer Removal IN PROGRESS
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements)
-- **Phase:** 7 of 10 (Exports) - IN PROGRESS
-- **Plan:** 1 of 3 complete
+- **Phase:** 8 of 10 (Timer Removal) - IN PROGRESS
+- **Plan:** 1 of 2 complete
 - **Deadline:** Thursday, January 23, 2026
 
 ## Progress
@@ -28,7 +28,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 5 - List View | o Pending | 0/? |
 | 6 - Manage Task | o Pending | 0/? |
 | 7 - Exports | * In Progress | 1/3 |
-| 8 - Timer Removal | o Pending | 0/? |
+| 8 - Timer Removal | * In Progress | 1/2 |
 | 9 - Responsive | o Pending | 0/? |
 | 10 - Calendar | o Pending | 0/? |
 
@@ -45,7 +45,7 @@ WAVE 2 (Parallel - Run in separate terminals)
 |-- Phase 5: List View o
 |-- Phase 6: Manage Task o
 |-- Phase 7: Exports * (1/3)
-|-- Phase 8: Timer Removal o
+|-- Phase 8: Timer Removal * (1/2)
 |-- Phase 9: Responsive o
 +-- Phase 10: Calendar o
 ```
@@ -66,16 +66,19 @@ WAVE 2 (Parallel - Run in separate terminals)
 | Inline assignment pattern | 03-01 | Assignment dropdown appears immediately when service added |
 | Two-phase garment creation | 03-01 | User configures garment fully before clicking "Add to Order" |
 | Keep old component files | 03-02 | Retained garments-step.tsx and services-step-new.tsx for rollback safety |
+| Preserve non-timer staff components | 08-01 | Keep staff-indicator, staff-pin-modal, staff-pin-input, staff-session-provider |
+| Preserve other cron jobs | 08-01 | Keep auto-archive and reminders crons when removing stale-timers |
+| Feature removal pattern | 08-01 | Delete files first, fix imports in subsequent plan |
 
 ## Next Action
 
-Continue Phase 7 with 07-02-PLAN.md (Export UI components).
+Continue Phase 8 with 08-02-PLAN.md (Import cleanup).
 
 ## Session Continuity
 
-- **Last session:** 2026-01-20T18:22:00Z
-- **Stopped at:** Completed 07-01-PLAN.md (CSV export infrastructure)
-- **Resume:** Continue with 07-02-PLAN.md
+- **Last session:** 2026-01-20T19:46:00Z
+- **Stopped at:** Completed 08-01-PLAN.md (Timer file deletion)
+- **Resume:** Continue with 08-02-PLAN.md
 
 ## Session Notes
 
@@ -136,6 +139,15 @@ Continue Phase 7 with 07-02-PLAN.md (Export UI components).
   - Created /api/admin/export/orders (EXP-03) - all orders CSV
   - Created /api/admin/export/capacity (EXP-04) - weekly staff workload CSV
   - All APIs return { success, csvContent, filename } format
+
+- 2026-01-20: Completed 08-01 (Timer file deletion)
+  - Deleted timer components: timer-button.tsx, active-task-indicator.tsx, one-task-warning-modal.tsx
+  - Deleted 6 timer API routes: start, stop, pause, resume, status, update
+  - Deleted stale-timers cron job (preserved auto-archive and reminders)
+  - Deleted timer utilities: timer-utils.ts, useActiveTask.ts
+  - Deleted timer tests: timer-utils.test.ts
+  - Total: 13 files deleted, 2050 lines removed
+  - Build will fail until imports cleaned up in 08-02
 
 ---
 *State updated: 2026-01-20*
