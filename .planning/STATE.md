@@ -8,13 +8,13 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 1 - Item-Level Assignment COMPLETE
+**Current focus:** Phase 3 - Merge Steps IN PROGRESS
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements)
-- **Phase:** 1 of 10 (Item-Level Assignment) - COMPLETE
-- **Plan:** 4 of 4 complete
+- **Phase:** 3 of 10 (Merge Steps) - IN PROGRESS
+- **Plan:** 1 of ? complete
 - **Deadline:** Thursday, January 23, 2026
 
 ## Progress
@@ -23,7 +23,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 |-------|--------|-------|
 | 1 - Item-Level Assignment | COMPLETE | 4/4 |
 | 2 - Item-Level Pricing | COMPLETE | 3/3 |
-| 3 - Merge Steps | o Pending | 0/? |
+| 3 - Merge Steps | IN PROGRESS | 1/? |
 | 4 - Reduce Space | o Pending | 0/? |
 | 5 - List View | o Pending | 0/? |
 | 6 - Manage Task | o Pending | 0/? |
@@ -35,12 +35,12 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 ## Execution Waves
 
 ```
-WAVE 1 (Sequential - Must complete first)
+WAVE 1 (Sequential - Must complete first) DONE
 +-- Phase 1: Item-Level Assignment COMPLETE (4/4)
 +-- Phase 2: Item-Level Pricing COMPLETE (3/3)
 
 WAVE 2 (Parallel - Run in separate terminals)
-|-- Phase 3: Merge Steps o
+|-- Phase 3: Merge Steps IN PROGRESS (1/?)
 |-- Phase 4: Reduce Space o
 |-- Phase 5: List View o
 |-- Phase 6: Manage Task o
@@ -62,16 +62,19 @@ WAVE 2 (Parallel - Run in separate terminals)
 | Allow unassigned items | 01-04 | Users can proceed without assigning all items - assignments can be made later |
 | First assignee for calendar | 01-04 | Calendar event uses first assigned seamstress rather than creating multiple events |
 | Deprecate order.assigned_to | 01-04 | Mark as deprecated, use garment_service.assigned_seamstress_id instead |
+| Read-only garment types in merged step | 03-01 | Keep CRUD out of merged component to reduce complexity |
+| Inline assignment pattern | 03-01 | Assignment dropdown appears immediately when service added |
+| Two-phase garment creation | 03-01 | User configures garment fully before clicking "Add to Order" |
 
 ## Next Action
 
-Phase 1 complete. Start Wave 2 phases (3-10) in parallel or continue with remaining work.
+Continue Phase 3 - next plan will integrate GarmentServicesStep into intake wizard.
 
 ## Session Continuity
 
-- **Last session:** 2026-01-19T20:33:24Z
-- **Stopped at:** Completed 01-04-PLAN.md (Phase 1 complete)
-- **Resume:** Start Wave 2 phases
+- **Last session:** 2026-01-20T14:19:30Z
+- **Stopped at:** Completed 03-01-PLAN.md (GarmentServicesStep component)
+- **Resume:** Continue Phase 3 with integration plan
 
 ## Session Notes
 
@@ -106,6 +109,19 @@ Phase 1 complete. Start Wave 2 phases (3-10) in parallel or continue with remain
 - 2026-01-20: Phase 1 verified complete (5/5 success criteria verified)
   - VERIFICATION.md created with automated checks
   - ARCH-01 through ARCH-04 marked Complete
+
+- 2026-01-20: Phase 2 production verified
+  - Fixed bug: order details API was returning fake IDs (`gs-0`) instead of real `garment_service.id`
+  - User tested on hottecouture-v2.vercel.app - price editing now works
+  - Wave 1 complete, ready for Wave 2
+
+- 2026-01-20: Completed 03-01 (GarmentServicesStep component)
+  - Created merged component (876 lines) combining garment/service/assignment
+  - Garment type dropdown with category groupings
+  - Service selection with category tabs and search
+  - Inline staff assignment dropdown per service
+  - Photo capture and notes fields
+  - "Add to Order" pattern for committing configured garments
 
 ---
 *State updated: 2026-01-20*
