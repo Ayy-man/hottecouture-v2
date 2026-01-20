@@ -236,6 +236,14 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** None
 
+**Status:** Planned
+**Plans:** 3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — CSV export infrastructure (utilities + 3 API routes)
+- [ ] 07-02-PLAN.md — UI integration (export buttons in board page)
+- [ ] 07-03-PLAN.md — Team management form + add Marie
+
 ---
 
 ## Phase 8: Timer Removal
