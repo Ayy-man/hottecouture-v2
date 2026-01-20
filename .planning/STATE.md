@@ -8,13 +8,13 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 8 - Timer Removal IN PROGRESS
+**Current focus:** Phase 8 - Timer Removal COMPLETE
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements)
-- **Phase:** 8 of 10 (Timer Removal) - IN PROGRESS
-- **Plan:** 1 of 2 complete
+- **Phase:** 8 of 10 (Timer Removal) - COMPLETE
+- **Plan:** 2 of 2 complete
 - **Deadline:** Thursday, January 23, 2026
 
 ## Progress
@@ -28,7 +28,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 5 - List View | o Pending | 0/? |
 | 6 - Manage Task | o Pending | 0/? |
 | 7 - Exports | * In Progress | 1/3 |
-| 8 - Timer Removal | * In Progress | 1/2 |
+| 8 - Timer Removal | COMPLETE | 2/2 |
 | 9 - Responsive | o Pending | 0/? |
 | 10 - Calendar | o Pending | 0/? |
 
@@ -45,7 +45,7 @@ WAVE 2 (Parallel - Run in separate terminals)
 |-- Phase 5: List View o
 |-- Phase 6: Manage Task o
 |-- Phase 7: Exports * (1/3)
-|-- Phase 8: Timer Removal * (1/2)
+|-- Phase 8: Timer Removal COMPLETE (2/2)
 |-- Phase 9: Responsive o
 +-- Phase 10: Calendar o
 ```
@@ -69,16 +69,18 @@ WAVE 2 (Parallel - Run in separate terminals)
 | Preserve non-timer staff components | 08-01 | Keep staff-indicator, staff-pin-modal, staff-pin-input, staff-session-provider |
 | Preserve other cron jobs | 08-01 | Keep auto-archive and reminders crons when removing stale-timers |
 | Feature removal pattern | 08-01 | Delete files first, fix imports in subsequent plan |
+| Read-only time in garment-task-summary | 08-02 | Timer button removed, editable time input remains in order-detail-modal |
+| Remove timer running checks | 08-02 | Tasks always editable/deletable without timer state consideration |
 
 ## Next Action
 
-Continue Phase 8 with 08-02-PLAN.md (Import cleanup).
+Phase 8 (Timer Removal) complete. Continue with remaining Wave 2 phases.
 
 ## Session Continuity
 
-- **Last session:** 2026-01-20T19:46:00Z
-- **Stopped at:** Completed 08-01-PLAN.md (Timer file deletion)
-- **Resume:** Continue with 08-02-PLAN.md
+- **Last session:** 2026-01-20T21:00:00Z
+- **Stopped at:** Completed 08-02-PLAN.md (Import cleanup) - Phase 8 COMPLETE
+- **Resume:** Continue with other Wave 2 phases (04, 05, 06, 07, 09, 10)
 
 ## Session Notes
 
@@ -147,7 +149,15 @@ Continue Phase 8 with 08-02-PLAN.md (Import cleanup).
   - Deleted timer utilities: timer-utils.ts, useActiveTask.ts
   - Deleted timer tests: timer-utils.test.ts
   - Total: 13 files deleted, 2050 lines removed
-  - Build will fail until imports cleaned up in 08-02
+
+- 2026-01-20: Completed 08-02 (Timer import cleanup) - PHASE 8 COMPLETE
+  - Removed ActiveTaskIndicator from layout.tsx and staff/index.ts exports
+  - Removed TimerButton from garment-task-summary.tsx, task-management-modal.tsx, order-card.tsx
+  - Simplified garment-task-summary to read-only time display (Planifie vs Reel)
+  - Updated error messages in stage route to reference order details instead of timer
+  - Removed timer-running checks from tasks API route
+  - Verified editable Work Hours input in order-detail-modal (TMR-03 satisfied)
+  - TMR-01: No stopwatch visible, TMR-02: No Start/Stop buttons, TMR-03: Manual time entry works
 
 ### Quick Tasks Completed
 
