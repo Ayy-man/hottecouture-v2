@@ -94,12 +94,13 @@ Plans:
 **Blocked by:** Phase 1
 **Blocks:** Phase 6 (final price in manage task modal)
 
-**Plans:** 3 plans
+**Status:** ✓ Complete
+**Plans:** 3/3 complete
 
 Plans:
-- [ ] 02-01-PLAN.md — Database schema (final_price_cents column, price_change_log table, TypeScript types)
-- [ ] 02-02-PLAN.md — Pricing logic update and API endpoint for item price changes
-- [ ] 02-03-PLAN.md — UI for item-level price editing in order detail modal
+- [x] 02-01-PLAN.md — Database schema (final_price_cents column, price_change_log table, TypeScript types)
+- [x] 02-02-PLAN.md — Pricing logic update and API endpoint for item price changes
+- [x] 02-03-PLAN.md — UI for item-level price editing in order detail modal
 
 ---
 
@@ -121,6 +122,12 @@ Plans:
 **Dependencies:** Phase 1 (for assignment dropdown)
 **Blocked by:** Phase 1
 **Blocks:** None
+
+**Plans:** 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Create merged GarmentServicesStep component (garment config + service selection + inline assignment)
+- [ ] 03-02-PLAN.md — Wire into intake page, Add to Order functionality, human verification
 
 ---
 
