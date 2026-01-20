@@ -12,6 +12,7 @@ import { LoadingLogo } from '@/components/ui/loading-logo';
 import { RACK_CONFIG } from '@/lib/config/production';
 import { PaymentStatusSection } from '@/components/payments/payment-status-section';
 import { HoldToArchiveButton } from '@/components/ui/hold-and-release-button';
+import { useToast } from '@/components/ui/toast';
 
 interface OrderDetailModalProps {
   order: any;
@@ -25,6 +26,7 @@ export function OrderDetailModal({
   isOpen,
   onClose,
 }: OrderDetailModalProps) {
+  const toast = useToast();
   const [detailedOrder, setDetailedOrder] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [orderMeasurements, setOrderMeasurements] = useState<Record<string, any[]>>({});
@@ -80,11 +82,11 @@ export function OrderDetailModal({
         window.location.reload();
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to archive order');
+        toast.error(error.error || 'Failed to archive order');
       }
     } catch (error) {
       console.error('Error archiving order:', error);
-      alert('Failed to archive order');
+      toast.error('Failed to archive order');
     } finally {
       setArchiving(false);
     }
@@ -105,11 +107,11 @@ export function OrderDetailModal({
         window.location.reload();
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to restore order');
+        toast.error(error.error || 'Failed to restore order');
       }
     } catch (error) {
       console.error('Error restoring order:', error);
-      alert('Failed to restore order');
+      toast.error('Failed to restore order');
     } finally {
       setArchiving(false);
     }
@@ -235,7 +237,7 @@ export function OrderDetailModal({
       setEditingNotes('');
     } catch (error) {
       console.error('Error saving garment notes:', error);
-      alert(error instanceof Error ? error.message : 'Failed to save notes');
+      toast.error(error instanceof Error ? error.message : 'Failed to save notes');
     } finally {
       setSavingNotes(null);
     }
@@ -289,7 +291,7 @@ export function OrderDetailModal({
       setEditingTimeMinutes(0);
     } catch (error) {
       console.error('Error saving time estimate:', error);
-      alert(error instanceof Error ? error.message : 'Failed to save time estimate');
+      toast.error(error instanceof Error ? error.message : 'Failed to save time estimate');
     } finally {
       setSavingTime(null);
     }
@@ -325,7 +327,7 @@ export function OrderDetailModal({
       setEditingPrice(false);
     } catch (error) {
       console.error('Error saving price:', error);
-      alert(error instanceof Error ? error.message : 'Échec de la mise à jour du prix');
+      toast.error(error instanceof Error ? error.message : 'Échec de la mise à jour du prix');
     } finally {
       setSavingPrice(false);
     }
@@ -390,7 +392,7 @@ export function OrderDetailModal({
       setEditServicePriceCents(0);
     } catch (error) {
       console.error('Error saving service price:', error);
-      alert(error instanceof Error ? error.message : 'Failed to update price');
+      toast.error(error instanceof Error ? error.message : 'Failed to update price');
     } finally {
       setSavingServicePrice(null);
     }

@@ -11,6 +11,7 @@ import {
   StaffIndicator,
   ActiveTaskIndicator,
 } from '@/components/staff';
+import { ToastProvider } from '@/components/ui/toast';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -96,9 +97,10 @@ export default function RootLayout({
   return (
     <html lang='en' className={inter.variable}>
       <body className='h-dvh overflow-hidden bg-background font-sans antialiased'>
-        <AuthProvider>
-          <StaffSessionProvider>
-            <NavigationProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <StaffSessionProvider>
+              <NavigationProvider>
               <div className='grid h-full grid-rows-[auto,1fr]'>
                 <header className='row-start-1 row-end-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
                   <div className='container flex h-16 items-center justify-between'>
@@ -123,9 +125,10 @@ export default function RootLayout({
               </div>
               <StaffPinModal />
               <GlobalChatWrapper />
-            </NavigationProvider>
-          </StaffSessionProvider>
-        </AuthProvider>
+              </NavigationProvider>
+            </StaffSessionProvider>
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

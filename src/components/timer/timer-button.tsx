@@ -8,6 +8,7 @@ import { formatDetailedTime, getTimerState } from '@/lib/timer/timer-utils';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { useStaffSession } from '@/components/staff/staff-session-provider';
 import { OneTaskWarningModal } from '@/components/staff/one-task-warning-modal';
+import { useToast } from '@/components/ui/toast';
 
 interface TimerUpdateData {
   is_running: boolean;
@@ -49,6 +50,7 @@ export function TimerButton({
   garmentId,
 }: TimerButtonProps) {
   const { currentStaff } = useStaffSession();
+  const toast = useToast();
   const [timerStatus, setTimerStatus] = useState<TimerStatus | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
@@ -340,11 +342,11 @@ export function TimerButton({
         await fetchTimerStatus();
         setIsEditing(false);
       } else {
-        alert(result.error || 'Failed to update time');
+        toast.error(result.error || 'Failed to update time');
       }
     } catch (error) {
       console.error('Error updating time:', error);
-      alert('Failed to update time');
+      toast.error('Failed to update time');
     } finally {
       setSavingEdit(false);
     }

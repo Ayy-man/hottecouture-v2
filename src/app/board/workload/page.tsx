@@ -15,6 +15,7 @@ import { ArrowLeft, Calendar, Clock, Users, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { addDays, startOfDay, endOfDay, format } from 'date-fns';
 import { useStaff } from '@/lib/hooks/useStaff';
+import { useToast } from '@/components/ui/toast';
 
 
 const HOURS_PER_DAY = 8;
@@ -103,6 +104,7 @@ function calculateEstimatedHours(order: Order): number {
 }
 
 export default function WorkloadPage() {
+  const toast = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,7 +159,7 @@ export default function WorkloadPage() {
       ));
     } catch (err) {
       console.error('Error updating order due date:', err);
-      alert('Erreur lors de la mise à jour de la date');
+      toast.error('Erreur lors de la mise à jour de la date');
     } finally {
       setUpdatingOrder(null);
     }

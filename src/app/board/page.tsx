@@ -6,6 +6,7 @@ import { InteractiveBoard } from '@/components/board/interactive-board';
 import { OrderListView } from '@/components/board/order-list-view';
 import { PipelineFilter } from '@/components/board/pipeline-filter';
 import { AssigneeFilter } from '@/components/board/assignee-filter';
+import { useToast } from '@/components/ui/toast';
 import { OrderType } from '@/lib/types/database';
 import { useRealtimeOrders } from '@/lib/hooks/useRealtimeOrders';
 import { AuthGuard } from '@/components/auth/auth-guard';
@@ -31,6 +32,7 @@ interface PendingSmsConfirmation {
 
 export default function BoardPage() {
   console.log('🎯 Board page rendering...');
+  const toast = useToast();
 
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -208,7 +210,7 @@ export default function BoardPage() {
 
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       if (errorMessage.includes('work time') || errorMessage.includes('timer')) {
-        alert('Cannot mark as done: Please record work hours using the timer first.');
+        toast.error('Cannot mark as done: Please record work hours using the timer first.');
       }
     } finally {
       setUpdatingOrders(prev => {
