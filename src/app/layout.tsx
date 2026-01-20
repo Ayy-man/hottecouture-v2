@@ -9,9 +9,9 @@ import {
   StaffSessionProvider,
   StaffPinModal,
   StaffIndicator,
-  ActiveTaskIndicator,
 } from '@/components/staff';
 import { ToastProvider } from '@/components/ui/toast';
+import { MobileBottomNav } from '@/components/navigation/mobile-bottom-nav';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -107,21 +107,25 @@ export default function RootLayout({
                     <div className='flex items-center'>
                       <HLogo size='md' />
                     </div>
-                    <nav className='flex items-center space-x-4'>
+                    <nav className='hidden md:flex items-center space-x-4'>
                       <a
                         href='/'
                         className='text-sm font-medium transition-colors hover:text-primary'
                       >
                         Home
                       </a>
-                      <ActiveTaskIndicator />
                       <StaffIndicator />
                     </nav>
+                    {/* Mobile: show only staff indicator */}
+                    <div className='flex md:hidden items-center'>
+                      <StaffIndicator />
+                    </div>
                   </div>
                 </header>
-                <main className='row-start-2 row-end-3 min-h-0 overflow-hidden'>
+                <main className='row-start-2 row-end-3 min-h-0 overflow-hidden pb-16 md:pb-0'>
                   {children}
                 </main>
+                <MobileBottomNav />
               </div>
               <StaffPinModal />
               <GlobalChatWrapper />
