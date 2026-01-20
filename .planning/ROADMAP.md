@@ -36,7 +36,7 @@ WAVE 2 (Parallel - Can run simultaneously)
 | 5 | List View | Grid/List toggle + product names | UI-07 to UI-09 | 2 |
 | 6 | Manage Task | Per-item button + Save & Close | UI-10 to UI-12 | 2 |
 | 7 | Exports | CSV exports for tasks, orders, capacity | EXP-01 to EXP-06 | 2 |
-| 8 | Timer Removal | Remove stopwatch, add manual input | TMR-01 to TMR-04 | 2 |
+| 8 | Timer Removal | Remove stopwatch, add manual input | TMR-01 to TMR-04 | 2 | ✓ |
 | 9 | Responsive | iPhone + iPad portrait support | RES-01 to RES-08 | 2 |
 | 10 | Calendar | Fix scrolling + unassigned category | CAL-01 to CAL-04 | 2 |
 
@@ -267,12 +267,12 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** None
 
-**Status:** Planned
-**Plans:** 2 plans
+**Status:** ✓ Complete
+**Plans:** 2/2 complete
 
 Plans:
-- [ ] 08-01-PLAN.md — Delete all timer files (components, API routes, utilities, tests)
-- [ ] 08-02-PLAN.md — Remove timer imports and clean up references in remaining files
+- [x] 08-01-PLAN.md — Delete all timer files (components, API routes, utilities, tests)
+- [x] 08-02-PLAN.md — Remove timer imports and clean up references in remaining files
 
 ---
 
