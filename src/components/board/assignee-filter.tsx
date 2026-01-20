@@ -9,19 +9,21 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Users, Check, X } from 'lucide-react';
+import { Users, Check, X, Download } from 'lucide-react';
 import { useStaff } from '@/lib/hooks/useStaff';
 
 interface AssigneeFilterProps {
   orders: any[];
   selectedAssigneeId: string | null;
   onAssigneeChange: (assigneeId: string | null) => void;
+  onExportSeamstress?: (seamstressId: string, seamstressName: string) => void;
 }
 
 export function AssigneeFilter({
   orders,
   selectedAssigneeId,
   onAssigneeChange,
+  onExportSeamstress,
 }: AssigneeFilterProps) {
   const { staff, loading } = useStaff();
 
@@ -116,6 +118,21 @@ export function AssigneeFilter({
                 </div>
               </DropdownMenuItem>
             ))}
+            {selectedStaff && onExportSeamstress && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onExportSeamstress(selectedStaff.id, selectedStaff.name);
+                  }}
+                  className='flex items-center gap-2 text-primary'
+                >
+                  <Download className='w-4 h-4' />
+                  <span>Export {selectedStaff.name}&apos;s Tasks</span>
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => onAssigneeChange('unassigned')}

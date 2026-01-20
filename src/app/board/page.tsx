@@ -14,13 +14,15 @@ import { LoadingLogo } from '@/components/ui/loading-logo';
 import { MuralBackground } from '@/components/ui/mural-background';
 import { WorkListExport } from '@/components/board/worklist-export';
 import { SmsConfirmationModal } from '@/components/board/sms-confirmation-modal';
-import { LayoutGrid, List, Users, MoreHorizontal, Archive } from 'lucide-react';
+import { LayoutGrid, List, Users, MoreHorizontal, Archive, FileSpreadsheet } from 'lucide-react';
+import { triggerDownload } from '@/lib/exports/csv-utils';
 import Link from 'next/link';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
 interface PendingSmsConfirmation {
@@ -250,6 +252,55 @@ export default function BoardPage() {
     );
   }
 
+  // Export handlers
+  const handleExportSeamstress = async (seamstressId: string, seamstressName: string) => {
+    try {
+      const response = await fetch(`/api/admin/export/seamstress?seamstressId=${seamstressId}`);
+      const data = await response.json();
+      if (data.success) {
+        triggerDownload(data.csvContent, data.filename);
+        toast.success(`Exported tasks for ${seamstressName}`);
+      } else {
+        throw new Error(data.error || 'Export failed');
+      }
+    } catch (error) {
+      toast.error('Export failed');
+      console.error('Export error:', error);
+    }
+  };
+
+  const handleExportOrders = async () => {
+    try {
+      const response = await fetch('/api/admin/export/orders');
+      const data = await response.json();
+      if (data.success) {
+        triggerDownload(data.csvContent, data.filename);
+        toast.success('Orders exported');
+      } else {
+        throw new Error(data.error || 'Export failed');
+      }
+    } catch (error) {
+      toast.error('Export failed');
+      console.error('Export error:', error);
+    }
+  };
+
+  const handleExportCapacity = async () => {
+    try {
+      const response = await fetch('/api/admin/export/capacity');
+      const data = await response.json();
+      if (data.success) {
+        triggerDownload(data.csvContent, data.filename);
+        toast.success('Capacity exported');
+      } else {
+        throw new Error(data.error || 'Export failed');
+      }
+    } catch (error) {
+      toast.error('Export failed');
+      console.error('Export error:', error);
+    }
+  };
+
   // Filter orders helper function
   const filterOrders = (ordersToFilter: any[]) => {
     return ordersToFilter.filter(o => {
@@ -324,6 +375,7 @@ export default function BoardPage() {
                       orders={orders}
                       selectedAssigneeId={selectedAssigneeId}
                       onAssigneeChange={setSelectedAssigneeId}
+                      onExportSeamstress={handleExportSeamstress}
                     />
                   </div>
                 </div>
@@ -339,6 +391,7 @@ export default function BoardPage() {
                       orders={orders}
                       selectedAssigneeId={selectedAssigneeId}
                       onAssigneeChange={setSelectedAssigneeId}
+                      onExportSeamstress={handleExportSeamstress}
                     />
                   </div>
                   <DropdownMenu>
@@ -363,6 +416,15 @@ export default function BoardPage() {
                           <Archive className='w-4 h-4' />
                           <span>Archived Orders</span>
                         </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleExportOrders}>
+                        <FileSpreadsheet className='w-4 h-4 mr-2' />
+                        <span>Export Orders</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportCapacity}>
+                        <FileSpreadsheet className='w-4 h-4 mr-2' />
+                        <span>Export Capacity</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
