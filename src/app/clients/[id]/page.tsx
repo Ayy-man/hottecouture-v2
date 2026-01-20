@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Phone, Mail, Package, Ruler, Calendar, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, User, Phone, Smartphone, Mail, Package, Ruler, Calendar, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
 interface Client {
@@ -12,6 +12,7 @@ interface Client {
   first_name: string;
   last_name: string;
   phone?: string;
+  mobile_phone?: string;
   email?: string;
   language?: string;
   preferred_contact?: string;
@@ -231,6 +232,15 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                       <div>
                         <p className="text-sm text-muted-foreground">Courriel</p>
                         <p className="font-mono">{revealed ? client.email : maskEmail(client.email)}</p>
+                      </div>
+                    </div>
+                  )}
+                  {client.mobile_phone && (
+                    <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                      <Smartphone className="w-5 h-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Mobile/SMS</p>
+                        <p className="font-mono">{revealed ? client.mobile_phone : maskPhone(client.mobile_phone)}</p>
                       </div>
                     </div>
                   )}

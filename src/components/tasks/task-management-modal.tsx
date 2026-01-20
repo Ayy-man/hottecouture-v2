@@ -9,8 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TimerButton } from '@/components/timer/timer-button';
-import { Edit2, Save, X, Clock, User, CheckCircle } from 'lucide-react';
+import { Edit2, Save, X, Clock, User, CheckCircle, SaveAll } from 'lucide-react';
 import { useStaff } from '@/lib/hooks/useStaff';
+import { useToast } from '@/components/ui/toast';
 
 interface Task {
   id: string;
@@ -39,6 +40,8 @@ interface TaskManagementModalProps {
   orderId: string;
   isOpen: boolean;
   onClose: () => void;
+  garmentId?: string; // Optional: filter to single garment
+  onSaveAndClose?: () => void; // Optional: callback for save & close behavior
 }
 
 const STAGE_OPTIONS = [
@@ -52,14 +55,18 @@ const STAGE_OPTIONS = [
 export function TaskManagementModal({
   orderId,
   isOpen,
-  onClose
+  onClose,
+  garmentId,
+  onSaveAndClose
 }: TaskManagementModalProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingTask, setEditingTask] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Task>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const { staff } = useStaff();
+  const toast = useToast();
 
   useEffect(() => {
     if (isOpen && orderId) {
@@ -73,7 +80,12 @@ export function TaskManagementModal({
       const response = await fetch(`/api/tasks/order/${orderId}`);
       if (response.ok) {
         const data = await response.json();
-        setTasks(data.data.tasks || []);
+        let fetchedTasks = data.data.tasks || [];
+        // Filter to single garment if garmentId is provided
+        if (garmentId) {
+          fetchedTasks = fetchedTasks.filter((t: Task) => t.garment_id === garmentId);
+        }
+        setTasks(fetchedTasks);
       }
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
@@ -106,6 +118,7 @@ export function TaskManagementModal({
         await fetchTasks(); // Refresh tasks
         setEditingTask(null);
         setEditForm({});
+        setHasChanges(true); // Track that changes were made
       } else {
         console.error('Failed to save task');
       }
@@ -119,6 +132,18 @@ export function TaskManagementModal({
   const handleCancelEdit = () => {
     setEditingTask(null);
     setEditForm({});
+  };
+
+  const handleSaveAndClose = () => {
+    if (hasChanges) {
+      toast.success('Tasks saved successfully');
+    }
+    setHasChanges(false);
+    if (onSaveAndClose) {
+      onSaveAndClose();
+    } else {
+      onClose();
+    }
   };
 
   const formatMinutes = (minutes: number) => {
@@ -363,6 +388,17 @@ export function TaskManagementModal({
             </Card>
           ))
         )}
+      </div>
+
+      {/* Footer with Save & Close */}
+      <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button onClick={handleSaveAndClose}>
+          <SaveAll className="w-4 h-4 mr-1" />
+          Save & Close
+        </Button>
       </div>
     </Modal>
   );

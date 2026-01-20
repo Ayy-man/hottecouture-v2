@@ -47,6 +47,7 @@ export function ClientStep({
     first_name: '',
     last_name: '',
     phone: '',
+    mobile_phone: '',
     email: '',
     language: 'fr',
     preferred_contact: 'email',
@@ -733,6 +734,32 @@ export function ClientStep({
                         </p>
                       )}
                     </div>
+                  </div>
+
+                  {/* Mobile/SMS Phone - Optional */}
+                  <div>
+                    <label
+                      htmlFor='mobile_phone'
+                      className='block text-xs font-medium mb-1'
+                    >
+                      Mobile/SMS (optionnel)
+                    </label>
+                    <input
+                      id='mobile_phone'
+                      type='tel'
+                      value={formData.mobile_phone || ''}
+                      onChange={e =>
+                        setFormData(prev => ({
+                          ...prev,
+                          mobile_phone: e.target.value,
+                        }))
+                      }
+                      className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[36px] text-sm touch-manipulation'
+                      placeholder='+1 (555) 123-4567'
+                    />
+                    <p className='text-xs text-muted-foreground mt-1'>
+                      Si différent du téléphone principal
+                    </p>
                   </div>
 
                   <div className='grid grid-cols-2 gap-3'>

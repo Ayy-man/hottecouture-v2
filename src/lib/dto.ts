@@ -16,6 +16,7 @@ export const clientCreateSchema = z.object({
   first_name: z.string().min(1, 'First name is required').max(100),
   last_name: z.string().min(1, 'Last name is required').max(100),
   phone: phoneSchema,
+  mobile_phone: phoneSchema.optional(), // Mobile/SMS number
   email: emailSchema, // Required for GHL contact sync
   language: z.enum(['fr', 'en']).default('fr'),
   preferred_contact: z.enum(['email', 'sms']).default('sms'),

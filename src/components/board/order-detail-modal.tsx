@@ -14,6 +14,7 @@ import { PaymentStatusSection } from '@/components/payments/payment-status-secti
 import { HoldToArchiveButton } from '@/components/ui/hold-and-release-button';
 import { useToast } from '@/components/ui/toast';
 import { CollapsibleNotes } from '@/components/ui/collapsible-notes';
+import { ClipboardList } from 'lucide-react';
 
 interface OrderDetailModalProps {
   order: any;
@@ -42,6 +43,7 @@ export function OrderDetailModal({
   const [customRackPosition, setCustomRackPosition] = useState<string>('');
   const [savingRack, setSavingRack] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedGarmentForTasks, setSelectedGarmentForTasks] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
   const [editingPrice, setEditingPrice] = useState(false);
   const [editPriceCents, setEditPriceCents] = useState(0);
@@ -1026,12 +1028,26 @@ export function OrderDetailModal({
 
                       {/* Garment Task Summary */}
                       <div className='mt-4 pt-3 border-t border-border'>
-                        <GarmentTaskSummary
-                          garmentId={garment.id}
-                          orderId={displayOrder.id}
-                          orderStatus={displayOrder.status}
-                          services={garment.services}
-                        />
+                        <div className='flex items-center justify-between mb-2'>
+                          <GarmentTaskSummary
+                            garmentId={garment.id}
+                            orderId={displayOrder.id}
+                            orderStatus={displayOrder.status}
+                            services={garment.services}
+                          />
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            onClick={() => {
+                              setSelectedGarmentForTasks(garment.id);
+                              setShowTaskModal(true);
+                            }}
+                            className='text-xs'
+                          >
+                            <ClipboardList className='w-4 h-4 mr-1' />
+                            Manage Tasks
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1217,7 +1233,16 @@ export function OrderDetailModal({
       <TaskManagementModal
         orderId={displayOrder.id}
         isOpen={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
+        onClose={() => {
+          setShowTaskModal(false);
+          setSelectedGarmentForTasks(null);
+        }}
+        garmentId={selectedGarmentForTasks || undefined}
+        onSaveAndClose={() => {
+          setShowTaskModal(false);
+          setSelectedGarmentForTasks(null);
+          fetchOrderDetails(); // Refresh order after task changes
+        }}
       />
     </div>
   );
