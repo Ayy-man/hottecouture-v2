@@ -8,7 +8,6 @@ import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BoardOrder } from '@/lib/board/types';
-import { TimerButton } from '@/components/timer/timer-button';
 
 interface OrderCardProps {
   order: BoardOrder;
@@ -233,11 +232,6 @@ export function OrderCard({
             </p>
           </div>
         )}
-
-        {/* Timer */}
-        <div className='mb-3'>
-          <TimerButton orderId={order.id} orderStatus={order.status} />
-        </div>
 
         {/* Actions */}
         <div className='flex space-x-2'>

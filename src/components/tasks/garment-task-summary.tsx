@@ -1,7 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { TimerButton } from '@/components/timer/timer-button';
 import { Badge } from '@/components/ui/badge';
 
 interface ServiceProp {
@@ -23,65 +21,13 @@ interface GarmentTaskSummaryProps {
   orderId: string;
   orderStatus: string;
   services?: ServiceProp[];
-}
-
-interface TimerState {
-  is_running: boolean;
-  is_paused: boolean;
-  is_completed: boolean;
-  total_work_seconds: number;
-}
-
-interface TimerUpdateData {
-  is_running: boolean;
-  is_paused: boolean;
-  is_completed: boolean;
-  total_work_seconds: number;
+  actualMinutes?: number; // Actual recorded time from garment.actual_minutes
 }
 
 export function GarmentTaskSummary({
-  garmentId,
-  orderId,
-  orderStatus,
-  services = []
+  services = [],
+  actualMinutes = 0
 }: GarmentTaskSummaryProps) {
-  const [timerState, setTimerState] = useState<TimerState>({
-    is_running: false,
-    is_paused: false,
-    is_completed: false,
-    total_work_seconds: 0
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchTimerState();
-  }, [garmentId, orderId]);
-
-  const fetchTimerState = async () => {
-    try {
-      const params = new URLSearchParams({ orderId });
-      if (garmentId) params.append('garmentId', garmentId);
-      params.append('_t', Date.now().toString()); // Cache bust
-
-      const response = await fetch(`/api/timer/status?${params.toString()}`, {
-        cache: 'no-store',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTimerState({
-          is_running: data.is_running || false,
-          is_paused: data.is_paused || false,
-          is_completed: data.is_completed || false,
-          total_work_seconds: data.total_work_seconds || 0
-        });
-      }
-    } catch (error) {
-      console.error('Failed to fetch timer state:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Calculate planned minutes from passed services
   // Priority: garment_service.estimated_minutes > service.estimated_minutes
   const plannedMinutes = services.reduce((sum, s) => {
@@ -89,7 +35,6 @@ export function GarmentTaskSummary({
     return sum + (mins * (s.quantity || 1));
   }, 0);
 
-  const actualMinutes = Math.floor(timerState.total_work_seconds / 60);
   const variance = actualMinutes - plannedMinutes;
 
   const formatMinutes = (minutes: number) => {
@@ -98,62 +43,22 @@ export function GarmentTaskSummary({
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
 
-  const getStage = () => {
-    if (timerState.is_completed) return 'done';
-    if (timerState.is_running) return 'working';
-    if (timerState.is_paused || timerState.total_work_seconds > 0) return 'paused';
-    return 'pending';
-  };
-
-  const getStageLabel = (stage: string) => {
-    switch (stage) {
-      case 'done': return 'Terminé';
-      case 'working': return 'En cours';
-      case 'paused': return 'En pause';
-      case 'pending': return 'En attente';
-      default: return stage;
-    }
-  };
-
-  const getStageColor = (stage: string) => {
-    switch (stage) {
-      case 'done':
-        return 'bg-green-100 text-green-800';
-      case 'working':
-        return 'bg-blue-100 text-blue-800';
-      case 'paused':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-muted text-foreground';
-    }
-  };
-
-  if (loading) {
-    return <div className="animate-pulse h-16 bg-muted rounded"></div>;
-  }
-
-  const stage = getStage();
-  const canTrackTime = orderStatus === 'working' || orderStatus === 'pending';
-
   return (
     <div className="bg-muted/50 rounded-lg p-4 space-y-3">
       {/* Header with time summary */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">⏱️ Chrono</span>
-          <Badge className={`text-xs ${getStageColor(stage)}`}>
-            {getStageLabel(stage)}
-          </Badge>
-          {timerState.is_running && (
-            <Badge className="bg-blue-500 text-white animate-pulse text-xs">
-              En cours...
+          <span className="text-sm font-medium text-muted-foreground">Time Summary</span>
+          {actualMinutes > 0 && (
+            <Badge className="bg-green-100 text-green-800 text-xs">
+              Recorded
             </Badge>
           )}
         </div>
         <div className="text-xs text-muted-foreground">
-          <span>Planifié: {formatMinutes(plannedMinutes)}</span>
+          <span>Planifie: {formatMinutes(plannedMinutes)}</span>
           <span className="mx-2">|</span>
-          <span>Réel: {formatMinutes(actualMinutes)}</span>
+          <span>Reel: {actualMinutes > 0 ? formatMinutes(actualMinutes) : '--'}</span>
           {actualMinutes > 0 && (
             <>
               <span className="mx-2">|</span>
@@ -174,7 +79,7 @@ export function GarmentTaskSummary({
             const serviceMinutes = s.estimated_minutes || s.service?.estimated_minutes || 15;
             return (
               <div key={idx} className="flex justify-between">
-                <span>• {serviceName} {s.quantity > 1 ? `(×${s.quantity})` : ''}</span>
+                <span>- {serviceName} {s.quantity > 1 ? `(x${s.quantity})` : ''}</span>
                 <span className="text-muted-foreground/70">{serviceMinutes * (s.quantity || 1)} min</span>
               </div>
             );
@@ -182,27 +87,7 @@ export function GarmentTaskSummary({
         </div>
       ) : (
         <div className="text-xs text-muted-foreground/70 italic">
-          Aucun service associé
-        </div>
-      )}
-
-      {/* Timer button - show for working/pending orders, including completed tasks */}
-      {canTrackTime && (
-        <div className="pt-2 border-t border-border">
-          <TimerButton
-            orderId={orderId}
-            garmentId={garmentId}
-            orderStatus={orderStatus}
-            onTimeUpdate={(data: TimerUpdateData) => {
-              // Directly update parent state from child's fresh data
-              setTimerState({
-                is_running: data.is_running,
-                is_paused: data.is_paused,
-                is_completed: data.is_completed,
-                total_work_seconds: data.total_work_seconds,
-              });
-            }}
-          />
+          Aucun service associe
         </div>
       )}
     </div>

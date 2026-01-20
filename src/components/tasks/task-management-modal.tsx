@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TimerButton } from '@/components/timer/timer-button';
 import { Edit2, Save, X, Clock, User, CheckCircle, SaveAll } from 'lucide-react';
 import { useStaff } from '@/lib/hooks/useStaff';
 import { useToast } from '@/components/ui/toast';
@@ -360,20 +359,13 @@ export function TaskManagementModal({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <TimerButton
-                            orderId={orderId}
-                            garmentId={task.id}
-                            orderStatus="working" // Assuming we're in working context
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditTask(task)}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditTask(task)}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
                       </div>
 
                       {task.notes && (
