@@ -8,13 +8,13 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 3 - Merge Steps COMPLETE
+**Current focus:** Phase 7 - Exports IN PROGRESS
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements)
-- **Phase:** 3 of 10 (Merge Steps) - COMPLETE
-- **Plan:** 2 of 2 complete
+- **Phase:** 7 of 10 (Exports) - IN PROGRESS
+- **Plan:** 1 of 3 complete
 - **Deadline:** Thursday, January 23, 2026
 
 ## Progress
@@ -27,7 +27,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 4 - Reduce Space | o Pending | 0/? |
 | 5 - List View | o Pending | 0/? |
 | 6 - Manage Task | o Pending | 0/? |
-| 7 - Exports | o Pending | 0/? |
+| 7 - Exports | * In Progress | 1/3 |
 | 8 - Timer Removal | o Pending | 0/? |
 | 9 - Responsive | o Pending | 0/? |
 | 10 - Calendar | o Pending | 0/? |
@@ -44,7 +44,7 @@ WAVE 2 (Parallel - Run in separate terminals)
 |-- Phase 4: Reduce Space o
 |-- Phase 5: List View o
 |-- Phase 6: Manage Task o
-|-- Phase 7: Exports o
+|-- Phase 7: Exports * (1/3)
 |-- Phase 8: Timer Removal o
 |-- Phase 9: Responsive o
 +-- Phase 10: Calendar o
@@ -69,13 +69,13 @@ WAVE 2 (Parallel - Run in separate terminals)
 
 ## Next Action
 
-Phase 3 complete. Continue Wave 2 with remaining parallel phases (4-10).
+Continue Phase 7 with 07-02-PLAN.md (Export UI components).
 
 ## Session Continuity
 
-- **Last session:** 2026-01-20T14:37:00Z
-- **Stopped at:** Completed 03-02-PLAN.md (Intake wizard integration)
-- **Resume:** Continue Wave 2 parallel phases
+- **Last session:** 2026-01-20T18:22:00Z
+- **Stopped at:** Completed 07-01-PLAN.md (CSV export infrastructure)
+- **Resume:** Continue with 07-02-PLAN.md
 
 ## Session Notes
 
@@ -129,6 +129,13 @@ Phase 3 complete. Continue Wave 2 with remaining parallel phases (4-10).
   - Reduced intake flow from 6 to 5 steps
   - Human verified: all functionality works (garment dropdown, service tabs, quantity, assignment, add to order, proceed to pricing)
   - Phase 3 COMPLETE
+
+- 2026-01-20: Completed 07-01 (CSV export infrastructure)
+  - Created csv-utils library: escapeCsvCell, generateCsv, triggerDownload, formatDuration, formatCents, sanitizeFilename
+  - Created /api/admin/export/seamstress (EXP-01, EXP-02) - 8 column CSV
+  - Created /api/admin/export/orders (EXP-03) - all orders CSV
+  - Created /api/admin/export/capacity (EXP-04) - weekly staff workload CSV
+  - All APIs return { success, csvContent, filename } format
 
 ---
 *State updated: 2026-01-20*
