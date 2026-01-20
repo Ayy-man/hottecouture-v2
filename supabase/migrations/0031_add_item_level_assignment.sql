@@ -34,17 +34,6 @@ FROM (
 WHERE gs.id = matched_staff.garment_service_id
   AND matched_staff.id IS NOT NULL;
 
--- Also migrate from garment_service.assignee (VARCHAR) if it has data
-UPDATE garment_service gs
-SET assigned_seamstress_id = (
-  SELECT s.id
-  FROM staff s
-  WHERE LOWER(TRIM(s.name)) = LOWER(TRIM(gs.assignee))
-  LIMIT 1
-)
-WHERE gs.assignee IS NOT NULL
-  AND gs.assigned_seamstress_id IS NULL;
-
 -- Also migrate from garment.assignee for any still missing
 UPDATE garment_service gs
 SET assigned_seamstress_id = (
