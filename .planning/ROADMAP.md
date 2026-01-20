@@ -267,6 +267,13 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** None
 
+**Status:** Planned
+**Plans:** 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Delete all timer files (components, API routes, utilities, tests)
+- [ ] 08-02-PLAN.md — Remove timer imports and clean up references in remaining files
+
 ---
 
 ## Phase 9: Responsive Design
