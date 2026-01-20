@@ -13,6 +13,7 @@ import { RACK_CONFIG } from '@/lib/config/production';
 import { PaymentStatusSection } from '@/components/payments/payment-status-section';
 import { HoldToArchiveButton } from '@/components/ui/hold-and-release-button';
 import { useToast } from '@/components/ui/toast';
+import { CollapsibleNotes } from '@/components/ui/collapsible-notes';
 
 interface OrderDetailModalProps {
   order: any;
@@ -445,11 +446,11 @@ export function OrderDetailModal({
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4'>
       <Card className='w-full max-w-6xl max-h-[95vh] overflow-y-auto bg-white shadow-2xl'>
-        <div className='p-4 sm:p-6'>
+        <div className='p-3 sm:p-4'>
           {/* Header */}
-          <div className='flex flex-col sm:flex-row justify-between items-start mb-6 gap-4'>
+          <div className='flex flex-col sm:flex-row justify-between items-start mb-4 gap-3'>
             <div className='flex-1'>
-              <h2 className='text-xl sm:text-2xl font-bold text-foreground'>
+              <h2 className='text-lg sm:text-xl font-bold text-foreground'>
                 Order #{displayOrder.order_number}
                 {displayOrder.rush && (
                   <span className='ml-2 sm:ml-3 px-2 sm:px-3 py-1 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-accent-contrast to-primary-500 rounded-full'>
@@ -482,45 +483,35 @@ export function OrderDetailModal({
           {!loading && (
             <>
               {/* Order Details Grid */}
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6'>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4'>
                 {/* Basic Info */}
-                <div className='space-y-4'>
-                  <h3 className='text-lg font-semibold text-foreground'>
+                <div className='space-y-2'>
+                  <h3 className='text-base font-semibold text-foreground mb-2'>
                     Order Information
                   </h3>
-                  <div className='space-y-2'>
+                  <div className='grid grid-cols-2 gap-x-4 gap-y-1 text-sm'>
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Type:</span>
-                      <span className='font-medium capitalize'>
-                        {order.type}
-                      </span>
+                      <span className='text-muted-foreground text-xs'>Type:</span>
+                      <span className='font-medium capitalize text-xs'>{order.type}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Status:</span>
-                      <span className='font-medium capitalize'>
-                        {order.status}
-                      </span>
+                      <span className='text-muted-foreground text-xs'>Status:</span>
+                      <span className='font-medium capitalize text-xs'>{order.status}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Priority:</span>
-                      <span className='font-medium capitalize'>
-                        {order.priority || 'Normal'}
-                      </span>
+                      <span className='text-muted-foreground text-xs'>Priority:</span>
+                      <span className='font-medium capitalize text-xs'>{order.priority || 'Normal'}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Due Date:</span>
-                      <span className='font-medium'>
-                        {formatDate(order.due_date)}
-                      </span>
+                      <span className='text-muted-foreground text-xs'>Due:</span>
+                      <span className='font-medium text-xs'>{formatDate(order.due_date)}</span>
                     </div>
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Created:</span>
-                      <span className='font-medium'>
-                        {formatDate(order.created_at)}
-                      </span>
+                    <div className='flex justify-between col-span-2'>
+                      <span className='text-muted-foreground text-xs'>Created:</span>
+                      <span className='font-medium text-xs'>{formatDate(order.created_at)}</span>
                     </div>
                     {RACK_CONFIG.editableStatuses.includes(order.status) ? (
-                      <div className='space-y-2 pt-2 border-t border-border'>
+                      <div className='col-span-2 space-y-2 pt-2 border-t border-border mt-1'>
                         <label className='block text-sm font-medium text-muted-foreground'>
                           {RACK_CONFIG.label}
                         </label>
@@ -612,78 +603,68 @@ export function OrderDetailModal({
                 </div>
 
                 {/* Client Info */}
-                <div className='space-y-4'>
-                  <h3 className='text-lg font-semibold text-foreground'>
+                <div className='space-y-2'>
+                  <h3 className='text-base font-semibold text-foreground mb-2'>
                     Client Information
                   </h3>
-                  <div className='space-y-2'>
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Name:</span>
-                      <span className='font-medium'>
-                        {order.client_name || 'Unknown Client'}
+                  <div className='grid grid-cols-2 gap-x-4 gap-y-1 text-sm'>
+                    <div className='flex justify-between col-span-2'>
+                      <span className='text-muted-foreground text-xs'>Name:</span>
+                      <span className='font-medium text-xs'>{order.client_name || 'Unknown Client'}</span>
+                    </div>
+                    <div className='flex justify-between items-center'>
+                      <span className='text-muted-foreground text-xs'>Phone:</span>
+                      <span className='font-medium font-mono text-xs'>
+                        {order.client_phone ? (revealedContact ? order.client_phone : maskPhone(order.client_phone)) : 'N/A'}
                       </span>
                     </div>
                     <div className='flex justify-between items-center'>
-                      <span className='text-muted-foreground'>Phone:</span>
-                      <span className='font-medium font-mono'>
-                        {order.client_phone
-                          ? (revealedContact ? order.client_phone : maskPhone(order.client_phone))
-                          : 'Not provided'}
+                      <span className='text-muted-foreground text-xs'>Email:</span>
+                      <span className='font-medium font-mono text-xs truncate max-w-[120px]'>
+                        {order.client_email ? (revealedContact ? order.client_email : maskEmail(order.client_email)) : 'N/A'}
                       </span>
                     </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-muted-foreground'>Email:</span>
-                      <span className='font-medium font-mono'>
-                        {order.client_email
-                          ? (revealedContact ? order.client_email : maskEmail(order.client_email))
-                          : 'Not provided'}
-                      </span>
-                    </div>
-                    {(order.client_phone || order.client_email) && (
-                      <button
-                        onClick={() => setRevealedContact(!revealedContact)}
-                        className='flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors mt-1'
-                      >
-                        {revealedContact ? '🙈 Masquer' : '👁️ Afficher'}
-                      </button>
-                    )}
-                    {order.client_id && (
-                      <div className='mt-2'>
-                        <Link
-                          href={`/orders/history?clientId=${order.client_id}`}
-                          className='text-sm text-primary-600 hover:text-primary-800 hover:underline transition-colors'
-                        >
-                          📋 Voir l'historique des commandes
-                        </Link>
-                      </div>
-                    )}
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Language:</span>
-                      <span className='font-medium'>
-                        {order.client_language || 'English'}
-                      </span>
+                      <span className='text-muted-foreground text-xs'>Language:</span>
+                      <span className='font-medium text-xs'>{order.client_language || 'English'}</span>
                     </div>
-                    {order.client_notes && (
-                      <div className='mt-3 pt-3 border-t border-border'>
-                        <span className='text-muted-foreground text-sm font-medium'>
-                          Client Notes:
-                        </span>
-                        <div className='mt-1 p-2 bg-yellow-50 rounded text-sm text-muted-foreground'>
-                          {order.client_notes}
-                        </div>
-                      </div>
-                    )}
                   </div>
+                  {(order.client_phone || order.client_email) && (
+                    <button
+                      onClick={() => setRevealedContact(!revealedContact)}
+                      className='flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors'
+                    >
+                      {revealedContact ? '🙈 Masquer' : '👁️ Afficher'}
+                    </button>
+                  )}
+                  {order.client_id && (
+                    <Link
+                      href={`/orders/history?clientId=${order.client_id}`}
+                      className='text-xs text-primary-600 hover:text-primary-800 hover:underline transition-colors'
+                    >
+                      📋 Voir l'historique des commandes
+                    </Link>
+                  )}
+                  {order.client_notes && (
+                    <div className='mt-2 pt-2 border-t border-border'>
+                      <span className='text-muted-foreground text-xs font-medium'>
+                        Client Notes:
+                      </span>
+                      <div className='mt-1 p-2 bg-yellow-50 rounded text-xs text-muted-foreground'>
+                        {order.client_notes}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Measurements Section - Only show if there are measurements */}
               {Object.keys(orderMeasurements).length > 0 && (
-                <div className='mb-6'>
-                  <h3 className='text-lg font-semibold text-foreground mb-4'>
+                <div className='mb-4'>
+                  <h3 className='text-base font-semibold text-foreground mb-2'>
                     📏 Mesures
                   </h3>
-                  <div className='bg-purple-50 rounded-lg p-4'>
+                  <div className='bg-purple-50 rounded-lg p-3'>
                     {Object.entries(orderMeasurements).map(([category, items]) => (
                       <div key={category} className='mb-4 last:mb-0'>
                         <h4 className='text-sm font-medium text-purple-700 mb-2 capitalize'>
@@ -708,17 +689,17 @@ export function OrderDetailModal({
               )}
 
               {/* Garments */}
-              <div className='mb-6'>
-                <h3 className='text-lg font-semibold text-foreground mb-4'>
+              <div className='mb-4'>
+                <h3 className='text-base font-semibold text-foreground mb-2'>
                   Garments ({displayOrder.garments?.length || 0})
                 </h3>
-                <div className='space-y-4'>
+                <div className='space-y-3'>
                   {displayOrder.garments?.map((garment: any, index: number) => (
                     <div
                       key={garment.id || index}
-                      className='border border-border rounded-lg p-4'
+                      className='border border-border rounded-lg p-3'
                     >
-                      <div className='flex justify-between items-start mb-3'>
+                      <div className='flex justify-between items-start mb-2'>
                         <div className='flex items-center gap-2'>
                           {garment.garment_type?.icon && (
                             <span className='text-lg'>
@@ -776,18 +757,18 @@ export function OrderDetailModal({
                         </div>
                       </div>
 
-                      {/* Notes Section - Always Visible */}
-                      <div className='mb-3'>
-                        <label className='block text-sm font-medium text-muted-foreground mb-2'>
-                          Notes:
-                        </label>
+                      {/* Notes Section - Collapsible */}
+                      <div className='mb-2'>
                         {editingGarmentId === garment.id ? (
                           <div className='space-y-2'>
+                            <label className='block text-xs font-medium text-muted-foreground mb-1'>
+                              Notes:
+                            </label>
                             <Textarea
                               value={editingNotes}
                               onChange={e => setEditingNotes(e.target.value)}
-                              rows={4}
-                              className='w-full min-h-[100px] text-sm'
+                              rows={3}
+                              className='w-full min-h-[60px] text-sm'
                               placeholder='Special instructions, damage notes, etc.'
                               disabled={savingNotes === garment.id}
                             />
@@ -798,9 +779,7 @@ export function OrderDetailModal({
                                 disabled={savingNotes === garment.id}
                                 className='bg-primary hover:bg-primary-600'
                               >
-                                {savingNotes === garment.id
-                                  ? 'Saving...'
-                                  : 'Save'}
+                                {savingNotes === garment.id ? 'Saving...' : 'Save'}
                               </Button>
                               <Button
                                 size='sm'
@@ -813,25 +792,12 @@ export function OrderDetailModal({
                             </div>
                           </div>
                         ) : (
-                          <div className='space-y-2'>
-                            <Textarea
-                              value={garment.notes || ''}
-                              readOnly
-                              rows={4}
-                              className='w-full min-h-[100px] text-sm bg-muted/50 cursor-not-allowed'
-                              placeholder='No notes added yet. Click "Edit Notes" to add notes.'
-                            />
-                            <Button
-                              size='sm'
-                              variant='outline'
-                              onClick={() =>
-                                handleStartEditNotes(garment.id, garment.notes)
-                              }
-                              className='mt-1'
-                            >
-                              Edit Notes
-                            </Button>
-                          </div>
+                          <CollapsibleNotes
+                            notes={garment.notes}
+                            onEdit={() => handleStartEditNotes(garment.id, garment.notes)}
+                            label='Notes'
+                            defaultExpanded={false}
+                          />
                         )}
                       </div>
 
@@ -932,11 +898,11 @@ export function OrderDetailModal({
 
                       {/* Services for this garment - Updated with item-level pricing */}
                       {garment.services && garment.services.length > 0 && (
-                        <div className='mt-3 pt-3 border-t border-border'>
-                          <h5 className='text-sm font-medium text-blue-600 mb-2'>
+                        <div className='mt-2 pt-2 border-t border-border'>
+                          <h5 className='text-xs font-medium text-blue-600 mb-1'>
                             Services Required:
                           </h5>
-                          <div className='space-y-2'>
+                          <div className='space-y-1'>
                             {garment.services.map((service: any, serviceIndex: number) => {
                               const priceInfo = getServicePriceInfo(service);
                               const isEditing = editingServicePrice === service.id;
@@ -945,7 +911,7 @@ export function OrderDetailModal({
                               return (
                                 <div
                                   key={service.id || serviceIndex}
-                                  className='bg-blue-50 rounded-lg p-3'
+                                  className='bg-blue-50 rounded-lg p-2'
                                 >
                                   <div className='flex justify-between items-start'>
                                     <div className='flex-1'>
@@ -1073,11 +1039,11 @@ export function OrderDetailModal({
               </div>
 
               {/* Pricing */}
-              <div className='mb-6'>
-                <h3 className='text-lg font-semibold text-foreground mb-4'>
+              <div className='mb-4'>
+                <h3 className='text-base font-semibold text-foreground mb-2'>
                   Pricing
                 </h3>
-                <div className='bg-muted/50 rounded-lg p-4'>
+                <div className='bg-muted/50 rounded-lg p-3'>
                   <div className='space-y-2'>
                     <div className='flex justify-between'>
                       <span className='text-muted-foreground'>Subtotal:</span>
@@ -1195,7 +1161,7 @@ export function OrderDetailModal({
               </div>
 
               {/* Payment Section */}
-              <div className='mb-6'>
+              <div className='mb-4'>
                 <PaymentStatusSection
                   order={{
                     id: displayOrder.id,
@@ -1215,7 +1181,7 @@ export function OrderDetailModal({
               </div>
 
               {/* Actions */}
-              <div className='flex flex-wrap justify-end gap-3'>
+              <div className='flex flex-wrap justify-end gap-2'>
                 {/* Archive/Unarchive Button */}
                 {displayOrder.status === 'archived' ? (
                   <HoldToArchiveButton
