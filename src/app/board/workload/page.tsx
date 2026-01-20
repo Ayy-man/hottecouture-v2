@@ -11,10 +11,11 @@ import {
 import { GaugeCircle } from '@/components/ui/gauge-1';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock, Users, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Users, AlertTriangle, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { addDays, startOfDay, endOfDay, format } from 'date-fns';
 import { useStaff } from '@/lib/hooks/useStaff';
+import { useStaffSession } from '@/components/staff';
 import { useToast } from '@/components/ui/toast';
 
 
@@ -105,10 +106,12 @@ function calculateEstimatedHours(order: Order): number {
 
 export default function WorkloadPage() {
   const toast = useToast();
+  const { currentStaff } = useStaffSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
+  const [assigningItem, setAssigningItem] = useState<string | null>(null);
   const { staff: staffMembers, loading: staffLoading } = useStaff();
 
   useEffect(() => {
@@ -382,6 +385,51 @@ export default function WorkloadPage() {
 
   const unassignedWorkload = workloadBySeamstress['unassigned'];
 
+  // Sort unassigned items by due date (CAL-04)
+  const sortedUnassignedItems = useMemo(() => {
+    if (!unassignedWorkload?.items) return [];
+    return [...unassignedWorkload.items].sort((a, b) => {
+      // Items with due dates come first, sorted by date
+      if (a.dueDate && b.dueDate) {
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return 0;
+    });
+  }, [unassignedWorkload?.items]);
+
+  // Handle "Assign to Me" (CAL-03)
+  const handleAssignToMe = async (garmentServiceId: string) => {
+    if (!currentStaff?.id) {
+      toast.error('Please sign in as staff first');
+      return;
+    }
+
+    setAssigningItem(garmentServiceId);
+
+    try {
+      const response = await fetch(`/api/garment-service/${garmentServiceId}/assign`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_seamstress_id: currentStaff.id }),
+      });
+
+      if (response.ok) {
+        toast.success('Task assigned to you');
+        // Refresh the page to show updated assignments
+        window.location.reload();
+      } else {
+        throw new Error('Failed to assign');
+      }
+    } catch (err) {
+      console.error('Error assigning item:', err);
+      toast.error('Failed to assign task');
+    } finally {
+      setAssigningItem(null);
+    }
+  };
+
   if (loading || staffLoading) {
     return (
       <AuthGuard>
@@ -475,7 +523,7 @@ export default function WorkloadPage() {
               );
             })}
 
-            {unassignedWorkload && unassignedWorkload.items.length > 0 && (
+            {sortedUnassignedItems.length > 0 && (
               <Card className="border-amber-200 bg-amber-50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-amber-700 flex items-center gap-2">
@@ -485,48 +533,67 @@ export default function WorkloadPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-amber-700">
-                    {unassignedWorkload.items.length}
+                    {sortedUnassignedItems.length}
                   </div>
-                  <div className="text-xs text-amber-600 mb-3">items need assignment</div>
-                  <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {unassignedWorkload.items.slice(0, 5).map(item => (
-                      <div key={item.garmentServiceId} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="font-medium truncate max-w-[120px]" title={`#${item.orderNumber} - ${item.serviceName}`}>
-                          #{item.orderNumber} - {item.serviceName}
-                        </span>
-                        <select
-                          className="text-xs border rounded px-1 py-0.5 bg-white"
-                          value=""
-                          onChange={async (e) => {
-                            if (e.target.value) {
-                              // Use the item-level assignment API
-                              try {
-                                const response = await fetch(`/api/garment-service/${item.garmentServiceId}/assign`, {
-                                  method: 'PATCH',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ assigned_seamstress_id: e.target.value }),
-                                });
-                                if (response.ok) {
-                                  // Refresh the page to show updated assignments
-                                  window.location.reload();
+                  <div className="text-xs text-amber-600 mb-3">items need assignment (sorted by due date)</div>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {sortedUnassignedItems.slice(0, 8).map(item => (
+                      <div key={item.garmentServiceId} className="flex items-center justify-between gap-2 text-xs bg-white p-1.5 rounded border border-amber-200">
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium truncate block" title={`#${item.orderNumber} - ${item.serviceName}`}>
+                            #{item.orderNumber} - {item.serviceName}
+                          </span>
+                          {item.dueDate && (
+                            <span className="text-amber-600 text-[10px]">
+                              Due: {format(new Date(item.dueDate), 'MMM d')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {currentStaff && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1.5 text-[10px] text-amber-700 hover:bg-amber-100"
+                              onClick={() => handleAssignToMe(item.garmentServiceId)}
+                              disabled={assigningItem === item.garmentServiceId}
+                              title="Assign to me"
+                            >
+                              <UserPlus className="h-3 w-3" />
+                            </Button>
+                          )}
+                          <select
+                            className="text-xs border rounded px-1 py-0.5 bg-white max-w-[80px]"
+                            value=""
+                            onChange={async (e) => {
+                              if (e.target.value) {
+                                try {
+                                  const response = await fetch(`/api/garment-service/${item.garmentServiceId}/assign`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ assigned_seamstress_id: e.target.value }),
+                                  });
+                                  if (response.ok) {
+                                    window.location.reload();
+                                  }
+                                } catch (err) {
+                                  console.error('Error assigning item:', err);
                                 }
-                              } catch (err) {
-                                console.error('Error assigning item:', err);
                               }
-                            }
-                          }}
-                          disabled={updatingOrder === item.orderId}
-                        >
-                          <option value="">Assign...</option>
-                          {staffMembers.map(s => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                          ))}
-                        </select>
+                            }}
+                            disabled={assigningItem === item.garmentServiceId}
+                          >
+                            <option value="">Assign...</option>
+                            {staffMembers.map(s => (
+                              <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     ))}
-                    {unassignedWorkload.items.length > 5 && (
+                    {sortedUnassignedItems.length > 8 && (
                       <div className="text-xs text-amber-600 pt-1">
-                        +{unassignedWorkload.items.length - 5} more items
+                        +{sortedUnassignedItems.length - 8} more items
                       </div>
                     )}
                   </div>
