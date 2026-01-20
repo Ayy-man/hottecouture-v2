@@ -14,14 +14,14 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **ARCH-02**: Add `assigned_seamstress_id` field to Items/Services table
 - [x] **ARCH-03**: Migrate existing orders with global assignment to item-level assignment
 - [x] **ARCH-04**: Update all queries to filter by item assignment, not order assignment
-- [ ] **ARCH-05**: Add `final_price` field to Items table (editable after invoice)
-- [ ] **ARCH-06**: Recalculate order total when item price changes
-- [ ] **ARCH-07**: Log price changes for audit trail (who, when, old value, new value)
+- [x] **ARCH-05**: Add `final_price` field to Items table (editable after invoice)
+- [x] **ARCH-06**: Recalculate order total when item price changes
+- [x] **ARCH-07**: Log price changes for audit trail (who, when, old value, new value)
 
 ### User Interface (P2)
 
-- [ ] **UI-01**: Merge garment selection and service selection into single page
-- [ ] **UI-02**: Add seamstress assignment dropdown to merged garment/service page
+- [x] **UI-01**: Merge garment selection and service selection into single page
+- [x] **UI-02**: Add seamstress assignment dropdown to merged garment/service page
 - [ ] **UI-03**: Reduce vertical spacing between sections (24px → 12px)
 - [ ] **UI-04**: Reduce form field spacing (16px → 8px)
 - [ ] **UI-05**: Make Notes fields collapsible (collapsed by default)
@@ -101,11 +101,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ARCH-02 | Phase 1 | Complete |
 | ARCH-03 | Phase 1 | Complete |
 | ARCH-04 | Phase 1 | Complete |
-| ARCH-05 | Phase 2 | Pending |
-| ARCH-06 | Phase 2 | Pending |
-| ARCH-07 | Phase 2 | Pending |
-| UI-01 | Phase 3 | Pending |
-| UI-02 | Phase 3 | Pending |
+| ARCH-05 | Phase 2 | Complete |
+| ARCH-06 | Phase 2 | Complete |
+| ARCH-07 | Phase 2 | Complete |
+| UI-01 | Phase 3 | Complete |
+| UI-02 | Phase 3 | Complete |
 | UI-03 | Phase 4 | Pending |
 | UI-04 | Phase 4 | Pending |
 | UI-05 | Phase 4 | Pending |

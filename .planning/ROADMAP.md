@@ -123,11 +123,12 @@ Plans:
 **Blocked by:** Phase 1
 **Blocks:** None
 
-**Plans:** 2 plans
+**Status:** ✓ Complete
+**Plans:** 2/2 complete
 
 Plans:
-- [ ] 03-01-PLAN.md — Create merged GarmentServicesStep component (garment config + service selection + inline assignment)
-- [ ] 03-02-PLAN.md — Wire into intake page, Add to Order functionality, human verification
+- [x] 03-01-PLAN.md — Create merged GarmentServicesStep component (garment config + service selection + inline assignment)
+- [x] 03-02-PLAN.md — Wire into intake page, Add to Order functionality, human verification
 
 ---
 
