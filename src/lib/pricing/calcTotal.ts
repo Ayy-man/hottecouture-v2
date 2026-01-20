@@ -25,20 +25,38 @@ export function getPricingConfig(): PricingConfig {
 
 /**
  * Calculate the price for a single garment service item
+ * Uses three-tier price hierarchy: final > custom > base
  */
 export function calculateItemPrice(item: PricingItem): {
   unit_price_cents: number;
   total_price_cents: number;
-  is_custom: boolean;
+  price_source: 'final' | 'custom' | 'base';
+  is_custom: boolean;  // Kept for backward compatibility
+  is_final: boolean;
 } {
-  const unit_price_cents = item.custom_price_cents ?? item.base_price_cents;
+  // Priority: final_price > custom_price > base_price
+  let unit_price_cents: number;
+  let price_source: 'final' | 'custom' | 'base';
+
+  if (item.final_price_cents !== null && item.final_price_cents !== undefined) {
+    unit_price_cents = item.final_price_cents;
+    price_source = 'final';
+  } else if (item.custom_price_cents !== null && item.custom_price_cents !== undefined) {
+    unit_price_cents = item.custom_price_cents;
+    price_source = 'custom';
+  } else {
+    unit_price_cents = item.base_price_cents;
+    price_source = 'base';
+  }
+
   const total_price_cents = unit_price_cents * item.quantity;
-  const is_custom = item.custom_price_cents !== null;
 
   return {
     unit_price_cents,
     total_price_cents,
-    is_custom,
+    price_source,
+    is_custom: price_source === 'custom',  // Backward compatibility
+    is_final: price_source === 'final',
   };
 }
 
@@ -98,6 +116,8 @@ export function calculateOrderPricing(
       unit_price_cents: itemPrice.unit_price_cents,
       total_price_cents: itemPrice.total_price_cents,
       is_custom: itemPrice.is_custom,
+      price_source: itemPrice.price_source,
+      is_final: itemPrice.is_final,
     };
   });
 

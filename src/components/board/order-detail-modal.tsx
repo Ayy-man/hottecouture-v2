@@ -45,6 +45,11 @@ export function OrderDetailModal({
   const [savingPrice, setSavingPrice] = useState(false);
   const [revealedContact, setRevealedContact] = useState(false);
 
+  // Item-level price editing state
+  const [editingServicePrice, setEditingServicePrice] = useState<string | null>(null);
+  const [editServicePriceCents, setEditServicePriceCents] = useState(0);
+  const [savingServicePrice, setSavingServicePrice] = useState<string | null>(null);
+
   // Privacy masking functions (standardized format)
   const maskPhone = (phone: string): string => {
     if (!phone) return '';
@@ -179,6 +184,10 @@ export function OrderDetailModal({
       setSavingTime(null);
       setRackPosition('');
       setCustomRackPosition('');
+      // Reset item-level price editing
+      setEditingServicePrice(null);
+      setEditServicePriceCents(0);
+      setSavingServicePrice(null);
     }
   }, [isOpen]);
 
@@ -320,6 +329,91 @@ export function OrderDetailModal({
     } finally {
       setSavingPrice(false);
     }
+  };
+
+  // Item-level price editing handlers
+  const handleStartEditServicePrice = (serviceId: string, currentPriceCents: number) => {
+    setEditingServicePrice(serviceId);
+    setEditServicePriceCents(currentPriceCents);
+  };
+
+  const handleCancelEditServicePrice = () => {
+    setEditingServicePrice(null);
+    setEditServicePriceCents(0);
+  };
+
+  const handleSaveServicePrice = async (serviceId: string) => {
+    setSavingServicePrice(serviceId);
+    try {
+      // Get current staff name from localStorage or default
+      const staffName = localStorage.getItem('currentStaffName') || 'Staff';
+
+      const response = await fetch(`/api/garment-service/${serviceId}/price`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          new_price_cents: editServicePriceCents,
+          changed_by: staffName,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update price');
+      }
+
+      const result = await response.json();
+
+      // Update local state with new prices
+      if (detailedOrder) {
+        // Update the specific garment service price
+        const updatedGarments = detailedOrder.garments.map((g: any) => ({
+          ...g,
+          services: g.services?.map((s: any) =>
+            s.id === serviceId
+              ? { ...s, final_price_cents: editServicePriceCents }
+              : s
+          ),
+        }));
+
+        // Update order totals from API response
+        setDetailedOrder({
+          ...detailedOrder,
+          garments: updatedGarments,
+          subtotal_cents: result.order.subtotal_cents,
+          tax_cents: result.order.tax_cents,
+          total_cents: result.order.total_cents,
+        });
+      }
+
+      setEditingServicePrice(null);
+      setEditServicePriceCents(0);
+    } catch (error) {
+      console.error('Error saving service price:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update price');
+    } finally {
+      setSavingServicePrice(null);
+    }
+  };
+
+  // Helper to get the effective price for a service
+  const getServicePriceInfo = (service: any) => {
+    const finalPrice = service.final_price_cents;
+    const customPrice = service.custom_price_cents;
+    const basePrice = service.service?.base_price_cents || 0;
+
+    // Determine which price is active
+    const activePriceCents = finalPrice ?? customPrice ?? basePrice;
+    const estimatedPriceCents = customPrice ?? basePrice;
+    const hasFinalPrice = finalPrice !== null && finalPrice !== undefined;
+
+    return {
+      activePriceCents,
+      estimatedPriceCents,
+      hasFinalPrice,
+      totalCents: activePriceCents * (service.quantity || 1),
+      estimatedTotalCents: estimatedPriceCents * (service.quantity || 1),
+    };
   };
 
   if (!isOpen) return null;
@@ -834,17 +928,21 @@ export function OrderDetailModal({
                         )}
                       </div>
 
-                      {/* Services for this garment */}
+                      {/* Services for this garment - Updated with item-level pricing */}
                       {garment.services && garment.services.length > 0 && (
                         <div className='mt-3 pt-3 border-t border-border'>
                           <h5 className='text-sm font-medium text-blue-600 mb-2'>
                             Services Required:
                           </h5>
                           <div className='space-y-2'>
-                            {garment.services.map(
-                              (service: any, serviceIndex: number) => (
+                            {garment.services.map((service: any, serviceIndex: number) => {
+                              const priceInfo = getServicePriceInfo(service);
+                              const isEditing = editingServicePrice === service.id;
+                              const isSaving = savingServicePrice === service.id;
+
+                              return (
                                 <div
-                                  key={serviceIndex}
+                                  key={service.id || serviceIndex}
                                   className='bg-blue-50 rounded-lg p-3'
                                 >
                                   <div className='flex justify-between items-start'>
@@ -870,37 +968,90 @@ export function OrderDetailModal({
                                         </div>
                                       )}
                                     </div>
-                                    <div className='text-right text-sm ml-4'>
+                                    <div className='text-right text-sm ml-4 min-w-[140px]'>
                                       <div className='text-muted-foreground'>
                                         Qty: {service.quantity}
                                       </div>
-                                      <div className='font-medium text-foreground'>
-                                        {service.custom_price_cents
-                                          ? `$${(service.custom_price_cents / 100).toFixed(2)}`
-                                          : service.service?.base_price_cents
-                                            ? `$${((service.service.base_price_cents * service.quantity) / 100).toFixed(2)}`
-                                            : 'Price TBD'}
+
+                                      {/* Estimated Price (readonly) */}
+                                      <div className='text-xs text-muted-foreground mt-1'>
+                                        Est: ${(priceInfo.estimatedTotalCents / 100).toFixed(2)}
                                       </div>
+
+                                      {/* Final Price (editable) */}
+                                      {isEditing ? (
+                                        <div className='mt-2 space-y-1'>
+                                          <div className='flex items-center gap-1'>
+                                            <span className='text-xs'>$</span>
+                                            <input
+                                              type='number'
+                                              step='0.01'
+                                              value={(editServicePriceCents / 100).toFixed(2)}
+                                              onChange={(e) => setEditServicePriceCents(
+                                                Math.round(parseFloat(e.target.value || '0') * 100)
+                                              )}
+                                              className='w-20 px-2 py-1 text-xs border border-blue-300 rounded focus:ring-2 focus:ring-blue-500'
+                                              disabled={isSaving}
+                                              autoFocus
+                                            />
+                                          </div>
+                                          <div className='flex gap-1'>
+                                            <Button
+                                              size='sm'
+                                              onClick={() => handleSaveServicePrice(service.id)}
+                                              disabled={isSaving}
+                                              className='bg-blue-600 hover:bg-blue-700 text-xs h-6 px-2'
+                                            >
+                                              {isSaving ? '...' : 'Save'}
+                                            </Button>
+                                            <Button
+                                              size='sm'
+                                              variant='outline'
+                                              onClick={handleCancelEditServicePrice}
+                                              disabled={isSaving}
+                                              className='text-xs h-6 px-2'
+                                            >
+                                              Cancel
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className='mt-1'>
+                                          <div className='flex items-center justify-end gap-1'>
+                                            <span className={`font-medium ${priceInfo.hasFinalPrice ? 'text-green-700' : 'text-foreground'}`}>
+                                              ${(priceInfo.totalCents / 100).toFixed(2)}
+                                            </span>
+                                            {priceInfo.hasFinalPrice && (
+                                              <span className='text-[10px] text-green-600 font-medium'>FINAL</span>
+                                            )}
+                                          </div>
+                                          <Button
+                                            size='sm'
+                                            variant='ghost'
+                                            onClick={() => handleStartEditServicePrice(
+                                              service.id,
+                                              priceInfo.activePriceCents
+                                            )}
+                                            className='text-xs text-blue-600 hover:text-blue-800 h-5 px-1 mt-1'
+                                          >
+                                            Edit Price
+                                          </Button>
+                                        </div>
+                                      )}
+
                                       {service.service?.estimated_minutes && (
                                         <div className='text-xs text-muted-foreground mt-1'>
-                                          Est:{' '}
-                                          {Math.floor(
-                                            service.service.estimated_minutes /
-                                            60
-                                          )}
-                                          h{' '}
-                                          {service.service.estimated_minutes %
-                                            60}
-                                          m
-                                          {service.quantity > 1 &&
-                                            ` × ${service.quantity}`}
+                                          Est time:{' '}
+                                          {Math.floor(service.service.estimated_minutes / 60)}h{' '}
+                                          {service.service.estimated_minutes % 60}m
+                                          {service.quantity > 1 && ` x ${service.quantity}`}
                                         </div>
                                       )}
                                     </div>
                                   </div>
                                 </div>
-                              )
-                            )}
+                              );
+                            })}
                           </div>
                         </div>
                       )}

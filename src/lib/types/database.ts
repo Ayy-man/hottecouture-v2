@@ -148,6 +148,7 @@ export type Database = {
           custom_service_name: string | null;
           quantity: number;
           custom_price_cents: number | null;
+          final_price_cents: number | null;
           notes: string | null;
           assigned_seamstress_id: string | null;
         };
@@ -158,6 +159,7 @@ export type Database = {
           custom_service_name?: string | null;
           quantity?: number;
           custom_price_cents?: number | null;
+          final_price_cents?: number | null;
           notes?: string | null;
           assigned_seamstress_id?: string | null;
         };
@@ -168,8 +170,35 @@ export type Database = {
           custom_service_name?: string | null;
           quantity?: number;
           custom_price_cents?: number | null;
+          final_price_cents?: number | null;
           notes?: string | null;
           assigned_seamstress_id?: string | null;
+        };
+      };
+      price_change_log: {
+        Row: {
+          id: string;
+          created_at: string;
+          garment_service_id: string;
+          order_id: string;
+          changed_by: string;
+          old_price_cents: number | null;
+          new_price_cents: number;
+          reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          garment_service_id: string;
+          order_id: string;
+          changed_by: string;
+          old_price_cents?: number | null;
+          new_price_cents: number;
+          reason?: string | null;
+        };
+        Update: {
+          // Audit logs should not be updated - minimal fields
+          id?: string;
         };
       };
       order: {
@@ -628,6 +657,9 @@ export type ClientMeasurementInsert =
 export type OrderMeasurementInsert =
   Database['public']['Tables']['order_measurement']['Insert'];
 export type StaffInsert = Database['public']['Tables']['staff']['Insert'];
+export type PriceChangeLog = Tables<'price_change_log'>;
+export type PriceChangeLogInsert =
+  Database['public']['Tables']['price_change_log']['Insert'];
 
 // Update types
 export type ClientUpdate = Database['public']['Tables']['client']['Update'];
