@@ -130,7 +130,7 @@ async function handleOrderStage(
   if ((newStage === 'done' || newStage === 'ready') && totalRecordedSeconds <= 1) { // Allow 1s margin of error, basically 0
     console.warn(`⛔️ Validation Failed: blocked moving to ${newStage} with 0s time.`);
     throw new ConflictError(
-      `Cannot mark order as ${newStage} without recording work time. Please use the timer to track hours.`,
+      `Cannot mark order as ${newStage} without recording work time. Please enter work hours in the order details.`,
       correlationId
     );
   }
@@ -166,11 +166,8 @@ async function handleOrderStage(
     });
   }
 
-  // Note: Auto-create tasks logic removed - garment_service records ARE the tasks
-  // They exist from order creation via intake, no need to create separately
-
-  // Note: Automatic time tracking removed - now using manual timer controls
-  // Time tracking is now handled via dedicated timer API endpoints
+  // Note: garment_service records ARE the tasks - they exist from order creation via intake
+  // Time tracking is now manual via order detail modal (Work Hours edit)
 
   // Check if all garments (tasks) are complete
   let allTasksComplete = false;

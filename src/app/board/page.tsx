@@ -211,8 +211,8 @@ export default function BoardPage() {
       );
 
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      if (errorMessage.includes('work time') || errorMessage.includes('timer')) {
-        toast.error('Cannot mark as done: Please record work hours using the timer first.');
+      if (errorMessage.includes('work time')) {
+        toast.error('Cannot mark as done: Please record work hours first.');
       }
     } finally {
       setUpdatingOrders(prev => {
@@ -464,12 +464,12 @@ export default function BoardPage() {
             orderNumber={pendingSmsConfirmation?.orderNumber || 0}
           />
 
-          {/* Export Button (Bottom Left) */}
-          <div className='fixed bottom-6 left-6 z-50'>
+          {/* Export Button (Bottom Left) - above mobile nav on small screens */}
+          <div className='fixed bottom-20 md:bottom-6 left-4 md:left-6 z-40'>
             <Button
               variant='secondary'
               size='sm'
-              className='bg-white/90 backdrop-blur border border-border shadow-sm hover:bg-white text-xs'
+              className='bg-white/90 backdrop-blur border border-border shadow-sm hover:bg-white text-xs touch-target-sm'
               onClick={() => setShowWorkListExport(true)}
             >
               Export Work List

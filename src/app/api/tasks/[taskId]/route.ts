@@ -78,22 +78,6 @@ export async function PATCH(
     const body = await request.json();
     const updateData = updateTaskSchema.parse(body);
 
-    // Prevent updating actual_minutes if timer is running
-    if (updateData.actual_minutes !== undefined) {
-      const { data: currentTask } = await supabase
-        .from('task')
-        .select('is_active')
-        .eq('id', taskId)
-        .single();
-
-      if (currentTask?.is_active) {
-        return NextResponse.json(
-          { error: 'Cannot update time while timer is running. Please stop the timer first.' },
-          { status: 400 }
-        );
-      }
-    }
-
     const { data: task, error } = await supabase
       .from('task')
       .update(updateData)
@@ -150,20 +134,6 @@ export async function DELETE(
   try {
     const supabase = await createServiceRoleClient();
     const { taskId } = await params;
-
-    // Check if task has timer running
-    const { data: currentTask } = await supabase
-      .from('task')
-      .select('is_active')
-      .eq('id', taskId)
-      .single();
-
-    if (currentTask?.is_active) {
-      return NextResponse.json(
-        { error: 'Cannot delete task while timer is running. Please stop the timer first.' },
-        { status: 400 }
-      );
-    }
 
     const { error } = await supabase
       .from('task')
