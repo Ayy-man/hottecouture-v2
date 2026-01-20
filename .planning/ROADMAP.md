@@ -153,6 +153,14 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** None
 
+**Status:** Planned
+**Plans:** 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Create CollapsibleSection and CollapsibleNotes UI components
+- [ ] 04-02-PLAN.md — Apply spacing reductions to order-detail-modal.tsx
+- [ ] 04-03-PLAN.md — Human verification of space reduction changes
+
 ---
 
 ## Phase 5: List View + Product Names
@@ -174,6 +182,12 @@ Plans:
 **Dependencies:** None
 **Blocked by:** Nothing
 **Blocks:** None
+
+**Status:** Planned
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Add view toggle hook, grid/list views, verify product names
 
 ---
 
