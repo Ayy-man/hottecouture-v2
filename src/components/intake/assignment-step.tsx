@@ -41,6 +41,13 @@ export function AssignmentStep({
 }: AssignmentStepProps) {
   const { staff, loading } = useStaff();
 
+  // Helper to get seamstress name from ID
+  const getSeamstressName = (id: string | null): string => {
+    if (!id) return 'Non assigne';
+    const found = staff.find(s => s.id === id);
+    return found ? found.name : 'Non assigne';
+  };
+
 
   // Handle "Assign All" action
   const handleAssignAll = (seamstressId: string) => {
@@ -146,20 +153,22 @@ export function AssignmentStep({
                         </div>
                         <div className='flex-shrink-0 w-40'>
                           <Select
-                            value={item.assignedSeamstressId || ''}
+                            value={item.assignedSeamstressId || 'unassigned'}
                             onValueChange={(val) =>
                               onItemAssignmentChange(
                                 item.garmentIndex,
                                 item.serviceIndex,
-                                val || null
+                                val === 'unassigned' ? null : val
                               )
                             }
                           >
                             <SelectTrigger className='w-full'>
-                              <SelectValue placeholder='Non assigne' />
+                              <span className='truncate'>
+                                {getSeamstressName(item.assignedSeamstressId)}
+                              </span>
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value=''>Non assigne</SelectItem>
+                              <SelectItem value='unassigned'>Non assigne</SelectItem>
                               {staff.map(s => (
                                 <SelectItem key={s.id} value={s.id}>
                                   {s.name}
