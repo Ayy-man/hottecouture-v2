@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     const workloadMap = new Map<string, StaffWorkload>();
 
     // Initialize all staff with zero values
-    (staff || []).forEach((s) => {
+    (staff || []).forEach((s: { id: string; name: string }) => {
       workloadMap.set(s.id, {
         name: s.name,
         assignedItems: 0,
