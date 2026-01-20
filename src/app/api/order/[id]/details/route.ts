@@ -148,13 +148,15 @@ export async function GET(
           measurements: garment.measurements,
           garment_type: garment.garment_type,
           services: (garmentServicesForThisGarment as any[]).map(
-            (gs: any, index: number) => ({
-              id: `gs-${index}`, // Generate a temporary ID
+            (gs: any) => ({
+              id: gs.id, // Use actual garment_service.id for price editing
               quantity: gs.quantity,
               custom_price_cents: gs.custom_price_cents,
-              custom_service_name: null, // Will be added after migration
+              final_price_cents: gs.final_price_cents,
+              custom_service_name: gs.custom_service_name,
               notes: gs.notes,
-              estimated_minutes: gs.estimated_minutes, // Include garment_service.estimated_minutes
+              estimated_minutes: gs.estimated_minutes,
+              assigned_seamstress_id: gs.assigned_seamstress_id,
               service: gs.service,
             })
           ),
