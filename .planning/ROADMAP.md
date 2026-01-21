@@ -35,7 +35,7 @@ WAVE 2 (Parallel - Can run simultaneously)
 | 4 | Reduce Space | 40% vertical space reduction | UI-03 to UI-06 | 2 | ✓ |
 | 5 | List View | Grid/List toggle + product names | UI-07 to UI-09 | 2 | ✓ |
 | 6 | Manage Task | Per-item button + Save & Close | UI-10 to UI-12 | 2 | ✓ |
-| 7 | Exports | CSV exports for tasks, orders, capacity | EXP-01 to EXP-06 | 2 |
+| 7 | Exports | CSV exports for tasks, orders, capacity | EXP-01 to EXP-06 | 2 | ✓ |
 | 8 | Timer Removal | Remove stopwatch, add manual input | TMR-01 to TMR-04 | 2 | ✓ |
 | 9 | Responsive | iPhone + iPad portrait support | RES-01 to RES-08 | 2 |
 | 10 | Calendar | Fix scrolling + unassigned category | CAL-01 to CAL-04 | 2 |
@@ -242,13 +242,13 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** None
 
-**Status:** Planned
-**Plans:** 3 plans
+**Status:** ✓ Complete
+**Plans:** 3/3 complete
 
 Plans:
-- [ ] 07-01-PLAN.md — CSV export infrastructure (utilities + 3 API routes)
-- [ ] 07-02-PLAN.md — UI integration (export buttons in board page)
-- [ ] 07-03-PLAN.md — Team management form + add Marie
+- [x] 07-01-PLAN.md — CSV export infrastructure (utilities + 3 API routes)
+- [x] 07-02-PLAN.md — UI integration (export buttons in board page)
+- [x] 07-03-PLAN.md — Team management form + add Marie
 
 ---
 
