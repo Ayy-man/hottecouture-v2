@@ -32,7 +32,7 @@ WAVE 2 (Parallel - Can run simultaneously)
 | 1 | Item-Level Assignment | Assign seamstresses to items, not orders | ARCH-01 to ARCH-04 | 1 |
 | 2 | Item-Level Pricing | Editable final price per item | ARCH-05 to ARCH-07 | 1 |
 | 3 | Merge Steps | Combine garment + service selection | UI-01, UI-02 | 2 |
-| 4 | Reduce Space | 40% vertical space reduction | UI-03 to UI-06 | 2 |
+| 4 | Reduce Space | 40% vertical space reduction | UI-03 to UI-06 | 2 | ✓ |
 | 5 | List View | Grid/List toggle + product names | UI-07 to UI-09 | 2 |
 | 6 | Manage Task | Per-item button + Save & Close | UI-10 to UI-12 | 2 |
 | 7 | Exports | CSV exports for tasks, orders, capacity | EXP-01 to EXP-06 | 2 |
@@ -153,13 +153,12 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** None
 
-**Status:** Planned
-**Plans:** 3 plans
+**Status:** ✓ Complete
+**Plans:** 2/2 complete
 
 Plans:
-- [ ] 04-01-PLAN.md — Create CollapsibleSection and CollapsibleNotes UI components
-- [ ] 04-02-PLAN.md — Apply spacing reductions to order-detail-modal.tsx
-- [ ] 04-03-PLAN.md — Human verification of space reduction changes
+- [x] 04-01-PLAN.md — Create CollapsibleSection and CollapsibleNotes UI components
+- [x] 04-02-PLAN.md — Apply spacing reductions to order-detail-modal.tsx
 
 ---
 
