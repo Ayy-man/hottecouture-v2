@@ -8,13 +8,13 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 6 - Manage Task COMPLETE
+**Current focus:** Phase 7 - Exports (2/3 complete)
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements)
-- **Phase:** 8 of 10 (Timer Removal) - COMPLETE
-- **Plan:** 2 of 2 complete
+- **Phase:** 7 of 10 (Exports) - In Progress
+- **Plan:** 2 of 3 complete (07-01, 07-03 done, 07-02 pending)
 - **Deadline:** Thursday, January 23, 2026
 
 ## Progress
@@ -27,7 +27,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 4 - Reduce Space | COMPLETE | 1/1 |
 | 5 - List View | COMPLETE | 1/1 |
 | 6 - Manage Task | COMPLETE | 2/2 |
-| 7 - Exports | * In Progress | 1/3 |
+| 7 - Exports | * In Progress | 2/3 |
 | 8 - Timer Removal | COMPLETE | 2/2 |
 | 9 - Responsive | o Pending | 0/? |
 | 10 - Calendar | o Pending | 0/? |
@@ -44,7 +44,7 @@ WAVE 2 (Parallel - Run in separate terminals)
 |-- Phase 4: Reduce Space COMPLETE (1/1)
 |-- Phase 5: List View COMPLETE (1/1)
 |-- Phase 6: Manage Task COMPLETE (2/2)
-|-- Phase 7: Exports * (1/3)
+|-- Phase 7: Exports * (2/3)
 |-- Phase 8: Timer Removal COMPLETE (2/2)
 |-- Phase 9: Responsive o
 +-- Phase 10: Calendar o
@@ -74,16 +74,19 @@ WAVE 2 (Parallel - Run in separate terminals)
 | Native title tooltips | 05-01 | Used HTML title attribute for long name truncation tooltips |
 | 4-column table layout | 05-01 | Service | Prix | Temps | Action for list view |
 | SSR-safe hook pattern | 05-01 | Load from localStorage in useEffect to avoid hydration mismatch |
+| Work pre-completed in Phase 6 | 07-03 | Team management API, page, and Marie migration done in Phase 6 commit |
+| Upsert pattern for Marie | 07-03 | Migration uses ON CONFLICT DO UPDATE for idempotency |
+| Case-insensitive duplicate check | 07-03 | Team API uses ilike for name comparison |
 
 ## Next Action
 
-Phase 5 (List View) complete. Continue with remaining Wave 2 phases (06, 07).
+Continue with 07-02 (Export UI integration) to complete Phase 7.
 
 ## Session Continuity
 
-- **Last session:** 2026-01-21T04:15:00Z
-- **Stopped at:** Completed 05-01-PLAN.md (List view toggle) - Phase 5 COMPLETE
-- **Resume:** Continue with other Wave 2 phases (06, 07)
+- **Last session:** 2026-01-21T04:15:26Z
+- **Stopped at:** Completed 07-03-PLAN.md (Team management) - verified pre-existing work
+- **Resume:** Execute 07-02 to complete Phase 7 exports
 
 ## Session Notes
 
@@ -169,6 +172,13 @@ Phase 5 (List View) complete. Continue with remaining Wave 2 phases (06, 07).
   - Long service names truncate with native tooltip on hover
   - Human verified: persistence works, all columns present
 
+- 2026-01-21: Completed 07-03 (Team management) - 2/3 Phase 7
+  - Verified team API exists (GET/POST/PATCH) from Phase 6 commit d7276c9
+  - Verified team page at /admin/team from Phase 6 commit
+  - Verified Marie migration (0036_add_marie_seamstress.sql) from Phase 6 commit
+  - All work pre-completed in Phase 6, this plan was verification only
+  - EXP-05 (team management form) and EXP-06 (add Marie) satisfied
+
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
@@ -176,4 +186,4 @@ Phase 5 (List View) complete. Continue with remaining Wave 2 phases (06, 07).
 | 001 | Fix build errors | 2026-01-21 | d4b6eaa | [001-fix-build-errors](./quick/001-fix-build-errors/) |
 
 ---
-*State updated: 2026-01-21*
+*State updated: 2026-01-21T04:15:26Z*
