@@ -1,14 +1,14 @@
 # Project State
 
 **Project:** Hotte Couture Final Modifications
-**Last Updated:** 2026-01-20
+**Last Updated:** 2026-01-21
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 8 - Timer Removal COMPLETE
+**Current focus:** Phase 5 - List View COMPLETE
 
 ## Current Status
 
@@ -24,8 +24,8 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 1 - Item-Level Assignment | COMPLETE | 4/4 |
 | 2 - Item-Level Pricing | COMPLETE | 3/3 |
 | 3 - Merge Steps | COMPLETE | 2/2 |
-| 4 - Reduce Space | o Pending | 0/? |
-| 5 - List View | o Pending | 0/? |
+| 4 - Reduce Space | COMPLETE | 1/1 |
+| 5 - List View | COMPLETE | 1/1 |
 | 6 - Manage Task | o Pending | 0/? |
 | 7 - Exports | * In Progress | 1/3 |
 | 8 - Timer Removal | COMPLETE | 2/2 |
@@ -41,8 +41,8 @@ WAVE 1 (Sequential - Must complete first) DONE
 
 WAVE 2 (Parallel - Run in separate terminals)
 |-- Phase 3: Merge Steps COMPLETE (2/2)
-|-- Phase 4: Reduce Space o
-|-- Phase 5: List View o
+|-- Phase 4: Reduce Space COMPLETE (1/1)
+|-- Phase 5: List View COMPLETE (1/1)
 |-- Phase 6: Manage Task o
 |-- Phase 7: Exports * (1/3)
 |-- Phase 8: Timer Removal COMPLETE (2/2)
@@ -71,16 +71,19 @@ WAVE 2 (Parallel - Run in separate terminals)
 | Feature removal pattern | 08-01 | Delete files first, fix imports in subsequent plan |
 | Read-only time in garment-task-summary | 08-02 | Timer button removed, editable time input remains in order-detail-modal |
 | Remove timer running checks | 08-02 | Tasks always editable/deletable without timer state consideration |
+| Native title tooltips | 05-01 | Used HTML title attribute for long name truncation tooltips |
+| 4-column table layout | 05-01 | Service | Prix | Temps | Action for list view |
+| SSR-safe hook pattern | 05-01 | Load from localStorage in useEffect to avoid hydration mismatch |
 
 ## Next Action
 
-Phase 8 (Timer Removal) complete. Continue with remaining Wave 2 phases.
+Phase 5 (List View) complete. Continue with remaining Wave 2 phases (06, 07).
 
 ## Session Continuity
 
-- **Last session:** 2026-01-20T21:00:00Z
-- **Stopped at:** Completed 08-02-PLAN.md (Import cleanup) - Phase 8 COMPLETE
-- **Resume:** Continue with other Wave 2 phases (04, 05, 06, 07, 09, 10)
+- **Last session:** 2026-01-21T04:15:00Z
+- **Stopped at:** Completed 05-01-PLAN.md (List view toggle) - Phase 5 COMPLETE
+- **Resume:** Continue with other Wave 2 phases (06, 07)
 
 ## Session Notes
 
@@ -158,6 +161,13 @@ Phase 8 (Timer Removal) complete. Continue with remaining Wave 2 phases.
   - Removed timer-running checks from tasks API route
   - Verified editable Work Hours input in order-detail-modal (TMR-03 satisfied)
   - TMR-01: No stopwatch visible, TMR-02: No Start/Stop buttons, TMR-03: Manual time entry works
+
+- 2026-01-21: Completed 05-01 (List view toggle) - PHASE 5 COMPLETE
+  - Created useViewPreference hook for localStorage persistence
+  - Added Grid/List toggle UI to service selection section
+  - Implemented 4-column compact table: Service | Prix | Temps | Action
+  - Long service names truncate with native tooltip on hover
+  - Human verified: persistence works, all columns present
 
 ### Quick Tasks Completed
 
