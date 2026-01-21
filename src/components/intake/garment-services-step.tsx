@@ -764,6 +764,9 @@ export function GarmentServicesStep({
                         <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Prix
                         </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Temps
+                        </th>
                         <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Action
                         </th>
@@ -772,7 +775,7 @@ export function GarmentServicesStep({
                     <tbody className="bg-card divide-y divide-border">
                       {getServicesByCategory(activeTab).length === 0 ? (
                         <tr>
-                          <td colSpan={3} className="text-center py-4 text-sm text-muted-foreground">
+                          <td colSpan={4} className="text-center py-4 text-sm text-muted-foreground">
                             Aucun service trouve
                           </td>
                         </tr>
@@ -792,6 +795,9 @@ export function GarmentServicesStep({
                             </td>
                             <td className="px-4 py-2 whitespace-nowrap text-sm text-primary-600 font-medium">
                               {formatCurrency(service.base_price_cents)}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm text-muted-foreground">
+                              -
                             </td>
                             <td className="px-4 py-2 whitespace-nowrap text-right">
                               <Button
