@@ -34,7 +34,7 @@ WAVE 2 (Parallel - Can run simultaneously)
 | 3 | Merge Steps | Combine garment + service selection | UI-01, UI-02 | 2 |
 | 4 | Reduce Space | 40% vertical space reduction | UI-03 to UI-06 | 2 | ✓ |
 | 5 | List View | Grid/List toggle + product names | UI-07 to UI-09 | 2 | ✓ |
-| 6 | Manage Task | Per-item button + Save & Close | UI-10 to UI-12 | 2 |
+| 6 | Manage Task | Per-item button + Save & Close | UI-10 to UI-12 | 2 | ✓ |
 | 7 | Exports | CSV exports for tasks, orders, capacity | EXP-01 to EXP-06 | 2 |
 | 8 | Timer Removal | Remove stopwatch, add manual input | TMR-01 to TMR-04 | 2 | ✓ |
 | 9 | Responsive | iPhone + iPad portrait support | RES-01 to RES-08 | 2 |
@@ -209,6 +209,13 @@ Plans:
 **Dependencies:** Phase 1 (item cards), Phase 2 (final price field)
 **Blocked by:** Phases 1 & 2
 **Blocks:** None
+
+**Status:** ✓ Complete
+**Plans:** 2/2 complete
+
+Plans:
+- [x] 06-01-PLAN.md — Manage Task button + Save & Close
+- [x] 06-02-PLAN.md — Add SMS/Mobile field to client
 
 ---
 

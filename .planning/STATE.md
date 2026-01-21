@@ -8,7 +8,7 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 5 - List View COMPLETE
+**Current focus:** Phase 6 - Manage Task COMPLETE
 
 ## Current Status
 
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 3 - Merge Steps | COMPLETE | 2/2 |
 | 4 - Reduce Space | COMPLETE | 1/1 |
 | 5 - List View | COMPLETE | 1/1 |
-| 6 - Manage Task | o Pending | 0/? |
+| 6 - Manage Task | COMPLETE | 2/2 |
 | 7 - Exports | * In Progress | 1/3 |
 | 8 - Timer Removal | COMPLETE | 2/2 |
 | 9 - Responsive | o Pending | 0/? |
@@ -43,7 +43,7 @@ WAVE 2 (Parallel - Run in separate terminals)
 |-- Phase 3: Merge Steps COMPLETE (2/2)
 |-- Phase 4: Reduce Space COMPLETE (1/1)
 |-- Phase 5: List View COMPLETE (1/1)
-|-- Phase 6: Manage Task o
+|-- Phase 6: Manage Task COMPLETE (2/2)
 |-- Phase 7: Exports * (1/3)
 |-- Phase 8: Timer Removal COMPLETE (2/2)
 |-- Phase 9: Responsive o
