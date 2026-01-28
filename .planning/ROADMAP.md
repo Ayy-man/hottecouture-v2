@@ -1,20 +1,21 @@
 # Roadmap: Hotte Couture Final Modifications
 
 **Created:** 2026-01-20
+**Updated:** 2026-01-28
 **Deadline:** Thursday, January 23, 2026
-**Phases:** 10
-**Requirements:** 39 mapped
+**Phases:** 11
+**Requirements:** 39 mapped + 5 cleanup items
 
 ## Execution Waves
 
 Phases grouped by dependencies. Run phases within same wave in parallel (separate terminals).
 
 ```
-WAVE 1 (Sequential - Foundation)
+WAVE 1 (Sequential - Foundation) ✅ DONE
 ├── Phase 1: Item-Level Assignment (MUST BE FIRST)
 └── Phase 2: Item-Level Pricing (depends on Phase 1)
 
-WAVE 2 (Parallel - Can run simultaneously)
+WAVE 2 (Parallel - Can run simultaneously) ✅ DONE
 ├── Phase 3: Merge Garment/Service Steps
 ├── Phase 4: Reduce Vertical Space
 ├── Phase 5: List View + Product Names
@@ -23,15 +24,18 @@ WAVE 2 (Parallel - Can run simultaneously)
 ├── Phase 8: Timer Removal
 ├── Phase 9: Responsive Design
 └── Phase 10: Calendar Fixes
+
+WAVE 3 (Final Polish)
+└── Phase 11: Cleanup & Polish (gap closure)
 ```
 
 ## Phase Overview
 
-| # | Phase | Goal | Requirements | Wave |
-|---|-------|------|--------------|------|
-| 1 | Item-Level Assignment | Assign seamstresses to items, not orders | ARCH-01 to ARCH-04 | 1 |
-| 2 | Item-Level Pricing | Editable final price per item | ARCH-05 to ARCH-07 | 1 |
-| 3 | Merge Steps | Combine garment + service selection | UI-01, UI-02 | 2 |
+| # | Phase | Goal | Requirements | Wave | Status |
+|---|-------|------|--------------|------|--------|
+| 1 | Item-Level Assignment | Assign seamstresses to items, not orders | ARCH-01 to ARCH-04 | 1 | ✓ |
+| 2 | Item-Level Pricing | Editable final price per item | ARCH-05 to ARCH-07 | 1 | ✓ |
+| 3 | Merge Steps | Combine garment + service selection | UI-01, UI-02 | 2 | ✓ |
 | 4 | Reduce Space | 40% vertical space reduction | UI-03 to UI-06 | 2 | ✓ |
 | 5 | List View | Grid/List toggle + product names | UI-07 to UI-09 | 2 | ✓ |
 | 6 | Manage Task | Per-item button + Save & Close | UI-10 to UI-12 | 2 | ✓ |
@@ -39,6 +43,7 @@ WAVE 2 (Parallel - Can run simultaneously)
 | 8 | Timer Removal | Remove stopwatch, add manual input | TMR-01 to TMR-04 | 2 | ✓ |
 | 9 | Responsive | iPhone + iPad portrait support | RES-01 to RES-08 | 2 | ✓ |
 | 10 | Calendar | Fix scrolling + unassigned category | CAL-01 to CAL-04 | 2 | ✓ |
+| 11 | Cleanup & Polish | Close implementation gaps | CLN-01 to CLN-05 | 3 | ○ |
 
 ---
 
@@ -335,6 +340,36 @@ Plans:
 
 **Status:** ✓ Complete
 **Implementation:** unassignedTasks section in calendar/page.tsx
+
+---
+
+## Phase 11: Cleanup & Polish
+
+**Goal:** Close remaining implementation gaps identified during Technical Specifications review.
+
+**Requirements:**
+- CLN-01: Complete 40% space reduction with two-column form layouts
+- CLN-02: Verify SMS routing uses mobile_phone field correctly
+- CLN-03: Add hard DELETE endpoint for staff removal
+- CLN-04: iPad portrait optimizations (no horizontal overflow)
+- CLN-05: Verify calendar timeline vertical scrolling works
+
+**Success Criteria:**
+1. Order detail forms use two-column layout on tablet/desktop
+2. SMS notifications route to mobile_phone field (not landline phone)
+3. Staff can be permanently deleted via admin interface
+4. iPad portrait mode has no horizontal scrolling
+5. Calendar timeline scrolls vertically without issues
+
+**Dependencies:** All prior phases complete
+**Blocked by:** Nothing
+**Blocks:** None
+
+**Status:** ○ Pending
+**Plans:** 0/1 planned
+
+Plans:
+- [ ] 11-01-PLAN.md — Gap closure tasks (5 items)
 
 ---
 
