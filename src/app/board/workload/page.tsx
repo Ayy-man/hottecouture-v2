@@ -401,7 +401,7 @@ export default function WorkloadPage() {
 
   // Handle "Assign to Me" (CAL-03)
   const handleAssignToMe = async (garmentServiceId: string) => {
-    if (!currentStaff?.id) {
+    if (!currentStaff?.staffId) {
       toast.error('Please sign in as staff first');
       return;
     }
@@ -412,7 +412,7 @@ export default function WorkloadPage() {
       const response = await fetch(`/api/garment-service/${garmentServiceId}/assign`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assigned_seamstress_id: currentStaff.id }),
+        body: JSON.stringify({ assigned_seamstress_id: currentStaff.staffId }),
       });
 
       if (response.ok) {

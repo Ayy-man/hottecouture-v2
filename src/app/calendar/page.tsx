@@ -57,7 +57,7 @@ interface TaskItem {
 
 export default function CalendarPage() {
   const toast = useToast();
-  const { staff: staffMembers, loading: staffLoading } = useStaff();
+  const { loading: staffLoading } = useStaff();
   const { currentStaff } = useStaffSession();
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -158,7 +158,7 @@ export default function CalendarPage() {
   }, [allTasks]);
 
   const handleAssignToMe = async (garmentServiceId: string) => {
-    if (!currentStaff?.id) {
+    if (!currentStaff?.staffId) {
       toast.error('Please sign in as staff first');
       return;
     }
@@ -169,7 +169,7 @@ export default function CalendarPage() {
       const response = await fetch(`/api/garment-service/${garmentServiceId}/assign`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assigned_seamstress_id: currentStaff.id }),
+        body: JSON.stringify({ assigned_seamstress_id: currentStaff.staffId }),
       });
 
       if (!response.ok) {
@@ -177,17 +177,20 @@ export default function CalendarPage() {
       }
 
       // Update local state
-      setOrders(prev => prev.map(order => ({
-        ...order,
-        garments: order.garments?.map(garment => ({
-          ...garment,
-          services: garment.services?.map(service =>
-            service.garment_service_id === garmentServiceId
-              ? { ...service, assigned_seamstress_id: currentStaff.id, assigned_seamstress_name: currentStaff.name }
-              : service
-          ),
-        })),
-      })));
+      setOrders(prev => prev.map(order => {
+        if (!order.garments) return order;
+        return {
+          ...order,
+          garments: order.garments.map(garment => ({
+            ...garment,
+            services: (garment.services ?? []).map(service =>
+              service.garment_service_id === garmentServiceId
+                ? { ...service, assigned_seamstress_id: currentStaff.staffId, assigned_seamstress_name: currentStaff.staffName }
+                : service
+            ),
+          })),
+        };
+      }));
 
       toast.success('Task assigned to you');
     } catch (err) {

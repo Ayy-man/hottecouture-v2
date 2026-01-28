@@ -1,9 +1,0 @@
-{
-  "mode": "yolo",
-  "depth": "comprehensive",
-  "parallelization": {
-    "plans": true,
-    "phases": true
-  },
-  "notes": "User running multiple terminals - structure phases for parallel execution where dependencies allow"
-}
