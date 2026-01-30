@@ -9,9 +9,9 @@ export async function GET(request: NextRequest) {
 
     console.log('Order search API called with:', { phone, lastName })
 
-    if (!phone || !lastName) {
+    if (!phone && !lastName) {
       return NextResponse.json(
-        { error: 'Phone and last name are required' },
+        { error: 'Phone or last name is required' },
         { status: 400 }
       )
     }

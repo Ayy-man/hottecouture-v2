@@ -1139,19 +1139,9 @@ export function OrderDetailModal({
                           </Button>
                         </div>
                       ) : (
-                        <div className='flex items-center gap-2'>
-                          <span className='text-lg font-semibold text-foreground'>
-                            {formatCurrency(displayOrder.total_cents || 0)}
-                          </span>
-                          <Button
-                            size='sm'
-                            variant='ghost'
-                            onClick={handleStartEditPrice}
-                            className='text-xs text-primary-600 hover:text-primary-800 h-6 px-2'
-                          >
-                            Modifier
-                          </Button>
-                        </div>
+                        <span className='text-lg font-semibold text-foreground'>
+                          {formatCurrency(displayOrder.total_cents || 0)}
+                        </span>
                       )}
                     </div>
                     {displayOrder.deposit_cents > 0 && (
