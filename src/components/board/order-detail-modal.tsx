@@ -300,11 +300,6 @@ export function OrderDetailModal({
     }
   };
 
-  const _handleStartEditPrice = () => {
-    setEditPriceCents(displayOrder?.total_cents || 0);
-    setEditingPrice(true);
-  };
-
   const handleCancelEditPrice = () => {
     setEditingPrice(false);
     setEditPriceCents(0);
