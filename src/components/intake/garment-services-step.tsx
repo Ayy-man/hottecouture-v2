@@ -122,6 +122,13 @@ export function GarmentServicesStep({
   // ===========================================================================
   const { staff } = useStaff();
 
+  // BUG-002 fix: Helper to get seamstress name from ID (avoids showing UUID)
+  const getSeamstressName = (id: string | null): string => {
+    if (!id) return 'Assigner';
+    const found = staff.find(s => s.id === id);
+    return found ? found.name : 'Assigner';
+  };
+
   // ===========================================================================
   // State: View Mode (grid/list toggle)
   // ===========================================================================
@@ -874,7 +881,7 @@ export function GarmentServicesStep({
                           onValueChange={val => updateAssignment(idx, val || null)}
                         >
                           <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="Assigner" />
+                            <span className="truncate">{getSeamstressName(svc.assignedSeamstressId)}</span>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="">Non assigne</SelectItem>

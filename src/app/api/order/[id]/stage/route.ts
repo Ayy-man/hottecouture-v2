@@ -125,15 +125,10 @@ async function handleOrderStage(
   }
 
   const totalRecordedSeconds = legacyTotalSeconds + taskTotalSeconds;
-  console.log(`⏱️ Validation Check: Order ${orderId} -> ${newStage}. Time: ${totalRecordedSeconds}s (Legacy: ${legacyTotalSeconds}s, Tasks: ${taskTotalSeconds}s)`);
+  console.log(`⏱️ Time Check: Order ${orderId} -> ${newStage}. Time: ${totalRecordedSeconds}s (Legacy: ${legacyTotalSeconds}s, Tasks: ${taskTotalSeconds}s)`);
 
-  if ((newStage === 'done' || newStage === 'ready') && totalRecordedSeconds <= 1) { // Allow 1s margin of error, basically 0
-    console.warn(`⛔️ Validation Failed: blocked moving to ${newStage} with 0s time.`);
-    throw new ConflictError(
-      `Cannot mark order as ${newStage} without recording work time. Please enter work hours in the order details.`,
-      correlationId
-    );
-  }
+  // Note: Work hours validation removed (BUG-004) - timer feature was removed in Phase 8
+  // Orders can now be marked done/ready without recording work time
 
   // Check if we should auto-archive: transitioning to 'delivered' and already paid
   const shouldAutoArchive = newStage === 'delivered' && orderData.payment_status === 'paid';

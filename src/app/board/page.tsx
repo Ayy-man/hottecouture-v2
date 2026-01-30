@@ -252,7 +252,7 @@ export default function BoardPage() {
     );
   }
 
-  // Export handlers
+  // Export handlers - BUG-001: improved error messages
   const handleExportSeamstress = async (seamstressId: string, seamstressName: string) => {
     try {
       const response = await fetch(`/api/admin/export/seamstress?seamstressId=${seamstressId}`);
@@ -261,11 +261,12 @@ export default function BoardPage() {
         triggerDownload(data.csvContent, data.filename);
         toast.success(`Exported tasks for ${seamstressName}`);
       } else {
-        throw new Error(data.error || 'Export failed');
+        toast.error(data.error || 'Export failed');
+        console.error('Export error details:', data);
       }
     } catch (error) {
-      toast.error('Export failed');
-      console.error('Export error:', error);
+      toast.error('Export failed: Network error');
+      console.error('Export network error:', error);
     }
   };
 
@@ -277,11 +278,12 @@ export default function BoardPage() {
         triggerDownload(data.csvContent, data.filename);
         toast.success('Orders exported');
       } else {
-        throw new Error(data.error || 'Export failed');
+        toast.error(data.error || 'Export failed');
+        console.error('Export error details:', data);
       }
     } catch (error) {
-      toast.error('Export failed');
-      console.error('Export error:', error);
+      toast.error('Export failed: Network error');
+      console.error('Export network error:', error);
     }
   };
 
@@ -293,11 +295,12 @@ export default function BoardPage() {
         triggerDownload(data.csvContent, data.filename);
         toast.success('Capacity exported');
       } else {
-        throw new Error(data.error || 'Export failed');
+        toast.error(data.error || 'Export failed');
+        console.error('Export error details:', data);
       }
     } catch (error) {
-      toast.error('Export failed');
-      console.error('Export error:', error);
+      toast.error('Export failed: Network error');
+      console.error('Export network error:', error);
     }
   };
 
