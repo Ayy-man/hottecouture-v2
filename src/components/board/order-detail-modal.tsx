@@ -485,13 +485,13 @@ export function OrderDetailModal({
           {!loading && (
             <>
               {/* Order Details Grid */}
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4'>
                 {/* Basic Info */}
                 <div className='space-y-2'>
                   <h3 className='text-base font-semibold text-foreground mb-2'>
                     Order Information
                   </h3>
-                  <div className='grid grid-cols-2 gap-x-4 gap-y-1 text-sm'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm'>
                     <div className='flex justify-between'>
                       <span className='text-muted-foreground text-xs'>Type:</span>
                       <span className='font-medium capitalize text-xs'>{order.type}</span>
@@ -508,12 +508,12 @@ export function OrderDetailModal({
                       <span className='text-muted-foreground text-xs'>Due:</span>
                       <span className='font-medium text-xs'>{formatDate(order.due_date)}</span>
                     </div>
-                    <div className='flex justify-between col-span-2'>
+                    <div className='flex justify-between col-span-full'>
                       <span className='text-muted-foreground text-xs'>Created:</span>
                       <span className='font-medium text-xs'>{formatDate(order.created_at)}</span>
                     </div>
                     {RACK_CONFIG.editableStatuses.includes(order.status) ? (
-                      <div className='col-span-2 space-y-2 pt-2 border-t border-border mt-1'>
+                      <div className='col-span-full space-y-2 pt-2 border-t border-border mt-1'>
                         <label className='block text-sm font-medium text-muted-foreground'>
                           {RACK_CONFIG.label}
                         </label>
@@ -609,8 +609,8 @@ export function OrderDetailModal({
                   <h3 className='text-base font-semibold text-foreground mb-2'>
                     Client Information
                   </h3>
-                  <div className='grid grid-cols-2 gap-x-4 gap-y-1 text-sm'>
-                    <div className='flex justify-between col-span-2'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm'>
+                    <div className='flex justify-between col-span-full'>
                       <span className='text-muted-foreground text-xs'>Name:</span>
                       <span className='font-medium text-xs'>{order.client_name || 'Unknown Client'}</span>
                     </div>
@@ -626,7 +626,7 @@ export function OrderDetailModal({
                         {order.client_email ? (revealedContact ? order.client_email : maskEmail(order.client_email)) : 'N/A'}
                       </span>
                     </div>
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between col-span-full'>
                       <span className='text-muted-foreground text-xs'>Language:</span>
                       <span className='font-medium text-xs'>{order.client_language || 'English'}</span>
                     </div>
@@ -744,7 +744,7 @@ export function OrderDetailModal({
                         </div>
                       )}
 
-                      <div className='grid grid-cols-2 gap-4 text-sm mb-3'>
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3'>
                         <div>
                           <span className='text-muted-foreground'>Color:</span>
                           <span className='ml-2'>

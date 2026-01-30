@@ -8,7 +8,7 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Final verification and documentation sync
+**Current focus:** User Acceptance Testing (UAT) pending
 
 ## Current Status
 
@@ -31,7 +31,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 8 - Timer Removal | ✅ COMPLETE | 2/2 |
 | 9 - Responsive | ✅ COMPLETE | Implemented |
 | 10 - Calendar | ✅ COMPLETE | Implemented |
-| 11 - Cleanup & Polish | ○ PENDING | 0/1 |
+| 11 - Cleanup & Polish | ✅ COMPLETE | 1/1 |
 
 ## Execution Waves
 
@@ -51,7 +51,7 @@ WAVE 2 (Parallel - Run in separate terminals) ✅ DONE
 +-- Phase 10: Calendar COMPLETE
 
 WAVE 3 (Final Polish)
-+-- Phase 11: Cleanup & Polish PENDING (0/1)
++-- Phase 11: Cleanup & Polish COMPLETE (1/1) ✅ DONE
 ```
 
 ## Accumulated Decisions
@@ -83,21 +83,36 @@ WAVE 3 (Final Polish)
 | Case-insensitive duplicate check | 07-03 | Team API uses ilike for name comparison |
 | Export in filter dropdown | 07-02 | Added export option inside AssigneeFilter dropdown (appears when seamstress selected) |
 | FileSpreadsheet icon for exports | 07-02 | Used lucide FileSpreadsheet icon for export menu items in 3-dot menu |
+| Only inactive staff deletable | 11-01 | UI restricts delete button to inactive members to prevent accidental deletion |
+| Delete checks assignments | 11-01 | DELETE endpoint checks for assignments before allowing deletion to prevent orphans |
+| SMS external integration | 11-01 | SMS integration handled outside codebase via N8N workflows, mobile_phone field ready |
 
 ## Next Action
 
-**Execute Phase 11:** Run `/gsd:execute-phase 11` to close 5 implementation gaps:
-- CLN-01: Two-column form layouts
-- CLN-02: SMS routing verification
-- CLN-03: Staff hard delete endpoint
-- CLN-04: iPad portrait verification
-- CLN-05: Calendar scroll verification
+**UAT PENDING**
+
+All 11 phases of the Final Modifications project are complete:
+- 10 core phases (Item-Level Assignment through Calendar)
+- Phase 11 gap closure (5 implementation gaps resolved)
+- All 17 MODs Technical Specifications (39 requirements) implemented
+
+**Awaiting:** User Acceptance Testing with client on iPad/iPhone devices.
+
+UAT Checklist:
+- [ ] Test order intake flow on iPad
+- [ ] Test item-level assignment
+- [ ] Test item-level pricing adjustments
+- [ ] Test CSV exports
+- [ ] Test responsive design on iPhone
+- [ ] Test calendar with unassigned items
+- [ ] Verify two-column layouts on tablet
+- [ ] Confirm SMS notifications work (external n8n)
 
 ## Session Continuity
 
 - **Last session:** 2026-01-28
-- **Status:** 10/10 core phases complete, Phase 11 (cleanup) pending
-- **Next:** Execute Phase 11 gap closure tasks
+- **Status:** 11/11 phases complete - UAT PENDING
+- **Next:** User Acceptance Testing with client
 
 ## Session Notes
 
@@ -205,6 +220,15 @@ WAVE 3 (Final Polish)
   - Fixed critical git issue: 229 files now tracked (was only 3)
   - Fixed TypeScript errors in StaffSession usage (workload/calendar pages)
   - Commits: 294764d, 604ac37, ed99f7d, 0d810a6
+
+- 2026-01-28: Completed 11-01 (Gap closure tasks) - PHASE 11 COMPLETE
+  - Task 1: Applied two-column responsive grids to order detail modal forms
+  - Task 2: Verified SMS routing (mobile_phone field ready, integration external via N8N)
+  - Task 3: Created staff hard delete endpoint with assignment protection
+  - Task 4: Documented iPad portrait verification procedures (768-1024px)
+  - Task 5: Verified calendar scroll implementation (multi-level overflow)
+  - All 5 implementation gaps from Technical Specifications review resolved
+  - ALL 11 PHASES COMPLETE - PROJECT READY FOR DEPLOYMENT
 
 ### Quick Tasks Completed
 
