@@ -8,7 +8,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import { createClient } from '@/lib/supabase/client';
 import { Service } from '@/lib/types/database';
@@ -881,7 +880,7 @@ export function GarmentServicesStep({
                           onValueChange={val => updateAssignment(idx, val || null)}
                         >
                           <SelectTrigger className="h-8 text-xs">
-                            <span className="truncate">{getSeamstressName(svc.assignedSeamstressId)}</span>
+                            <span className="truncate">{getSeamstressName(svc.assignedSeamstressId ?? null)}</span>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="">Non assigne</SelectItem>
