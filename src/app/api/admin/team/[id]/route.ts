@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 
 // DELETE: Hard delete a staff member
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
