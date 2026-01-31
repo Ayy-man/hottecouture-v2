@@ -523,18 +523,9 @@ export default function WorkloadPage() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm font-medium">{staff.name}</CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                        onClick={() => handleExportSeamstress(staff.id, staff.name)}
-                        title={`Export ${staff.name}'s tasks`}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                      </Button>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-3">
                     <div className="flex items-center justify-between">
                       <GaugeCircle
                         value={utilization}
@@ -547,6 +538,14 @@ export default function WorkloadPage() {
                         <div className="text-sm">{workload.totalHours.toFixed(1)}h</div>
                       </div>
                     </div>
+                    {/* Export Link - MOD-009 */}
+                    <button
+                      onClick={() => handleExportSeamstress(staff.id, staff.name)}
+                      className="w-full flex items-center justify-center gap-2 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-colors border border-primary-200 hover:border-primary-300"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>Exporter Liste de Projet</span>
+                    </button>
                   </CardContent>
                 </Card>
               );

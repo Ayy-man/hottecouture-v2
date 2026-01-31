@@ -519,9 +519,9 @@ export function GarmentServicesStep({
   // ===========================================================================
 
   return (
-    <div className="h-full flex flex-col overflow-hidden min-h-0">
+    <div className="flex flex-col min-h-0 h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-white flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-white flex-shrink-0 sticky top-0 z-10">
         <Button
           variant="ghost"
           onClick={onPrev}
@@ -549,8 +549,8 @@ export function GarmentServicesStep({
         </Button>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-4">
+      {/* Main Content - scrollable on mobile */}
+      <div className="flex-1 overflow-y-auto min-h-0 p-4 pb-24 md:pb-4">
         <div className="max-w-4xl mx-auto space-y-4">
           {/* Section 1: Garment Configuration */}
           <Card>
@@ -806,14 +806,13 @@ export function GarmentServicesStep({
                               -
                             </td>
                             <td className="px-4 py-2 whitespace-nowrap text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
+                              <button
+                                type="button"
                                 onClick={() => addServiceToCurrentGarment(service)}
-                                className="h-7 px-3 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50"
+                                className="h-8 px-3 text-xs font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-md transition-colors min-w-[70px]"
                               >
                                 Ajouter
-                              </Button>
+                              </button>
                             </td>
                           </tr>
                         ))

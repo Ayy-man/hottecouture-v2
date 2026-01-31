@@ -449,8 +449,8 @@ export default function IntakePage() {
           )}
 
           {/* Step content - One Page App */}
-          <Card className='shadow-lg border-0 bg-white/95 backdrop-blur-sm flex-1 min-h-0'>
-            <CardContent className='p-3 h-full overflow-y-auto'>
+          <Card className='shadow-lg border-0 bg-white/95 backdrop-blur-sm flex-1 min-h-0 overflow-hidden'>
+            <CardContent className='p-0 h-full overflow-y-auto'>
               {renderStep()}
             </CardContent>
           </Card>
