@@ -11,12 +11,13 @@ import {
 import { GaugeCircle } from '@/components/ui/gauge-1';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock, Users, AlertTriangle, UserPlus } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Users, AlertTriangle, UserPlus, Download } from 'lucide-react';
 import Link from 'next/link';
 import { addDays, startOfDay, endOfDay, format } from 'date-fns';
 import { useStaff } from '@/lib/hooks/useStaff';
 import { useStaffSession } from '@/components/staff';
 import { useToast } from '@/components/ui/toast';
+import { triggerDownload } from '@/lib/exports/csv-utils';
 
 
 const HOURS_PER_DAY = 8;
@@ -430,6 +431,23 @@ export default function WorkloadPage() {
     }
   };
 
+  // Export handler for seamstress tasks (MOD-009)
+  const handleExportSeamstress = async (seamstressId: string, seamstressName: string) => {
+    try {
+      const response = await fetch(`/api/admin/export/seamstress?seamstressId=${seamstressId}`);
+      const data = await response.json();
+      if (data.csv) {
+        triggerDownload(data.csv, data.filename || `${seamstressName}-tasks.csv`);
+        toast.success(`Exported tasks for ${seamstressName}`);
+      } else {
+        toast.error(data.error || 'Export failed');
+      }
+    } catch (error) {
+      toast.error('Export failed: Network error');
+      console.error('Export error:', error);
+    }
+  };
+
   if (loading || staffLoading) {
     return (
       <AuthGuard>
@@ -503,7 +521,18 @@ export default function WorkloadPage() {
               return (
                 <Card key={staff.id}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">{staff.name}</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">{staff.name}</CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                        onClick={() => handleExportSeamstress(staff.id, staff.name)}
+                        title={`Export ${staff.name}'s tasks`}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
