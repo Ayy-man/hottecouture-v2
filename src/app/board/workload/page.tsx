@@ -413,7 +413,7 @@ export default function WorkloadPage() {
       const response = await fetch(`/api/garment-service/${garmentServiceId}/assign`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assigned_seamstress_id: currentStaff.staffId }),
+        body: JSON.stringify({ seamstress_id: currentStaff.staffId }),
       });
 
       if (response.ok) {
@@ -607,7 +607,7 @@ export default function WorkloadPage() {
                                   const response = await fetch(`/api/garment-service/${item.garmentServiceId}/assign`, {
                                     method: 'PATCH',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ assigned_seamstress_id: e.target.value }),
+                                    body: JSON.stringify({ seamstress_id: e.target.value }),
                                   });
                                   if (response.ok) {
                                     window.location.reload();

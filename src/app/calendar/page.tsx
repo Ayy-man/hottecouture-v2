@@ -169,7 +169,7 @@ export default function CalendarPage() {
       const response = await fetch(`/api/garment-service/${garmentServiceId}/assign`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assigned_seamstress_id: currentStaff.staffId }),
+        body: JSON.stringify({ seamstress_id: currentStaff.staffId }),
       });
 
       if (!response.ok) {
