@@ -76,8 +76,8 @@ export default function OrderStatusPage() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!phoneNumber.trim() || !lastName.trim()) {
-      setError('Please enter both phone number and last name');
+    if (!phoneNumber.trim() && !lastName.trim()) {
+      setError('Please enter a phone number or last name');
       return;
     }
 

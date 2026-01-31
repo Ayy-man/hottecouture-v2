@@ -472,7 +472,7 @@ export default function BoardPage() {
             <Button
               variant='secondary'
               size='sm'
-              className='bg-white/90 backdrop-blur border border-border shadow-sm hover:bg-white text-xs touch-target-sm'
+              className='bg-white/90 backdrop-blur border border-border shadow-sm hover:bg-white text-xs touch-target-sm text-foreground'
               onClick={() => setShowWorkListExport(true)}
             >
               Export Work List

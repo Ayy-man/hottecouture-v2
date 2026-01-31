@@ -11,21 +11,30 @@ export async function GET(request: NextRequest) {
     const phone = searchParams.get('phone')
     const lastName = searchParams.get('lastName')
 
-    if (!phone || !lastName) {
-      return NextResponse.json({ 
-        error: 'Phone number and last name are required' 
+    if (!phone && !lastName) {
+      return NextResponse.json({
+        error: 'Phone number or last name is required'
       }, { status: 400 })
     }
 
     console.log('🔍 ORDER SEARCH API: Searching for:', { phone, lastName })
-    
+
     const supabase = await createServiceRoleClient()
-    
+
+    // Build filter conditions based on provided parameters
+    const conditions: string[] = []
+    if (phone) {
+      conditions.push(`phone.eq.${phone.trim()}`)
+    }
+    if (lastName) {
+      conditions.push(`last_name.ilike.%${lastName.trim()}%`)
+    }
+
     // First, find the client by phone OR last name
     const { data: clients, error: clientError } = await supabase
       .from('client')
       .select('id, first_name, last_name, phone, email')
-      .or(`phone.eq.${phone.trim()},last_name.ilike.%${lastName.trim()}%`) as { data: any[] | null, error: any }
+      .or(conditions.join(',')) as { data: any[] | null, error: any }
 
     if (clientError) {
       console.error('❌ Error searching clients:', clientError)

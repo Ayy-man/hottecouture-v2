@@ -169,13 +169,13 @@ export default function HomePage() {
             </Card>
 
             {/* Test Customer Portal Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-3 hover-lift border-2 border-dashed border-purple-300'>
-              <div className='absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <div className='absolute top-2 right-2 bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full font-medium'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-3 hover-lift border-2 border-dashed border-accent-taupe/30'>
+              <div className='absolute inset-0 bg-gradient-to-br from-accent-taupe/10 to-accent-contrast/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
+              <div className='absolute top-2 right-2 bg-accent-taupe text-white text-xs px-2 py-0.5 rounded-full font-medium'>
                 TEST
               </div>
               <CardHeader className='pb-2'>
-                <div className='w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+                <div className='w-12 h-12 bg-gradient-to-br from-accent-taupe to-accent-contrast rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <span className='text-2xl'>🧪</span>
                 </div>
                 <CardTitle className='text-lg font-bold text-text mb-1'>
@@ -189,7 +189,7 @@ export default function HomePage() {
                 <a href='/portal' target='_blank' className='block cursor-pointer'>
                   <Button
                     {...createHapticButtonProps('medium')}
-                    className='w-full h-10 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press relative overflow-hidden'
+                    className='w-full h-10 bg-gradient-to-r from-accent-taupe to-accent-contrast hover:from-accent-taupe hover:to-accent-contrast text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press relative overflow-hidden'
                   >
                     Ouvrir Portail Client
                   </Button>
