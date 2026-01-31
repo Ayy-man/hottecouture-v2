@@ -589,9 +589,9 @@ export const Gantt: FC<GanttProps> = ({
 }) => {
   return (
     <GanttProvider range={range} zoom={zoom}>
-      <div className={cn('flex gap-4', className)} {...props}>
+      <div className={cn('flex flex-col md:flex-row gap-2 md:gap-4', className)} {...props}>
         {showSidebar && (
-          <div className="w-64 flex-shrink-0">
+          <div className="hidden md:block w-48 lg:w-64 flex-shrink-0">
             <GanttSidebar>
               <GanttSidebarGroup>
                 <GanttSidebarGroupHeader name="Features" />
@@ -608,7 +608,7 @@ export const Gantt: FC<GanttProps> = ({
             </GanttSidebar>
           </div>
         )}
-        <div className="flex-1 overflow-hidden border rounded-lg">
+        <div className="flex-1 overflow-hidden border rounded-lg min-w-0">
           <GanttTimeline
             features={features}
             markers={markers}

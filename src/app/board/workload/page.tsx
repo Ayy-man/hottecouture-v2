@@ -666,7 +666,7 @@ export default function WorkloadPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Order Timeline</CardTitle>
             </CardHeader>
-            <CardContent className="h-[400px] overflow-auto">
+            <CardContent className="h-[250px] md:h-[400px] overflow-auto">
               {ganttFeatures.length > 0 ? (
                 <Gantt
                   features={ganttFeatures}
