@@ -45,26 +45,37 @@ export function GarmentTaskSummary({
 
   return (
     <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-      {/* Header with time summary */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Time Summary</span>
-          {actualMinutes > 0 && (
-            <Badge className="bg-green-100 text-green-800 text-xs">
-              Recorded
-            </Badge>
-          )}
-        </div>
-        <div className="text-xs text-muted-foreground">
-          <span>Planifie: {formatMinutes(plannedMinutes)}</span>
-          <span className="mx-2">|</span>
-          <span>Reel: {actualMinutes > 0 ? formatMinutes(actualMinutes) : '--'}</span>
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border/50 pb-2">
+        <span className="text-sm font-semibold text-foreground">Temps estimé</span>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <span className="text-xs text-muted-foreground">Planifié</span>
+            <p className="text-sm font-medium text-foreground">{formatMinutes(plannedMinutes)}</p>
+          </div>
           {actualMinutes > 0 && (
             <>
-              <span className="mx-2">|</span>
-              <span className={variance > 0 ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>
-                {variance > 0 ? '+' : ''}{formatMinutes(Math.abs(variance))}
-              </span>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-right">
+                <span className="text-xs text-muted-foreground">Réel</span>
+                <p className="text-sm font-medium text-foreground">{formatMinutes(actualMinutes)}</p>
+              </div>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-right">
+                <span className="text-xs text-muted-foreground">Écart</span>
+                <p className={`text-sm font-medium ${variance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {variance > 0 ? '+' : ''}{formatMinutes(Math.abs(variance))}
+                </p>
+              </div>
+            </>
+          )}
+          {actualMinutes === 0 && (
+            <>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-right">
+                <span className="text-xs text-muted-foreground">Réel</span>
+                <p className="text-sm text-muted-foreground/70">--</p>
+              </div>
             </>
           )}
         </div>
@@ -72,22 +83,24 @@ export function GarmentTaskSummary({
 
       {/* Services list */}
       {services.length > 0 ? (
-        <div className="text-xs text-muted-foreground space-y-1">
+        <div className="space-y-1.5">
           {services.map((s, idx) => {
             const serviceName = s.service?.name || s.custom_service_name || 'Service';
             // Priority: garment_service.estimated_minutes > service.estimated_minutes
             const serviceMinutes = s.estimated_minutes || s.service?.estimated_minutes || 15;
             return (
-              <div key={idx} className="flex justify-between">
-                <span>- {serviceName} {s.quantity > 1 ? `(x${s.quantity})` : ''}</span>
-                <span className="text-muted-foreground/70">{serviceMinutes * (s.quantity || 1)} min</span>
+              <div key={idx} className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">
+                  {serviceName} {s.quantity > 1 ? `(×${s.quantity})` : ''}
+                </span>
+                <span className="text-foreground font-medium">{serviceMinutes * (s.quantity || 1)} min</span>
               </div>
             );
           })}
         </div>
       ) : (
-        <div className="text-xs text-muted-foreground/70 italic">
-          Aucun service associe
+        <div className="text-sm text-muted-foreground/70 italic">
+          Aucun service associé
         </div>
       )}
     </div>
