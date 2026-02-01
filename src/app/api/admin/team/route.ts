@@ -33,7 +33,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name } = body;
+    const { name, email, phone, role, color, weekly_capacity_hours } = body;
 
     // Validate name
     if (!name || typeof name !== 'string') {
@@ -67,10 +67,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Build insert object with optional fields
+    const insertData: Record<string, unknown> = {
+      name: trimmedName,
+      is_active: true,
+    };
+
+    if (email) insertData.email = email.trim();
+    if (phone) insertData.phone = phone.trim();
+    if (role) insertData.role = role;
+    if (color) insertData.color = color;
+    if (weekly_capacity_hours !== undefined) {
+      insertData.weekly_capacity_hours = weekly_capacity_hours;
+    }
+
     // Insert new staff member
     const { data: newStaff, error } = await supabase
       .from('staff')
-      .insert({ name: trimmedName, is_active: true })
+      .insert(insertData)
       .select()
       .single();
 
@@ -92,11 +106,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH: Update staff member (toggle active status or update name)
+// PATCH: Update staff member (toggle active status or update fields)
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, is_active, name } = body;
+    const { id, is_active, name, email, phone, role, color, weekly_capacity_hours } = body;
 
     // Validate id
     if (!id || typeof id !== 'string') {
@@ -107,7 +121,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Build update object
-    const updates: { is_active?: boolean; name?: string } = {};
+    const updates: Record<string, unknown> = {};
 
     if (typeof is_active === 'boolean') {
       updates.is_active = is_active;
@@ -124,6 +138,14 @@ export async function PATCH(request: NextRequest) {
       updates.name = trimmedName;
     }
 
+    if (email !== undefined) updates.email = email ? email.trim() : null;
+    if (phone !== undefined) updates.phone = phone ? phone.trim() : null;
+    if (role !== undefined) updates.role = role;
+    if (color !== undefined) updates.color = color;
+    if (weekly_capacity_hours !== undefined) {
+      updates.weekly_capacity_hours = weekly_capacity_hours;
+    }
+
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(
         { success: false, error: 'No valid fields to update' },
@@ -138,7 +160,7 @@ export async function PATCH(request: NextRequest) {
       const { data: existing } = await supabase
         .from('staff')
         .select('id, name')
-        .ilike('name', updates.name)
+        .ilike('name', updates.name as string)
         .neq('id', id)
         .single();
 

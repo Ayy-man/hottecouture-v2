@@ -1,7 +1,5 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
-
 interface ServiceProp {
   id?: string;
   quantity: number;
