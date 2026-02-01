@@ -5,19 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import TrackingTimeline, { TimelineItem } from '@/components/ui/tracking-timeline';
-import { 
-  Search, 
-  Phone, 
-  Hash, 
-  Package, 
-  Calendar, 
+import {
+  Search,
+  Phone,
+  Hash,
+  Package,
+  Calendar,
   RefreshCw,
   ClipboardList,
   Scissors,
   CheckCircle,
   Gift,
-  Home
+  Home,
+  ArrowLeft
 } from 'lucide-react';
+import { MuralBackground } from '@/components/ui/mural-background';
+import Link from 'next/link';
 
 interface OrderResult {
   order_number: number;
@@ -161,40 +164,53 @@ export default function CustomerPortalPage() {
   };
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-background to-muted'>
-      <div className='container mx-auto px-4 py-8 max-w-lg'>
-        <div className='text-center mb-8'>
-          <h1 className='text-3xl font-bold text-foreground mb-2'>Hotte Couture</h1>
-          <p className='text-muted-foreground'>Vérifiez le statut de votre commande</p>
-        </div>
+    <MuralBackground useMuralBackground={true} opacity={0.12}>
+      <div className='min-h-screen'>
+        <div className='container mx-auto px-4 py-8 max-w-lg'>
+          <div className='text-center mb-8'>
+            <div className='flex items-center justify-center mb-4'>
+              <Link href='/' className='mr-4'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='border-border hover:bg-muted'
+                >
+                  <ArrowLeft className='w-4 h-4 mr-2' />
+                  Accueil
+                </Button>
+              </Link>
+              <h1 className='text-3xl font-bold text-foreground'>Hotte Couture</h1>
+            </div>
+            <p className='text-muted-foreground'>Vérifiez le statut de votre commande</p>
+          </div>
 
-        <Card className='shadow-xl border-0'>
+          <Card className='shadow-lg border-0 bg-white/90 backdrop-blur-sm'>
           <CardContent className='p-6'>
             {!selectedOrder ? (
               <>
-                <div className='flex gap-2 mb-4'>
+                <div className='flex bg-muted p-1 rounded-lg border border-border mb-4'>
                   <button
                     type='button'
                     onClick={() => setSearchType('phone')}
-                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                       searchType === 'phone'
-                        ? 'bg-foreground text-white'
-                        : 'bg-muted text-muted-foreground hover:bg-accent'
+                        ? 'bg-white shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <Phone className='w-4 h-4 inline mr-2' />
+                    <Phone className='w-4 h-4' />
                     Par téléphone
                   </button>
                   <button
                     type='button'
                     onClick={() => setSearchType('order')}
-                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                       searchType === 'order'
-                        ? 'bg-foreground text-white'
-                        : 'bg-muted text-muted-foreground hover:bg-accent'
+                        ? 'bg-white shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <Hash className='w-4 h-4 inline mr-2' />
+                    <Hash className='w-4 h-4' />
                     Par # commande
                   </button>
                 </div>
@@ -310,10 +326,11 @@ export default function CustomerPortalPage() {
           </CardContent>
         </Card>
 
-        <div className='text-center mt-6 text-muted-foreground text-sm'>
-          <p>Des questions? Appelez-nous au <a href='tel:+15145551234' className='underline'>514-555-1234</a></p>
+          <div className='text-center mt-6 text-muted-foreground text-sm'>
+            <p>Des questions? Appelez-nous au <a href='tel:+15145551234' className='underline'>514-555-1234</a></p>
+          </div>
         </div>
       </div>
-    </div>
+    </MuralBackground>
   );
 }

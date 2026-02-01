@@ -177,13 +177,13 @@ export default function OrderStatusPage() {
               <Button
                 variant='outline'
                 size='sm'
-                className='btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border'
+                className='border-border hover:bg-muted'
               >
                 <ArrowLeft className='w-4 h-4 mr-2' />
                 Back to Home
               </Button>
             </Link>
-            <h1 className='text-3xl sm:text-4xl font-bold bg-gradient-to-r from-accent-taupe to-accent-contrast bg-clip-text text-transparent'>
+            <h1 className='text-3xl sm:text-4xl font-bold text-foreground'>
               Order Status
             </h1>
           </div>
@@ -254,7 +254,7 @@ export default function OrderStatusPage() {
                   <Button
                     type='submit'
                     disabled={loading}
-                    className='flex-1 sm:flex-none btn-press bg-gradient-to-r from-accent-taupe to-accent-contrast hover:from-accent-taupe hover:to-accent-contrast text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                    className='flex-1 sm:flex-none bg-foreground hover:bg-foreground/90 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     {loading ? (
                       <>
@@ -274,7 +274,7 @@ export default function OrderStatusPage() {
                       type='button'
                       variant='outline'
                       onClick={handleNewSearch}
-                      className='btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border'
+                      className='border-border hover:bg-muted'
                     >
                       New Search
                     </Button>
@@ -301,7 +301,7 @@ export default function OrderStatusPage() {
             <div className='space-y-6 pb-32'>
               {orders.length > 0 && (
                 <div className='text-center mb-6'>
-                  <h2 className='text-2xl font-semibold bg-gradient-to-r from-accent-taupe to-accent-contrast bg-clip-text text-transparent mb-2'>
+                  <h2 className='text-2xl font-semibold text-foreground mb-2'>
                     Found {orders.length} order{orders.length !== 1 ? 's' : ''}
                   </h2>
                   <p className='text-muted-foreground font-medium'>
@@ -459,7 +459,7 @@ export default function OrderStatusPage() {
                       <div className='flex flex-col sm:flex-row gap-3'>
                         <Button
                           asChild
-                          className='flex-1 btn-press bg-gradient-to-r from-accent-taupe to-accent-contrast hover:from-accent-taupe hover:to-accent-contrast text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300'
+                          className='flex-1 bg-foreground hover:bg-foreground/90 text-white font-medium'
                         >
                           <a href={`/labels/${order.id}`} target='_blank'>
                             Print Labels
@@ -468,7 +468,7 @@ export default function OrderStatusPage() {
                         <Button
                           variant='outline'
                           onClick={handleNewSearch}
-                          className='flex-1 btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border'
+                          className='flex-1 border-border hover:bg-muted'
                         >
                           New Search
                         </Button>
