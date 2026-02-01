@@ -25,6 +25,7 @@ export async function GET(
     }
 
     // Fetch all garments for this order - each garment IS a task
+    // Include assigned_seamstress_id from garment_service for item-level assignments
     const { data: garments, error } = await supabase
       .from('garment')
       .select(`
@@ -45,6 +46,7 @@ export async function GET(
           id,
           quantity,
           notes,
+          assigned_seamstress_id,
           service:service_id (
             id,
             name,
@@ -54,6 +56,32 @@ export async function GET(
         )
       `)
       .eq('order_id', orderId);
+
+    // Collect all unique seamstress IDs to fetch their names
+    const seamstressIds = new Set<string>();
+    (garments || []).forEach((g: any) => {
+      (g.garment_service || []).forEach((gs: any) => {
+        if (gs.assigned_seamstress_id) {
+          seamstressIds.add(gs.assigned_seamstress_id);
+        }
+      });
+    });
+
+    // Fetch seamstress names from staff table
+    let seamstressMap: Record<string, string> = {};
+    if (seamstressIds.size > 0) {
+      const { data: staffData } = await supabase
+        .from('staff')
+        .select('id, name')
+        .in('id', Array.from(seamstressIds));
+
+      if (staffData) {
+        seamstressMap = staffData.reduce((acc: Record<string, string>, s: any) => {
+          acc[s.id] = s.name;
+          return acc;
+        }, {});
+      }
+    }
 
     if (error) {
       console.error('Error fetching garments:', error);
@@ -76,6 +104,23 @@ export async function GET(
         .filter(Boolean)
         .join(', ');
 
+      // Get item-level assignments from garment_service
+      // Find the first assigned seamstress for backward compatibility with assignee field
+      const firstAssignedService = (g.garment_service || []).find(
+        (gs: any) => gs.assigned_seamstress_id
+      );
+      const assigneeFromService = firstAssignedService?.assigned_seamstress_id
+        ? seamstressMap[firstAssignedService.assigned_seamstress_id] || null
+        : null;
+
+      // Transform services to include seamstress names
+      const servicesWithAssignees = (g.garment_service || []).map((gs: any) => ({
+        ...gs,
+        assigned_seamstress_name: gs.assigned_seamstress_id
+          ? seamstressMap[gs.assigned_seamstress_id] || null
+          : null,
+      }));
+
       return {
         id: g.id,
         garment_id: g.id, // For compatibility
@@ -84,7 +129,8 @@ export async function GET(
         planned_minutes: estimatedMinutes,
         actual_minutes: g.actual_minutes || 0,
         is_active: g.is_active || false,
-        assignee: g.assignee,
+        // Use item-level assignment from garment_service, fall back to legacy garment.assignee
+        assignee: assigneeFromService || g.assignee || null,
         started_at: g.started_at,
         stopped_at: g.stopped_at,
         notes: g.notes,
@@ -96,7 +142,7 @@ export async function GET(
           label_code: g.label_code,
           order_id: g.order_id,
         },
-        services: g.garment_service || [],
+        services: servicesWithAssignees,
         timeVariance: (g.actual_minutes || 0) - estimatedMinutes,
         isActiveTimer: g.is_active && g.started_at && !g.stopped_at,
       };

@@ -188,7 +188,7 @@ export default function OrderStatusPage() {
             </h1>
           </div>
           <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
-            Check the status of your order by entering your phone number and
+            Check the status of your order by entering your phone number or
             last name
           </p>
         </div>
@@ -203,7 +203,7 @@ export default function OrderStatusPage() {
                 Search Order
               </CardTitle>
               <p className='text-muted-foreground'>
-                Enter your phone number and last name to find your order
+                Enter your phone number or last name to find your order
               </p>
             </CardHeader>
             <CardContent>
@@ -214,7 +214,7 @@ export default function OrderStatusPage() {
                       htmlFor='phone'
                       className='block text-sm font-medium text-foreground mb-2'
                     >
-                      Phone Number *
+                      Phone Number
                     </label>
                     <div className='relative'>
                       <Phone className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
@@ -225,7 +225,6 @@ export default function OrderStatusPage() {
                         value={phoneNumber}
                         onChange={e => setPhoneNumber(e.target.value)}
                         className='pl-10'
-                        required
                       />
                     </div>
                   </div>
@@ -235,7 +234,7 @@ export default function OrderStatusPage() {
                       htmlFor='lastName'
                       className='block text-sm font-medium text-foreground mb-2'
                     >
-                      Last Name *
+                      Last Name
                     </label>
                     <div className='relative'>
                       <User className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
@@ -246,7 +245,6 @@ export default function OrderStatusPage() {
                         value={lastName}
                         onChange={e => setLastName(e.target.value)}
                         className='pl-10'
-                        required
                       />
                     </div>
                   </div>
