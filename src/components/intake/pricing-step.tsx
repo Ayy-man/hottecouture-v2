@@ -58,8 +58,6 @@ export function PricingStep({
   // const t = useTranslations('intake.pricing')
   const [calculation, setCalculation] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
-  const [isEditingTotal, setIsEditingTotal] = useState(false);
-  const [editTotalValue, setEditTotalValue] = useState('');
 
   // Fetch services for display names
   useEffect(() => {
