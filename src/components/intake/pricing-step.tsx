@@ -443,6 +443,7 @@ export function PricingStep({
                   </div>
 
                   <div className='border-t border-primary/20 pt-2'>
+                    {/* Total-level modifier temporarily disabled - use item-level modifiers instead
                     {isEditingTotal ? (
                       <div className='space-y-2'>
                         <div className='flex items-center gap-2'>
@@ -491,21 +492,16 @@ export function PricingStep({
                           </Button>
                         </div>
                       </div>
-                    ) : (
+                    ) : ( */}
                       <div className='flex justify-between items-center'>
                         <span className='text-lg font-bold'>Total:</span>
                         <div className='flex items-center gap-2'>
                           <div className='text-right'>
-                            <span className={`text-xl font-bold ${totalOverrideCents ? 'text-amber-600' : 'text-primary'}`}>
-                              {formatCurrency(totalOverrideCents ?? calculation.total_cents)}
+                            <span className={`text-xl font-bold text-primary`}>
+                              {formatCurrency(calculation.total_cents)}
                             </span>
-                            {totalOverrideCents && (
-                              <div className='text-xs text-muted-foreground line-through'>
-                                Calculé: {formatCurrency(calculation.total_cents)}
-                              </div>
-                            )}
                           </div>
-                          <Button
+                          {/* <Button
                             type='button'
                             size='sm'
                             variant='ghost'
@@ -518,10 +514,10 @@ export function PricingStep({
                             className='text-xs text-muted-foreground hover:text-primary'
                           >
                             Modifier
-                          </Button>
+                          </Button> */}
                         </div>
                       </div>
-                    )}
+                    {/* )} */}
                   </div>
                 </div>
               </CardContent>
