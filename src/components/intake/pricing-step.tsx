@@ -54,8 +54,6 @@ export function PricingStep({
   isSubmitting,
   autoPrint = true,
   onAutoPrintChange,
-  totalOverrideCents,
-  onTotalOverrideChange,
 }: PricingStepProps) {
   // const t = useTranslations('intake.pricing')
   const [calculation, setCalculation] = useState<any>(null);
