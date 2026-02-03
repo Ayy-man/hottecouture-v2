@@ -1023,7 +1023,7 @@ export function OrderDetailModal({
 
                       {/* Garment Task Summary */}
                       <div className='mt-4 pt-3 border-t border-border'>
-                        <div className='flex items-center justify-between mb-2'>
+                        <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2'>
                           <GarmentTaskSummary
                             garmentId={garment.id}
                             orderId={displayOrder.id}
@@ -1037,7 +1037,7 @@ export function OrderDetailModal({
                               setSelectedGarmentForTasks(garment.id);
                               setShowTaskModal(true);
                             }}
-                            className='text-xs'
+                            className='text-xs shrink-0'
                           >
                             <ClipboardList className='w-4 h-4 mr-1' />
                             Manage Tasks

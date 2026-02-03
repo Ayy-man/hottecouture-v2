@@ -146,7 +146,7 @@ export function canOrderMoveToStatus(order: OrderWithTasks, targetStatus: OrderS
     done: ['ready', 'working', 'archived'],
     ready: ['delivered', 'done', 'archived'],
     delivered: ['ready', 'archived'],
-    archived: ['pending'], // Allow unarchiving
+    archived: ['pending', 'working', 'done', 'ready', 'delivered'], // Allow full unarchiving (same as delivered)
   }
 
   return validOrderTransitions[currentStatus]?.includes(targetStatus) ?? false

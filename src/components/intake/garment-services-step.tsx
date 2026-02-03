@@ -762,7 +762,7 @@ export function GarmentServicesStep({
               ) : (
                 <div className="bg-card rounded-lg shadow overflow-hidden max-h-[200px] overflow-y-auto">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-muted/50 sticky top-0">
+                    <thead className="bg-muted sticky top-0 z-10">
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Service

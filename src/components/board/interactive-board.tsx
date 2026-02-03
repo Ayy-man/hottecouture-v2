@@ -117,6 +117,7 @@ export function InteractiveBoard({
       case 'ready':
         return 'ready';
       case 'delivered':
+      case 'archived': // Auto-archived orders appear in delivered column
         return 'delivered';
       default:
         return 'pending';

@@ -25,7 +25,7 @@ const validTransitions: Record<string, string[]> = {
   done: ['pending', 'working', 'ready', 'delivered', 'archived'],
   ready: ['pending', 'working', 'done', 'delivered', 'archived'],
   delivered: ['pending', 'working', 'done', 'ready', 'archived'],
-  archived: ['pending'], // Allow unarchiving
+  archived: ['pending', 'working', 'done', 'ready', 'delivered'], // Allow full unarchiving (same as delivered)
 };
 
 async function handleOrderStage(
@@ -132,6 +132,8 @@ async function handleOrderStage(
 
   // Check if we should auto-archive: transitioning to 'delivered' and already paid
   const shouldAutoArchive = newStage === 'delivered' && orderData.payment_status === 'paid';
+  // Check if we need to auto-unarchive: transitioning OUT of 'archived' to a non-archived status
+  const shouldAutoUnarchive = currentStatus === 'archived' && newStage !== 'archived';
   const now = new Date().toISOString();
 
   // Update order status (and auto-archive if conditions met)
@@ -141,6 +143,11 @@ async function handleOrderStage(
     updatePayload.is_archived = true;
     updatePayload.archived_at = now;
     console.log(`📦 Auto-archiving order #${orderData.order_number} (delivered + already paid)`);
+  }
+  if (shouldAutoUnarchive) {
+    updatePayload.is_archived = false;
+    updatePayload.archived_at = null;
+    console.log(`📦 Auto-unarchiving order #${orderData.order_number} (moving from archived to ${newStage})`);
   }
 
   const { error: updateError } = await (supabase as any)
@@ -158,6 +165,15 @@ async function handleOrderStage(
       correlationId,
       reason: 'Order was already paid when marked as delivered',
       original_transition: `${currentStatus} → delivered`,
+    });
+  }
+
+  // Log auto-unarchive if it happened
+  if (shouldAutoUnarchive) {
+    await logEvent('order', orderId, 'auto_unarchived', {
+      correlationId,
+      reason: `Order moved from archived to ${newStage} via board`,
+      transition: `archived → ${newStage}`,
     });
   }
 
@@ -347,6 +363,7 @@ async function handleOrderStage(
     allTasksComplete,
     notes: validatedData.notes,
     autoArchived: shouldAutoArchive,
+    autoUnarchived: shouldAutoUnarchive,
   });
 
   const response: OrderStageResponse = {

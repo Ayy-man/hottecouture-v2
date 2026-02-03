@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Search,
@@ -58,7 +58,6 @@ export default function OrderStatusPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [revealedContact, setRevealedContact] = useState(false);
 
-  // Privacy masking functions (standardized format)
   const maskPhone = (phone: string): string => {
     if (!phone) return '';
     const digits = phone.replace(/\D/g, '');
@@ -77,7 +76,7 @@ export default function OrderStatusPage() {
     e.preventDefault();
 
     if (!phoneNumber.trim() && !lastName.trim()) {
-      setError('Please enter a phone number or last name');
+      setError('Veuillez entrer un numéro de téléphone ou un nom de famille.');
       return;
     }
 
@@ -95,15 +94,15 @@ export default function OrderStatusPage() {
         setOrders(data.orders || []);
 
         if (data.orders.length === 0) {
-          setError('No orders found with that phone number and last name');
+          setError('Aucune commande trouvée avec ces informations.');
         }
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to search orders');
+        throw new Error(errorData.error || 'Échec de la recherche');
       }
     } catch (err) {
       console.error('Error searching orders:', err);
-      setError(err instanceof Error ? err.message : 'Failed to search orders');
+      setError(err instanceof Error ? err.message : 'Échec de la recherche');
       setOrders([]);
     } finally {
       setLoading(false);
@@ -121,15 +120,15 @@ export default function OrderStatusPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-muted text-foreground';
+        return 'bg-primary-100 text-primary-800';
       case 'working':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-secondary-100 text-secondary-800';
       case 'done':
         return 'bg-green-100 text-green-800';
       case 'ready':
         return 'bg-yellow-100 text-yellow-800';
       case 'delivered':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-primary-200 text-primary-900';
       default:
         return 'bg-muted text-foreground';
     }
@@ -138,15 +137,15 @@ export default function OrderStatusPage() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'Pending';
+        return 'En attente';
       case 'working':
-        return 'Working';
+        return 'En cours';
       case 'done':
-        return 'Done';
+        return 'Terminé';
       case 'ready':
-        return 'Ready';
+        return 'Prêt';
       case 'delivered':
-        return 'Delivered';
+        return 'Livré';
       default:
         return status;
     }
@@ -160,7 +159,7 @@ export default function OrderStatusPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('fr-CA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -170,61 +169,61 @@ export default function OrderStatusPage() {
   return (
     <MuralBackground useMuralBackground={true} opacity={0.12}>
       <div className='container mx-auto px-4 py-4 h-full flex flex-col overflow-hidden min-h-0'>
-        {/* Header - Fixed */}
-        <div className='text-center mb-6 flex-shrink-0'>
+        {/* Header */}
+        <div className='text-center mb-6 flex-shrink-0 animate-fade-in-up'>
           <div className='flex items-center justify-center mb-4'>
-            <Link href='/' className='mr-4'>
+            <Link href='/'>
               <Button
                 variant='outline'
                 size='sm'
-                className='border-border hover:bg-muted'
+                className='border-primary-200 hover:bg-primary-50 text-primary-700 rounded-xl'
               >
                 <ArrowLeft className='w-4 h-4 mr-2' />
-                Back to Home
+                Accueil
               </Button>
             </Link>
-            <h1 className='text-3xl sm:text-4xl font-bold text-foreground'>
-              Order Status
-            </h1>
           </div>
-          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
-            Check the status of your order by entering your phone number or
-            last name
+          <h1 className='text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-800 to-primary-500 bg-clip-text text-transparent'>
+            Statut de commande
+          </h1>
+          <p className='text-muted-foreground mt-1 max-w-2xl mx-auto'>
+            Recherchez votre commande par téléphone ou nom de famille
           </p>
         </div>
 
         {/* Scrollable Content Area */}
         <div className='flex-1 min-h-0 overflow-y-auto'>
-          {/* Search Form */}
-          <Card className='mb-8 shadow-lg bg-white/80 backdrop-blur-sm border-0'>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2 text-xl font-bold text-foreground'>
-                <Search className='w-5 h-5 text-blue-600' />
-                Search Order
-              </CardTitle>
-              <p className='text-muted-foreground'>
-                Enter your phone number or last name to find your order
+          {/* Search Form Card */}
+          <Card className='mb-8 shadow-xl bg-white/95 backdrop-blur-md border-0 rounded-3xl animate-fade-in-up-delay-1'>
+            <CardContent className='p-6'>
+              <div className='flex items-center gap-2 mb-1'>
+                <div className='w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center'>
+                  <Search className='w-4 h-4 text-white' />
+                </div>
+                <h2 className='text-lg font-bold text-foreground'>Rechercher une commande</h2>
+              </div>
+              <p className='text-sm text-muted-foreground mb-4 ml-10'>
+                Entrez votre téléphone ou nom de famille
               </p>
-            </CardHeader>
-            <CardContent>
+
               <form onSubmit={handleSearch} className='space-y-4'>
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                   <div>
                     <label
                       htmlFor='phone'
-                      className='block text-sm font-medium text-foreground mb-2'
+                      className='block text-sm font-medium text-foreground mb-1.5'
                     >
-                      Phone Number
+                      Numéro de téléphone
                     </label>
                     <div className='relative'>
-                      <Phone className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
+                      <Phone className='absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 w-4 h-4' />
                       <Input
                         id='phone'
                         type='tel'
-                        placeholder='e.g., 2043334440'
+                        placeholder='ex: 514-555-1234'
                         value={phoneNumber}
                         onChange={e => setPhoneNumber(e.target.value)}
-                        className='pl-10'
+                        className='pl-10 rounded-xl border-primary-200 focus:border-primary-400 focus:ring-primary-400'
                       />
                     </div>
                   </div>
@@ -232,19 +231,19 @@ export default function OrderStatusPage() {
                   <div>
                     <label
                       htmlFor='lastName'
-                      className='block text-sm font-medium text-foreground mb-2'
+                      className='block text-sm font-medium text-foreground mb-1.5'
                     >
-                      Last Name
+                      Nom de famille
                     </label>
                     <div className='relative'>
-                      <User className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
+                      <User className='absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 w-4 h-4' />
                       <Input
                         id='lastName'
                         type='text'
-                        placeholder='e.g., Singh'
+                        placeholder='ex: Tremblay'
                         value={lastName}
                         onChange={e => setLastName(e.target.value)}
-                        className='pl-10'
+                        className='pl-10 rounded-xl border-primary-200 focus:border-primary-400 focus:ring-primary-400'
                       />
                     </div>
                   </div>
@@ -254,17 +253,17 @@ export default function OrderStatusPage() {
                   <Button
                     type='submit'
                     disabled={loading}
-                    className='flex-1 sm:flex-none bg-foreground hover:bg-foreground/90 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed'
+                    className='flex-1 sm:flex-none bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     {loading ? (
                       <>
                         <RefreshCw className='w-4 h-4 mr-2 animate-spin' />
-                        Searching...
+                        Recherche...
                       </>
                     ) : (
                       <>
                         <Search className='w-4 h-4 mr-2' />
-                        Search Order
+                        Rechercher
                       </>
                     )}
                   </Button>
@@ -274,9 +273,9 @@ export default function OrderStatusPage() {
                       type='button'
                       variant='outline'
                       onClick={handleNewSearch}
-                      className='border-border hover:bg-muted'
+                      className='border-primary-200 hover:bg-primary-50 text-primary-700 rounded-xl'
                     >
-                      New Search
+                      Nouvelle recherche
                     </Button>
                   )}
                 </div>
@@ -286,10 +285,10 @@ export default function OrderStatusPage() {
 
           {/* Error Message */}
           {error && (
-            <Card className='mb-6 border-red-200 bg-gradient-to-r from-red-50 to-red-100 shadow-lg'>
+            <Card className='mb-6 border-red-200 bg-red-50/90 backdrop-blur-sm shadow-lg rounded-2xl'>
               <CardContent className='p-4'>
-                <div className='flex items-center text-red-800 font-medium'>
-                  <div className='w-5 h-5 mr-2'>⚠️</div>
+                <div className='flex items-center text-red-700 font-medium text-sm'>
+                  <span className='mr-2'>&#9888;</span>
                   <span>{error}</span>
                 </div>
               </CardContent>
@@ -300,12 +299,12 @@ export default function OrderStatusPage() {
           {hasSearched && !loading && (
             <div className='space-y-6 pb-32'>
               {orders.length > 0 && (
-                <div className='text-center mb-6'>
-                  <h2 className='text-2xl font-semibold text-foreground mb-2'>
-                    Found {orders.length} order{orders.length !== 1 ? 's' : ''}
+                <div className='text-center mb-6 animate-fade-in-up-delay-2'>
+                  <h2 className='text-2xl font-bold bg-gradient-to-r from-primary-800 to-primary-500 bg-clip-text text-transparent mb-1'>
+                    {orders.length} commande{orders.length !== 1 ? 's' : ''} trouvée{orders.length !== 1 ? 's' : ''}
                   </h2>
                   <p className='text-muted-foreground font-medium'>
-                    pour {orders[0]?.client_name} • {revealedContact ? orders[0]?.client_phone : maskPhone(orders[0]?.client_phone || '')}
+                    pour {orders[0]?.client_name} &bull; {revealedContact ? orders[0]?.client_phone : maskPhone(orders[0]?.client_phone || '')}
                   </p>
                 </div>
               )}
@@ -315,7 +314,7 @@ export default function OrderStatusPage() {
                   key={order.id}
                   isRush={order.rush}
                   orderType={order.type}
-                  className='shadow-lg hover:shadow-xl transition-shadow duration-200'
+                  className='shadow-xl hover:shadow-2xl transition-all duration-300 rounded-3xl'
                 >
                   <CardContent className='p-6'>
                     {/* Order Header */}
@@ -330,7 +329,7 @@ export default function OrderStatusPage() {
                           size='sm'
                         />
                         <Badge
-                          className={`${getStatusColor(order.status)} text-sm font-medium`}
+                          className={`${getStatusColor(order.status)} text-sm font-medium rounded-lg`}
                         >
                           {getStatusLabel(order.status)}
                         </Badge>
@@ -341,31 +340,31 @@ export default function OrderStatusPage() {
                           {formatCurrency(order.total_cents)}
                         </div>
                         <div className='text-sm text-muted-foreground'>
-                          Created: {formatDate(order.created_at)}
+                          Créé le {formatDate(order.created_at)}
                         </div>
                       </div>
                     </div>
 
                     {/* Order Details */}
                     <div className='grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6'>
-                      <div>
+                      <div className='bg-primary-50/50 rounded-xl p-4 border border-primary-100'>
                         <h4 className='font-semibold text-foreground mb-2'>
-                          Customer Information
+                          Informations du client
                         </h4>
-                        <div className='space-y-1 text-sm text-muted-foreground'>
+                        <div className='space-y-1.5 text-sm text-muted-foreground'>
                           <div className='flex items-center gap-2'>
-                            <User className='w-4 h-4' />
+                            <User className='w-4 h-4 text-primary-400' />
                             <span>{order.client_name}</span>
                           </div>
                           <div className='flex items-center gap-2'>
-                            <Phone className='w-4 h-4' />
+                            <Phone className='w-4 h-4 text-primary-400' />
                             <span className='font-mono'>
                               {revealedContact ? order.client_phone : maskPhone(order.client_phone)}
                             </span>
                           </div>
                           {order.client_email && (
                             <div className='flex items-center gap-2'>
-                              <span className='w-4 h-4'>📧</span>
+                              <span className='w-4 h-4 text-primary-400 text-center'>@</span>
                               <span className='font-mono'>
                                 {revealedContact ? order.client_email : maskEmail(order.client_email)}
                               </span>
@@ -373,39 +372,39 @@ export default function OrderStatusPage() {
                           )}
                           <button
                             onClick={() => setRevealedContact(!revealedContact)}
-                            className='flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors mt-1'
+                            className='flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 transition-colors mt-1'
                           >
-                            {revealedContact ? '🙈 Masquer' : '👁️ Afficher'}
+                            {revealedContact ? 'Masquer' : 'Afficher'}
                           </button>
                         </div>
                       </div>
 
-                      <div>
+                      <div className='bg-primary-50/50 rounded-xl p-4 border border-primary-100'>
                         <h4 className='font-semibold text-foreground mb-2'>
-                          Order Information
+                          Détails de la commande
                         </h4>
-                        <div className='space-y-1 text-sm text-muted-foreground'>
+                        <div className='space-y-1.5 text-sm text-muted-foreground'>
                           <div className='flex items-center gap-2'>
-                            <Calendar className='w-4 h-4' />
+                            <Calendar className='w-4 h-4 text-primary-400' />
                             <span>
-                              Due:{' '}
+                              Échéance :{' '}
                               {order.due_date
                                 ? formatDate(order.due_date)
-                                : 'Not set'}
+                                : 'Non définie'}
                             </span>
                           </div>
                           <div className='flex items-center gap-2'>
-                            <Package className='w-4 h-4' />
+                            <Package className='w-4 h-4 text-primary-400' />
                             <span>
-                              {order.garments.length} garment
+                              {order.garments.length} vêtement
                               {order.garments.length !== 1 ? 's' : ''}
                             </span>
                           </div>
                           {order.work_completed_at && (
                             <div className='flex items-center gap-2'>
-                              <span className='w-4 h-4'>✅</span>
+                              <span className='w-4 h-4 text-primary-400 text-center'>&#10003;</span>
                               <span>
-                                Completed: {formatDate(order.work_completed_at)}
+                                Terminé le {formatDate(order.work_completed_at)}
                               </span>
                             </div>
                           )}
@@ -416,10 +415,10 @@ export default function OrderStatusPage() {
                     {/* Garments */}
                     <div className='space-y-4'>
                       <h4 className='font-semibold text-foreground'>
-                        Garments & Services
+                        Vêtements et services
                       </h4>
                       {order.garments.map((garment, index) => (
-                        <div key={index} className='bg-muted/50 rounded-lg p-4'>
+                        <div key={index} className='bg-primary-50/40 rounded-xl p-4 border border-primary-100'>
                           <div className='flex items-center justify-between mb-3'>
                             <h5 className='font-medium text-foreground'>
                               {garment.type}
@@ -427,8 +426,8 @@ export default function OrderStatusPage() {
                               {garment.brand && ` (${garment.brand})`}
                             </h5>
                             {garment.label_code && (
-                              <Badge variant='outline' className='text-xs'>
-                                Label: {garment.label_code}
+                              <Badge variant='outline' className='text-xs rounded-lg border-primary-200'>
+                                Étiquette : {garment.label_code}
                               </Badge>
                             )}
                           </div>
@@ -455,22 +454,22 @@ export default function OrderStatusPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className='mt-6 pt-4 border-t border-border'>
+                    <div className='mt-6 pt-4 border-t border-primary-100'>
                       <div className='flex flex-col sm:flex-row gap-3'>
                         <Button
                           asChild
-                          className='flex-1 bg-foreground hover:bg-foreground/90 text-white font-medium'
+                          className='flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300'
                         >
                           <a href={`/labels/${order.id}`} target='_blank'>
-                            Print Labels
+                            Imprimer étiquettes
                           </a>
                         </Button>
                         <Button
                           variant='outline'
                           onClick={handleNewSearch}
-                          className='flex-1 border-border hover:bg-muted'
+                          className='flex-1 border-primary-200 hover:bg-primary-50 text-primary-700 rounded-xl'
                         >
-                          New Search
+                          Nouvelle recherche
                         </Button>
                       </div>
                     </div>

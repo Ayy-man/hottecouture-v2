@@ -195,10 +195,12 @@ export default function BoardPage() {
         throw new Error(`Failed to update order: ${response.status} - ${errorText}`);
       }
 
-      await response.json();
+      const result = await response.json();
+      // Use actual status from API response (handles auto-archive/unarchive cases)
+      const actualStatus = result.status || newStatus;
       setOrders(prevOrders =>
         prevOrders.map(order =>
-          order.id === orderId ? { ...order, status: newStatus } : order
+          order.id === orderId ? { ...order, status: actualStatus } : order
         )
       );
     } catch (err) {
