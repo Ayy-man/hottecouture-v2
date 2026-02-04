@@ -384,7 +384,6 @@ export default function LabelsPage() {
           }
         }
       `}</style>
-        </div>
       </div>
     </div>
   );
