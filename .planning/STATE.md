@@ -13,7 +13,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements + 12 new from Feb 3 UAT)
-- **Phase:** 21 of 21 - Wave 6 Final Verification (2/2 complete)
+- **Phase:** 21 of 21 - Wave 6 Final Verification (4/4 complete)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
@@ -45,7 +45,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 18 - Popup Modals | ✅ COMPLETE | 1/1 | Feb 4 |
 | 19 - Workflow Auto-Advance | ✅ COMPLETE | 1/1 | Feb 4 |
 | 20 - Stripe Cleanup | ✅ COMPLETE | 1/1 | Feb 4 |
-| 21 - Responsive Verification | ✅ COMPLETE | 2/2 | Feb 4 |
+| 21 - Responsive Verification | ✅ COMPLETE | 4/4 | Feb 4 |
 
 ## Execution Waves
 
@@ -68,7 +68,9 @@ WAVE 5 (UX Fixes - Parallel) ✅ DONE
 
 WAVE 6 (Final Verification) ✅ DONE
 |-- Phase 21 Plan 01: Layout overflow fixes (15 pages) ✅ DONE
-+-- Phase 21 Plan 02: Mobile service row responsiveness ✅ DONE
+|-- Phase 21 Plan 02: Mobile service row responsiveness ✅ DONE
+|-- Phase 21 Plan 03: Touch device support (kanban + Gantt) ✅ DONE
++-- Phase 21 Plan 04: Remaining responsive fixes (7 issues) ✅ DONE
 ```
 
 ## Feb 3 UAT Context
@@ -139,14 +141,28 @@ Key concerns from client:
 | h-full instead of h-screen | 21-01 | Root layout uses h-dvh overflow-hidden grid. h-screen (100vh) expands beyond grid cell causing clipping. h-full fills grid cell exactly. Pattern applies to all future pages. |
 | Keep min-h-screen in loading states | 21-01 | Loading/error states render outside normal layout flow and need full-height centering. No clipping risk. |
 | Responsive label padding | 21-01 | Changed labels page from p-8 to p-4 md:p-8 to save 16px padding on mobile (H6 requirement). |
+| TouchSensor with 250ms delay | 21-03 | Prevents scroll-vs-drag conflicts on touch devices. Requires intentional press-and-hold before drag activates. Standard mobile pattern. |
+| 500ms long-press for context menu | 21-03 | Standard iOS/Android long-press duration for Gantt items. Longer than drag delay (250ms) to prevent conflicts. |
+| 10px touch move tolerance | 21-03 | Allows natural finger micro-movements during long-press without canceling gesture. Human fingers cover ~40-50px on screen. |
+| 44px touch targets | 21-04 | iOS/Android accessibility requires 44px minimum for tappable elements. Applied min-h-[44px] sm:min-h-0 pattern to workload buttons and client tabs. |
+| 120px member select | 21-04 | Changed from 80px to 120px mobile, 160px desktop to show full member names without truncation. 120px is the sweet spot for French first+last names. |
+| Mobile-first responsive | 21-04 | Write mobile classes first, then desktop overrides with sm: prefix. More maintainable than max-width media queries. |
 
 ## Next Action
 
 **Project Complete - All Phases Done**
 
-All 21 phases (49 plans) executed successfully. Final modifications delivered.
+All 21 phases (4 Wave 6 plans) executed successfully. Final modifications delivered.
 
 **Ready for deployment and device testing.**
+
+**Wave 6 Complete:**
+- Plan 01: Layout overflow fixes (15 pages) - h-full pattern
+- Plan 02: Mobile service row responsiveness - two-row stacking
+- Plan 03: Touch device support - TouchSensor + touch events + long-press
+- Plan 04: Remaining responsive fixes (7 issues) - touch targets, spacing, breakpoints
+
+Recommended: Test on physical devices (iPhone SE, iPhone 14, iPad) to verify touch targets and responsive layouts.
 
 ## Wave 4 Summary (Feb 4)
 
@@ -294,12 +310,34 @@ All 21 phases (49 plans) executed successfully. Final modifications delivered.
 - `src/components/intake/garment-services-step.tsx` — Two-row mobile service layout
 - `src/components/board/order-detail-modal.tsx` — Responsive modal width and service rows
 
+**Phase 21 Plan 04 — Complete.** Fixed 7 remaining responsive issues across 7 pages:
+- Workload unassigned buttons: 44px touch targets (H1) with min-h-[44px] sm:min-h-0
+- Workload member select: 120px → 160px width (H2) for full name display
+- Board export button: bottom-20 md:bottom-8 positioning (H3) prevents nav overlap
+- Calendar date range: 140px → 180px responsive width (M1) for iPhone SE fit
+- Client tabs: py-2.5 sm:py-2 meets 44px touch minimum (M2)
+- Track timeline labels: text-[10px] sm:text-xs scaled down (M3)
+- Measurements form: grid-cols-1 sm:grid-cols-2 stacks on mobile (M4)
+- Pricing input: w-28 sm:w-24 wider on mobile (M6)
+- All fixes use mobile-first responsive pattern
+- TypeScript compiles clean
+
+**Files modified:**
+- `src/app/board/workload/page.tsx` — Touch targets and select width
+- `src/app/board/page.tsx` — Export button position
+- `src/app/calendar/page.tsx` — Date range width and text
+- `src/app/clients/[id]/page.tsx` — Tab touch targets
+- `src/app/track/[id]/page.tsx` — Timeline label text
+- `src/app/admin/measurements/page.tsx` — Form grid stacking
+- `src/components/intake/pricing-step.tsx` — Input width
+
 ## Session Continuity
 
 - **Last session:** 2026-02-04
 - **Status:** 21/21 phases complete - ALL DONE
-- **Stopped at:** Completed Phase 21 Plan 01 (21-01-PLAN.md)
+- **Stopped at:** Completed Phase 21 Plan 04 (21-04-PLAN.md)
 - **Next:** Project complete - ready for deployment and device testing
+- **Resume file:** None
 
 ---
 *State updated: 2026-02-04*
