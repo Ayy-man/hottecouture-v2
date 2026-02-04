@@ -65,7 +65,7 @@ WAVE 6 (Final Verification)
 | 15 | Label Printing Format | Individual labels, not full page | Feb 3 | 5 | ✓ |
 | 16 | Dropdown Scroll Fix | Assignment dropdown cut off at bottom | Feb 3 | 5 | ✓ |
 | 17 | Contact Validation | SMS + Email mandatory, landline option | Feb 3 | 5 | ✓ |
-| 18 | Popup Modals | Order details in popup, not page nav | Feb 3 | 5 | |
+| 18 | Popup Modals | Order details in popup, not page nav | Feb 3 | 5 | ✓ |
 | 19 | Workflow Auto-Advance | Stay on page after adding item | Feb 3 | 5 | |
 | 20 | Stripe Cleanup | Clean URL, logo, correct phone | Feb 3 | 5 | |
 | 21 | Responsive Verification | Test on real iPad + iPhone devices | Feb 3 | 6 | |
