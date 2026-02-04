@@ -349,10 +349,10 @@ Plans:
 **Blocks:** Nothing
 
 **Status:** Pending
-**Plans:** 1/1
+**Plans:** 1 plan
 
 Plans:
-- [ ] 17-01-PLAN.md — Update contact validation and preferred contact options
+- [ ] 17-01-PLAN.md — Make mobile/SMS + email mandatory, add landline to preferred contact
 
 ---
 
