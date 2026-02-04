@@ -24,11 +24,12 @@ interface IntakeFormData {
   client: {
     first_name: string;
     last_name: string;
-    phone: string;
+    phone?: string;
+    mobile_phone: string;
     email: string; // Required for GHL sync
     language: 'fr' | 'en';
     newsletter_consent: boolean;
-    preferred_contact: 'sms' | 'email';
+    preferred_contact: 'sms' | 'email' | 'phone';
     notes?: string;
   } | null;
   measurements?: MeasurementsData | undefined;
