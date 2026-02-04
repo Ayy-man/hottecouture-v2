@@ -331,6 +331,22 @@ Recommended: Test on physical devices (iPhone SE, iPhone 14, iPad) to verify tou
 - `src/app/admin/measurements/page.tsx` — Form grid stacking
 - `src/components/intake/pricing-step.tsx` — Input width
 
+**Phase 21 Plan 03 — Complete.** Added touch device support to interactive components:
+- Kanban board DnD: Added TouchSensor alongside PointerSensor with 250ms delay and 5px tolerance
+- Prevents scroll-vs-drag conflicts on touch devices
+- Gantt chart bars: Added touch event handlers (onTouchStart, onTouchMove, onTouchEnd) to all drag handles
+- Refactored drag logic to support both mouse and touch events (unified clientX handling)
+- Left edge, body, and right edge all support touch-based dragging
+- Long-press context menu: 500ms timer triggers context menu on touch devices
+- 10px movement tolerance prevents false triggers during long-press
+- Touch backdrop closes menu when tapping outside
+- All existing mouse-based interactions preserved
+- TypeScript compiles clean
+
+**Files modified:**
+- `src/components/board/interactive-board.tsx` — TouchSensor for kanban DnD
+- `src/components/ui/gantt.tsx` — Touch handlers and long-press context menu
+
 ## Session Continuity
 
 - **Last session:** 2026-02-04
