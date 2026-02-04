@@ -8,12 +8,12 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Wave 5 UX Fixes (Phases 15-20)
+**Current focus:** Wave 7 Audit Gap Closure (Phase 22)
 
 ## Current Status
 
-- **Milestone:** Final Modifications (17 MODs -> 39 requirements + 12 new from Feb 3 UAT)
-- **Phase:** 21 of 21 - Wave 6 Final Verification (4/4 complete)
+- **Milestone:** Final Modifications (17 MODs + 12 UAT + 7 audit gaps)
+- **Phase:** 22 of 22 - Wave 7 Audit Gap Closure (3/3 plans) ✅ COMPLETE
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
@@ -46,6 +46,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 19 - Workflow Auto-Advance | ✅ COMPLETE | 1/1 | Feb 4 |
 | 20 - Stripe Cleanup | ✅ COMPLETE | 1/1 | Feb 4 |
 | 21 - Responsive Verification | ✅ COMPLETE | 4/4 | Feb 4 |
+| 22 - Audit Gap Closure | ✅ COMPLETE | 3/3 | Audit |
 
 ## Execution Waves
 
@@ -71,6 +72,9 @@ WAVE 6 (Final Verification) ✅ DONE
 |-- Phase 21 Plan 02: Mobile service row responsiveness ✅ DONE
 |-- Phase 21 Plan 03: Touch device support (kanban + Gantt) ✅ DONE
 +-- Phase 21 Plan 04: Remaining responsive fixes (7 issues) ✅ DONE
+
+WAVE 7 (Milestone Audit Gaps) ← CURRENT
++-- Phase 22: Audit Gap Closure (4 bugs + 3 features)
 ```
 
 ## Feb 3 UAT Context
@@ -150,19 +154,22 @@ Key concerns from client:
 
 ## Next Action
 
-**Project Complete - All Phases Done**
+**Phase 22: Audit Gap Closure** — Fix bugs + missing features from milestone audit
 
-All 21 phases (4 Wave 6 plans) executed successfully. Final modifications delivered.
+Milestone audit found 4 critical bugs + 3 missing features:
 
-**Ready for deployment and device testing.**
+**Critical bugs:**
+1. Board page `h-screen overflow-hidden` → views unscrollable (board/page.tsx)
+2. Modal content cutoff at bottom (overflow-hidden parent clips card)
+3. Kanban glitchy on mobile (same root cause as #1)
+4. AI chatbot widget blocking/distracting (z-9999 floating button)
 
-**Wave 6 Complete:**
-- Plan 01: Layout overflow fixes (15 pages) - h-full pattern
-- Plan 02: Mobile service row responsiveness - two-row stacking
-- Plan 03: Touch device support - TouchSensor + touch events + long-press
-- Plan 04: Remaining responsive fixes (7 issues) - touch targets, spacing, breakpoints
+**Missing features (AUTOMATO cross-reference):**
+5. Three-dot menu on service rows (client NEW-011)
+6. Add custom garment type in merged intake step (client NEW-009)
+7. Board page headers English → French (client MEDIUM-3)
 
-Recommended: Test on physical devices (iPhone SE, iPhone 14, iPad) to verify touch targets and responsive layouts.
+**Next command:** `/gsd:plan-phase 22`
 
 ## Wave 4 Summary (Feb 4)
 

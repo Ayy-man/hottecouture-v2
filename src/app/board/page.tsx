@@ -339,7 +339,7 @@ export default function BoardPage() {
 
   return (
     <AuthGuard>
-      <div className='h-screen bg-background overflow-hidden'>
+      <div className='h-full bg-background overflow-hidden'>
         <MuralBackground>
           <div className='flex flex-col h-full relative z-10'>
             {/* Header */}
@@ -347,7 +347,7 @@ export default function BoardPage() {
               <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 max-w-[1920px] mx-auto w-full'>
                 <div className='flex items-center gap-4'>
                   <h1 className='text-xl sm:text-2xl font-bold text-foreground tracking-tight'>
-                    Production Board
+                    Tableau de Production
                   </h1>
                   <div className='h-6 w-px bg-border hidden sm:block' />
                   <div className='flex bg-muted p-1 rounded-lg border border-border'>
@@ -413,13 +413,13 @@ export default function BoardPage() {
                       <DropdownMenuItem asChild>
                         <Link href='/board/workload' className='flex items-center gap-2'>
                           <Users className='w-4 h-4' />
-                          <span>Workload</span>
+                          <span>Charge de Travail</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href='/archived' className='flex items-center gap-2'>
                           <Archive className='w-4 h-4' />
-                          <span>Archived Orders</span>
+                          <span>Commandes Archivees</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -434,14 +434,14 @@ export default function BoardPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Button asChild size='sm' className='bg-foreground hover:bg-black text-white shadow-lg shadow-foreground/20 h-8'>
-                    <Link href='/intake'>New Order</Link>
+                    <Link href='/intake'>Nouvelle Commande</Link>
                   </Button>
                 </div>
               </div>
             </header>
 
             {/* Board Area */}
-            <main className='flex-1 overflow-hidden relative'>
+            <main className='flex-1 overflow-y-auto relative'>
               <div className='h-full w-full max-w-[1920px] mx-auto p-4 sm:p-6'>
                 {viewMode === 'kanban' ? (
                   <InteractiveBoard

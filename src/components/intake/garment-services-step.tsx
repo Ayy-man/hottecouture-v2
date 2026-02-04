@@ -105,6 +105,12 @@ export function GarmentServicesStep({
 
   // Garment dropdown state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Custom garment type state (ported from garments-step.tsx)
+  const [showAddCustomForm, setShowAddCustomForm] = useState(false);
+  const [customTypeName, setCustomTypeName] = useState('');
+  const [customTypeCategory, setCustomTypeCategory] = useState('other');
+
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -123,6 +129,11 @@ export function GarmentServicesStep({
   // ===========================================================================
   const { staff } = useStaff();
   const toast = useToast();
+
+  // Get custom types count (max 10 allowed)
+  const customTypesCount = garmentTypes.filter(
+    t => t.is_custom && t.is_active !== false
+  ).length;
 
   // BUG-002 fix: Helper to get seamstress name from ID (avoids showing UUID)
   const getSeamstressName = (id: string | null): string => {
@@ -313,6 +324,45 @@ export function GarmentServicesStep({
       }));
     }
     setIsDropdownOpen(false);
+  };
+
+  const handleCreateCustomType = async () => {
+    if (!customTypeName.trim()) return;
+
+    try {
+      const response = await fetch('/api/admin/garment-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: customTypeName.trim(),
+          category: customTypeCategory,
+          icon: '\u{1F4DD}',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        alert(result.error || 'Failed to create custom garment type');
+        return;
+      }
+
+      // Reload garment types
+      await loadGarmentTypes();
+
+      // Select the newly created type
+      if (result.garmentType) {
+        handleGarmentTypeChange(result.garmentType.id);
+      }
+
+      // Reset form
+      setCustomTypeName('');
+      setCustomTypeCategory('other');
+      setShowAddCustomForm(false);
+    } catch (error) {
+      console.error('Error creating custom type:', error);
+      alert('Failed to create custom garment type');
+    }
   };
 
   // Close dropdown when clicking outside
@@ -634,6 +684,80 @@ export function GarmentServicesStep({
                           </div>
                         );
                       })}
+                      {/* Add Custom Type Section */}
+                      <div className='border-t border-border'>
+                        {showAddCustomForm ? (
+                          <div className='p-3 space-y-2 bg-muted/50'>
+                            <input
+                              type='text'
+                              value={customTypeName}
+                              onChange={e => setCustomTypeName(e.target.value)}
+                              placeholder='Nom du type personnalise...'
+                              className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
+                              autoFocus
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') handleCreateCustomType();
+                                if (e.key === 'Escape') {
+                                  setShowAddCustomForm(false);
+                                  setCustomTypeName('');
+                                }
+                              }}
+                            />
+                            <select
+                              value={customTypeCategory}
+                              onChange={e => setCustomTypeCategory(e.target.value)}
+                              className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
+                            >
+                              <option value='other'>Autre</option>
+                              <option value='home'>Maison</option>
+                              <option value='outdoor'>Exterieur</option>
+                              <option value='womens'>Femmes</option>
+                              <option value='mens'>Hommes</option>
+                              <option value='outerwear'>Manteaux</option>
+                              <option value='formal'>Formel</option>
+                              <option value='activewear'>Sport</option>
+                            </select>
+                            <div className='flex gap-2'>
+                              <button
+                                onClick={() => {
+                                  setShowAddCustomForm(false);
+                                  setCustomTypeName('');
+                                }}
+                                className='flex-1 px-3 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
+                              >
+                                Annuler
+                              </button>
+                              <button
+                                onClick={handleCreateCustomType}
+                                disabled={!customTypeName.trim() || customTypesCount >= 10}
+                                className='flex-1 px-3 py-2 bg-primary-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50'
+                              >
+                                Creer
+                              </button>
+                            </div>
+                            {customTypesCount >= 10 && (
+                              <p className='text-xs text-red-600'>
+                                Maximum 10 types personnalises atteint
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            type='button'
+                            onClick={() => setShowAddCustomForm(true)}
+                            disabled={customTypesCount >= 10}
+                            className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-muted/50 flex items-center gap-2 min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
+                          >
+                            <span>+</span>
+                            <span>Ajouter un type personnalise...</span>
+                            {customTypesCount >= 10 && (
+                              <span className='ml-auto text-xs text-red-600'>
+                                (Limite atteinte)
+                              </span>
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
