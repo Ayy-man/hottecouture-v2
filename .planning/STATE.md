@@ -1,14 +1,14 @@
 # Project State
 
 **Project:** Hotte Couture Final Modifications
-**Last Updated:** 2026-02-04
+**Last Updated:** 2026-02-05
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Wave 7 Audit Gap Closure (Phase 22)
+**Current focus:** All 22 phases complete. Deployed to Vercel.
 
 ## Current Status
 
@@ -20,6 +20,8 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 - **Wave 5 Completion:** February 4, 2026 (Phases 15-19)
 - **Phase 20 Completion:** February 4, 2026 (Stripe Cleanup)
 - **Phase 21 Completion:** February 4, 2026 (Responsive Layout Fixes)
+- **Phase 22 Completion:** February 5, 2026 (Audit Gap Closure)
+- **Vercel Deployment:** February 5, 2026 (build passing, all files tracked)
 
 ## Progress
 
@@ -73,8 +75,8 @@ WAVE 6 (Final Verification) ✅ DONE
 |-- Phase 21 Plan 03: Touch device support (kanban + Gantt) ✅ DONE
 +-- Phase 21 Plan 04: Remaining responsive fixes (7 issues) ✅ DONE
 
-WAVE 7 (Milestone Audit Gaps) ← CURRENT
-+-- Phase 22: Audit Gap Closure (4 bugs + 3 features)
+WAVE 7 (Milestone Audit Gaps) ✅ DONE
++-- Phase 22: Audit Gap Closure (4 bugs + 3 features) ✅ DONE
 ```
 
 ## Feb 3 UAT Context
@@ -151,25 +153,20 @@ Key concerns from client:
 | 44px touch targets | 21-04 | iOS/Android accessibility requires 44px minimum for tappable elements. Applied min-h-[44px] sm:min-h-0 pattern to workload buttons and client tabs. |
 | 120px member select | 21-04 | Changed from 80px to 120px mobile, 160px desktop to show full member names without truncation. 120px is the sweet spot for French first+last names. |
 | Mobile-first responsive | 21-04 | Write mobile classes first, then desktop overrides with sm: prefix. More maintainable than max-width media queries. |
+| Revise read-only garment types | 22-03 | Phase 3 decision "Read-only garment types in merged step" reversed per client request (AUTOMATO NEW-009). Custom type creation now available in garment-services-step dropdown. |
+| Hardcoded French board headers | 22-01 | Board page headers use hardcoded French strings (not next-intl keys) matching codebase convention from Phase 19 decision. |
+| Hidden chatbot not removed | 22-01 | GlobalChatWrapper wrapped in `hidden` div rather than removed. Import and component preserved for potential future re-enabling. |
+| Lightweight dialog component | 22-build | Created dialog.tsx without @radix-ui/react-dialog dependency. Uses native HTML + portal pattern matching shadcn/ui API. Only used by team-management-modal. |
+| Select accepts undefined value | 22-build | Select component value prop typed as `string \| undefined` for exactOptionalPropertyTypes compatibility. |
 
 ## Next Action
 
-**Phase 22: Audit Gap Closure** — Fix bugs + missing features from milestone audit
+**All 22 phases complete. Milestone finished.**
 
-Milestone audit found 4 critical bugs + 3 missing features:
-
-**Critical bugs:**
-1. Board page `h-screen overflow-hidden` → views unscrollable (board/page.tsx)
-2. Modal content cutoff at bottom (overflow-hidden parent clips card)
-3. Kanban glitchy on mobile (same root cause as #1)
-4. AI chatbot widget blocking/distracting (z-9999 floating button)
-
-**Missing features (AUTOMATO cross-reference):**
-5. Three-dot menu on service rows (client NEW-011)
-6. Add custom garment type in merged intake step (client NEW-009)
-7. Board page headers English → French (client MEDIUM-3)
-
-**Next command:** `/gsd:plan-phase 22`
+UAT testing prompt available at `.planning/UAT-PROMPT.md` with:
+- Staff PINs (1235/1236/1237), navigation paths, step-by-step test scripts
+- 12-item checklist covering all Phase 22 changes
+- Expected results for each test scenario
 
 ## Wave 4 Summary (Feb 4)
 
@@ -354,13 +351,54 @@ Milestone audit found 4 critical bugs + 3 missing features:
 - `src/components/board/interactive-board.tsx` — TouchSensor for kanban DnD
 - `src/components/ui/gantt.tsx` — Touch handlers and long-press context menu
 
+## Wave 7 Progress (Feb 5)
+
+**Phase 22 — Complete.** Closed all audit gaps (4 bugs + 3 features):
+
+**Plan 22-01 — Board scroll fix + chatbot hide + French headers:**
+- Board page: h-screen → h-full, overflow-hidden → overflow-y-auto
+- 4 English strings replaced with French (Tableau de Production, Nouvelle Commande, Charge de Travail, Commandes Archivees)
+- GlobalChatWrapper wrapped in hidden div on all devices
+
+**Plan 22-02 — Service table with three-dot menu:**
+- Admin pricing page: full service listing table below import section
+- Each row has DropdownMenu with Modifier (inline edit), Exporter (CSV), Supprimer (soft delete with usage check)
+- Services refresh after successful import
+
+**Plan 22-03 — Custom garment type creation:**
+- "Ajouter un type personnalise..." button in garment type dropdown
+- Inline form with name input, category selector (8 French options), Create/Cancel buttons
+- Creates via /api/admin/garment-types, auto-selects, 10-type limit enforced
+
+**Files modified:**
+- `src/app/board/page.tsx` — Scroll fix + French headers
+- `src/app/layout.tsx` — Hide chatbot
+- `src/app/admin/pricing/page.tsx` — Service table + 3-dot menu
+- `src/components/intake/garment-services-step.tsx` — Custom garment type form
+
+## Vercel Build Fixes (Feb 5)
+
+Fixed 4 cascading build failures after adding all source files to git:
+
+1. **260 files not tracked by git** — package.json, next.config.js, tsconfig.json, all source files, migrations, and public assets were never added to the repo. Vercel got ENOENT on package.json.
+2. **Extra `</div>` in labels page** — 21 closing divs vs 20 opening divs in labels/[orderId]/page.tsx. SWC parse error.
+3. **Missing `mobile_phone` in IntakeFormData** — Phase 17 added mobile_phone to dto.ts schema but IntakeFormData interface in intake/page.tsx was never updated.
+4. **Missing `dialog.tsx` component** — team-management-modal.tsx imported @/components/ui/dialog which didn't exist. Created lightweight wrapper matching shadcn/ui API.
+5. **Select `exactOptionalPropertyTypes` conflict** — Select value prop typed as `string?` but received `string | undefined`. Added explicit undefined to union type.
+
+**Files modified:**
+- `src/app/labels/[orderId]/page.tsx` — Removed extra closing div
+- `src/app/intake/page.tsx` — Added mobile_phone to client type
+- `src/components/ui/dialog.tsx` — Created new file
+- `src/components/ui/select.tsx` — Allow undefined in value prop
+
 ## Session Continuity
 
-- **Last session:** 2026-02-04
-- **Status:** 21/21 phases complete - ALL DONE
-- **Stopped at:** Completed Phase 21 Plan 04 (21-04-PLAN.md)
-- **Next:** Project complete - ready for deployment and device testing
+- **Last session:** 2026-02-05
+- **Status:** 22/22 phases complete - ALL DONE - Deployed to Vercel
+- **Stopped at:** All phases complete, Vercel build passing, UAT prompt written
+- **Next:** UAT testing on live deployment (see .planning/UAT-PROMPT.md)
 - **Resume file:** None
 
 ---
-*State updated: 2026-02-04*
+*State updated: 2026-02-05*

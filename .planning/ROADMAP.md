@@ -1,7 +1,7 @@
 # Roadmap: Hotte Couture Final Modifications
 
 **Created:** 2026-01-20
-**Updated:** 2026-02-04
+**Updated:** 2026-02-05
 **Phases:** 22 (11 original + 10 from Feb 3 UAT + 1 from milestone audit)
 **Requirements:** 39 original + 12 from client feedback + 7 from audit
 
@@ -32,7 +32,7 @@ WAVE 4 (Feb 3 UAT Feedback - Critical Fixes) ✅ DONE
 ├── Phase 13: Fix Price Editing Regression
 └── Phase 14: Mandatory Time Field
 
-WAVE 5 (Feb 3 UAT Feedback - UX Fixes, parallel)
+WAVE 5 (Feb 3 UAT Feedback - UX Fixes, parallel) ✅ DONE
 ├── Phase 15: Label Printing Format
 ├── Phase 16: Assignment Dropdown Scroll
 ├── Phase 17: Contact Field Validation
@@ -70,7 +70,7 @@ WAVE 7 (Milestone Audit Gaps) ✅ DONE
 | 17 | Contact Validation | SMS + Email mandatory, landline option | Feb 3 | 5 | ✓ |
 | 18 | Popup Modals | Order details in popup, not page nav | Feb 3 | 5 | ✓ |
 | 19 | Workflow Auto-Advance | Stay on page after adding item | Feb 3 | 5 | ✓ |
-| 20 | Stripe Cleanup | Clean URL, logo, correct phone | Feb 3 | 5 | |
+| 20 | Stripe Cleanup | Clean URL, logo, correct phone | Feb 3 | 5 | ✓ |
 | 21 | Responsive Verification | Fix responsive issues before real device testing | Feb 3 | 6 | ✓ |
 | 22 | Audit Gap Closure | Fix scroll bugs, modal cutoff, chatbot, service menu, garment types, French | Audit | 7 | ✓ |
 
