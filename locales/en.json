@@ -1,0 +1,234 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "print": "Print",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "open": "Open",
+    "yes": "Yes",
+    "no": "No",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "intake": "Order Intake",
+    "board": "Order Board",
+    "status": "Order Status",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signInTitle": "Sign In to Your Account",
+    "signInDescription": "Enter your email to receive a sign-in link",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email address",
+    "sendLink": "Send Sign-In Link",
+    "checkEmail": "Check your email for the sign-in link",
+    "signInError": "Failed to sign in",
+    "signOutError": "Failed to sign out"
+  },
+  "intake": {
+    "title": "Order Intake",
+    "steps": {
+      "client": "Client Information",
+      "garments": "Garments",
+      "services": "Services",
+      "notes": "Notes & Measurements",
+      "pricing": "Pricing & Due Date"
+    },
+    "client": {
+      "search": "Search Client",
+      "phone": "Phone Number",
+      "email": "Email Address",
+      "searchPlaceholder": "Enter phone or email to search",
+      "notFound": "Client not found",
+      "createNew": "Create New Client",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "language": "Language",
+      "newsletterConsent": "Subscribe to Newsletter",
+      "preferredContact": "Preferred Contact Method",
+      "notes": "Notes"
+    },
+    "garments": {
+      "addGarment": "Add Garment",
+      "type": "Garment Type",
+      "color": "Color",
+      "brand": "Brand",
+      "notes": "Notes",
+      "photo": "Photo",
+      "takePhoto": "Take Photo",
+      "retakePhoto": "Retake Photo",
+      "removePhoto": "Remove Photo",
+      "labelCode": "Label Code"
+    },
+    "services": {
+      "selectServices": "Select Services",
+      "quantity": "Quantity",
+      "customPrice": "Custom Price (cents)",
+      "subtotal": "Subtotal",
+      "noServices": "No services selected"
+    },
+    "notes": {
+      "measurements": "Measurements",
+      "specialInstructions": "Special Instructions",
+      "uploadDocuments": "Upload Documents",
+      "uploadPhotos": "Upload Additional Photos"
+    },
+    "pricing": {
+      "rushOrder": "Rush Order",
+      "dueDate": "Due Date",
+      "deposit": "Deposit Required",
+      "subtotal": "Subtotal",
+      "rushFee": "Rush Fee",
+      "tax": "Tax",
+      "total": "Total"
+    },
+    "submit": {
+      "submitOrder": "Submit Order",
+      "processing": "Processing...",
+      "success": "Order Created Successfully",
+      "printLabels": "Print Labels",
+      "viewOrder": "View Order"
+    },
+    "errors": {
+      "required": "This field is required",
+      "invalidEmail": "Invalid email address",
+      "invalidPhone": "Invalid phone number",
+      "saveFailed": "Failed to save data",
+      "submitFailed": "Failed to submit order"
+    }
+  },
+  "board": {
+    "title": "Order Board",
+    "columns": {
+      "pending": "Pending",
+      "working": "Working",
+      "done": "Done",
+      "ready": "Ready",
+      "delivered": "Delivered"
+    },
+    "filters": {
+      "rush": "Rush Orders",
+      "dueToday": "Due Today",
+      "assignee": "Assignee",
+      "pipeline": "Pipeline",
+      "search": "Search Orders",
+      "all": "All Orders"
+    },
+    "card": {
+      "orderNumber": "Order #",
+      "garmentTypes": "Garments",
+      "servicesCount": "Services",
+      "dueDate": "Due Date",
+      "assignee": "Assignee",
+      "rush": "RUSH",
+      "rackPosition": "Rack",
+      "noAssignee": "Unassigned"
+    },
+    "actions": {
+      "assignToMe": "Assign to Me",
+      "unassign": "Unassign",
+      "viewDetails": "View Details",
+      "updateStage": "Update Stage"
+    },
+    "status": {
+      "updating": "Updating...",
+      "error": "Failed to update",
+      "success": "Updated successfully"
+    }
+  },
+  "status": {
+    "title": "Order Status",
+    "description": "Check the status of your order using your phone number and last name",
+    "search": {
+      "title": "Search Order",
+      "description": "Enter your phone number and last name to find your order",
+      "phone": "Phone Number",
+      "phonePlaceholder": "Enter your phone number",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "search": "Search Order",
+      "searching": "Searching..."
+    },
+    "order": {
+      "title": "Order Status",
+      "status": "Status",
+      "stage": "Stage",
+      "dueDate": "Due Date",
+      "rush": "RUSH",
+      "garments": "Garments",
+      "tasks": "Tasks",
+      "labelCode": "Label Code",
+      "garment": "Garment",
+      "unassigned": "Unassigned",
+      "overdue": "Overdue",
+      "dueToday": "Due Today",
+      "statuses": {
+        "pending": "Pending",
+        "working": "Working",
+        "done": "Done",
+        "ready": "Ready",
+        "delivered": "Delivered",
+        "archived": "Archived"
+      },
+      "stages": {
+        "pending": "Pending",
+        "working": "Working",
+        "done": "Done",
+        "ready": "Ready",
+        "delivered": "Delivered"
+      }
+    },
+    "actions": {
+      "printLabels": "Print Labels",
+      "newSearch": "New Search"
+    },
+    "errors": {
+      "required": "Phone number and last name are required",
+      "searchFailed": "Failed to search for order"
+    }
+  },
+  "receipt": {
+    "title": "Receipt",
+    "order": "Order",
+    "date": "Date",
+    "client": "Client",
+    "phone": "Phone",
+    "email": "Email",
+    "items": "Items",
+    "subtotal": "Subtotal",
+    "rushFee": "Rush Fee",
+    "tax": "Tax",
+    "total": "Total",
+    "thankYou": "Thank you for your order!"
+  },
+  "labels": {
+    "title": "Labels",
+    "orderNumber": "Order #",
+    "clientInitials": "Client",
+    "garmentType": "Garment",
+    "labelCode": "Code",
+    "rush": "RUSH",
+    "generated": "Labels generated successfully",
+    "download": "Download Labels",
+    "print": "Print Labels"
+  }
+}

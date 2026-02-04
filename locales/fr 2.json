@@ -1,0 +1,234 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Sauvegarder",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "print": "Imprimer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "clear": "Effacer",
+    "submit": "Soumettre",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "close": "Fermer",
+    "open": "Ouvrir",
+    "yes": "Oui",
+    "no": "Non",
+    "required": "Requis",
+    "optional": "Optionnel"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "dashboard": "Tableau de Bord",
+    "intake": "Prise de Commande",
+    "board": "Tableau de Commande",
+    "status": "Statut de Commande",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "signIn": "Se Connecter",
+    "signOut": "Se Déconnecter",
+    "signInTitle": "Connectez-vous à Votre Compte",
+    "signInDescription": "Entrez votre email pour recevoir un lien de connexion",
+    "email": "Adresse Email",
+    "emailPlaceholder": "Entrez votre adresse email",
+    "sendLink": "Envoyer le Lien de Connexion",
+    "checkEmail": "Vérifiez votre email pour le lien de connexion",
+    "signInError": "Échec de la connexion",
+    "signOutError": "Échec de la déconnexion"
+  },
+  "intake": {
+    "title": "Prise de Commande",
+    "steps": {
+      "client": "Informations Client",
+      "garments": "Vêtements",
+      "services": "Services",
+      "notes": "Notes et Mesures",
+      "pricing": "Prix et Date d'Échéance"
+    },
+    "client": {
+      "search": "Rechercher Client",
+      "phone": "Numéro de Téléphone",
+      "email": "Adresse Email",
+      "searchPlaceholder": "Entrez le téléphone ou l'email pour rechercher",
+      "notFound": "Client non trouvé",
+      "createNew": "Créer Nouveau Client",
+      "firstName": "Prénom",
+      "lastName": "Nom de Famille",
+      "language": "Langue",
+      "newsletterConsent": "S'abonner à la Newsletter",
+      "preferredContact": "Méthode de Contact Préférée",
+      "notes": "Notes"
+    },
+    "garments": {
+      "addGarment": "Ajouter Vêtement",
+      "type": "Type de Vêtement",
+      "color": "Couleur",
+      "brand": "Marque",
+      "notes": "Notes",
+      "photo": "Photo",
+      "takePhoto": "Prendre Photo",
+      "retakePhoto": "Reprendre Photo",
+      "removePhoto": "Supprimer Photo",
+      "labelCode": "Code Étiquette"
+    },
+    "services": {
+      "selectServices": "Sélectionner Services",
+      "quantity": "Quantité",
+      "customPrice": "Prix Personnalisé (centimes)",
+      "subtotal": "Sous-total",
+      "noServices": "Aucun service sélectionné"
+    },
+    "notes": {
+      "measurements": "Mesures",
+      "specialInstructions": "Instructions Spéciales",
+      "uploadDocuments": "Télécharger Documents",
+      "uploadPhotos": "Télécharger Photos Supplémentaires"
+    },
+    "pricing": {
+      "rushOrder": "Commande Urgente",
+      "dueDate": "Date d'Échéance",
+      "deposit": "Acompte Requis",
+      "subtotal": "Sous-total",
+      "rushFee": "Frais d'Urgence",
+      "tax": "Taxe",
+      "total": "Total"
+    },
+    "submit": {
+      "submitOrder": "Soumettre Commande",
+      "processing": "Traitement...",
+      "success": "Commande Créée avec Succès",
+      "printLabels": "Imprimer Étiquettes",
+      "viewOrder": "Voir Commande"
+    },
+    "errors": {
+      "required": "Ce champ est requis",
+      "invalidEmail": "Adresse email invalide",
+      "invalidPhone": "Numéro de téléphone invalide",
+      "saveFailed": "Échec de sauvegarde des données",
+      "submitFailed": "Échec de soumission de la commande"
+    }
+  },
+  "board": {
+    "title": "Tableau de Commande",
+    "columns": {
+      "pending": "En Attente",
+      "working": "En Cours",
+      "done": "Terminé",
+      "ready": "Prêt",
+      "delivered": "Livré"
+    },
+    "filters": {
+      "rush": "Commandes Urgentes",
+      "dueToday": "Échéance Aujourd'hui",
+      "assignee": "Assigné à",
+      "pipeline": "Pipeline",
+      "search": "Rechercher Commandes",
+      "all": "Toutes les Commandes"
+    },
+    "card": {
+      "orderNumber": "Commande #",
+      "garmentTypes": "Vêtements",
+      "servicesCount": "Services",
+      "dueDate": "Date d'Échéance",
+      "assignee": "Assigné à",
+      "rush": "URGENT",
+      "rackPosition": "Étagère",
+      "noAssignee": "Non Assigné"
+    },
+    "actions": {
+      "assignToMe": "M'Assigner",
+      "unassign": "Désassigner",
+      "viewDetails": "Voir Détails",
+      "updateStage": "Mettre à Jour"
+    },
+    "status": {
+      "updating": "Mise à jour...",
+      "error": "Échec de mise à jour",
+      "success": "Mis à jour avec succès"
+    }
+  },
+  "status": {
+    "title": "Statut de Commande",
+    "description": "Vérifiez le statut de votre commande en utilisant votre numéro de téléphone et nom de famille",
+    "search": {
+      "title": "Rechercher Commande",
+      "description": "Entrez votre numéro de téléphone et nom de famille pour trouver votre commande",
+      "phone": "Numéro de Téléphone",
+      "phonePlaceholder": "Entrez votre numéro de téléphone",
+      "lastName": "Nom de Famille",
+      "lastNamePlaceholder": "Entrez votre nom de famille",
+      "search": "Rechercher Commande",
+      "searching": "Recherche en cours..."
+    },
+    "order": {
+      "title": "Statut de Commande",
+      "status": "Statut",
+      "stage": "Étape",
+      "dueDate": "Date d'Échéance",
+      "rush": "URGENT",
+      "garments": "Vêtements",
+      "tasks": "Tâches",
+      "labelCode": "Code Étiquette",
+      "garment": "Vêtement",
+      "unassigned": "Non Assigné",
+      "overdue": "En Retard",
+      "dueToday": "Échéance Aujourd'hui",
+      "statuses": {
+        "pending": "En Attente",
+        "working": "En Cours",
+        "done": "Terminé",
+        "ready": "Prêt",
+        "delivered": "Livré",
+        "archived": "Archivé"
+      },
+      "stages": {
+        "pending": "En Attente",
+        "working": "En Cours",
+        "done": "Terminé",
+        "ready": "Prêt",
+        "delivered": "Livré"
+      }
+    },
+    "actions": {
+      "printLabels": "Imprimer Étiquettes",
+      "newSearch": "Nouvelle Recherche"
+    },
+    "errors": {
+      "required": "Le numéro de téléphone et le nom de famille sont requis",
+      "searchFailed": "Échec de la recherche de commande"
+    }
+  },
+  "receipt": {
+    "title": "Reçu",
+    "order": "Commande",
+    "date": "Date",
+    "client": "Client",
+    "phone": "Téléphone",
+    "email": "Email",
+    "items": "Articles",
+    "subtotal": "Sous-total",
+    "rushFee": "Frais d'urgence",
+    "tax": "Taxe",
+    "total": "Total",
+    "thankYou": "Merci pour votre commande!"
+  },
+  "labels": {
+    "title": "Étiquettes",
+    "orderNumber": "Commande #",
+    "clientInitials": "Client",
+    "garmentType": "Vêtement",
+    "labelCode": "Code",
+    "rush": "URGENT",
+    "generated": "Étiquettes générées avec succès",
+    "download": "Télécharger Étiquettes",
+    "print": "Imprimer Étiquettes"
+  }
+}
