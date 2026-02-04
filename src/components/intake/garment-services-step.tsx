@@ -861,81 +861,87 @@ export function GarmentServicesStep({
                   {currentGarment.services.map((svc, idx) => (
                     <div
                       key={svc.serviceId}
-                      className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg"
+                      className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-muted/50 rounded-lg"
                     >
-                      {/* Service Name */}
-                      <span className="flex-1 text-sm font-medium truncate">{svc.serviceName || 'Service'}</span>
+                      {/* Row 1: Service name + qty controls */}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {/* Service Name */}
+                        <span className="flex-1 text-sm font-medium truncate min-w-0">{svc.serviceName || 'Service'}</span>
 
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-1">
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateQty(idx, -1)}
+                            className="min-h-[44px] min-w-[44px] p-0"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-8 text-center text-sm">{svc.qty}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateQty(idx, 1)}
+                            className="min-h-[44px] min-w-[44px] p-0"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Row 2: Price + time + assignment + remove */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Price */}
+                        <span className="w-16 text-right text-sm text-muted-foreground">
+                          {formatCurrency((svc.customPriceCents || 0) * svc.qty)}
+                        </span>
+
+                        {/* Time Estimate (Required) */}
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            min="0"
+                            value={svc.estimatedMinutes || ''}
+                            onChange={e => updateEstimatedMinutes(idx, parseInt(e.target.value) || 0)}
+                            placeholder="min"
+                            className={`w-14 px-1 py-1 text-xs text-center border rounded focus:ring-2 focus:ring-primary focus:border-transparent ${
+                              !svc.estimatedMinutes ? 'border-red-300 bg-red-50' : 'border-border'
+                            }`}
+                          />
+                          <span className="text-xs text-muted-foreground">min<span className="text-red-500">*</span></span>
+                        </div>
+
+                        {/* Assignment Dropdown */}
+                        <div className="w-32">
+                          <Select
+                            value={svc.assignedSeamstressId || ''}
+                            onValueChange={val => updateAssignment(idx, val || null)}
+                          >
+                            <SelectTrigger className="h-8 text-xs">
+                              <span className="truncate">{getSeamstressName(svc.assignedSeamstressId ?? null)}</span>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Non assigne</SelectItem>
+                              {staff.map(s => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Remove Button */}
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => updateQty(idx, -1)}
-                          className="min-h-[44px] min-w-[44px] p-0"
+                          onClick={() => removeService(idx)}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                         >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-8 text-center text-sm">{svc.qty}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateQty(idx, 1)}
-                          className="min-h-[44px] min-w-[44px] p-0"
-                        >
-                          <Plus className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-
-                      {/* Price */}
-                      <span className="w-16 text-right text-sm text-muted-foreground">
-                        {formatCurrency((svc.customPriceCents || 0) * svc.qty)}
-                      </span>
-
-                      {/* Time Estimate (Required) */}
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="number"
-                          min="0"
-                          value={svc.estimatedMinutes || ''}
-                          onChange={e => updateEstimatedMinutes(idx, parseInt(e.target.value) || 0)}
-                          placeholder="min"
-                          className={`w-14 px-1 py-1 text-xs text-center border rounded focus:ring-2 focus:ring-primary focus:border-transparent ${
-                            !svc.estimatedMinutes ? 'border-red-300 bg-red-50' : 'border-border'
-                          }`}
-                        />
-                        <span className="text-xs text-muted-foreground">min<span className="text-red-500">*</span></span>
-                      </div>
-
-                      {/* Assignment Dropdown */}
-                      <div className="w-32">
-                        <Select
-                          value={svc.assignedSeamstressId || ''}
-                          onValueChange={val => updateAssignment(idx, val || null)}
-                        >
-                          <SelectTrigger className="h-8 text-xs">
-                            <span className="truncate">{getSeamstressName(svc.assignedSeamstressId ?? null)}</span>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">Non assigne</SelectItem>
-                            {staff.map(s => (
-                              <SelectItem key={s.id} value={s.id}>
-                                {s.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Remove Button */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeService(idx)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   ))}
                 </div>
