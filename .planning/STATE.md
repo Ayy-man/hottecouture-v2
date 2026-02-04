@@ -13,11 +13,12 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements + 12 new from Feb 3 UAT)
-- **Phase:** 15 of 21 - Wave 5 UX Fixes (1/1 complete)
+- **Phase:** 16 of 21 - Wave 5 UX Fixes (2/6 complete)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
 - **Phase 15 Completion:** February 4, 2026 (Label Printing Format)
+- **Phase 16 Completion:** February 4, 2026 (Dropdown Scroll Fix)
 
 ## Progress
 
@@ -38,7 +39,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 13 - Price Editing Regression | ✅ COMPLETE | 1/1 | Feb 3 |
 | 14 - Mandatory Time Field | ✅ COMPLETE | 1/1 | Feb 3 |
 | 15 - Label Printing Format | ✅ COMPLETE | 1/1 | Feb 3 |
-| 16 - Dropdown Scroll Fix | ⬜ PENDING | 0/1 | Feb 3 |
+| 16 - Dropdown Scroll Fix | ✅ COMPLETE | 1/1 | Feb 4 |
 | 17 - Contact Validation | ⬜ PENDING | 0/1 | Feb 3 |
 | 18 - Popup Modals | ⬜ PENDING | 0/1 | Feb 3 |
 | 19 - Workflow Auto-Advance | ⬜ PENDING | 0/1 | Feb 3 |
@@ -58,7 +59,7 @@ WAVE 4 (Critical Fixes - Sequential) ✅ DONE
 
 WAVE 5 (UX Fixes - Parallel) ← CURRENT
 |-- Phase 15: Label Printing Format ✅ DONE
-|-- Phase 16: Assignment Dropdown Scroll
+|-- Phase 16: Assignment Dropdown Scroll ✅ DONE
 |-- Phase 17: Contact Field Validation
 |-- Phase 18: Popup Modals
 |-- Phase 19: Workflow Auto-Advance
@@ -121,14 +122,16 @@ Key concerns from client:
 | Time estimate mandatory | 14-01 | Added estimatedMinutes field to GarmentService, time input in service rows, validation blocks Add to Order without time > 0, API uses user-provided time. |
 | 4" x 2" label format | 15-01 | Use CSS @page with 4" x 2" dimensions for individual label printer, horizontal layout with QR left and content right. |
 | Configurable label dimensions | 15-01 | Added labelWidth and labelHeight to LABEL_CONFIG for single-point dimension changes. |
+| 240px max dropdown height | 16-01 | Matches existing Tailwind max-h-60 (60 * 4px) for viewport collision detection consistency. |
+| Inline maxHeight for dropdowns | 16-01 | Apply maxHeight via inline style instead of Tailwind class for dynamic viewport-aware positioning. |
 
 ## Next Action
 
-**Wave 5: UX Fixes (Phases 16-20)**
+**Wave 5: UX Fixes (Phases 17-20)**
 
-Phase 15 complete. Remaining Wave 5 phases can run in parallel.
+Phases 15-16 complete. Remaining Wave 5 phases can run in parallel.
 
-Run: `/gsd:plan-phase 16` (or any of 16-20)
+Run: `/gsd:execute-phase 17` (or any of 17-20)
 
 ## Wave 4 Summary (Feb 4)
 
@@ -167,11 +170,24 @@ Run: `/gsd:plan-phase 16` (or any of 16-20)
 - `src/lib/config/production.ts` — Added labelWidth and labelHeight config
 - `src/app/labels/[orderId]/page.tsx` — Rewrote layout for individual labels
 
+**Phase 16 — Complete.** Fixed assignment dropdown viewport collision:
+- Added viewport collision detection to SelectContent positioning logic
+- Dropdown opens above trigger when insufficient space below
+- Dropdown opens below trigger when insufficient space above
+- Dynamic maxHeight calculation based on available viewport space
+- Removed static max-h-60 Tailwind class, using inline maxHeight style
+- Fixes all 5 dropdown instances: garment-services-step, assignment-step, task-management-modal
+- TypeScript compiles clean
+
+**Files modified:**
+- `src/components/ui/select.tsx` — Added viewport-aware positioning logic
+
 ## Session Continuity
 
 - **Last session:** 2026-02-04
-- **Status:** 15/21 phases complete — Wave 5 in progress (1/6 done)
-- **Next:** Continue Wave 5 (Phases 16-20, parallel UX fixes)
+- **Status:** 16/21 phases complete — Wave 5 in progress (2/6 done)
+- **Stopped at:** Completed Phase 16 Plan 01 (16-01-PLAN.md)
+- **Next:** Continue Wave 5 (Phases 17-20, parallel UX fixes)
 
 ---
 *State updated: 2026-02-04*
