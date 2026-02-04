@@ -13,7 +13,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements + 12 new from Feb 3 UAT)
-- **Phase:** 18 of 21 - Wave 5 UX Fixes (4/6 complete)
+- **Phase:** 19 of 21 - Wave 5 UX Fixes (5/6 complete)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
@@ -21,6 +21,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 - **Phase 16 Completion:** February 4, 2026 (Dropdown Scroll Fix)
 - **Phase 17 Completion:** February 4, 2026 (Contact Field Validation)
 - **Phase 18 Completion:** February 4, 2026 (Popup Modals)
+- **Phase 19 Completion:** February 4, 2026 (Workflow Auto-Advance)
 
 ## Progress
 
@@ -44,7 +45,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 16 - Dropdown Scroll Fix | ✅ COMPLETE | 1/1 | Feb 4 |
 | 17 - Contact Validation | ✅ COMPLETE | 1/1 | Feb 4 |
 | 18 - Popup Modals | ✅ COMPLETE | 1/1 | Feb 4 |
-| 19 - Workflow Auto-Advance | ⬜ PENDING | 0/1 | Feb 3 |
+| 19 - Workflow Auto-Advance | ✅ COMPLETE | 1/1 | Feb 4 |
 | 20 - Stripe Cleanup | ⬜ PENDING | 0/1 | Feb 3 |
 | 21 - Responsive Verification | ⬜ PENDING | 0/1 | Feb 3 |
 
@@ -64,7 +65,7 @@ WAVE 5 (UX Fixes - Parallel) ← CURRENT
 |-- Phase 16: Assignment Dropdown Scroll ✅ DONE
 |-- Phase 17: Contact Field Validation ✅ DONE
 |-- Phase 18: Popup Modals ✅ DONE
-|-- Phase 19: Workflow Auto-Advance
+|-- Phase 19: Workflow Auto-Advance ✅ DONE
 +-- Phase 20: Stripe Payment Cleanup
 
 WAVE 6 (Final Verification)
@@ -132,14 +133,15 @@ Key concerns from client:
 | ESC key closes modal | 18-01 | useEffect with keydown listener for 'Escape' key, cleans up on unmount to prevent memory leaks. |
 | Backdrop click closes modal | 18-01 | onClick with e.target === e.currentTarget check prevents closing when clicking inside card content. |
 | Inline modal on workload page | 18-01 | Replaced Link navigation with inline OrderDetailModal rendering to preserve user's place in workload view. |
+| French toast message | 19-01 | Used "Article ajouté à la commande" for success feedback, consistent with French primary UI language. |
 
 ## Next Action
 
-**Wave 5: UX Fixes (Phases 19-20)**
+**Wave 5: UX Fixes (Phase 20 only)**
 
-Phases 15-18 complete. Remaining Wave 5 phases can run in parallel.
+Phases 15-19 complete. One Wave 5 phase remaining.
 
-Run: `/gsd:execute-phase 19` (or `/gsd:execute-phase 20`)
+Run: `/gsd:execute-phase 20`
 
 ## Wave 4 Summary (Feb 4)
 
@@ -222,12 +224,24 @@ Run: `/gsd:execute-phase 19` (or `/gsd:execute-phase 20`)
 - `src/components/board/order-detail-modal.tsx` — ESC key handler and backdrop click
 - `src/app/board/workload/page.tsx` — Inline modal rendering with state management
 
+**Phase 19 — Complete.** Added toast success feedback to garment-services workflow:
+- Imported useToast hook from @/components/ui/toast
+- Added toast.success call in handleAddToOrder after onUpdate
+- Shows "Article ajouté à la commande" message to users
+- Form still resets correctly and page stays on same step (no auto-advance)
+- No changes to navigation behavior (handleAddToOrder does not call onNext)
+- Surgical fix: 3-line change (import, hook call, toast call)
+- TypeScript compiles clean
+
+**Files modified:**
+- `src/components/intake/garment-services-step.tsx` — Added toast feedback
+
 ## Session Continuity
 
 - **Last session:** 2026-02-04
-- **Status:** 18/21 phases complete — Wave 5 in progress (4/6 done)
-- **Stopped at:** Completed Phase 18 Plan 01 (18-01-PLAN.md)
-- **Next:** Continue Wave 5 (Phases 19-20, parallel UX fixes)
+- **Status:** 19/21 phases complete — Wave 5 in progress (5/6 done)
+- **Stopped at:** Completed Phase 19 Plan 01 (19-01-PLAN.md)
+- **Next:** Continue Wave 5 (Phase 20 Stripe Cleanup, then Phase 21 final verification)
 
 ---
 *State updated: 2026-02-04*
