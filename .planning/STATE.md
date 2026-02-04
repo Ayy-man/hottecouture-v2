@@ -13,12 +13,13 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements + 12 new from Feb 3 UAT)
-- **Phase:** 16 of 21 - Wave 5 UX Fixes (2/6 complete)
+- **Phase:** 17 of 21 - Wave 5 UX Fixes (3/6 complete)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
 - **Phase 15 Completion:** February 4, 2026 (Label Printing Format)
 - **Phase 16 Completion:** February 4, 2026 (Dropdown Scroll Fix)
+- **Phase 17 Completion:** February 4, 2026 (Contact Field Validation)
 
 ## Progress
 
@@ -40,7 +41,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 14 - Mandatory Time Field | ✅ COMPLETE | 1/1 | Feb 3 |
 | 15 - Label Printing Format | ✅ COMPLETE | 1/1 | Feb 3 |
 | 16 - Dropdown Scroll Fix | ✅ COMPLETE | 1/1 | Feb 4 |
-| 17 - Contact Validation | ⬜ PENDING | 0/1 | Feb 3 |
+| 17 - Contact Validation | ✅ COMPLETE | 1/1 | Feb 4 |
 | 18 - Popup Modals | ⬜ PENDING | 0/1 | Feb 3 |
 | 19 - Workflow Auto-Advance | ⬜ PENDING | 0/1 | Feb 3 |
 | 20 - Stripe Cleanup | ⬜ PENDING | 0/1 | Feb 3 |
@@ -60,7 +61,7 @@ WAVE 4 (Critical Fixes - Sequential) ✅ DONE
 WAVE 5 (UX Fixes - Parallel) ← CURRENT
 |-- Phase 15: Label Printing Format ✅ DONE
 |-- Phase 16: Assignment Dropdown Scroll ✅ DONE
-|-- Phase 17: Contact Field Validation
+|-- Phase 17: Contact Field Validation ✅ DONE
 |-- Phase 18: Popup Modals
 |-- Phase 19: Workflow Auto-Advance
 +-- Phase 20: Stripe Payment Cleanup
@@ -124,14 +125,17 @@ Key concerns from client:
 | Configurable label dimensions | 15-01 | Added labelWidth and labelHeight to LABEL_CONFIG for single-point dimension changes. |
 | 240px max dropdown height | 16-01 | Matches existing Tailwind max-h-60 (60 * 4px) for viewport collision detection consistency. |
 | Inline maxHeight for dropdowns | 16-01 | Apply maxHeight via inline style instead of Tailwind class for dynamic viewport-aware positioning. |
+| Mobile phone required over landline | 17-01 | Made mobile_phone mandatory, phone (landline) optional for N8N SMS workflows. |
+| No database NOT NULL constraints | 17-01 | Enforce validation via UI/API only to maintain backward compatibility with existing client data. |
+| Phone as third preferred contact | 17-01 | Added 'phone' alongside 'email' and 'sms' for clients who prefer landline contact. |
 
 ## Next Action
 
-**Wave 5: UX Fixes (Phases 17-20)**
+**Wave 5: UX Fixes (Phases 18-20)**
 
-Phases 15-16 complete. Remaining Wave 5 phases can run in parallel.
+Phases 15-17 complete. Remaining Wave 5 phases can run in parallel.
 
-Run: `/gsd:execute-phase 17` (or any of 17-20)
+Run: `/gsd:execute-phase 18` (or any of 18-20)
 
 ## Wave 4 Summary (Feb 4)
 
@@ -182,12 +186,31 @@ Run: `/gsd:execute-phase 17` (or any of 17-20)
 **Files modified:**
 - `src/components/ui/select.tsx` — Added viewport-aware positioning logic
 
+**Phase 17 — Complete.** Updated contact field validation for N8N workflows:
+- Mobile/SMS and email now mandatory for new client creation
+- Phone (landline) changed from required to optional
+- Added "Phone (Landline)" as third preferred contact option
+- Database CHECK constraint updated to accept 'phone' value
+- Form reordered: Mobile/SMS * and Email * in row 2, Phone (landline) optional in row 3
+- Real-time validation with French error messages for mobile_phone
+- Search queries include mobile_phone field
+- Intake API saves mobile_phone and preferred_contact to database
+- Backward compatible: existing clients with NULL values remain viewable
+- No database NOT NULL constraints to avoid breaking existing data
+- TypeScript compiles clean
+
+**Files modified:**
+- `supabase/migrations/0038_update_preferred_contact_and_fields.sql` — CHECK constraint update
+- `src/lib/dto.ts` — Updated clientCreateSchema validation rules
+- `src/components/intake/client-step.tsx` — Form UI, validation, field management
+- `src/app/api/intake/route.ts` — API client insert with mobile_phone and preferred_contact
+
 ## Session Continuity
 
 - **Last session:** 2026-02-04
-- **Status:** 16/21 phases complete — Wave 5 in progress (2/6 done)
-- **Stopped at:** Completed Phase 16 Plan 01 (16-01-PLAN.md)
-- **Next:** Continue Wave 5 (Phases 17-20, parallel UX fixes)
+- **Status:** 17/21 phases complete — Wave 5 in progress (3/6 done)
+- **Stopped at:** Completed Phase 17 Plan 01 (17-01-PLAN.md)
+- **Next:** Continue Wave 5 (Phases 18-20, parallel UX fixes)
 
 ---
 *State updated: 2026-02-04*
