@@ -399,10 +399,10 @@ Plans:
 **Blocks:** Nothing
 
 **Status:** Pending
-**Plans:** 1/1
+**Plans:** 1 plan
 
 Plans:
-- [ ] 19-01-PLAN.md — Fix auto-advance behavior in order creation
+- [ ] 19-01-PLAN.md — Add toast success feedback after adding item to order
 
 ---
 
