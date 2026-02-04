@@ -13,13 +13,13 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements + 12 new from Feb 3 UAT)
-- **Phase:** 21 of 21 - Wave 6 Final Verification (1/2 complete)
+- **Phase:** 21 of 21 - Wave 6 Final Verification (2/2 complete)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
 - **Wave 5 Completion:** February 4, 2026 (Phases 15-19)
 - **Phase 20 Completion:** February 4, 2026 (Stripe Cleanup)
-- **Phase 21 Progress:** Plan 02/02 complete (Mobile service row responsiveness)
+- **Phase 21 Completion:** February 4, 2026 (Responsive Layout Fixes)
 
 ## Progress
 
@@ -45,7 +45,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 18 - Popup Modals | ✅ COMPLETE | 1/1 | Feb 4 |
 | 19 - Workflow Auto-Advance | ✅ COMPLETE | 1/1 | Feb 4 |
 | 20 - Stripe Cleanup | ✅ COMPLETE | 1/1 | Feb 4 |
-| 21 - Responsive Verification | 🔄 IN PROGRESS | 1/2 | Feb 4 |
+| 21 - Responsive Verification | ✅ COMPLETE | 2/2 | Feb 4 |
 
 ## Execution Waves
 
@@ -66,8 +66,8 @@ WAVE 5 (UX Fixes - Parallel) ✅ DONE
 |-- Phase 19: Workflow Auto-Advance ✅ DONE
 +-- Phase 20: Stripe Payment Cleanup ✅ DONE
 
-WAVE 6 (Final Verification) ← CURRENT
-|-- Phase 21 Plan 01: Homepage/Workload height fixes ✅ DONE
+WAVE 6 (Final Verification) ✅ DONE
+|-- Phase 21 Plan 01: Layout overflow fixes (15 pages) ✅ DONE
 +-- Phase 21 Plan 02: Mobile service row responsiveness ✅ DONE
 ```
 
@@ -136,14 +136,17 @@ Key concerns from client:
 | Two-row mobile layout | 21-02 | Stack service controls into two rows on mobile (< 640px) to prevent overflow on iPhone SE (375px) and iPhone 14 (390px). Single-row layout needs ~420px minimum. |
 | Responsive modal width | 21-02 | Use max-w-full on mobile, max-w-6xl on desktop. Fixed max-w-6xl (1152px) is wider than iPad portrait (768px). |
 | Flex-wrap fallback | 21-02 | Added flex-wrap to control groups as safety net. If controls exceed container width even after stacking, they wrap instead of overflowing. |
+| h-full instead of h-screen | 21-01 | Root layout uses h-dvh overflow-hidden grid. h-screen (100vh) expands beyond grid cell causing clipping. h-full fills grid cell exactly. Pattern applies to all future pages. |
+| Keep min-h-screen in loading states | 21-01 | Loading/error states render outside normal layout flow and need full-height centering. No clipping risk. |
+| Responsive label padding | 21-01 | Changed labels page from p-8 to p-4 md:p-8 to save 16px padding on mobile (H6 requirement). |
 
 ## Next Action
 
-**Wave 5: UX Fixes (Phase 20 only)**
+**Project Complete - All Phases Done**
 
-Phases 15-19 complete. One Wave 5 phase remaining.
+All 21 phases (49 plans) executed successfully. Final modifications delivered.
 
-Run: `/gsd:execute-phase 20`
+**Ready for deployment and device testing.**
 
 ## Wave 4 Summary (Feb 4)
 
@@ -250,15 +253,31 @@ Run: `/gsd:execute-phase 20`
 
 ## Wave 6 Progress (Feb 4)
 
-**Phase 21 Plan 01 — Complete.** Fixed homepage and workload page height issues:
-- Changed h-screen to h-full on both pages
-- Prevents vertical overflow and double scrollbars on mobile
-- Layout now respects parent container height
+**Phase 21 Plan 01 — Complete.** Fixed layout overflow issues on 15 pages:
+- Replaced h-screen and min-h-screen with h-full flex flex-col overflow-hidden pattern
+- Fixed content clipping in root layout's overflow-hidden grid cell
+- All pages now properly fill grid cell and scroll correctly
+- Added responsive padding on labels page (p-4 md:p-8 for mobile)
+- Most impactful responsive fix - affects ALL devices on 15 pages
+- Remaining min-h-screen only in loading/error states (acceptable)
 - TypeScript compiles clean
 
 **Files modified:**
-- `src/app/page.tsx` — Changed h-screen to h-full
-- `src/app/board/workload/page.tsx` — Changed h-screen to h-full
+- `src/app/page.tsx` — h-screen → h-full
+- `src/app/board/workload/page.tsx` — h-screen → h-full
+- `src/app/board/today/page.tsx` — min-h-screen → h-full pattern
+- `src/app/clients/page.tsx` — min-h-screen → h-full pattern
+- `src/app/clients/[id]/page.tsx` — min-h-screen → h-full pattern
+- `src/app/admin/team/page.tsx` — min-h-screen → h-full pattern
+- `src/app/admin/pricing/page.tsx` — min-h-screen → h-full pattern
+- `src/app/admin/measurements/page.tsx` — min-h-screen → h-full pattern
+- `src/app/archived/page.tsx` — min-h-screen → h-full pattern
+- `src/app/labels/[orderId]/page.tsx` — min-h-screen → h-full + responsive padding
+- `src/app/orders/history/page.tsx` — min-h-screen → h-full pattern
+- `src/app/portal/page.tsx` — min-h-screen → h-full pattern
+- `src/app/track/[id]/page.tsx` — min-h-screen → h-full pattern
+- `src/app/booking/page.tsx` — min-h-screen → h-full pattern
+- `src/app/dashboard/analytics/page.tsx` — min-h-screen → h-full pattern
 
 **Phase 21 Plan 02 — Complete.** Fixed mobile service row overflow in intake and order detail:
 - GarmentServicesStep service rows: Restructured to two-row mobile layout (flex-col → sm:flex-row)
@@ -278,9 +297,9 @@ Run: `/gsd:execute-phase 20`
 ## Session Continuity
 
 - **Last session:** 2026-02-04
-- **Status:** 21/21 phases complete (2 plans executed in Phase 21)
-- **Stopped at:** Completed Phase 21 Plan 02 (21-02-PLAN.md)
-- **Next:** Project complete - all phases finished
+- **Status:** 21/21 phases complete - ALL DONE
+- **Stopped at:** Completed Phase 21 Plan 01 (21-01-PLAN.md)
+- **Next:** Project complete - ready for deployment and device testing
 
 ---
 *State updated: 2026-02-04*
