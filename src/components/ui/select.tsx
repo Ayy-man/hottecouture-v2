@@ -29,10 +29,10 @@ const Select = ({
   children,
   defaultValue
 }: {
-  value?: string
+  value?: string | undefined
   onValueChange?: (value: string) => void
   children: React.ReactNode
-  defaultValue?: string
+  defaultValue?: string | undefined
 }) => {
   const [internalValue, setInternalValue] = React.useState(defaultValue || "")
   const [open, setOpen] = React.useState(false)
