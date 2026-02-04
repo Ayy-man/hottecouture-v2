@@ -603,16 +603,17 @@ export default function WorkloadPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 px-1.5 text-[10px] text-amber-700 hover:bg-amber-100"
+                              className="h-8 sm:h-6 min-h-[44px] sm:min-h-0 px-1.5 text-xs sm:text-[10px] text-amber-700 hover:bg-amber-100"
                               onClick={() => handleAssignToMe(item.garmentServiceId)}
                               disabled={assigningItem === item.garmentServiceId}
                               title="Assign to me"
+                              role="button"
                             >
                               <UserPlus className="h-3 w-3" />
                             </Button>
                           )}
                           <select
-                            className="text-xs border rounded px-1 py-0.5 bg-white max-w-[80px]"
+                            className="text-xs border rounded px-1 py-0.5 bg-white max-w-[120px] sm:max-w-[160px]"
                             value=""
                             onChange={async (e) => {
                               if (e.target.value) {
