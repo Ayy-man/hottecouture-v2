@@ -2,8 +2,8 @@
 
 **Created:** 2026-01-20
 **Updated:** 2026-02-04
-**Phases:** 21 (11 original + 10 new from Feb 3 UAT)
-**Requirements:** 39 original + 12 new from client feedback
+**Phases:** 22 (11 original + 10 from Feb 3 UAT + 1 from milestone audit)
+**Requirements:** 39 original + 12 from client feedback + 7 from audit
 
 ## Execution Waves
 
@@ -40,8 +40,11 @@ WAVE 5 (Feb 3 UAT Feedback - UX Fixes, parallel)
 ├── Phase 19: Workflow Auto-Advance Fix
 └── Phase 20: Stripe Payment Link Cleanup
 
-WAVE 6 (Final Verification)
+WAVE 6 (Final Verification) ✅ DONE
 └── Phase 21: Verify Responsive on Real Devices
+
+WAVE 7 (Milestone Audit Gaps) ← CURRENT
+└── Phase 22: Audit Gap Closure (bugs + missing features + chatbot)
 ```
 
 ## Phase Overview
@@ -69,6 +72,7 @@ WAVE 6 (Final Verification)
 | 19 | Workflow Auto-Advance | Stay on page after adding item | Feb 3 | 5 | ✓ |
 | 20 | Stripe Cleanup | Clean URL, logo, correct phone | Feb 3 | 5 | |
 | 21 | Responsive Verification | Fix responsive issues before real device testing | Feb 3 | 6 | ✓ |
+| 22 | Audit Gap Closure | Fix scroll bugs, modal cutoff, chatbot, service menu, garment types, French | Audit | 7 | |
 
 ---
 
@@ -459,19 +463,59 @@ Plans:
 
 ---
 
+## Phase 22: Audit Gap Closure
+
+**Goal:** Fix critical scroll/overflow bugs, remove chatbot widget, add missing features from AUTOMATO cross-reference.
+
+**Source:** Milestone audit + AUTOMATO comparative analysis + manual testing
+**Audit findings:** 4 critical bugs + 3 missing features
+
+**Tasks:**
+
+1. **BUG-1/3: Board page scroll fix** — `src/app/board/page.tsx` still uses `h-screen overflow-hidden`. Change to `h-full` pattern with `overflow-y-auto` child. Fixes both unscrollable views and kanban mobile glitchiness.
+
+2. **BUG-2: Modal content cutoff** — `OrderDetailModal` card gets clipped by parent `overflow-hidden`. Fix modal overlay positioning to escape parent overflow constraints.
+
+3. **BUG-4: Remove AI chatbot widget** — `GlobalChatWrapper` in layout.tsx renders 56px button at `fixed bottom-4 right-4 z-[9999]`. Remove from layout or hide on mobile. Files: `src/app/layout.tsx`, `src/components/chat/global-chat-wrapper.tsx`, `src/components/chat/internal-chat.tsx`.
+
+4. **FEAT-1: Three-dot service menu** — Add DropdownMenu (⋮) with Modify/Export/Delete to service rows in admin pricing table. Client quote: "trois petits points... modifier... exporter... delete."
+
+5. **FEAT-2: Add custom garment type** — Port "Add Custom Type Section" from old `garments-step.tsx` (line 698) into merged `garment-services-step.tsx`. Client quote: "Ça va nous permettre de construire notre banque."
+
+6. **FEAT-3: Board French headers** — Replace English strings on board page: "Production Board" → "Tableau de Production", "New Order" → "Nouvelle Commande", "Workload" → "Charge de Travail", "Archived Orders" → "Commandes Archivees".
+
+**Success Criteria:**
+1. Board page scrolls vertically on all devices
+2. Order detail modal content fully visible (no bottom cutoff)
+3. Kanban drag-and-drop smooth on mobile (no parent scroll conflict)
+4. No floating chatbot button visible on any page
+5. Three-dot menu on service rows with Modify/Export/Delete
+6. "Add garment type" button visible in merged intake step
+7. Board page headers in French
+
+**Dependencies:** None
+**Blocked by:** Nothing
+**Blocks:** Nothing
+
+**Status:** Pending
+**Plans:** 3 plans
+
+Plans:
+- [ ] 22-01-PLAN.md — Fix board scroll/overflow bugs, remove chatbot widget, French headers
+- [ ] 22-02-PLAN.md — Add service listing table with three-dot menu to admin pricing page
+- [ ] 22-03-PLAN.md — Port "Add Custom Type" section into merged garment-services step
+
+---
+
 ## Suggested Schedule
 
 ```
-Week 1 (Feb 4-7):
-  Wave 4 (Critical): Phase 12, 13, 14 (sequential)
+Waves 1-6: ✅ ALL DONE (Phases 1-21)
 
-Week 2 (Feb 10-14):
-  Wave 5 (Parallel): Phases 15-20
-
-Week 3 (Feb 17-21):
-  Wave 6: Phase 21 (responsive verification)
-  Buffer for fixes from Audrey's iPad testing
+Wave 7 (Feb 5):
+  Phase 22: Audit Gap Closure (bugs + features)
+  Then: Physical device testing by Audrey's team
 ```
 
 ---
-*Roadmap updated: 2026-02-04 — Added 10 phases from Feb 3 UAT feedback*
+*Roadmap updated: 2026-02-04 — Added Phase 22 from milestone audit gaps*
