@@ -242,8 +242,9 @@ export default function LabelsPage() {
   }
 
   return (
-    <div className='min-h-screen bg-white p-8 overflow-y-auto'>
-      <div className='max-w-4xl mx-auto'>
+    <div className='h-full flex flex-col overflow-hidden bg-white'>
+      <div className='flex-1 overflow-y-auto'>
+        <div className='max-w-4xl mx-auto p-4 md:p-8'>
         {/* Action Buttons */}
         <div className='no-print mb-6 flex justify-center gap-4'>
           <button
@@ -383,6 +384,8 @@ export default function LabelsPage() {
           }
         }
       `}</style>
+        </div>
+      </div>
     </div>
   );
 }
