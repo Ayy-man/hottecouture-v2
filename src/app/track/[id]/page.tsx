@@ -145,7 +145,7 @@ export default function TrackOrderPage() {
                             ${isPast ? 'bg-primary-500 text-white' : 'bg-muted text-muted-foreground'}`}>
                             {index + 1}
                           </div>
-                          <span className={`text-xs mt-1 text-center
+                          <span className={`text-[10px] sm:text-xs mt-1 text-center
                             ${isActive ? 'font-semibold text-primary-600' : 'text-muted-foreground'}`}>
                             {getStatusInfo(step).label}
                           </span>

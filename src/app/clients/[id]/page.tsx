@@ -189,7 +189,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-all ${
                 activeTab === tab.key
                   ? 'bg-primary-500 text-white shadow-md'
                   : 'bg-white text-muted-foreground hover:bg-accent'

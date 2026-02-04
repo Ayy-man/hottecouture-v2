@@ -387,7 +387,7 @@ export default function MeasurementTemplatesPage() {
             {showAddForm && (
               <div className='mb-6 p-4 bg-primary-50 rounded-lg border-2 border-primary-200'>
                 <h3 className='font-semibold mb-3'>Nouveau champ de mesure</h3>
-                <div className='grid grid-cols-2 gap-3 mb-3'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3'>
                   <div>
                     <label className='block text-sm font-medium mb-1'>
                       Nom (français) *
