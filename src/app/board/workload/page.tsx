@@ -484,7 +484,7 @@ export default function WorkloadPage() {
 
   return (
     <AuthGuard>
-      <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50">
+      <div className="h-full flex flex-col overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50">
         <header className="flex-shrink-0 bg-white/80 backdrop-blur-sm border-b px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
