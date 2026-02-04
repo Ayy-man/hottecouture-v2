@@ -424,10 +424,10 @@ Plans:
 **Blocks:** Nothing
 
 **Status:** Pending
-**Plans:** 1/1
+**Plans:** 1 plan
 
 Plans:
-- [ ] 20-01-PLAN.md — Stripe payment link visual cleanup
+- [ ] 20-01-PLAN.md — Add fallback URL logging, remove dead Stripe code, GHL Dashboard branding checkpoint
 
 ---
 
