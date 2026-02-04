@@ -464,7 +464,7 @@ export function OrderDetailModal({
         }
       }}
     >
-      <Card className='w-full max-w-6xl max-h-[95vh] overflow-y-auto bg-white shadow-2xl'>
+      <Card className='w-full max-w-full sm:max-w-6xl max-h-[95vh] overflow-y-auto bg-white shadow-2xl'>
         <div className='p-3 sm:p-4'>
           {/* Header */}
           <div className='flex flex-col sm:flex-row justify-between items-start mb-4 gap-3'>
@@ -932,8 +932,8 @@ export function OrderDetailModal({
                                   key={service.id || serviceIndex}
                                   className='bg-blue-50 rounded-lg p-2'
                                 >
-                                  <div className='flex justify-between items-start'>
-                                    <div className='flex-1'>
+                                  <div className='flex flex-col sm:flex-row sm:items-start gap-2'>
+                                    <div className='flex-1 min-w-0'>
                                       <h6 className='font-medium text-foreground'>
                                         {service.service?.name ||
                                           service.custom_service_name ||
@@ -955,19 +955,19 @@ export function OrderDetailModal({
                                         </div>
                                       )}
                                     </div>
-                                    <div className='text-right text-sm ml-4 min-w-[140px]'>
+                                    <div className='flex items-center gap-2 flex-wrap sm:text-right text-sm sm:min-w-[140px]'>
                                       <div className='text-muted-foreground'>
                                         Qty: {service.quantity}
                                       </div>
 
                                       {/* Estimated Price (readonly) */}
-                                      <div className='text-xs text-muted-foreground mt-1'>
+                                      <div className='text-xs text-muted-foreground'>
                                         Est: ${(priceInfo.estimatedTotalCents / 100).toFixed(2)}
                                       </div>
 
                                       {/* Final Price (editable) */}
                                       {isEditing ? (
-                                        <div className='mt-2 space-y-1'>
+                                        <div className='space-y-1'>
                                           <div className='flex items-center gap-1'>
                                             <span className='text-xs'>$</span>
                                             <input
@@ -1003,8 +1003,8 @@ export function OrderDetailModal({
                                           </div>
                                         </div>
                                       ) : (
-                                        <div className='mt-1'>
-                                          <div className='flex items-center justify-end gap-1'>
+                                        <div>
+                                          <div className='flex items-center sm:justify-end gap-1'>
                                             <span className={`font-medium ${priceInfo.hasFinalPrice ? 'text-green-700' : 'text-foreground'}`}>
                                               ${(priceInfo.totalCents / 100).toFixed(2)}
                                             </span>
@@ -1027,7 +1027,7 @@ export function OrderDetailModal({
                                       )}
 
                                       {service.service?.estimated_minutes && (
-                                        <div className='text-xs text-muted-foreground mt-1'>
+                                        <div className='text-xs text-muted-foreground'>
                                           Est time:{' '}
                                           {Math.floor(service.service.estimated_minutes / 60)}h{' '}
                                           {service.service.estimated_minutes % 60}m
