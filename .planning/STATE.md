@@ -13,15 +13,13 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs -> 39 requirements + 12 new from Feb 3 UAT)
-- **Phase:** 19 of 21 - Wave 5 UX Fixes (5/6 complete)
+- **Phase:** 21 of 21 - Wave 6 Final Verification (1/2 complete)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
-- **Phase 15 Completion:** February 4, 2026 (Label Printing Format)
-- **Phase 16 Completion:** February 4, 2026 (Dropdown Scroll Fix)
-- **Phase 17 Completion:** February 4, 2026 (Contact Field Validation)
-- **Phase 18 Completion:** February 4, 2026 (Popup Modals)
-- **Phase 19 Completion:** February 4, 2026 (Workflow Auto-Advance)
+- **Wave 5 Completion:** February 4, 2026 (Phases 15-19)
+- **Phase 20 Completion:** February 4, 2026 (Stripe Cleanup)
+- **Phase 21 Progress:** Plan 02/02 complete (Mobile service row responsiveness)
 
 ## Progress
 
@@ -46,8 +44,8 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 17 - Contact Validation | ✅ COMPLETE | 1/1 | Feb 4 |
 | 18 - Popup Modals | ✅ COMPLETE | 1/1 | Feb 4 |
 | 19 - Workflow Auto-Advance | ✅ COMPLETE | 1/1 | Feb 4 |
-| 20 - Stripe Cleanup | ⬜ PENDING | 0/1 | Feb 3 |
-| 21 - Responsive Verification | ⬜ PENDING | 0/1 | Feb 3 |
+| 20 - Stripe Cleanup | ✅ COMPLETE | 1/1 | Feb 4 |
+| 21 - Responsive Verification | 🔄 IN PROGRESS | 1/2 | Feb 4 |
 
 ## Execution Waves
 
@@ -60,16 +58,17 @@ WAVE 4 (Critical Fixes - Sequential) ✅ DONE
 +-- Phase 13: Fix Price Editing Regression (re-enabled total modifier)
 +-- Phase 14: Mandatory Time Field (added time input + validation)
 
-WAVE 5 (UX Fixes - Parallel) ← CURRENT
+WAVE 5 (UX Fixes - Parallel) ✅ DONE
 |-- Phase 15: Label Printing Format ✅ DONE
 |-- Phase 16: Assignment Dropdown Scroll ✅ DONE
 |-- Phase 17: Contact Field Validation ✅ DONE
 |-- Phase 18: Popup Modals ✅ DONE
 |-- Phase 19: Workflow Auto-Advance ✅ DONE
-+-- Phase 20: Stripe Payment Cleanup
++-- Phase 20: Stripe Payment Cleanup ✅ DONE
 
-WAVE 6 (Final Verification)
-+-- Phase 21: Responsive Device Testing
+WAVE 6 (Final Verification) ← CURRENT
+|-- Phase 21 Plan 01: Homepage/Workload height fixes ✅ DONE
++-- Phase 21 Plan 02: Mobile service row responsiveness ✅ DONE
 ```
 
 ## Feb 3 UAT Context
@@ -134,6 +133,9 @@ Key concerns from client:
 | Backdrop click closes modal | 18-01 | onClick with e.target === e.currentTarget check prevents closing when clicking inside card content. |
 | Inline modal on workload page | 18-01 | Replaced Link navigation with inline OrderDetailModal rendering to preserve user's place in workload view. |
 | French toast message | 19-01 | Used "Article ajouté à la commande" for success feedback, consistent with French primary UI language. |
+| Two-row mobile layout | 21-02 | Stack service controls into two rows on mobile (< 640px) to prevent overflow on iPhone SE (375px) and iPhone 14 (390px). Single-row layout needs ~420px minimum. |
+| Responsive modal width | 21-02 | Use max-w-full on mobile, max-w-6xl on desktop. Fixed max-w-6xl (1152px) is wider than iPad portrait (768px). |
+| Flex-wrap fallback | 21-02 | Added flex-wrap to control groups as safety net. If controls exceed container width even after stacking, they wrap instead of overflowing. |
 
 ## Next Action
 
@@ -236,12 +238,49 @@ Run: `/gsd:execute-phase 20`
 **Files modified:**
 - `src/components/intake/garment-services-step.tsx` — Added toast feedback
 
+**Phase 20 — Complete.** Removed dead Stripe payment code and added fallback URL logging:
+- Removed unused payment session handling from route.ts (order creation)
+- Removed dead Stripe webhook handler (commented out code)
+- Added fallback URL logging if env vars missing (prevents blank redirects)
+- No functional changes - cleanup only
+- TypeScript compiles clean
+
+**Files modified:**
+- `src/app/api/intake/route.ts` — Removed Stripe session code, added fallback logging
+
+## Wave 6 Progress (Feb 4)
+
+**Phase 21 Plan 01 — Complete.** Fixed homepage and workload page height issues:
+- Changed h-screen to h-full on both pages
+- Prevents vertical overflow and double scrollbars on mobile
+- Layout now respects parent container height
+- TypeScript compiles clean
+
+**Files modified:**
+- `src/app/page.tsx` — Changed h-screen to h-full
+- `src/app/board/workload/page.tsx` — Changed h-screen to h-full
+
+**Phase 21 Plan 02 — Complete.** Fixed mobile service row overflow in intake and order detail:
+- GarmentServicesStep service rows: Restructured to two-row mobile layout (flex-col → sm:flex-row)
+- Row 1: Service name + qty controls | Row 2: Price + time + assignment + remove
+- OrderDetailModal: Added responsive modal width (max-w-full sm:max-w-6xl)
+- OrderDetailModal service rows: Applied same two-row stacking pattern
+- Service name gets truncate with flex-1 min-w-0 to prevent overflow
+- All touch targets (min-h-[44px] min-w-[44px]) preserved
+- All functionality preserved (editing, validation, state)
+- Prevents horizontal overflow on iPhone SE (375px) and iPhone 14 (390px)
+- TypeScript compiles clean
+
+**Files modified:**
+- `src/components/intake/garment-services-step.tsx` — Two-row mobile service layout
+- `src/components/board/order-detail-modal.tsx` — Responsive modal width and service rows
+
 ## Session Continuity
 
 - **Last session:** 2026-02-04
-- **Status:** 19/21 phases complete — Wave 5 in progress (5/6 done)
-- **Stopped at:** Completed Phase 19 Plan 01 (19-01-PLAN.md)
-- **Next:** Continue Wave 5 (Phase 20 Stripe Cleanup, then Phase 21 final verification)
+- **Status:** 21/21 phases complete (2 plans executed in Phase 21)
+- **Stopped at:** Completed Phase 21 Plan 02 (21-02-PLAN.md)
+- **Next:** Project complete - all phases finished
 
 ---
 *State updated: 2026-02-04*
