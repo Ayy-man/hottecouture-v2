@@ -129,14 +129,17 @@ Key concerns from client:
 | Mobile phone required over landline | 17-01 | Made mobile_phone mandatory, phone (landline) optional for N8N SMS workflows. |
 | No database NOT NULL constraints | 17-01 | Enforce validation via UI/API only to maintain backward compatibility with existing client data. |
 | Phone as third preferred contact | 17-01 | Added 'phone' alongside 'email' and 'sms' for clients who prefer landline contact. |
+| ESC key closes modal | 18-01 | useEffect with keydown listener for 'Escape' key, cleans up on unmount to prevent memory leaks. |
+| Backdrop click closes modal | 18-01 | onClick with e.target === e.currentTarget check prevents closing when clicking inside card content. |
+| Inline modal on workload page | 18-01 | Replaced Link navigation with inline OrderDetailModal rendering to preserve user's place in workload view. |
 
 ## Next Action
 
-**Wave 5: UX Fixes (Phases 18-20)**
+**Wave 5: UX Fixes (Phases 19-20)**
 
-Phases 15-17 complete. Remaining Wave 5 phases can run in parallel.
+Phases 15-18 complete. Remaining Wave 5 phases can run in parallel.
 
-Run: `/gsd:execute-phase 18` (or any of 18-20)
+Run: `/gsd:execute-phase 19` (or `/gsd:execute-phase 20`)
 
 ## Wave 4 Summary (Feb 4)
 
@@ -206,12 +209,25 @@ Run: `/gsd:execute-phase 18` (or any of 18-20)
 - `src/components/intake/client-step.tsx` — Form UI, validation, field management
 - `src/app/api/intake/route.ts` — API client insert with mobile_phone and preferred_contact
 
+**Phase 18 — Complete.** Enhanced modal UX with keyboard and backdrop interactions:
+- Added ESC key handler to OrderDetailModal using useEffect with keydown listener
+- Added backdrop click handler with e.target === e.currentTarget check
+- Workload page now opens OrderDetailModal inline instead of navigating to /board
+- Gantt timeline onSelectFeature opens modal inline for quick order inspection
+- Users stay on workload page when viewing/closing order details
+- Modal close mechanisms work together: ESC key, backdrop click, close button
+- TypeScript compiles clean
+
+**Files modified:**
+- `src/components/board/order-detail-modal.tsx` — ESC key handler and backdrop click
+- `src/app/board/workload/page.tsx` — Inline modal rendering with state management
+
 ## Session Continuity
 
 - **Last session:** 2026-02-04
-- **Status:** 17/21 phases complete — Wave 5 in progress (3/6 done)
-- **Stopped at:** Completed Phase 17 Plan 01 (17-01-PLAN.md)
-- **Next:** Continue Wave 5 (Phases 18-20, parallel UX fixes)
+- **Status:** 18/21 phases complete — Wave 5 in progress (4/6 done)
+- **Stopped at:** Completed Phase 18 Plan 01 (18-01-PLAN.md)
+- **Next:** Continue Wave 5 (Phases 19-20, parallel UX fixes)
 
 ---
 *State updated: 2026-02-04*
