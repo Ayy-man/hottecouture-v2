@@ -392,13 +392,19 @@ Fixed 4 cascading build failures after adding all source files to git:
 - `src/components/ui/dialog.tsx` — Created new file
 - `src/components/ui/select.tsx` — Allow undefined in value prop
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Reliable mobile kanban (tap-to-move) | 2026-02-08 | 5959112 | [001-reliable-mobile-kanban](./quick/001-reliable-mobile-kanban/) |
+
 ## Session Continuity
 
-- **Last session:** 2026-02-05
-- **Status:** 22/22 phases complete - ALL DONE - Deployed to Vercel
-- **Stopped at:** All phases complete, Vercel build passing, UAT prompt written
+- **Last session:** 2026-02-08
+- **Status:** 22/22 phases complete + quick tasks - Deployed to Vercel
+- **Stopped at:** Completed quick task 001: reliable mobile kanban
 - **Next:** UAT testing on live deployment (see .planning/UAT-PROMPT.md)
 - **Resume file:** None
 
 ---
-*State updated: 2026-02-05*
+*State updated: 2026-02-08*
