@@ -10,6 +10,9 @@ interface DraggableOrderCardProps {
   onClick: () => void;
   isJustMoved?: boolean;
   isUpdating?: boolean;
+  selectedOrderForMove?: string | null;
+  onSelectForMove?: (orderId: string) => void;
+  isMobile?: boolean;
 }
 
 export function DraggableOrderCard({
@@ -17,9 +20,14 @@ export function DraggableOrderCard({
   onClick,
   isJustMoved = false,
   isUpdating = false,
+  selectedOrderForMove,
+  onSelectForMove,
+  isMobile = false,
 }: DraggableOrderCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: order.id });
+
+  const isSelected = selectedOrderForMove === order.id;
 
   // Extract item-level assignments from garment services
   const { uniqueAssignees, assigneeGroups, hasUnassigned } = useMemo(() => {
@@ -67,30 +75,35 @@ export function DraggableOrderCard({
       isRush={order.rush || false}
       orderType={order.type || 'alteration'}
       className={`
-        kanban-card cursor-grab active:cursor-grabbing
+        kanban-card ${isMobile ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}
         hover:shadow-lg transition-all duration-300 touch-manipulation select-none
         ${
           isDragging
             ? 'opacity-70 shadow-2xl scale-105 rotate-1 z-50'
-            : isJustMoved
-              ? 'ring-2 ring-green-400 ring-opacity-60 bg-gradient-to-br from-green-50 to-green-100 animate-pulse'
-              : isUpdating
-                ? 'ring-2 ring-blue-400 ring-opacity-60 bg-gradient-to-br from-blue-50 to-blue-100 opacity-90'
-                : 'hover:scale-[1.02] hover:shadow-xl'
+            : isSelected
+              ? 'ring-2 ring-blue-500 bg-blue-50/50 scale-[1.02]'
+              : isJustMoved
+                ? 'ring-2 ring-green-400 ring-opacity-60 bg-gradient-to-br from-green-50 to-green-100 animate-pulse'
+                : isUpdating
+                  ? 'ring-2 ring-blue-400 ring-opacity-60 bg-gradient-to-br from-blue-50 to-blue-100 opacity-90'
+                  : 'hover:scale-[1.02] hover:shadow-xl'
         }
       `}
     >
       <div
         ref={setNodeRef}
         style={style}
-        {...attributes}
-        {...listeners}
+        {...(isMobile ? {} : attributes)}
+        {...(isMobile ? {} : listeners)}
         className={`p-2 sm:p-3 ipad-landscape:p-2 lg:p-4 transition-all duration-300 ${
-          isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          isMobile ? 'cursor-pointer' : (isDragging ? 'cursor-grabbing' : 'cursor-grab')
         }`}
         onClick={() => {
-          // Only trigger click if not dragging
-          if (!isDragging) {
+          if (isMobile && onSelectForMove) {
+            // On mobile: tap to select for moving
+            onSelectForMove(order.id);
+          } else if (!isDragging) {
+            // On desktop: only open modal if not dragging
             onClick();
           }
         }}
@@ -99,9 +112,11 @@ export function DraggableOrderCard({
         <div className='ipad-landscape:hidden'>
           <div className='flex justify-between items-start mb-1.5 ipad:mb-1 lg:mb-2'>
             <div className='flex items-center gap-1.5 ipad:gap-1 lg:gap-2'>
-              <div className='text-muted-foreground/70 text-xs cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors duration-200'>
-                ⋮⋮
-              </div>
+              {!isMobile && (
+                <div className='text-muted-foreground/70 text-xs cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors duration-200'>
+                  ⋮⋮
+                </div>
+              )}
               <h4 className='font-semibold text-xs sm:text-sm ipad:text-xs lg:text-base'>
                 #{order.order_number}
               </h4>
@@ -192,9 +207,11 @@ export function DraggableOrderCard({
         <div className='hidden ipad-landscape:block'>
           <div className='flex justify-between items-center mb-1'>
             <div className='flex items-center gap-1'>
-              <div className='text-muted-foreground/70 text-xs cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors duration-200'>
-                ⋮⋮
-              </div>
+              {!isMobile && (
+                <div className='text-muted-foreground/70 text-xs cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors duration-200'>
+                  ⋮⋮
+                </div>
+              )}
               <h4 className='font-semibold text-xs'>#{order.order_number}</h4>
               {order.type && (
                 <span className={`px-1 py-0.5 text-[10px] font-medium rounded-full ${

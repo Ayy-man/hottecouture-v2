@@ -13,6 +13,10 @@ interface DroppableColumnProps {
   onOrderClick: (order: any) => void;
   justMovedOrder?: string | null;
   updatingOrders?: Set<string>;
+  selectedOrderForMove?: string | null;
+  onColumnTap?: (columnId: string) => void;
+  isMobile?: boolean;
+  onSelectForMove?: (orderId: string) => void;
 }
 
 export function DroppableColumn({
@@ -21,6 +25,10 @@ export function DroppableColumn({
   onOrderClick,
   justMovedOrder,
   updatingOrders = new Set(),
+  selectedOrderForMove,
+  onColumnTap,
+  isMobile = false,
+  onSelectForMove,
 }: DroppableColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: column.id,
@@ -35,6 +43,11 @@ export function DroppableColumn({
       status: o.status,
     })),
   });
+
+  // Check if selected order is already in this column
+  const selectedOrderInThisColumn = selectedOrderForMove
+    ? orders.some(o => o.id === selectedOrderForMove)
+    : false;
 
   return (
     <div
@@ -61,6 +74,20 @@ export function DroppableColumn({
         </div>
       )}
 
+      {/* Mobile tap-to-move banner */}
+      {isMobile && selectedOrderForMove && (
+        <div
+          onClick={() => onColumnTap?.(column.id)}
+          className={`flex-shrink-0 text-xs text-center py-1.5 font-medium cursor-pointer ${
+            selectedOrderInThisColumn
+              ? 'bg-gray-50 border-b border-gray-300 text-gray-500'
+              : 'bg-blue-50 border-b border-blue-300 text-blue-600'
+          }`}
+        >
+          {selectedOrderInThisColumn ? 'Selected card is here' : 'Tap to move here'}
+        </div>
+      )}
+
       {/* Column header - Same as intake form */}
       <div className='flex-shrink-0 border-b bg-white/90 backdrop-blur p-3 lg:p-4'>
         <div className='flex items-center justify-between'>
@@ -81,6 +108,9 @@ export function DroppableColumn({
               onClick={() => onOrderClick(order)}
               isJustMoved={justMovedOrder === order.id}
               isUpdating={updatingOrders.has(order.id)}
+              selectedOrderForMove={selectedOrderForMove}
+              onSelectForMove={onSelectForMove}
+              isMobile={isMobile}
             />
           ))
         ) : (
