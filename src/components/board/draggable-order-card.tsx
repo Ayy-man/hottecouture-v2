@@ -10,9 +10,9 @@ interface DraggableOrderCardProps {
   onClick: () => void;
   isJustMoved?: boolean;
   isUpdating?: boolean;
-  selectedOrderForMove?: string | null;
-  onSelectForMove?: (orderId: string) => void;
-  isMobile?: boolean;
+  selectedOrderForMove?: string | null | undefined;
+  onSelectForMove?: ((orderId: string) => void) | undefined;
+  isMobile?: boolean | undefined;
 }
 
 export function DraggableOrderCard({
