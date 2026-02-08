@@ -72,24 +72,22 @@ export function InteractiveBoard({
     }
   }
 
-  // Conditionally setup sensors based on device type
-  const sensors = useSensors(
-    ...(isMobile
-      ? [] // No sensors on mobile - DnD disabled
-      : [
-          useSensor(PointerSensor, {
-            activationConstraint: {
-              distance: 5,
-            },
-          }),
-          useSensor(TouchSensor, {
-            activationConstraint: {
-              delay: 250,
-              tolerance: 5,
-            },
-          }),
-        ])
-  );
+  // Always call hooks unconditionally (React rules of hooks)
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 5,
+    },
+  });
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 250,
+      tolerance: 5,
+    },
+  });
+  // On mobile, pass no sensors so DnD never activates
+  const desktopSensors = useSensors(pointerSensor, touchSensor);
+  const mobileSensors = useSensors();
+  const sensors = isMobile ? mobileSensors : desktopSensors;
 
   // Group orders by status
   const ordersByStatus = orders.reduce(

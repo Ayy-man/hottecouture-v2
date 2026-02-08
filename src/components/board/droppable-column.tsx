@@ -13,10 +13,10 @@ interface DroppableColumnProps {
   onOrderClick: (order: any) => void;
   justMovedOrder?: string | null;
   updatingOrders?: Set<string>;
-  selectedOrderForMove?: string | null;
-  onColumnTap?: (columnId: string) => void;
-  isMobile?: boolean;
-  onSelectForMove?: (orderId: string) => void;
+  selectedOrderForMove?: string | null | undefined;
+  onColumnTap?: ((columnId: string) => void) | undefined;
+  isMobile?: boolean | undefined;
+  onSelectForMove?: ((orderId: string) => void) | undefined;
 }
 
 export function DroppableColumn({
