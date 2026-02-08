@@ -14,6 +14,7 @@ import {
 } from '@dnd-kit/core';
 import { DroppableColumn } from './droppable-column';
 import { OrderDetailModal } from './order-detail-modal';
+import { useIsMobile } from '@/lib/hooks/useIsMobile';
 
 import { RushOrderCard } from '@/components/rush-orders/rush-indicator';
 
@@ -54,6 +55,9 @@ export function InteractiveBoard({
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [justMovedOrder, setJustMovedOrder] = useState<string | null>(null);
   const [hasOpenedInitial, setHasOpenedInitial] = useState(false);
+  const [selectedOrderForMove, setSelectedOrderForMove] = useState<string | null>(null);
+
+  const isMobile = useIsMobile();
 
   console.log('🎯 InteractiveBoard: Received orders count:', orders.length);
 
@@ -68,18 +72,23 @@ export function InteractiveBoard({
     }
   }
 
+  // Conditionally setup sensors based on device type
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 250,
-        tolerance: 5,
-      },
-    })
+    ...(isMobile
+      ? [] // No sensors on mobile - DnD disabled
+      : [
+          useSensor(PointerSensor, {
+            activationConstraint: {
+              distance: 5,
+            },
+          }),
+          useSensor(TouchSensor, {
+            activationConstraint: {
+              delay: 250,
+              tolerance: 5,
+            },
+          }),
+        ])
   );
 
   // Group orders by status
@@ -196,6 +205,50 @@ export function InteractiveBoard({
     setSelectedOrder(null);
   }
 
+  // Mobile tap-to-move handlers
+  function handleSelectForMove(orderId: string) {
+    if (selectedOrderForMove === orderId) {
+      // Tapping same card deselects it
+      setSelectedOrderForMove(null);
+    } else {
+      // Select card for moving
+      setSelectedOrderForMove(orderId);
+    }
+  }
+
+  function handleColumnTap(columnId: string) {
+    if (!selectedOrderForMove) {
+      // No order selected, do nothing
+      return;
+    }
+
+    // Map column IDs to order statuses
+    const statusMap: Record<string, string> = {
+      pending: 'pending',
+      working: 'working',
+      done: 'done',
+      ready: 'ready',
+      delivered: 'delivered',
+    };
+
+    const mappedStatus = statusMap[columnId];
+
+    if (mappedStatus && onOrderUpdate) {
+      console.log('✅ Mobile tap-to-move: Updating order status:', {
+        orderId: selectedOrderForMove,
+        mappedStatus,
+      });
+      onOrderUpdate(selectedOrderForMove, mappedStatus);
+
+      // Show success animation
+      setJustMovedOrder(selectedOrderForMove);
+      setTimeout(() => setJustMovedOrder(null), 2000);
+
+      // Clear selection
+      setSelectedOrderForMove(null);
+    }
+  }
+
   return (
     <>
       <DndContext
@@ -215,13 +268,17 @@ export function InteractiveBoard({
                 onOrderClick={handleOrderClick}
                 justMovedOrder={justMovedOrder}
                 updatingOrders={updatingOrders}
+                selectedOrderForMove={isMobile ? selectedOrderForMove : undefined}
+                onColumnTap={isMobile ? handleColumnTap : undefined}
+                isMobile={isMobile}
+                onSelectForMove={isMobile ? handleSelectForMove : undefined}
               />
             ))}
           </div>
         </div>
 
         <DragOverlay>
-          {activeOrder ? (
+          {!isMobile && activeOrder ? (
             <div className='transform rotate-3 scale-105 shadow-2xl ring-2 ring-blue-200 ring-opacity-50'>
               <RushOrderCard
                 isRush={activeOrder.rush || false}
