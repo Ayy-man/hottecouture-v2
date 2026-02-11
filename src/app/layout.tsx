@@ -11,6 +11,7 @@ import {
 } from '@/components/staff';
 import { ToastProvider } from '@/components/ui/toast';
 import { MobileBottomNav } from '@/components/navigation/mobile-bottom-nav';
+import { GlobalChatWrapper } from '@/components/chat/global-chat-wrapper';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -134,6 +135,7 @@ export default function RootLayout({
                 <MobileBottomNav />
               </div>
               <StaffPinModal />
+              <GlobalChatWrapper />
               </NavigationProvider>
             </StaffSessionProvider>
           </AuthProvider>
