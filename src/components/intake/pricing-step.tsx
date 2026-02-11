@@ -163,13 +163,6 @@ export function PricingStep({
     onUpdate({ ...data, [field]: value });
   };
 
-  const getMinDate = () => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  };
-
   const calculateDueDate = () => {
     const today = new Date();
     let workingDays = 0;
