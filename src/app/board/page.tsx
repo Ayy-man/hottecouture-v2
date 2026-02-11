@@ -341,9 +341,9 @@ export default function BoardPage() {
     <AuthGuard>
       <div className='h-full bg-background overflow-hidden'>
         <MuralBackground>
-          <div className='flex flex-col h-full relative z-10'>
+          <div className='flex flex-col h-full relative z-10 overflow-y-auto'>
             {/* Header */}
-            <header className='bg-white/80 backdrop-blur-md border-b border-border px-4 sm:px-6 py-4 shadow-sm flex-none'>
+            <header className='sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-border px-4 sm:px-6 py-4 shadow-sm'>
               <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 max-w-[1920px] mx-auto w-full'>
                 <div className='flex items-center gap-4'>
                   <h1 className='text-xl sm:text-2xl font-bold text-foreground tracking-tight'>
@@ -441,7 +441,7 @@ export default function BoardPage() {
             </header>
 
             {/* Board Area */}
-            <main className='flex-1 overflow-y-auto relative'>
+            <main className='flex-1 relative'>
               <div className='h-full w-full max-w-[1920px] mx-auto p-4 sm:p-6'>
                 {viewMode === 'kanban' ? (
                   <InteractiveBoard
