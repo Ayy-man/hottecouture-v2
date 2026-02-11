@@ -82,7 +82,7 @@ WAVE 9 (Infrastructure & Staff)
 | 21 | Responsive Verification | Fix responsive issues before real device testing | Feb 3 | 6 | ✓ |
 | 22 | Audit Gap Closure | Fix scroll bugs, modal cutoff, chatbot, service menu, garment types, French | Audit | 7 | ✓ |
 | 23 | Intake & Pricing Fixes | Categories, inline price editing, custom services, rush labels, tax recalc, date picker | Feb 11 | 8 | Pending |
-| 24 | Board & Kanban UI | Rounded corners, rush badge overflow, scroll fix, Gantt drag, hover tooltips | Feb 11 | 8 | Pending |
+| 24 | Board & Kanban UI | Rounded corners, rush badge overflow, scroll fix, Gantt drag, hover tooltips | Feb 11 | 8 | ✓ |
 | 25 | Print, Mobile & Portal | Print layout fix, nav in print, bottom nav all pages, portal centering, phone | Feb 11 | 8 | Pending |
 | 26 | Staff & Infrastructure | Self-serve staff mgmt, SMS A2P, Stripe, domain, PWA, chatbot removal | Feb 11 | 9 | Pending |
 
@@ -577,12 +577,12 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** Nothing
 
-**Status:** Pending
-**Plans:** 2 plans
+**Status:** ✓ Complete (Feb 11, 2026)
+**Plans:** 2/2 complete
 
 Plans:
-- [ ] 24-01-PLAN.md — Fix kanban card rounded corners, rush badge overflow, and board scroll blocking
-- [ ] 24-02-PLAN.md — Fix Gantt drag-to-extend handles and add workload hover tooltips
+- [x] 24-01-PLAN.md — Fix kanban card rounded corners, rush badge overflow, and board scroll blocking
+- [x] 24-02-PLAN.md — Fix Gantt drag-to-extend handles and add workload hover tooltips
 
 ---
 

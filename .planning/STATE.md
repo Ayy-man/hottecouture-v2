@@ -8,12 +8,13 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phases 1-22 complete. 4 new phases (23-26) added from Feb 11 call. Wave 8-9 pending.
+**Current focus:** Phase 24 complete. Phases 23, 25, 26 remaining. Wave 8-9 in progress.
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs + 12 UAT + 7 audit + 22 Feb 11 call)
-- **Phase:** 22 of 26 complete - Phases 23-26 added from Feb 11 call (not yet planned)
+- **Phase:** 23 of 26 complete (Phase 24 done, Phases 23/25/26 remaining)
+- **Phase 24 Completion:** February 11, 2026 (Board & Kanban UI Fixes)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
@@ -50,7 +51,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 21 - Responsive Verification | ✅ COMPLETE | 4/4 | Feb 4 |
 | 22 - Audit Gap Closure | ✅ COMPLETE | 3/3 | Audit |
 | 23 - Intake & Pricing Fixes | 🔄 IN PROGRESS | 2/3 | Feb 11 |
-| 24 - Board & Kanban UI | 🔄 IN PROGRESS | 1/2 | Feb 11 |
+| 24 - Board & Kanban UI | ✅ COMPLETE | 2/2 | Feb 11 |
 | 25 - Print, Mobile & Portal | Pending | 0/5 | Feb 11 |
 | 26 - Staff & Infrastructure | Pending | 0/6 | Feb 11 |
 
