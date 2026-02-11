@@ -2,8 +2,8 @@
 
 **Created:** 2026-01-20
 **Updated:** 2026-02-05
-**Phases:** 22 (11 original + 10 from Feb 3 UAT + 1 from milestone audit)
-**Requirements:** 39 original + 12 from client feedback + 7 from audit
+**Phases:** 26 (11 original + 10 from Feb 3 UAT + 1 from milestone audit + 4 from Feb 11 call)
+**Requirements:** 39 original + 12 from client feedback + 7 from audit + 22 from Feb 11 call
 
 ## Execution Waves
 
@@ -45,6 +45,14 @@ WAVE 6 (Final Verification) ✅ DONE
 
 WAVE 7 (Milestone Audit Gaps) ✅ DONE
 └── Phase 22: Audit Gap Closure (bugs + missing features + chatbot)
+
+WAVE 8 (Feb 11 Call Fixes - Parallel)
+├── Phase 23: Intake & Pricing Fixes (categories, inline editing, custom services, rush labels, tax, date picker)
+├── Phase 24: Board & Kanban UI Fixes (rounded corners, rush badge, scroll, Gantt drag, tooltips)
+└── Phase 25: Print, Mobile & Portal Fixes (print layout, nav visibility, portal centering, phone)
+
+WAVE 9 (Infrastructure & Staff)
+└── Phase 26: Staff Management & Infrastructure (self-serve staff, SMS A2P, Stripe, domain, PWA, chatbot)
 ```
 
 ## Phase Overview
@@ -73,6 +81,10 @@ WAVE 7 (Milestone Audit Gaps) ✅ DONE
 | 20 | Stripe Cleanup | Clean URL, logo, correct phone | Feb 3 | 5 | ✓ |
 | 21 | Responsive Verification | Fix responsive issues before real device testing | Feb 3 | 6 | ✓ |
 | 22 | Audit Gap Closure | Fix scroll bugs, modal cutoff, chatbot, service menu, garment types, French | Audit | 7 | ✓ |
+| 23 | Intake & Pricing Fixes | Categories, inline price editing, custom services, rush labels, tax recalc, date picker | Feb 11 | 8 | Pending |
+| 24 | Board & Kanban UI | Rounded corners, rush badge overflow, scroll fix, Gantt drag, hover tooltips | Feb 11 | 8 | Pending |
+| 25 | Print, Mobile & Portal | Print layout fix, nav in print, bottom nav all pages, portal centering, phone | Feb 11 | 8 | Pending |
+| 26 | Staff & Infrastructure | Self-serve staff mgmt, SMS A2P, Stripe, domain, PWA, chatbot removal | Feb 11 | 9 | Pending |
 
 ---
 
@@ -507,15 +519,147 @@ Plans:
 
 ---
 
+## Phase 23: Intake & Pricing Fixes
+
+**Goal:** Fix garment category labels, enable inline price editing in services step, allow custom service/product creation, fix rush labels, recalculate tax on price override, and add inline date picker.
+
+**Source:** Feb 11 Amin/Ayman call
+**Items from call:**
+1. Garment category labels wrong — "Home" should be "Custom Design" (Sur mesure), add "Alteration" category
+2. Can't edit prices inline in services step — need inline editable price fields
+3. Can't add custom services/products inline — need "add custom" option in service dropdown
+4. Rush service labels confusing — "0 days faster" makes no sense, needs clear rush terminology
+5. Tax doesn't recalculate when price is overridden — tax line item stays stale
+6. Date picker should be inline popup — not full page navigation
+
+**Success Criteria:**
+1. Garment categories show "Sur mesure" and "Alteration" (not "Home")
+2. Service prices editable inline in the services step
+3. Can create a new custom service/product during intake
+4. Rush labels show meaningful text (e.g., "Rush: +2 days" or "Express")
+5. Tax recalculates automatically when any price is modified
+6. Date picker opens as inline popup/calendar
+
+**Dependencies:** None
+**Blocked by:** Nothing
+**Blocks:** Nothing
+
+**Status:** Pending
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 23 to break down)
+
+---
+
+## Phase 24: Board & Kanban UI Fixes
+
+**Goal:** Polish kanban board visuals — rounded card corners, fix rush badge overflow, unblock scroll on filter area, fix Gantt drag-to-extend, add workload hover tooltips.
+
+**Source:** Feb 11 Amin/Ayman call
+**Items from call:**
+1. Kanban cards need rounded corners — cards look flat/boxy
+2. Rush badge overflows card boundary — bleeds outside card container
+3. Scroll blocked on filter area — can't scroll when cursor is over filters
+4. Gantt chart drag-to-extend broken — can't drag to resize task duration
+5. Workload items need hover tooltip — hovering over a workload item should show details
+
+**Success Criteria:**
+1. All kanban cards have consistent rounded corners
+2. Rush badge contained within card bounds
+3. Page scrolls normally regardless of cursor position
+4. Gantt bars draggable to extend/shrink duration
+5. Hovering workload items shows tooltip with order/service details
+
+**Dependencies:** None
+**Blocked by:** Nothing
+**Blocks:** Nothing
+
+**Status:** Pending
+**Plans:** 2 plans
+
+Plans:
+- [ ] 24-01-PLAN.md — Card visual polish (rounded corners, rush badge overflow, filter scroll fix)
+- [ ] 24-02-PLAN.md — Gantt drag handles + workload hover tooltips
+
+---
+
+## Phase 25: Print, Mobile & Portal Fixes
+
+**Goal:** Fix print layout on mobile (shows whole page instead of label), hide mobile nav in print, ensure bottom nav on all pages, center client portal, fix wrong phone number on portal.
+
+**Source:** Feb 11 Amin/Ayman call
+**Items from call:**
+1. Print shows whole page on mobile — should only print the label content
+2. Mobile nav visible in print output — nav bar showing in printed pages
+3. Mobile bottom nav not on all pages — some pages missing the bottom navigation
+4. Client portal not centered — layout misaligned
+5. Wrong phone number displayed on client portal — showing incorrect contact info
+
+**Success Criteria:**
+1. Printing on mobile produces only label content (no page chrome)
+2. Mobile nav hidden in all print output via `@media print`
+3. Bottom navigation visible on every authenticated page on mobile
+4. Client portal content centered on all viewport sizes
+5. Correct shop phone number displayed on client portal
+
+**Dependencies:** None
+**Blocked by:** Nothing
+**Blocks:** Nothing
+
+**Status:** Pending
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 25 to break down)
+
+---
+
+## Phase 26: Staff Management & Infrastructure
+
+**Goal:** Add self-serve staff management (add/remove employees), set up SMS A2P phone number, connect Stripe, connect domain, set up PWA, confirm chatbot removal.
+
+**Source:** Feb 11 Amin/Ayman call
+**Items from call:**
+1. Staff self-management — admin should be able to add/remove employees without developer help
+2. SMS phone number (A2P registration) — need proper business SMS number
+3. Stripe not connected — payment processing not live
+4. Domain connection — custom domain not pointing to app
+5. PWA setup — app should be installable on devices
+6. Chatbot removed — widget removed, needs client confirmation it should stay removed
+
+**Success Criteria:**
+1. Admin can add new staff members and remove existing ones from settings
+2. SMS sends from registered A2P business number
+3. Stripe connected and processing payments
+4. Custom domain resolves to the app
+5. App installable as PWA on iOS and Android
+6. Chatbot widget confirmed removed (or restored if client wants it)
+
+**Dependencies:** Phases 23-25 (infrastructure after UI fixes)
+**Blocked by:** Phases 23-25
+**Blocks:** Nothing
+
+**Status:** Pending
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 26 to break down)
+
+---
+
 ## Suggested Schedule
 
 ```
-Waves 1-6: ✅ ALL DONE (Phases 1-21)
+Waves 1-7: ✅ ALL DONE (Phases 1-22)
 
-Wave 7 (Feb 5):
-  Phase 22: Audit Gap Closure (bugs + features)
-  Then: Physical device testing by Audrey's team
+Wave 8 (Feb 11 - Parallel):
+  Phase 23: Intake & Pricing Fixes
+  Phase 24: Board & Kanban UI Fixes
+  Phase 25: Print, Mobile & Portal Fixes
+
+Wave 9 (After Wave 8):
+  Phase 26: Staff Management & Infrastructure
 ```
 
----
 *Roadmap updated: 2026-02-04 — Added Phase 22 from milestone audit gaps*
