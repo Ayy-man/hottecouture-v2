@@ -1030,6 +1030,81 @@ export function GarmentServicesStep({
                   </table>
                 </div>
               )}
+
+              {/* Add Custom Service */}
+              <div className="border-t border-border pt-3 mt-3">
+                {showAddCustomService ? (
+                  <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+                    <input
+                      type="text"
+                      value={customServiceName}
+                      onChange={e => setCustomServiceName(e.target.value)}
+                      placeholder="Nom du service..."
+                      className="w-full px-3 py-2 border border-border rounded-lg text-sm min-h-[44px] focus:ring-2 focus:ring-primary-500"
+                      autoFocus
+                      onKeyDown={e => {
+                        if (e.key === 'Escape') {
+                          setShowAddCustomService(false);
+                          setCustomServiceName('');
+                          setCustomServicePriceValue('');
+                        }
+                      }}
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">$</span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={customServicePriceValue}
+                        onChange={e => {
+                          const value = e.target.value.replace(/[^0-9.]/g, '');
+                          setCustomServicePriceValue(value);
+                        }}
+                        placeholder="Prix"
+                        className="w-24 px-3 py-2 border border-border rounded-lg text-sm min-h-[44px] focus:ring-2 focus:ring-primary-500"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleAddCustomService();
+                          if (e.key === 'Escape') {
+                            setShowAddCustomService(false);
+                            setCustomServiceName('');
+                            setCustomServicePriceValue('');
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAddCustomService(false);
+                          setCustomServiceName('');
+                          setCustomServicePriceValue('');
+                        }}
+                        className="flex-1 px-3 py-2 bg-muted text-muted-foreground rounded-lg text-sm min-h-[44px] touch-manipulation"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAddCustomService}
+                        disabled={!customServiceName.trim() || !customServicePriceValue}
+                        className="flex-1 px-3 py-2 bg-primary-500 text-white rounded-lg text-sm min-h-[44px] touch-manipulation disabled:opacity-50"
+                      >
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCustomService(true)}
+                    className="w-full px-3 py-2 text-sm text-primary-600 hover:bg-muted/50 rounded-lg flex items-center gap-2 min-h-[44px] touch-manipulation"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Ajouter un service personnalisé...</span>
+                  </button>
+                )}
+              </div>
             </CardContent>
           </Card>
 
