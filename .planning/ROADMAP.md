@@ -81,7 +81,7 @@ WAVE 9 (Infrastructure & Staff)
 | 20 | Stripe Cleanup | Clean URL, logo, correct phone | Feb 3 | 5 | ✓ |
 | 21 | Responsive Verification | Fix responsive issues before real device testing | Feb 3 | 6 | ✓ |
 | 22 | Audit Gap Closure | Fix scroll bugs, modal cutoff, chatbot, service menu, garment types, French | Audit | 7 | ✓ |
-| 23 | Intake & Pricing Fixes | Categories, inline price editing, custom services, rush labels, tax recalc, date picker | Feb 11 | 8 | Pending |
+| 23 | Intake & Pricing Fixes | Categories, inline price editing, custom services, rush labels, tax recalc, date picker | Feb 11 | 8 | ✓ |
 | 24 | Board & Kanban UI | Rounded corners, rush badge overflow, scroll fix, Gantt drag, hover tooltips | Feb 11 | 8 | ✓ |
 | 25 | Print, Mobile & Portal | Print layout fix, nav in print, bottom nav all pages, portal centering, phone | Feb 11 | 8 | Pending |
 | 26 | Staff & Infrastructure | Self-serve staff mgmt, SMS A2P, Stripe, domain, PWA, chatbot removal | Feb 11 | 9 | Pending |
@@ -544,13 +544,13 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** Nothing
 
-**Status:** Planned
-**Plans:** 3 plans
+**Status:** ✓ Complete (2026-02-11)
+**Plans:** 3/3 complete
 
 Plans:
-- [ ] 23-01-PLAN.md — Fix garment category labels (French) and rush timeline labels
-- [ ] 23-02-PLAN.md — Inline price editing and custom service creation in services step
-- [ ] 23-03-PLAN.md — Tax recalculation on total override and inline calendar date picker
+- [x] 23-01-PLAN.md — Fix garment category labels (French) and rush timeline labels
+- [x] 23-02-PLAN.md — Inline price editing and custom service creation in services step
+- [x] 23-03-PLAN.md — Tax recalculation on total override and inline calendar date picker
 
 ---
 
