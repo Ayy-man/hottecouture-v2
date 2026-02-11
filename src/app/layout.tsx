@@ -4,7 +4,6 @@ import './globals.css';
 import { NavigationProvider } from '@/components/navigation/navigation-provider';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { HLogo } from '@/components/ui/h-logo';
-import { GlobalChatWrapper } from '@/components/chat/global-chat-wrapper';
 import {
   StaffSessionProvider,
   StaffPinModal,
@@ -128,9 +127,6 @@ export default function RootLayout({
                 <MobileBottomNav />
               </div>
               <StaffPinModal />
-              <div className='hidden print:hidden'>
-                <GlobalChatWrapper />
-              </div>
               </NavigationProvider>
             </StaffSessionProvider>
           </AuthProvider>

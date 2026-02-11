@@ -90,7 +90,7 @@ export function TeamManagementModal({
   // Fetch staff members
   const fetchStaff = async () => {
     try {
-      const response = await fetch('/api/admin/team');
+      const response = await fetch('/api/staff');
       const data = await response.json();
       setStaff(data.staff || []);
     } catch (error) {
