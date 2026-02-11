@@ -1,21 +1,22 @@
 # Project State
 
 **Project:** Hotte Couture Final Modifications
-**Last Updated:** 2026-02-11
+**Last Updated:** 2026-02-12
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phases 23-25 complete. Phase 26 remaining. Wave 9 pending.
+**Current focus:** ALL 26 PHASES COMPLETE. Milestone ready for completion.
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs + 12 UAT + 7 audit + 22 Feb 11 call)
-- **Phase:** 25 of 26 complete (Phase 26 remaining)
+- **Phase:** 26 of 26 complete (ALL PHASES DONE)
 - **Phase 24 Completion:** February 11, 2026 (Board & Kanban UI Fixes)
 - **Phase 25 Completion:** February 11, 2026 (Print, Mobile & Portal Fixes)
+- **Phase 26 Completion:** February 12, 2026 (Staff & Infrastructure — code complete, external config deferred)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
@@ -54,7 +55,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 23 - Intake & Pricing Fixes | ✅ COMPLETE | 3/3 | Feb 11 |
 | 24 - Board & Kanban UI | ✅ COMPLETE | 2/2 | Feb 11 |
 | 25 - Print, Mobile & Portal | ✅ COMPLETE | 1/1 | Feb 11 |
-| 26 - Staff & Infrastructure | In Progress | 1/2 | Feb 11 |
+| 26 - Staff & Infrastructure | ✅ COMPLETE | 2/2 | Feb 12 |
 
 ## Execution Waves
 
@@ -84,13 +85,13 @@ WAVE 6 (Final Verification) ✅ DONE
 WAVE 7 (Milestone Audit Gaps) ✅ DONE
 +-- Phase 22: Audit Gap Closure (4 bugs + 3 features) ✅ DONE
 
-WAVE 8 (Feb 11 Call - Parallel) ⏳ PENDING
-|-- Phase 23: Intake & Pricing Fixes
-|-- Phase 24: Board & Kanban UI Fixes
-+-- Phase 25: Print, Mobile & Portal Fixes
+WAVE 8 (Feb 11 Call - Parallel) ✅ DONE
+|-- Phase 23: Intake & Pricing Fixes ✅ DONE
+|-- Phase 24: Board & Kanban UI Fixes ✅ DONE
++-- Phase 25: Print, Mobile & Portal Fixes ✅ DONE
 
-WAVE 9 (Infrastructure) ⏳ PENDING
-+-- Phase 26: Staff Management & Infrastructure
+WAVE 9 (Infrastructure) ✅ DONE
++-- Phase 26: Staff Management & Infrastructure ✅ DONE
 ```
 
 ## Feb 3 UAT Context
@@ -192,15 +193,16 @@ Key concerns from client:
 
 ## Next Action
 
-**Wave 8 complete** — Phases 23-25 all done. Wave 9 pending.
+**ALL 26 PHASES COMPLETE** — Milestone ready for completion.
 
-**Phase 25 — Complete.** Print, Mobile & Portal Fixes:
-- Added `print:hidden` to MobileBottomNav, header, chatbot wrapper
-- Global `@media print` rules override overflow:hidden/height on html/body
-- Portal centering fixed (removed conflicting `container` class)
-- Phone number replaced: `514-555-1234` → `514-667-0082` (env var backed)
+**Phase 26 — Complete.** Staff Management & Infrastructure:
+- Created `/api/staff` and `/api/staff/[id]` route aliases (re-export from admin/team)
+- Fixed team-management-modal GET endpoint consistency (`/api/staff` everywhere)
+- PWA manifest + metadata (installable on iOS/Android)
+- Chatbot permanently removed from layout
+- External config (SMS A2P, Stripe, domain) deferred for client/developer
 
-**Next:** Plan and execute Phase 26 (Staff Management & Infrastructure)
+**Next:** `/gsd:complete-milestone` — archive and close
 
 ## Wave 4 Summary (Feb 4)
 
@@ -441,10 +443,10 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-02-11T19:50:56.923Z
-- **Status:** 25/26 phases complete — Wave 8 done, Wave 9 (Phase 26) remaining
-- **Stopped at:** Completed 26-01-PLAN.md
-- **Next:** Plan and execute Phase 26 (Staff Management & Infrastructure)
+- **Last session:** 2026-02-12
+- **Status:** 26/26 phases complete — ALL WAVES DONE
+- **Stopped at:** Phase 26 verified complete
+- **Next:** `/gsd:complete-milestone` — archive and close
 - **Resume file:** None
 
 ---

@@ -84,7 +84,7 @@ WAVE 9 (Infrastructure & Staff)
 | 23 | Intake & Pricing Fixes | Categories, inline price editing, custom services, rush labels, tax recalc, date picker | Feb 11 | 8 | ✓ |
 | 24 | Board & Kanban UI | Rounded corners, rush badge overflow, scroll fix, Gantt drag, hover tooltips | Feb 11 | 8 | ✓ |
 | 25 | Print, Mobile & Portal | Print layout fix, nav in print, bottom nav all pages, portal centering, phone | Feb 11 | 8 | ✓ |
-| 26 | Staff & Infrastructure | Self-serve staff mgmt, SMS A2P, Stripe, domain, PWA, chatbot removal | Feb 11 | 9 | Pending |
+| 26 | Staff & Infrastructure | Self-serve staff mgmt, SMS A2P, Stripe, domain, PWA, chatbot removal | Feb 11 | 9 | ✓ |
 
 ---
 
@@ -642,12 +642,12 @@ Plans:
 **Blocked by:** Phases 23-25
 **Blocks:** Nothing
 
-**Status:** Pending
-**Plans:** 2 plans
+**Status:** ✓ Complete (Feb 12, 2026) — Code complete; external config (SMS A2P, Stripe, domain) deferred
+**Plans:** 2/2 complete
 
 Plans:
-- [ ] 26-01-PLAN.md — Staff API route aliases, PWA manifest/metadata, chatbot removal
-- [ ] 26-02-PLAN.md — External service configuration (SMS A2P, Stripe via GHL, custom domain)
+- [x] 26-01-PLAN.md — Staff API route aliases, PWA manifest/metadata, chatbot removal
+- [x] 26-02-PLAN.md — External service configuration (SMS A2P, Stripe via GHL, custom domain) — DEFERRED
 
 ---
 
@@ -665,4 +665,4 @@ Wave 9 (After Wave 8):
   Phase 26: Staff Management & Infrastructure
 ```
 
-*Roadmap updated: 2026-02-04 — Added Phase 22 from milestone audit gaps*
+*Roadmap updated: 2026-02-12 — Phase 26 complete (code). External config deferred.*
