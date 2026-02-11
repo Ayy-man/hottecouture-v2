@@ -83,7 +83,7 @@ WAVE 9 (Infrastructure & Staff)
 | 22 | Audit Gap Closure | Fix scroll bugs, modal cutoff, chatbot, service menu, garment types, French | Audit | 7 | ✓ |
 | 23 | Intake & Pricing Fixes | Categories, inline price editing, custom services, rush labels, tax recalc, date picker | Feb 11 | 8 | ✓ |
 | 24 | Board & Kanban UI | Rounded corners, rush badge overflow, scroll fix, Gantt drag, hover tooltips | Feb 11 | 8 | ✓ |
-| 25 | Print, Mobile & Portal | Print layout fix, nav in print, bottom nav all pages, portal centering, phone | Feb 11 | 8 | Pending |
+| 25 | Print, Mobile & Portal | Print layout fix, nav in print, bottom nav all pages, portal centering, phone | Feb 11 | 8 | ✓ |
 | 26 | Staff & Infrastructure | Self-serve staff mgmt, SMS A2P, Stripe, domain, PWA, chatbot removal | Feb 11 | 9 | Pending |
 
 ---
@@ -609,11 +609,11 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** Nothing
 
-**Status:** Planned
-**Plans:** 1 plan
+**Status:** ✓ Complete (Feb 11, 2026)
+**Plans:** 1/1 complete
 
 Plans:
-- [ ] 25-01-PLAN.md — Print hiding (header + nav), portal centering, and phone number fix
+- [x] 25-01-PLAN.md — Print hiding (header + nav + global CSS), portal centering, phone number fix
 
 ---
 

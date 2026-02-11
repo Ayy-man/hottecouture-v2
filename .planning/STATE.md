@@ -8,13 +8,14 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 24 complete. Phases 23, 25, 26 remaining. Wave 8-9 in progress.
+**Current focus:** Phases 23-25 complete. Phase 26 remaining. Wave 9 pending.
 
 ## Current Status
 
 - **Milestone:** Final Modifications (17 MODs + 12 UAT + 7 audit + 22 Feb 11 call)
-- **Phase:** 23 of 26 complete (Phase 24 done, Phases 23/25/26 remaining)
+- **Phase:** 25 of 26 complete (Phase 26 remaining)
 - **Phase 24 Completion:** February 11, 2026 (Board & Kanban UI Fixes)
+- **Phase 25 Completion:** February 11, 2026 (Print, Mobile & Portal Fixes)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
@@ -52,7 +53,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 22 - Audit Gap Closure | ✅ COMPLETE | 3/3 | Audit |
 | 23 - Intake & Pricing Fixes | ✅ COMPLETE | 3/3 | Feb 11 |
 | 24 - Board & Kanban UI | ✅ COMPLETE | 2/2 | Feb 11 |
-| 25 - Print, Mobile & Portal | In Progress | 1/5 | Feb 11 |
+| 25 - Print, Mobile & Portal | ✅ COMPLETE | 1/1 | Feb 11 |
 | 26 - Staff & Infrastructure | Pending | 0/6 | Feb 11 |
 
 ## Execution Waves
@@ -189,20 +190,15 @@ Key concerns from client:
 
 ## Next Action
 
-**Wave 8 in progress** — Phases 23-25 parallel execution
+**Wave 8 complete** — Phases 23-25 all done. Wave 9 pending.
 
-**Phase 23 Status:**
-- ✅ Complete: All 3 plans done (inline editing, custom services, tax recalc & calendar)
+**Phase 25 — Complete.** Print, Mobile & Portal Fixes:
+- Added `print:hidden` to MobileBottomNav, header, chatbot wrapper
+- Global `@media print` rules override overflow:hidden/height on html/body
+- Portal centering fixed (removed conflicting `container` class)
+- Phone number replaced: `514-555-1234` → `514-667-0082` (env var backed)
 
-**Phase 24 Status:**
-- ✅ Plan 01 complete: Kanban card polish and scroll fixes (2 tasks, 2 commits)
-- 🔄 Plan 02 pending: Gantt drag handles and tooltips
-
-**Phase 25 Status:**
-- ✅ Plan 01 complete: Print UI chrome hiding and portal fixes (2 tasks, 2 commits)
-- 🔄 Plans 02-05 pending: 4 more plans
-
-**Next:** Continue Phase 25 Plan 02 or Phase 24 Plan 02
+**Next:** Plan and execute Phase 26 (Staff Management & Infrastructure)
 
 ## Wave 4 Summary (Feb 4)
 
@@ -444,9 +440,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 ## Session Continuity
 
 - **Last session:** 2026-02-12
-- **Status:** Phase 25 Plan 01 complete - Print UI chrome hiding and portal fixes done (2/2 tasks)
-- **Stopped at:** Completed 25-01-PLAN.md (hide chrome in print, fix portal centering, replace phone)
-- **Next:** Continue Wave 8 with Phase 25 Plan 02 or Phase 24 Plan 02
+- **Status:** 25/26 phases complete — Wave 8 done, Wave 9 (Phase 26) remaining
+- **Stopped at:** Phase 25 verified complete (print hiding + portal fixes)
+- **Next:** Plan and execute Phase 26 (Staff Management & Infrastructure)
 - **Resume file:** None
 
 ---
