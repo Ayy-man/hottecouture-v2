@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Home, ClipboardList, Users, Calendar } from 'lucide-react';
+import { Home, ClipboardList, Users, Calendar, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/intake', icon: ClipboardList, label: 'Intake' },
   { href: '/clients', icon: Users, label: 'Clients' },
   { href: '/calendar', icon: Calendar, label: 'Calendar' },
+  { href: '/chat', icon: MessageCircle, label: 'Chat' },
 ];
 
 export function MobileBottomNav() {

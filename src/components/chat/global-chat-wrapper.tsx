@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { InternalChat } from './internal-chat';
 
 // Pages where chat should NOT appear
-const EXCLUDED_PATHS = ['/portal', '/embed', '/login', '/auth'];
+const EXCLUDED_PATHS = ['/portal', '/embed', '/login', '/auth', '/chat'];
 
 export function GlobalChatWrapper() {
   const pathname = usePathname();
@@ -13,5 +13,10 @@ export function GlobalChatWrapper() {
 
   if (isExcluded) return null;
 
-  return <InternalChat />;
+  // Hide floating widget on mobile — mobile uses /chat page via bottom nav
+  return (
+    <div className="hidden md:block">
+      <InternalChat />
+    </div>
+  );
 }
