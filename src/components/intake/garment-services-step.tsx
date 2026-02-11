@@ -111,6 +111,11 @@ export function GarmentServicesStep({
   const [editingPriceIndex, setEditingPriceIndex] = useState<number | null>(null);
   const [editPriceValue, setEditPriceValue] = useState('');
 
+  // Custom service state
+  const [showAddCustomService, setShowAddCustomService] = useState(false);
+  const [customServiceName, setCustomServiceName] = useState('');
+  const [customServicePriceValue, setCustomServicePriceValue] = useState('');
+
   // Custom garment type state (ported from garments-step.tsx)
   const [showAddCustomForm, setShowAddCustomForm] = useState(false);
   const [customTypeName, setCustomTypeName] = useState('');
@@ -518,6 +523,50 @@ export function GarmentServicesStep({
     const updatedServices =
       currentGarment.services?.filter((_, i) => i !== serviceIndex) || [];
     setCurrentGarment({ ...currentGarment, services: updatedServices });
+  };
+
+  const handleAddCustomService = () => {
+    const name = customServiceName.trim();
+    if (!name) return;
+
+    const priceDollars = parseFloat(customServicePriceValue) || 0;
+    const priceCents = Math.round(priceDollars * 100);
+
+    if (priceCents <= 0) {
+      alert('Le prix doit être supérieur à 0');
+      return;
+    }
+
+    // Check for duplicate name in current garment services
+    const isDuplicate = currentGarment.services?.some(
+      s => (s.serviceName || '').toLowerCase() === name.toLowerCase()
+    );
+    if (isDuplicate) {
+      alert(`Le service "${name}" existe déjà dans cet article`);
+      return;
+    }
+
+    // Add as a custom service directly to the current garment
+    // Use a generated ID since this is not from the service catalog
+    const customService: GarmentService = {
+      serviceId: `custom_${nanoid(8)}`,
+      serviceName: name,
+      qty: 1,
+      customPriceCents: priceCents,
+      customServiceName: name,
+      assignedSeamstressId: null,
+      estimatedMinutes: 0,
+    };
+
+    setCurrentGarment({
+      ...currentGarment,
+      services: [...(currentGarment.services || []), customService],
+    });
+
+    // Reset form
+    setCustomServiceName('');
+    setCustomServicePriceValue('');
+    setShowAddCustomService(false);
   };
 
   // ===========================================================================
