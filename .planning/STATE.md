@@ -50,7 +50,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 20 - Stripe Cleanup | ✅ COMPLETE | 1/1 | Feb 4 |
 | 21 - Responsive Verification | ✅ COMPLETE | 4/4 | Feb 4 |
 | 22 - Audit Gap Closure | ✅ COMPLETE | 3/3 | Audit |
-| 23 - Intake & Pricing Fixes | 🔄 IN PROGRESS | 2/3 | Feb 11 |
+| 23 - Intake & Pricing Fixes | ✅ COMPLETE | 3/3 | Feb 11 |
 | 24 - Board & Kanban UI | ✅ COMPLETE | 2/2 | Feb 11 |
 | 25 - Print, Mobile & Portal | Pending | 0/5 | Feb 11 |
 | 26 - Staff & Infrastructure | Pending | 0/6 | Feb 11 |
@@ -176,6 +176,10 @@ Key concerns from client:
 | Inline price editing pattern | 23-02 | Service row prices are per-unit editable fields. Display shows unit price (editable) and line total (unit price × qty, read-only). customPriceCents stores per-unit price. |
 | Custom service ID format | 23-02 | Custom services use custom_ prefixed IDs (e.g., custom_a1b2c3d4) generated with nanoid(8) to distinguish from catalog services. |
 | Custom services are one-off | 23-02 | Custom services added directly to garment only, not saved to service catalog database. Allows seamstresses to add unique services during intake without polluting catalog. |
+| Tax back-calculation formula | 23-03 | Use 1.14975 combined tax rate (5% TPS + 9.975% TVQ) to back-calculate subtotal from overridden total. Total = taxable × 1.14975, so taxable = total / 1.14975. |
+| Original calculation preservation | 23-03 | Store original calculation in separate state (originalCalculation) for reset functionality. Reset button needs to restore exact original values, not recalculate from current data. |
+| French calendar locale | 23-03 | Use date-fns fr locale for calendar display with PPP format. Shows dates like '14 février 2026' matching primary French UI. More user-friendly than native HTML5 input. |
+| Tomorrow as minimum date | 23-03 | Disable dates before tomorrow in calendar picker. Same business logic as previous getMinDate() - orders cannot be due today or in the past. |
 - [Phase 24-02]: Gantt drag handles: w-2 (8px) → w-4 (16px) with transparent default (bg-black/0) and hover darkening
 - [Phase 24-02]: French tooltip labels: Commande #, Temps estimé, Échéance for workload items
 
@@ -434,9 +438,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 ## Session Continuity
 
 - **Last session:** 2026-02-11
-- **Status:** Phase 23 Plan 02 complete - Inline price editing and custom services
-- **Stopped at:** Completed 23-02-PLAN.md
-- **Next:** Continue Wave 8 parallel execution (Phases 23-25)
+- **Status:** Phase 23 complete - All intake & pricing fixes done (3/3 plans)
+- **Stopped at:** Completed 23-03-PLAN.md (tax recalculation and calendar picker)
+- **Next:** Continue Wave 8 with Phase 25 (Print, Mobile & Portal Fixes - 0/5 plans)
 - **Resume file:** None
 
 ---
