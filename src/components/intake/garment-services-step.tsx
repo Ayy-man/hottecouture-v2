@@ -94,6 +94,7 @@ export function GarmentServicesStep({
   // ===========================================================================
   const [garmentTypes, setGarmentTypes] = useState<GarmentType[]>([]);
   const [groupedTypes, setGroupedTypes] = useState<Record<string, GarmentType[]>>({});
+  const [categoryLabels, setCategoryLabels] = useState<Record<string, string>>({});
   const [currentGarment, setCurrentGarment] = useState<Partial<Garment>>({
     type: '',
     garment_type_id: null,
@@ -105,6 +106,10 @@ export function GarmentServicesStep({
 
   // Garment dropdown state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Inline price editing state
+  const [editingPriceIndex, setEditingPriceIndex] = useState<number | null>(null);
+  const [editPriceValue, setEditPriceValue] = useState('');
 
   // Custom garment type state (ported from garments-step.tsx)
   const [showAddCustomForm, setShowAddCustomForm] = useState(false);
@@ -167,6 +172,7 @@ export function GarmentServicesStep({
         const data = await response.json();
         setGarmentTypes(data.garmentTypes || []);
         setGroupedTypes(data.groupedTypes || {});
+        setCategoryLabels(data.categories || {});
       } else {
         console.error('Failed to load garment types');
       }
@@ -498,6 +504,16 @@ export function GarmentServicesStep({
     }
   };
 
+  const updatePrice = (serviceIndex: number, newPriceCents: number) => {
+    const updatedServices = [...(currentGarment.services || [])];
+    const svc = updatedServices[serviceIndex];
+    if (svc) {
+      svc.customPriceCents = Math.max(0, newPriceCents);
+      setCurrentGarment({ ...currentGarment, services: updatedServices });
+    }
+    setEditingPriceIndex(null);
+  };
+
   const removeService = (serviceIndex: number) => {
     const updatedServices =
       currentGarment.services?.filter((_, i) => i !== serviceIndex) || [];
@@ -666,7 +682,7 @@ export function GarmentServicesStep({
                         return (
                           <div key={category}>
                             <div className="px-3 py-2 bg-muted text-xs font-semibold text-muted-foreground sticky top-0">
-                              {category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ')}
+                              {categoryLabels[category] || category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ')}
                             </div>
                             {activeTypes.map(type => (
                               <button
@@ -1016,10 +1032,53 @@ export function GarmentServicesStep({
 
                       {/* Row 2: Price + time + assignment + remove */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        {/* Price */}
-                        <span className="w-16 text-right text-sm text-muted-foreground">
-                          {formatCurrency((svc.customPriceCents || 0) * svc.qty)}
-                        </span>
+                        {/* Price (editable per-unit price) */}
+                        <div className="flex flex-col items-end gap-0.5 w-20">
+                          {editingPriceIndex === idx ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground">$</span>
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                value={editPriceValue}
+                                onChange={e => {
+                                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                                  setEditPriceValue(value);
+                                }}
+                                onBlur={() => {
+                                  const dollars = parseFloat(editPriceValue) || 0;
+                                  updatePrice(idx, Math.round(dollars * 100));
+                                }}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') {
+                                    const dollars = parseFloat(editPriceValue) || 0;
+                                    updatePrice(idx, Math.round(dollars * 100));
+                                  }
+                                  if (e.key === 'Escape') {
+                                    setEditingPriceIndex(null);
+                                  }
+                                }}
+                                className="w-16 px-1 py-0.5 text-sm border border-primary rounded text-right focus:ring-1 focus:ring-primary"
+                                autoFocus
+                              />
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingPriceIndex(idx);
+                                setEditPriceValue(((svc.customPriceCents || 0) / 100).toFixed(2));
+                              }}
+                              className="text-sm font-medium text-primary-600 hover:underline cursor-pointer"
+                              title="Cliquer pour modifier le prix"
+                            >
+                              {formatCurrency(svc.customPriceCents || 0)}
+                            </button>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            Total: {formatCurrency((svc.customPriceCents || 0) * svc.qty)}
+                          </span>
+                        </div>
 
                         {/* Time Estimate (Required) */}
                         <div className="flex items-center gap-1">
