@@ -59,6 +59,7 @@ export function PricingStep({
 }: PricingStepProps) {
   // const t = useTranslations('intake.pricing')
   const [calculation, setCalculation] = useState<any>(null);
+  const [originalCalculation, setOriginalCalculation] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
   const [isEditingTotal, setIsEditingTotal] = useState(false);
   const [editTotalValue, setEditTotalValue] = useState('');
@@ -149,6 +150,7 @@ export function PricingStep({
 
     calculatePricing().then(calculation => {
       setCalculation(calculation);
+      setOriginalCalculation(calculation);
     });
   }, [data.rush, data.rush_fee_type, garments, services]);
 
@@ -470,7 +472,33 @@ export function PricingStep({
                             onClick={() => {
                               const dollars = parseFloat(editTotalValue) || 0;
                               const cents = Math.round(dollars * 100);
-                              onTotalOverrideChange?.(cents > 0 ? cents : null);
+                              if (cents > 0) {
+                                // Back-calculate tax from overridden total
+                                // Total = taxable * 1.14975 where taxable = subtotal + rush_fee
+                                // TPS = 5%, TVQ = 9.975%, combined tax rate = 14.975%
+                                const taxRate = 1.14975;
+                                const taxableAmount = Math.round(cents / taxRate);
+                                const tps_cents = Math.round(taxableAmount * 0.05);
+                                const tvq_cents = Math.round(taxableAmount * 0.09975);
+                                const tax_cents = tps_cents + tvq_cents;
+                                const rush_fee_cents = data.rush
+                                  ? data.rush_fee_type === 'large' ? 6000 : 3000
+                                  : 0;
+                                const subtotal_cents = Math.max(0, taxableAmount - rush_fee_cents);
+
+                                // Update displayed calculation with recalculated values
+                                setCalculation({
+                                  subtotal_cents,
+                                  rush_fee_cents,
+                                  tax_cents,
+                                  tps_cents,
+                                  tvq_cents,
+                                  total_cents: cents,
+                                });
+                                onTotalOverrideChange?.(cents);
+                              } else {
+                                onTotalOverrideChange?.(null);
+                              }
                               setIsEditingTotal(false);
                             }}
                             className='bg-primary text-white text-xs'
@@ -482,6 +510,9 @@ export function PricingStep({
                             size='sm'
                             variant='outline'
                             onClick={() => {
+                              if (originalCalculation) {
+                                setCalculation(originalCalculation);
+                              }
                               onTotalOverrideChange?.(null);
                               setIsEditingTotal(false);
                             }}
