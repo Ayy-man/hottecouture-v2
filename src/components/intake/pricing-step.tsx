@@ -10,6 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { usePricing } from '@/lib/pricing/usePricing';
 import { formatCurrency } from '@/lib/pricing/client';
 import { RushOrderTimeline } from '@/components/rush-orders/rush-indicator';
@@ -63,6 +67,7 @@ export function PricingStep({
   const [services, setServices] = useState<any[]>([]);
   const [isEditingTotal, setIsEditingTotal] = useState(false);
   const [editTotalValue, setEditTotalValue] = useState('');
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Fetch services for display names
   useEffect(() => {
@@ -243,13 +248,42 @@ export function PricingStep({
               </CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
-              <input
-                type='date'
-                value={data.due_date || ''}
-                onChange={e => handleInputChange('due_date', e.target.value)}
-                min={getMinDate()}
-                className='w-full px-3 py-2 text-sm border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px] touch-manipulation'
-              />
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px] touch-manipulation text-left flex items-center justify-between"
+                  >
+                    <span className={data.due_date ? 'text-foreground' : 'text-muted-foreground'}>
+                      {data.due_date
+                        ? format(parseISO(data.due_date), 'PPP', { locale: fr })
+                        : 'Choisir une date'}
+                    </span>
+                    <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={data.due_date ? parseISO(data.due_date) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        handleInputChange('due_date', format(date, 'yyyy-MM-dd'));
+                        setDatePickerOpen(false);
+                      }
+                    }}
+                    disabled={(date) => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      tomorrow.setHours(0, 0, 0, 0);
+                      return date < tomorrow;
+                    }}
+                    locale={fr}
+                  />
+                </PopoverContent>
+              </Popover>
             </CardContent>
           </Card>
 
