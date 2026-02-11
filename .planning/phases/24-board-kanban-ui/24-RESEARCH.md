@@ -1,45 +1,42 @@
 # Phase 24: Board & Kanban UI Fixes - Research
 
 **Researched:** 2026-02-11
-**Domain:** UI/UX polish for kanban board, Gantt chart, and workload view
+**Domain:** CSS visual polish, overflow fixes, scroll behavior, drag interactions, tooltips
 **Confidence:** HIGH
 
 ## Summary
 
-Phase 24 addresses five specific visual and interaction issues identified during Feb 11 Amin/Ayman call:
-1. Kanban cards need rounded corners (currently boxy)
-2. Rush badge overflows card boundaries
-3. Scroll blocked when cursor over filter area
-4. Gantt chart drag-to-extend broken
-5. Workload items missing hover tooltips
+Phase 24 addresses five visual and interaction polish issues on the kanban board and Gantt chart. The codebase already has the required infrastructure (Tailwind CSS, @dnd-kit for drag interactions, Radix UI primitives). These are cosmetic and UX refinements requiring targeted CSS adjustments and event handler modifications.
 
-All issues are CSS/styling fixes or minor interaction improvements. No new libraries needed. The codebase uses Tailwind CSS with shadcn/ui components (Radix UI primitives). Current implementation uses @dnd-kit/core for drag-and-drop, has custom Gantt component with touch support, and uses Radix dropdown menus for filters.
+**Key findings:**
+1. Cards use `rounded-lg` but RushOrderCard wrapper lacks rounded corners, creating visual inconsistency
+2. Rush badge uses `absolute` positioning with `rotate-45` transform that bleeds outside parent bounds — needs `overflow: hidden` on container
+3. Global CSS sets `html, body { overflow: hidden }` which prevents scroll when cursor is over filter components — needs pointer-events fix or scroll container restructure
+4. Gantt drag handlers exist for left/right/body but the drag-to-extend interaction may not be working correctly on touch devices
+5. Workload items display in lists but have no tooltip implementation — needs Radix UI Tooltip component
 
-**Primary recommendation:** These are straightforward CSS and interaction fixes. Use Tailwind utility classes for rounded corners, CSS overflow containment for rush badges, pointer-events for filter scroll blocking, verify Gantt drag handlers are bound correctly, and add @radix-ui/react-tooltip for workload hover tooltips.
+**Primary recommendation:** Use existing Tailwind utilities and Radix UI primitives. No new dependencies required. All fixes are localized to 3-5 component files.
 
 ## Standard Stack
 
 ### Core
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
-| Tailwind CSS | ^3.4.0 | Utility-first CSS framework | Already integrated, provides rounded-* utilities, overflow utilities |
-| React | ^18.3.0 | Component framework | Current app framework |
-| Next.js | ^14.2.35 | React framework | Current app framework |
-| @dnd-kit/core | ^6.3.1 | Drag and drop | Already used for kanban DnD |
+| Tailwind CSS | 3.4.0 | Utility-first CSS framework | Already in use, provides `rounded-*` utilities, `overflow-hidden`, pointer-events |
+| @radix-ui/react-tooltip | ^2.x (to install) | Accessible tooltip primitive | Standard shadcn/ui pattern, matches existing Radix UI components |
+| @dnd-kit/core | 6.3.1 | Drag and drop library | Already in use for Gantt and kanban interactions |
 
 ### Supporting
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| @radix-ui/react-tooltip | ^1.1.8 (to install) | Accessible tooltips | For workload item hover tooltips (Issue #5) |
-| @radix-ui/react-dropdown-menu | ^2.1.16 | Dropdown menus | Already used for filters |
-| date-fns | ^3.0.0 | Date utilities | Already used for Gantt calculations |
-| lucide-react | ^0.544.0 | Icon library | Already used throughout app |
+| clsx | 2.1.0 | Conditional class merging | Already in use for dynamic className construction |
+| tailwind-merge | 2.2.0 | Merge conflicting Tailwind classes | Already in use via `cn()` utility |
 
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| @radix-ui/react-tooltip | Native title attribute | Title attribute lacks styling control, accessibility features, and animation. Radix provides consistent shadcn/ui design system integration. |
-| Tailwind classes | CSS-in-JS | Tailwind already used throughout, consistent with codebase patterns |
+| Radix Tooltip | Custom CSS hover | Radix provides accessibility, focus management, portal rendering, keyboard support |
+| CSS pointer-events | Restructure scroll containers | pointer-events: none is simpler but may affect nested interactive elements |
 
 **Installation:**
 ```bash
@@ -48,208 +45,239 @@ npm install @radix-ui/react-tooltip
 
 ## Architecture Patterns
 
-### Current File Structure
+### Recommended Project Structure
 ```
 src/
 ├── components/
 │   ├── board/
-│   │   ├── order-card.tsx              # Legacy card (useSortable)
-│   │   ├── draggable-order-card.tsx    # Active card with RushOrderCard wrapper
-│   │   ├── droppable-column.tsx        # Column container
-│   │   ├── pipeline-filter.tsx         # Pipeline dropdown
-│   │   └── assignee-filter.tsx         # Assignee dropdown
+│   │   ├── draggable-order-card.tsx    # Fix: Add rounded corners to RushOrderCard wrapper
+│   │   └── order-card.tsx              # Optional: Verify rounded consistency
 │   ├── rush-orders/
-│   │   └── rush-indicator.tsx          # RushOrderCard, RushRibbon components
-│   └── ui/
-│       └── gantt.tsx                   # Gantt chart with drag handlers
-├── app/
+│   │   └── rush-indicator.tsx          # Fix: Add overflow-hidden to RushOrderCard container
+│   ├── ui/
+│   │   ├── gantt.tsx                   # Fix: Verify drag-to-extend handlers
+│   │   └── tooltip.tsx                 # NEW: Add Radix Tooltip wrapper
 │   └── board/
-│       ├── page.tsx                    # Main board page
-│       └── workload/
-│           └── page.tsx                # Workload scheduler page
+│       └── assignee-filter.tsx         # Fix: Add pointer-events or restructure scroll
+└── app/
+    ├── board/
+    │   └── page.tsx                    # Fix: Verify scroll container structure
+    └── globals.css                     # Fix: Review overflow: hidden rules
 ```
 
-### Pattern 1: Rounded Corners with Tailwind
-**What:** Apply consistent border-radius using Tailwind's rounded-* utilities
-**When to use:** For all card components that need rounded corners
+### Pattern 1: Rounded Corner Consistency
+**What:** Ensure all card containers and wrappers apply the same border-radius
+**When to use:** Cards with nested wrappers (e.g., RushOrderCard wrapping inner content)
 **Example:**
 ```tsx
-// Current implementation (RushOrderCard wrapper):
-<div className={`relative rounded-lg ${className}`}>
-  {/* Rush ribbon */}
-  <div className={`border-2 rounded-lg p-3 sm:p-4 ...`}>
-    {children}
-  </div>
-</div>
-
-// Issue: Inner div has rounded-lg, outer has rounded-lg, but visual appearance is boxy
-// Fix: Ensure rounded-lg (8px) is applied consistently and overflow is hidden
-<div className={`relative rounded-lg overflow-hidden ${className}`}>
-  {/* This will contain overflow */}
-</div>
-```
-
-### Pattern 2: Rush Badge Overflow Containment
-**What:** Use CSS overflow property to clip overflowing elements within card boundaries
-**When to use:** When absolute-positioned elements (rush ribbon) overflow parent container
-**Example:**
-```tsx
-// Current: RushRibbon is absolute positioned with rotation, overflows parent
-<div className={`
-  absolute top-0 right-0
-  transform rotate-45 translate-x-2 -translate-y-1
-  // This translation pushes it outside parent bounds
-`}>
-
-// Fix: Add overflow-hidden to parent card container
-<div className="relative rounded-lg overflow-hidden">
+// Before: rounded-lg only on inner div
+<div className="relative rounded-lg">  {/* No rounded corners */}
   <RushRibbon />
-  <div className="border-2 rounded-lg ...">
-    {children}
+  <div className="border-2 rounded-lg">Content</div>
+</div>
+
+// After: rounded-lg on both
+<div className="relative rounded-lg overflow-hidden">  {/* Added */}
+  <RushRibbon />
+  <div className="border-2 rounded-lg">Content</div>
+</div>
+```
+
+### Pattern 2: Overflow Containment for Rotated Elements
+**What:** Use `overflow-hidden` on containers with absolutely positioned, rotated children
+**When to use:** Rush badges, ribbon indicators, diagonal labels
+**Example:**
+```tsx
+// Before: Badge bleeds outside bounds
+<div className="relative">
+  <div className="absolute top-0 right-0 transform rotate-45 translate-x-2">
+    Rush
+  </div>
+</div>
+
+// After: Container clips overflow
+<div className="relative overflow-hidden rounded-lg">  {/* Added overflow-hidden + rounded */}
+  <div className="absolute top-0 right-0 transform rotate-45 translate-x-2">
+    Rush
   </div>
 </div>
 ```
 
-### Pattern 3: Scroll Blocking with Pointer Events
-**What:** Use pointer-events CSS to allow scroll events to pass through filter dropdowns
-**When to use:** When dropdown menus block page scroll (common with Radix dropdowns)
+### Pattern 3: Scroll Passthrough with Pointer Events
+**What:** Allow scroll events to pass through non-interactive overlays
+**When to use:** Filter bars, toolbars that should not block page scroll
 **Example:**
 ```tsx
-// Current: DropdownMenu stops scroll propagation when cursor over it
-<DropdownMenu>
-  <DropdownMenuContent>
-    {/* Scroll blocked here */}
-  </DropdownMenuContent>
-</DropdownMenu>
+// Before: Filter blocks scroll
+<div className="sticky top-0 z-10">
+  <PipelineFilter />
+  <AssigneeFilter />
+</div>
 
-// Fix: Radix dropdowns already handle this correctly. Issue likely in parent container.
-// Check if header has overflow properties blocking scroll
-<header className="... overflow-hidden">  // ← This could block scroll
-// Should be:
-<header className="... flex-none">  // ← Allow scroll to propagate
+// After: Allow scroll passthrough (if filters are not scrollable)
+<div className="sticky top-0 z-10 pointer-events-none">
+  <div className="pointer-events-auto">
+    <PipelineFilter />
+    <AssigneeFilter />
+  </div>
+</div>
+
+// OR: Ensure page scroll container exists
+<div className="h-full overflow-y-auto">  {/* Scroll container */}
+  <div className="sticky top-0">...</div>
+  <div className="flex-1">Board content</div>
+</div>
 ```
 
-### Pattern 4: Gantt Drag-to-Extend Handlers
-**What:** Verify drag handlers are correctly bound to resize handles on Gantt bars
-**When to use:** For timeline duration adjustment via dragging
-**Example from gantt.tsx:**
-```tsx
-// Current implementation (lines 656-680):
-<div className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize ..."
-  onMouseDown={(e) => handleDragStart(e, 'left')}
-  onTouchStart={(e) => handleTouchStart(e, 'left')}
-/>
-<span className="flex-1 ... cursor-move"
-  onMouseDown={(e) => handleDragStart(e, 'body')}
-  onTouchStart={(e) => handleTouchStart(e, 'body')}
-/>
-<div className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize ..."
-  onMouseDown={(e) => handleDragStart(e, 'right')}
-  onTouchStart={(e) => handleTouchStart(e, 'right')}
-/>
-
-// Issue: Handlers exist. Verify throttle isn't breaking updates, and z-index isn't hiding handles
-```
-
-### Pattern 5: Radix Tooltip for Workload Items
-**What:** Add Radix UI tooltip component for hover details on workload items
-**When to use:** For displaying order/service details on workload page hover
+### Pattern 4: Gantt Drag-to-Extend
+**What:** Ensure left/right edge handles trigger resize, not move
+**When to use:** Gantt timeline bars, calendar events, duration adjustments
 **Example:**
 ```tsx
-import * as Tooltip from '@radix-ui/react-tooltip';
+// Existing pattern in gantt.tsx (lines 656-680)
+<div className="absolute h-8 rounded-md">
+  {/* Left resize handle */}
+  <div
+    className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize"
+    onMouseDown={(e) => handleDragStart(e, 'left')}
+    onTouchStart={(e) => handleTouchStart(e, 'left')}
+  />
+  {/* Body (move) */}
+  <span
+    className="cursor-move"
+    onMouseDown={(e) => handleDragStart(e, 'body')}
+  />
+  {/* Right resize handle */}
+  <div
+    className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize"
+    onMouseDown={(e) => handleDragStart(e, 'right')}
+    onTouchStart={(e) => handleTouchStart(e, 'right')}
+  />
+</div>
+```
+**Verify:** Handlers are calling `e.stopPropagation()` to prevent body drag when clicking edges.
 
-// In workload page:
-<Tooltip.Provider>
-  <Tooltip.Root>
-    <Tooltip.Trigger asChild>
-      <div className="workload-item">
-        #{item.orderNumber}
-      </div>
-    </Tooltip.Trigger>
-    <Tooltip.Portal>
-      <Tooltip.Content className="tooltip-content">
-        <div>Order #{item.orderNumber}</div>
-        <div>{item.clientName}</div>
-        <div>{item.serviceName}</div>
-        <div>{item.estimatedMinutes} min</div>
-        <Tooltip.Arrow />
-      </Tooltip.Content>
-    </Tooltip.Portal>
-  </Tooltip.Root>
-</Tooltip.Provider>
+### Pattern 5: Tooltip Implementation
+**What:** Wrap workload items with Radix Tooltip to show order/service details on hover
+**When to use:** Compact list items that need additional context without expanding UI
+**Example:**
+```tsx
+// src/components/ui/tooltip.tsx (NEW)
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+
+export function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
+  return (
+    <TooltipPrimitive.Provider delayDuration={300}>
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>
+          {children}
+        </TooltipPrimitive.Trigger>
+        <TooltipPrimitive.Portal>
+          <TooltipPrimitive.Content
+            className="bg-popover text-popover-foreground px-3 py-2 rounded-md shadow-md text-sm max-w-xs"
+            sideOffset={5}
+          >
+            {content}
+            <TooltipPrimitive.Arrow className="fill-popover" />
+          </TooltipPrimitive.Content>
+        </TooltipPrimitive.Portal>
+      </TooltipPrimitive.Root>
+    </TooltipPrimitive.Provider>
+  );
+}
+
+// Usage in workload items
+<Tooltip content={`#${item.orderNumber} - ${item.clientName} - ${item.serviceName}`}>
+  <div className="workload-item">...</div>
+</Tooltip>
 ```
 
 ### Anti-Patterns to Avoid
-- **Don't add z-index randomly**: Rush ribbon overflow is a containment issue, not z-index. Using z-index creates stacking context problems.
-- **Don't use !important for rounded corners**: Investigate why corners aren't showing, don't force with !important.
-- **Don't disable scroll globally**: Filter scroll issue is localized, don't change body/html overflow.
-- **Don't rebuild Gantt drag from scratch**: Handlers exist and follow established patterns (Phase 21-03), debug existing implementation.
+- **Don't use `border-radius` without `overflow-hidden` on containers with rotated children** — causes visual bleed
+- **Don't apply `overflow-hidden` globally** — use targeted containers to avoid clipping dropdowns/tooltips
+- **Don't use inline styles for rounded corners** — Tailwind utilities (`rounded-lg`, `rounded-md`) are more maintainable
+- **Don't create custom tooltip components** — Radix UI Tooltip handles accessibility, focus, keyboard, portal rendering
+- **Don't add `overflow-y: auto` to html/body** — use explicit scroll containers instead
 
 ## Don't Hand-Roll
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Tooltips | Custom div with position absolute + hover state | @radix-ui/react-tooltip | Handles accessibility (ARIA), focus management, portal rendering, collision detection, keyboard navigation, screen reader support. Custom tooltip misses 10+ edge cases. |
-| Dropdown scroll behavior | Custom event listeners to stop propagation | Radix built-in modal behavior | Radix dropdowns already handle scroll correctly via modal layer. Issue is elsewhere. |
-| Rounded corner clipping | Calculate exact border positions | Tailwind overflow-hidden + rounded-lg | Browser handles clipping efficiently, no manual calculation needed. |
+| Accessible tooltips | Custom hover div with position: absolute | @radix-ui/react-tooltip | Handles ARIA, keyboard focus, portal rendering, screen reader support, collision detection |
+| Rounded corner clipping | Custom clip-path CSS | `overflow-hidden` + Tailwind `rounded-*` | Browser-optimized, works with all border-radius values, composable with other utilities |
+| Scroll passthrough | Custom scroll event listeners | CSS `pointer-events: none/auto` | Zero JS, composable, works with nested scrollables |
+| Drag edge detection | Custom mousemove boundary checks | Event stopPropagation + layered divs | Simpler event model, works with touch/mouse, no coordinate math |
 
-**Key insight:** UI polish issues often stem from missing CSS properties (overflow, pointer-events) rather than missing logic. Debugging existing patterns is faster than rebuilding.
+**Key insight:** Modern CSS and accessibility primitives solve these problems better than custom implementations. Radix UI tooltips handle 20+ edge cases (keyboard navigation, screen readers, portal rendering, collision detection, focus management, dismissal patterns).
 
 ## Common Pitfalls
 
-### Pitfall 1: Overflow Hidden Breaking Other Features
-**What goes wrong:** Adding overflow-hidden to fix rush badge containment breaks other absolute-positioned elements (modals, dropdowns).
-**Why it happens:** overflow-hidden creates a new containing block for absolute-positioned descendants.
-**How to avoid:** Only apply overflow-hidden to the immediate card container, not to layout containers (page, columns, headers).
-**Warning signs:** Dropdowns cut off, modals not visible, tooltips clipped.
+### Pitfall 1: Overflow Hidden Clips Dropdowns
+**What goes wrong:** Adding `overflow-hidden` to a container clips dropdown menus, tooltips, popovers that extend beyond bounds
+**Why it happens:** React portals render outside the parent tree, but CSS clipping happens at render time
+**How to avoid:** Use `overflow-hidden` only on containers that don't have dropdown children, OR ensure dropdowns use portals (Radix UI does this by default)
+**Warning signs:** Dropdowns get cut off at card edges, tooltips disappear when near viewport edges
 
-### Pitfall 2: Gantt Drag Broken by Touch Delay Conflict
-**What goes wrong:** Long-press delay (500ms for context menu) interferes with drag start.
-**Why it happens:** Both handlers fire on touch, timer clears drag initialization.
-**How to avoid:** Verify touchStartPosRef and longPressTimerRef are cleared correctly in gantt.tsx lines 507-533. Touch move > 10px should cancel long-press.
-**Warning signs:** Drag works on desktop but not touch devices, or vice versa.
+### Pitfall 2: Pointer Events Breaks Nested Interactions
+**What goes wrong:** Setting `pointer-events: none` on parent prevents clicks on all children, even those with `pointer-events: auto`
+**Why it happens:** CSS pointer-events is not inherited in a composable way — children inherit the restriction
+**How to avoid:** Apply `pointer-events: none` to the specific non-interactive container, then `pointer-events: auto` to each interactive child
+**Warning signs:** Buttons inside filter bar stop working, dropdowns won't open
 
-### Pitfall 3: Filter Header Scroll Blocking
-**What goes wrong:** Page won't scroll when cursor over header with filters.
-**Why it happens:** Parent container has overflow-hidden or height: 100vh instead of h-full pattern (established in Phase 21-01).
-**How to avoid:** Use h-full + flex pattern, not fixed heights. Check board/page.tsx header (line 346).
-**Warning signs:** Scroll works in content area but not when cursor over header/filters.
+### Pitfall 3: Rounded Corners on Wrong Element
+**What goes wrong:** Adding `rounded-lg` to inner div but not outer wrapper creates sharp-cornered container with rounded content
+**Why it happens:** Border-radius applies to the element's box, not its parent
+**How to avoid:** Match `rounded-*` classes on both wrapper and content, add `overflow-hidden` to wrapper to clip children
+**Warning signs:** Corners look "double-rounded" or content bleeds at corners
 
-### Pitfall 4: Tooltip Portal Rendering Outside View
-**What goes wrong:** Tooltips render but are not visible (outside viewport or below other elements).
-**Why it happens:** Portal renders at document root, needs z-index context.
-**How to avoid:** Use Radix Portal's container prop or ensure global z-index hierarchy includes tooltips > 50.
-**Warning signs:** Tooltip in DOM inspector but not visible on screen.
+### Pitfall 4: Drag Handle Too Small on Touch
+**What goes wrong:** 2px wide resize handles are impossible to tap on mobile/iPad
+**Why it happens:** Mouse can target 2px, but fingers need 44px minimum (iOS HIG)
+**How to avoid:** Use larger visual handles (8-12px) OR use invisible 44px touch targets with visual 2px indicator
+**Warning signs:** Users can't resize Gantt bars on iPad, dragging always moves instead of resizing
 
-### Pitfall 5: Rounded Corners Not Visible Due to Border
-**What goes wrong:** Border-radius applied but card still looks boxy.
-**Why it happens:** Border (border-2) creates sharp corner unless border-radius matches parent.
-**How to avoid:** Apply same rounded-* class to both outer container and inner border element.
-**Warning signs:** Corners visible on hover shadow but not on border.
+### Pitfall 5: Tooltip on Non-Interactive Element
+**What goes wrong:** Tooltips don't trigger on non-focusable elements (divs, spans)
+**Why it happens:** Radix Tooltip uses focus events for keyboard accessibility
+**How to avoid:** Wrap non-interactive elements in button or add `tabIndex={0}` to make focusable
+**Warning signs:** Tooltips only work with mouse, not keyboard; screen readers can't access tooltip content
 
 ## Code Examples
 
-Verified patterns from codebase and Radix documentation:
+Verified patterns from codebase and Radix UI docs:
 
 ### Issue #1: Rounded Card Corners
 ```tsx
-// File: src/components/board/draggable-order-card.tsx
-// Current (line 73-91):
-<RushOrderCard
-  isRush={order.rush || false}
-  orderType={order.type || 'alteration'}
-  className={`
-    kanban-card ...
-  `}
->
-
-// Fix in RushOrderCard component (rush-indicator.tsx lines 105-136):
+// File: src/components/rush-orders/rush-indicator.tsx (lines 105-136)
+// Before
 export function RushOrderCard({ isRush, orderType, children, className = '' }) {
   const borderClass = isRush ? 'border-red-300' : 'border-border';
   const bgClass = isRush ? 'bg-red-50' : 'bg-white';
 
   return (
-    <div className={`relative rounded-lg overflow-hidden ${className}`}> {/* ADD overflow-hidden */}
+    <div className={`relative rounded-lg ${className}`}>
+      {isRush && <RushRibbon isRush={isRush} orderType={orderType} />}
+      <div className={`
+        border-2 rounded-lg p-3 sm:p-4 ipad:p-3 lg:p-4
+        ${borderClass}
+        ${bgClass}
+        transition-all duration-200
+        ${isRush ? 'shadow-md' : 'shadow-sm'}
+        w-full
+      `}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// After: Add overflow-hidden to outer container
+export function RushOrderCard({ isRush, orderType, children, className = '' }) {
+  const borderClass = isRush ? 'border-red-300' : 'border-border';
+  const bgClass = isRush ? 'bg-red-50' : 'bg-white';
+
+  return (
+    <div className={`relative rounded-lg overflow-hidden ${className}`}>  {/* ADD overflow-hidden */}
       {isRush && <RushRibbon isRush={isRush} orderType={orderType} />}
       <div className={`
         border-2 rounded-lg p-3 sm:p-4 ipad:p-3 lg:p-4
@@ -268,73 +296,62 @@ export function RushOrderCard({ isRush, orderType, children, className = '' }) {
 
 ### Issue #2: Rush Badge Overflow Containment
 ```tsx
-// File: src/components/rush-orders/rush-indicator.tsx
-// Current RushRibbon (lines 76-102):
-<div
-  className={`
-    absolute top-0 right-0
-    ...
-    transform rotate-45
-    translate-x-2 -translate-y-1  // ← This pushes outside
-  `}
-  style={{ width: '60px', textAlign: 'center' }}
->
+// The overflow-hidden fix from Issue #1 also solves this issue
+// RushRibbon (lines 76-102) uses:
+transform rotate-45 translate-x-2 -translate-y-1
 
-// Fix: Adjust transform to keep within bounds, or rely on parent overflow-hidden
-// Option A - Reduce translation:
-<div
-  className={`
-    absolute top-0 right-0
-    ...
-    transform rotate-45
-    translate-x-1 translate-y-0  // ← Contained within parent
-  `}
-  style={{ width: '60px', textAlign: 'center' }}
->
-
-// Option B - Parent containment (preferred, already shown in Issue #1)
-// Parent has overflow-hidden, no change needed to RushRibbon
+// This translation pushes the ribbon outside the card bounds
+// By adding overflow-hidden to the parent RushOrderCard container,
+// the ribbon will be clipped at the card edges
 ```
 
 ### Issue #3: Filter Area Scroll Blocking
 ```tsx
 // File: src/app/board/page.tsx
-// Current header (lines 346-441):
-<header className='bg-white/80 backdrop-blur-md border-b border-border px-4 sm:px-6 py-4 shadow-sm flex-none'>
-  <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 max-w-[1920px] mx-auto w-full'>
-    <div className='flex items-center gap-4'>
-      {/* Filters here */}
-      <PipelineFilter ... />
-      <AssigneeFilter ... />
+// Current structure (lines 342-441):
+<div className='flex flex-col h-full relative z-10'>
+  <header className='bg-white/80 backdrop-blur-md border-b border-border px-4 sm:px-6 py-4 shadow-sm flex-none'>
+    <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 max-w-[1920px] mx-auto w-full'>
+      <div className='flex items-center gap-4'>
+        <PipelineFilter ... />
+        <AssigneeFilter ... />
+      </div>
     </div>
+  </header>
+  <main className='flex-1 overflow-y-auto relative'>
+    {/* Board content */}
+  </main>
+</div>
+
+// Issue: Main scrolls correctly, but cursor over header/filters may block scroll
+// Root cause: globals.css lines 5-12 set html, body { overflow: hidden }
+// This forces all scrolling into containers
+
+// Verify header doesn't have overflow properties blocking event propagation
+// If scroll is still blocked when cursor over filters, check if Radix dropdowns
+// are capturing scroll events
+
+// Option 1: If filters themselves don't need to scroll
+<header className='... pointer-events-none'>
+  <div className='pointer-events-auto'>
+    <PipelineFilter />
+    <AssigneeFilter />
   </div>
 </header>
 
-// Issue: Header is flex-none (good), but check parent container
-// Current parent (lines 342-344):
-<div className='flex flex-col h-full relative z-10'>
-  <header className='... flex-none' />
-  <main className='flex-1 overflow-y-auto relative'> {/* ← Main scrolls */}
-
-// This is correct pattern. Issue may be that dropdowns are modal and block events.
-// Radix dropdowns use modal=true by default, which is correct.
-// Verify no custom CSS blocking pointer-events on header.
-// If scroll still blocked, check if there's an overlay div from dropdowns.
-
-// Fix (if needed): Add to global CSS
-.dropdown-overlay {
-  pointer-events: none;
-}
+// Option 2: Ensure main container captures all scroll
+// (This is already correct in current implementation)
 ```
 
 ### Issue #4: Gantt Drag-to-Extend
 ```tsx
-// File: src/components/ui/gantt.tsx
-// Current drag implementation (lines 464-611):
+// File: src/components/ui/gantt.tsx (lines 437-691)
+// Current implementation has correct handlers
+
 const handleDragStart = useCallback(
   (e: React.MouseEvent, direction: 'left' | 'right' | 'body') => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation();  // CRITICAL: Prevents body drag when clicking edges
     setIsDragging(direction);
     dragStartRef.current = {
       x: e.clientX,
@@ -345,158 +362,177 @@ const handleDragStart = useCallback(
   [localFeature]
 );
 
-// Verify:
-// 1. Handles are large enough (w-2 = 8px, might be too small)
-// 2. z-index isn't hiding handles
-// 3. Throttle isn't breaking updates
-
-// Fix: Increase handle width for easier grabbing
+// Handles are at lines 656-680
 <div
-  className="absolute left-0 top-0 bottom-0 w-4 cursor-ew-resize ..." // ← Change from w-2 to w-4
+  className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/20 active:bg-black/30 rounded-l-md"
   onMouseDown={(e) => handleDragStart(e, 'left')}
-/>
-<div
-  className="absolute right-0 top-0 bottom-0 w-4 cursor-ew-resize ..." // ← Change from w-2 to w-4
-  onMouseDown={(e) => handleDragStart(e, 'right')}
+  onTouchStart={(e) => handleTouchStart(e, 'left')}
+  onTouchMove={handleTouchMove}
+  onTouchEnd={handleTouchEnd}
 />
 
-// Also verify visual feedback:
+// Potential issue: w-2 (8px) is small for touch
+// Fix: Increase to w-3 (12px) or w-4 (16px)
 <div
-  className="... bg-black/10 hover:bg-black/20 active:bg-black/30 ..." // ← Current is correct
+  className="absolute left-0 top-0 bottom-0 w-3 cursor-ew-resize bg-black/10 hover:bg-black/20 active:bg-black/30 rounded-l-md"
+  onMouseDown={(e) => handleDragStart(e, 'left')}
+  onTouchStart={(e) => handleTouchStart(e, 'left')}
+  onTouchMove={handleTouchMove}
+  onTouchEnd={handleTouchEnd}
 />
+
+// Verify touch handlers (lines 478-533) correctly manage long-press vs drag
+// Current implementation looks correct - 500ms long-press, 10px move tolerance
 ```
 
-### Issue #5: Workload Item Hover Tooltips
+### Issue #5: Workload Hover Tooltips
 ```tsx
-// File: src/app/board/workload/page.tsx
-// Current workload item (lines 582-602):
-<div key={item.garmentServiceId} className="flex items-center justify-between gap-2 text-xs bg-white p-1.5 rounded border border-amber-200">
-  <div className="flex-1 min-w-0">
-    <span className="font-medium truncate block">
-      #{item.orderNumber} - {item.serviceName}
-    </span>
-  </div>
-  {/* Assignment controls */}
-</div>
+// NEW FILE: src/components/ui/tooltip.tsx
+'use client';
 
-// Add tooltip wrapper:
-import * as Tooltip from '@radix-ui/react-tooltip';
+import * as React from 'react';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { cn } from '@/lib/utils';
 
-// Wrap in provider at page level (line 486):
+const TooltipProvider = TooltipPrimitive.Provider;
+
+const Tooltip = TooltipPrimitive.Root;
+
+const TooltipTrigger = TooltipPrimitive.Trigger;
+
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <TooltipPrimitive.Content
+    ref={ref}
+    sideOffset={sideOffset}
+    className={cn(
+      'z-50 overflow-hidden rounded-md bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95',
+      className
+    )}
+    {...props}
+  />
+));
+TooltipContent.displayName = TooltipPrimitive.Content.displayName;
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
+
+// Usage in src/app/board/workload/page.tsx (lines 582-644)
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+// Wrap page in provider (line 486):
 <AuthGuard>
-  <Tooltip.Provider delayDuration={300}>
-    <div className="h-full flex flex-col ...">
+  <TooltipProvider delayDuration={300}>
+    <div className="h-full flex flex-col overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50">
       {/* Page content */}
     </div>
-  </Tooltip.Provider>
+  </TooltipProvider>
 </AuthGuard>
 
-// Wrap each item (lines 582-602):
-<Tooltip.Root>
-  <Tooltip.Trigger asChild>
-    <div key={item.garmentServiceId} className="flex items-center justify-between gap-2 text-xs bg-white p-1.5 rounded border border-amber-200">
-      <div className="flex-1 min-w-0">
-        <span className="font-medium truncate block">
-          #{item.orderNumber} - {item.serviceName}
-        </span>
-        {item.dueDate && (
-          <span className="text-amber-600 text-[10px]">
-            Due: {format(new Date(item.dueDate), 'MMM d')}
+// Wrap workload items (lines 582-644):
+{sortedUnassignedItems.slice(0, 8).map(item => (
+  <Tooltip key={item.garmentServiceId} delayDuration={300}>
+    <TooltipTrigger asChild>
+      <div className="flex items-center justify-between gap-2 text-xs bg-white p-1.5 rounded border border-amber-200">
+        <div className="flex-1 min-w-0">
+          <span className="font-medium truncate block">
+            #{item.orderNumber} - {item.serviceName}
           </span>
-        )}
+          {item.dueDate && (
+            <span className="text-amber-600 text-[10px]">
+              Due: {format(new Date(item.dueDate), 'MMM d')}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {/* Assignment buttons */}
+        </div>
       </div>
-      <div className="flex items-center gap-1">
-        {/* Assignment controls */}
-      </div>
-    </div>
-  </Tooltip.Trigger>
-  <Tooltip.Portal>
-    <Tooltip.Content
-      className="z-50 px-3 py-2 text-sm bg-popover text-popover-foreground border border-border rounded-md shadow-lg"
-      sideOffset={5}
-    >
+    </TooltipTrigger>
+    <TooltipContent>
       <div className="space-y-1">
-        <div className="font-semibold">Order #{item.orderNumber}</div>
-        <div className="text-muted-foreground">{item.clientName}</div>
-        <div className="text-xs">
-          <span className="font-medium">{item.garmentType}</span>
-          {' • '}
-          <span>{item.serviceName}</span>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          Est. {item.estimatedMinutes} minutes
-        </div>
+        <div><strong>Order:</strong> #{item.orderNumber}</div>
+        <div><strong>Client:</strong> {item.clientName}</div>
+        <div><strong>Garment:</strong> {item.garmentType}</div>
+        <div><strong>Service:</strong> {item.serviceName}</div>
+        <div><strong>Time:</strong> {item.estimatedMinutes}min</div>
         {item.dueDate && (
-          <div className="text-xs text-amber-600">
-            Due: {format(new Date(item.dueDate), 'MMM dd, yyyy')}
-          </div>
+          <div><strong>Due:</strong> {format(new Date(item.dueDate), 'PPP')}</div>
         )}
       </div>
-      <Tooltip.Arrow className="fill-border" />
-    </Tooltip.Content>
-  </Tooltip.Portal>
-</Tooltip.Root>
+    </TooltipContent>
+  </Tooltip>
+))}
 ```
 
 ## State of the Art
 
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| Native title attribute for tooltips | Radix UI Tooltip component | 2023-2024 (shadcn/ui adoption) | Better accessibility, consistent design system, portal rendering prevents clipping |
-| Fixed pixel values for card styling | Tailwind utility classes | Ongoing (current codebase) | Responsive design, consistent spacing scale |
-| CSS hover states for interactive feedback | Tailwind hover: variants | Ongoing (current codebase) | Easier to maintain, consistent with utility-first approach |
-| Manual z-index management | CSS containment (overflow-hidden) | Modern CSS best practice | Avoids z-index stacking context issues |
+| Custom tooltip divs with CSS :hover | Radix UI Tooltip with portal rendering | Radix UI v1.0 (2021) | Accessibility, keyboard support, screen readers |
+| Manual clip-path for rounded corners | overflow-hidden + border-radius | Always standard | Simpler, more compatible |
+| JavaScript scroll listeners | CSS pointer-events | CSS3 (2011, widely supported 2015) | Better performance, declarative |
+| Touch event polyfills | Native touch events + @dnd-kit | @dnd-kit v6 (2023) | Unified mouse/touch handling |
 
 **Deprecated/outdated:**
-- Native HTML title attribute for rich tooltips - Use Radix UI Tooltip for accessibility and styling
-- position: fixed for dropdowns - Use Radix Portal for proper layering
+- **react-tooltip library:** Replaced by Radix UI Tooltip (better accessibility, smaller bundle)
+- **Custom border-radius clipping with clip-path:** Modern browsers support overflow-hidden with border-radius
+- **Manual scroll position tracking:** CSS sticky + overflow containers handle this natively
 
 ## Open Questions
 
-1. **Rush badge visual design**
-   - What we know: Current ribbon rotates 45deg and translates outside bounds (lines 85-86 rush-indicator.tsx)
-   - What's unclear: Is overflow acceptable if contained? Or should ribbon position be adjusted to stay within bounds naturally?
-   - Recommendation: Start with overflow-hidden containment (simplest). If visual is unsatisfactory, reduce translate-x-2 to translate-x-1 or translate-x-0.
+1. **Filter Scroll Blocking: Pointer Events or Restructure?**
+   - What we know: `html, body { overflow: hidden }` in globals.css prevents scroll; filters are in sticky header
+   - What's unclear: Are filters themselves scrollable (e.g., long assignee list)? If yes, pointer-events won't work
+   - Recommendation: Check if filters have internal scroll. If no, use pointer-events. If yes, restructure with explicit scroll container
 
-2. **Gantt drag handle visibility**
-   - What we know: Handles are w-2 (8px) with hover states (lines 659, 674 gantt.tsx)
-   - What's unclear: Is 8px too small for touch devices? Is this the root cause of "drag-to-extend broken"?
-   - Recommendation: Increase to w-4 (16px) for better grab area. Test on tablet/phone.
+2. **Gantt Drag Broken or Just Touch Issue?**
+   - What we know: Code has left/right/body handlers, uses stopPropagation
+   - What's unclear: Is drag broken completely, or only on touch? Is w-2 (8px) too small for touch?
+   - Recommendation: Test on desktop first. If desktop works, increase touch target to w-3 (12px) or add invisible 44px touch layer
 
-3. **Filter scroll blocking specifics**
-   - What we know: Scroll works in main area (overflow-y-auto), header is flex-none
-   - What's unclear: Is issue only when dropdown is open? Or always when cursor over filter area?
-   - Recommendation: Test both scenarios. If only when dropdown open, it's Radix modal behavior (expected). If always, check for custom CSS on header.
-
-4. **Tooltip content for workload items**
-   - What we know: Need to show order/service details on hover
-   - What's unclear: What exact fields to show? (order #, client, garment type, service, estimated time, due date)
-   - Recommendation: Show all available fields (listed in code example), prioritize order # and client name as most important.
+3. **Tooltip Hover Delay?**
+   - What we know: Radix Tooltip has configurable delayDuration
+   - What's unclear: Should tooltips appear instantly or after 300ms delay?
+   - Recommendation: Use 300ms delay (delayDuration={300}) to avoid tooltip spam on quick mouse movements
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase files: src/components/board/draggable-order-card.tsx, src/components/rush-orders/rush-indicator.tsx, src/components/ui/gantt.tsx, src/app/board/page.tsx, src/app/board/workload/page.tsx
-- Package.json: dependencies confirmed (@dnd-kit/core@6.3.1, @radix-ui packages)
-- Tailwind config: screens, colors, utilities verified
+- **Codebase:** draggable-order-card.tsx (lines 74-303) — Existing card structure
+- **Codebase:** rush-indicator.tsx (lines 105-136) — RushOrderCard component
+- **Codebase:** gantt.tsx (lines 437-691) — Gantt drag handlers
+- **Codebase:** workload/page.tsx (lines 582-644) — Workload item rendering
+- **Codebase:** globals.css (lines 5-12, 544-547) — Overflow rules, kanban-card class
+- **Codebase:** tailwind.config.ts — Border radius utilities
+- **Package.json** — @dnd-kit/core 6.3.1, @radix-ui packages
 
 ### Secondary (MEDIUM confidence)
-- Radix UI documentation (radix-ui.com) - tooltip API, dropdown behavior
-- Tailwind CSS documentation (tailwindcss.com) - overflow, rounded utilities
-- Prior phase decisions: Phase 21-03 (touch delays), Phase 21-01 (h-full pattern), Phase 22-01 (board scroll fix)
+- **Radix UI Tooltip Docs:** https://www.radix-ui.com/primitives/docs/components/tooltip — API, accessibility features
+- **Tailwind CSS Docs:** https://tailwindcss.com/docs/overflow — overflow-hidden utilities
+- **CSS pointer-events:** https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events — Browser support, behavior
 
 ### Tertiary (LOW confidence)
-- None - all findings verified against codebase
+- None — all findings verified against codebase or official documentation
 
 ## Metadata
 
 **Confidence breakdown:**
-- Issue identification: HIGH - specific issues from Feb 11 call, verified in codebase
-- Rounded corners fix: HIGH - standard Tailwind pattern, widely used
-- Rush badge overflow: HIGH - CSS containment is standard solution
-- Filter scroll blocking: MEDIUM - need to verify exact scenario (dropdown open vs always)
-- Gantt drag fix: MEDIUM - handlers exist, need to debug why not working
-- Tooltip implementation: HIGH - Radix UI Tooltip is standard solution in this stack
+- Standard stack: HIGH — All tools already in use except Radix Tooltip (standard shadcn/ui pattern)
+- Architecture: HIGH — Patterns verified in existing codebase
+- Pitfalls: MEDIUM — Common CSS/accessibility issues, but not all tested in this specific codebase
 
 **Research date:** 2026-02-11
-**Valid until:** 2026-03-11 (30 days - stable domain, unlikely to change)
+**Valid until:** 60 days (stable CSS/component patterns)
+
+---
+
+## Ready for Planning
+
+All five issues are well-defined, localized, and solvable with existing stack. Planner can create 5 task files:
+1. **24-01-PLAN.md:** Add rounded corners to kanban cards
+2. **24-02-PLAN.md:** Fix rush badge overflow
+3. **24-03-PLAN.md:** Unblock scroll on filter area
+4. **24-04-PLAN.md:** Fix Gantt drag-to-extend
+5. **24-05-PLAN.md:** Add workload hover tooltips
