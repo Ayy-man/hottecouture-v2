@@ -11,6 +11,36 @@ body {
   padding: 0;
 }
 
+/* Global print styles — hide all UI chrome */
+@media print {
+  /* Hide navigation and header across all pages */
+  header,
+  nav,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Remove body overflow restrictions for printing */
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Remove grid layout constraints in print */
+  body > * {
+    display: block !important;
+  }
+
+  /* Ensure main content fills the page */
+  main {
+    overflow: visible !important;
+    padding-bottom: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+}
+
 /* Custom loading animations */
 @keyframes logo-float {
 

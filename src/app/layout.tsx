@@ -102,7 +102,7 @@ export default function RootLayout({
             <StaffSessionProvider>
               <NavigationProvider>
               <div className='grid h-full grid-rows-[auto,1fr]'>
-                <header className='row-start-1 row-end-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+                <header className='row-start-1 row-end-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden'>
                   <div className='container flex h-16 items-center justify-between'>
                     <div className='flex items-center'>
                       <HLogo size='md' />
@@ -122,13 +122,13 @@ export default function RootLayout({
                     </div>
                   </div>
                 </header>
-                <main className='row-start-2 row-end-3 min-h-0 overflow-hidden pb-16 md:pb-0'>
+                <main className='row-start-2 row-end-3 min-h-0 overflow-hidden pb-16 md:pb-0 print:pb-0'>
                   {children}
                 </main>
                 <MobileBottomNav />
               </div>
               <StaffPinModal />
-              <div className='hidden'>
+              <div className='hidden print:hidden'>
                 <GlobalChatWrapper />
               </div>
               </NavigationProvider>

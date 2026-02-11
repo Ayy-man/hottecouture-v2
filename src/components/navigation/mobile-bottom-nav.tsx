@@ -16,7 +16,7 @@ export function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border md:hidden safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border md:hidden safe-area-bottom print:hidden">
       <div className="flex justify-around items-center h-16 px-2">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
