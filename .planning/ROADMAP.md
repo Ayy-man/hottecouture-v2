@@ -581,8 +581,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 24-01-PLAN.md — Card visual polish (rounded corners, rush badge overflow, filter scroll fix)
-- [ ] 24-02-PLAN.md — Gantt drag handles + workload hover tooltips
+- [ ] 24-01-PLAN.md — Fix kanban card rounded corners, rush badge overflow, and board scroll blocking
+- [ ] 24-02-PLAN.md — Fix Gantt drag-to-extend handles and add workload hover tooltips
 
 ---
 
