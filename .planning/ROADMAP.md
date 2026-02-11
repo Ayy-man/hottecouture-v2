@@ -643,10 +643,11 @@ Plans:
 **Blocks:** Nothing
 
 **Status:** Pending
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 26 to break down)
+- [ ] 26-01-PLAN.md — Staff API route aliases, PWA manifest/metadata, chatbot removal
+- [ ] 26-02-PLAN.md — External service configuration (SMS A2P, Stripe via GHL, custom domain)
 
 ---
 
