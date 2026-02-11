@@ -19,6 +19,7 @@ import { useStaffSession } from '@/components/staff';
 import { useToast } from '@/components/ui/toast';
 import { triggerDownload } from '@/lib/exports/csv-utils';
 import { OrderDetailModal } from '@/components/board/order-detail-modal';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 
 const HOURS_PER_DAY = 8;
@@ -484,6 +485,7 @@ export default function WorkloadPage() {
 
   return (
     <AuthGuard>
+      <TooltipProvider delayDuration={300}>
       <div className="h-full flex flex-col overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50">
         <header className="flex-shrink-0 bg-white/80 backdrop-blur-sm border-b px-4 py-3">
           <div className="flex items-center justify-between">
@@ -580,66 +582,86 @@ export default function WorkloadPage() {
                   <div className="text-xs text-amber-600 mb-3">items need assignment (sorted by due date)</div>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {sortedUnassignedItems.slice(0, 8).map(item => (
-                      <div key={item.garmentServiceId} className="flex items-center justify-between gap-2 text-xs bg-white p-1.5 rounded border border-amber-200">
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium truncate block" title={`#${item.orderNumber} - ${item.serviceName}`}>
-                            <button
-                              onClick={() => handleOpenOrderModal(item.orderId)}
-                              className="text-primary hover:underline"
-                              title={`View order #${item.orderNumber}`}
-                            >
-                              #{item.orderNumber}
-                            </button>
-                            {' - '}{item.serviceName}
-                          </span>
-                          {item.dueDate && (
-                            <span className="text-amber-600 text-[10px]">
-                              Due: {format(new Date(item.dueDate), 'MMM d')}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {currentStaff && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 sm:h-6 min-h-[44px] sm:min-h-0 px-1.5 text-xs sm:text-[10px] text-amber-700 hover:bg-amber-100"
-                              onClick={() => handleAssignToMe(item.garmentServiceId)}
-                              disabled={assigningItem === item.garmentServiceId}
-                              title="Assign to me"
-                              role="button"
-                            >
-                              <UserPlus className="h-3 w-3" />
-                            </Button>
-                          )}
-                          <select
-                            className="text-xs border rounded px-1 py-0.5 bg-white max-w-[120px] sm:max-w-[160px]"
-                            value=""
-                            onChange={async (e) => {
-                              if (e.target.value) {
-                                try {
-                                  const response = await fetch(`/api/garment-service/${item.garmentServiceId}/assign`, {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ seamstress_id: e.target.value }),
-                                  });
-                                  if (response.ok) {
-                                    window.location.reload();
+                      <Tooltip key={item.garmentServiceId}>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center justify-between gap-2 text-xs bg-white p-1.5 rounded border border-amber-200">
+                            <div className="flex-1 min-w-0">
+                              <span className="font-medium truncate block" title={`#${item.orderNumber} - ${item.serviceName}`}>
+                                <button
+                                  onClick={() => handleOpenOrderModal(item.orderId)}
+                                  className="text-primary hover:underline"
+                                  title={`View order #${item.orderNumber}`}
+                                >
+                                  #{item.orderNumber}
+                                </button>
+                                {' - '}{item.serviceName}
+                              </span>
+                              {item.dueDate && (
+                                <span className="text-amber-600 text-[10px]">
+                                  Due: {format(new Date(item.dueDate), 'MMM d')}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {currentStaff && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 sm:h-6 min-h-[44px] sm:min-h-0 px-1.5 text-xs sm:text-[10px] text-amber-700 hover:bg-amber-100"
+                                  onClick={() => handleAssignToMe(item.garmentServiceId)}
+                                  disabled={assigningItem === item.garmentServiceId}
+                                  title="Assign to me"
+                                  role="button"
+                                >
+                                  <UserPlus className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <select
+                                className="text-xs border rounded px-1 py-0.5 bg-white max-w-[120px] sm:max-w-[160px]"
+                                value=""
+                                onChange={async (e) => {
+                                  if (e.target.value) {
+                                    try {
+                                      const response = await fetch(`/api/garment-service/${item.garmentServiceId}/assign`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ seamstress_id: e.target.value }),
+                                      });
+                                      if (response.ok) {
+                                        window.location.reload();
+                                      }
+                                    } catch (err) {
+                                      console.error('Error assigning item:', err);
+                                    }
                                   }
-                                } catch (err) {
-                                  console.error('Error assigning item:', err);
-                                }
-                              }
-                            }}
-                            disabled={assigningItem === item.garmentServiceId}
-                          >
-                            <option value="">Assign...</option>
-                            {staffMembers.map(s => (
-                              <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
+                                }}
+                                disabled={assigningItem === item.garmentServiceId}
+                              >
+                                <option value="">Assign...</option>
+                                {staffMembers.map(s => (
+                                  <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <div className="space-y-1">
+                            <div className="font-semibold">Commande #{item.orderNumber}</div>
+                            <div className="text-xs">{item.serviceName}</div>
+                            {item.estimatedMinutes != null && (
+                              <div className="text-xs text-muted-foreground">
+                                Temps estimé: {item.estimatedMinutes} min
+                              </div>
+                            )}
+                            {item.dueDate && (
+                              <div className="text-xs text-amber-600">
+                                Échéance: {format(new Date(item.dueDate), 'dd MMM yyyy')}
+                              </div>
+                            )}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
                     ))}
                     {sortedUnassignedItems.length > 8 && (
                       <div className="text-xs text-amber-600 pt-1">
@@ -719,6 +741,7 @@ export default function WorkloadPage() {
           />
         )}
       </div>
+      </TooltipProvider>
     </AuthGuard>
   );
 }
