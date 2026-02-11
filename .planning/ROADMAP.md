@@ -609,11 +609,11 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** Nothing
 
-**Status:** Pending
-**Plans:** 0 plans
+**Status:** Planned
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 25 to break down)
+- [ ] 25-01-PLAN.md — Print hiding (header + nav), portal centering, and phone number fix
 
 ---
 
