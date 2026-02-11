@@ -544,11 +544,13 @@ Plans:
 **Blocked by:** Nothing
 **Blocks:** Nothing
 
-**Status:** Pending
-**Plans:** 0 plans
+**Status:** Planned
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 23 to break down)
+- [ ] 23-01-PLAN.md — Fix garment category labels (French) and rush timeline labels
+- [ ] 23-02-PLAN.md — Inline price editing and custom service creation in services step
+- [ ] 23-03-PLAN.md — Tax recalculation on total override and inline calendar date picker
 
 ---
 
