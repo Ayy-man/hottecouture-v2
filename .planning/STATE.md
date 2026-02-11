@@ -52,7 +52,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 22 - Audit Gap Closure | ✅ COMPLETE | 3/3 | Audit |
 | 23 - Intake & Pricing Fixes | ✅ COMPLETE | 3/3 | Feb 11 |
 | 24 - Board & Kanban UI | ✅ COMPLETE | 2/2 | Feb 11 |
-| 25 - Print, Mobile & Portal | Pending | 0/5 | Feb 11 |
+| 25 - Print, Mobile & Portal | In Progress | 1/5 | Feb 11 |
 | 26 - Staff & Infrastructure | Pending | 0/6 | Feb 11 |
 
 ## Execution Waves
@@ -182,21 +182,27 @@ Key concerns from client:
 | Tomorrow as minimum date | 23-03 | Disable dates before tomorrow in calendar picker. Same business logic as previous getMinDate() - orders cannot be due today or in the past. |
 - [Phase 24-02]: Gantt drag handles: w-2 (8px) → w-4 (16px) with transparent default (bg-black/0) and hover darkening
 - [Phase 24-02]: French tooltip labels: Commande #, Temps estimé, Échéance for workload items
+- [Phase 25-01]: Dual print hiding strategy: Tailwind print:hidden classes for explicit component control, global @media print rules as safety net
+- [Phase 25-01]: Print layout overrides: Override body overflow:hidden to enable multi-page print content flow
+- [Phase 25-01]: Env var phone config: Use NEXT_PUBLIC_SHOP_PHONE with 514-667-0082 fallback for deployment-time configuration
+- [Phase 25-01]: Portal centering fix: Remove container class (max-w-7xl) conflict, use mx-auto max-w-lg w-full pattern
 
 ## Next Action
 
 **Wave 8 in progress** — Phases 23-25 parallel execution
 
+**Phase 23 Status:**
+- ✅ Complete: All 3 plans done (inline editing, custom services, tax recalc & calendar)
+
 **Phase 24 Status:**
 - ✅ Plan 01 complete: Kanban card polish and scroll fixes (2 tasks, 2 commits)
 - 🔄 Plan 02 pending: Gantt drag handles and tooltips
 
-**Remaining Wave 8 Plans:**
-- Phase 23: 4 more plans (inline editing, custom services, rush labels, date picker)
-- Phase 24: 1 more plan (Gantt improvements)
-- Phase 25: 5 plans (print layout, mobile nav, portal fixes)
+**Phase 25 Status:**
+- ✅ Plan 01 complete: Print UI chrome hiding and portal fixes (2 tasks, 2 commits)
+- 🔄 Plans 02-05 pending: 4 more plans
 
-**Next:** Continue Phase 24 Plan 02 or pick up Phase 23/25 plans
+**Next:** Continue Phase 25 Plan 02 or Phase 24 Plan 02
 
 ## Wave 4 Summary (Feb 4)
 
@@ -437,11 +443,11 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-02-11
-- **Status:** Phase 23 complete - All intake & pricing fixes done (3/3 plans)
-- **Stopped at:** Completed 23-03-PLAN.md (tax recalculation and calendar picker)
-- **Next:** Continue Wave 8 with Phase 25 (Print, Mobile & Portal Fixes - 0/5 plans)
+- **Last session:** 2026-02-12
+- **Status:** Phase 25 Plan 01 complete - Print UI chrome hiding and portal fixes done (2/2 tasks)
+- **Stopped at:** Completed 25-01-PLAN.md (hide chrome in print, fix portal centering, replace phone)
+- **Next:** Continue Wave 8 with Phase 25 Plan 02 or Phase 24 Plan 02
 - **Resume file:** None
 
 ---
-*State updated: 2026-02-11*
+*State updated: 2026-02-12*
