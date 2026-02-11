@@ -22,6 +22,9 @@ import {
 import { MuralBackground } from '@/components/ui/mural-background';
 import Link from 'next/link';
 
+/** Shop contact phone number — update when real number is provided */
+const SHOP_PHONE = process.env.NEXT_PUBLIC_SHOP_PHONE || '514-667-0082';
+
 interface OrderResult {
   order_number: number;
   status: string;
@@ -167,7 +170,7 @@ export default function CustomerPortalPage() {
     <MuralBackground useMuralBackground={true} opacity={0.12}>
       <div className='h-full flex flex-col overflow-hidden'>
         <div className='flex-1 overflow-y-auto'>
-          <div className='container mx-auto px-4 py-8 max-w-lg'>
+          <div className='mx-auto px-4 py-8 max-w-lg w-full'>
           {/* Header */}
           <div className='text-center mb-8 animate-fade-in-up'>
             <div className='flex items-center justify-center mb-4'>
@@ -343,7 +346,7 @@ export default function CustomerPortalPage() {
         </Card>
 
           <div className='text-center mt-6 text-muted-foreground text-sm animate-fade-in-up-delay-2'>
-            <p>Des questions? Appelez-nous au <a href='tel:+15145551234' className='underline text-primary-600 hover:text-primary-700'>514-555-1234</a></p>
+            <p>Des questions? Appelez-nous au <a href={`tel:${SHOP_PHONE.replace(/-/g, '')}`} className='underline text-primary-600 hover:text-primary-700'>{SHOP_PHONE}</a></p>
           </div>
           </div>
         </div>
