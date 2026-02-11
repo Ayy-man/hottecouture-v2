@@ -46,7 +46,14 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/logo.jpg',
+    apple: '/logo-round.jpg',
+  },
+  manifest: '/manifest.json',
+  themeColor: '#6366f1',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Hotte Couture',
   },
   formatDetection: {
     email: false,
