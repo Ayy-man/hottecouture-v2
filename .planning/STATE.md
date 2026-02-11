@@ -172,6 +172,8 @@ Key concerns from client:
 | Select accepts undefined value | 22-build | Select component value prop typed as `string \| undefined` for exactOptionalPropertyTypes compatibility. |
 | Overflow-hidden for rounded cards | 24-01 | RushOrderCard uses overflow-hidden to create clipping context for both border-radius enforcement and rush badge containment. Single property fixes both visual issues. |
 | Sticky header scroll pattern | 24-01 | Board page uses flex-col.overflow-y-auto with header.sticky instead of sibling scroll containers. Enables scrolling from anywhere on page including over header/filters. |
+- [Phase 24-02]: Gantt drag handles: w-2 (8px) → w-4 (16px) with transparent default (bg-black/0) and hover darkening
+- [Phase 24-02]: French tooltip labels: Commande #, Temps estimé, Échéance for workload items
 
 ## Next Action
 
@@ -427,9 +429,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-02-11
+- **Last session:** 2026-02-11T18:22:29.302Z
 - **Status:** Phase 24 Plan 01 complete - Kanban card polish and scroll fixes
-- **Stopped at:** Completed 24-01-PLAN.md (overflow-hidden for cards, sticky header for scroll)
+- **Stopped at:** Completed 24-02-PLAN.md
 - **Next:** Continue Wave 8 parallel execution (Phases 23-25)
 - **Resume file:** None
 
