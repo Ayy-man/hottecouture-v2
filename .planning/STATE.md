@@ -1,19 +1,19 @@
 # Project State
 
 **Project:** Hotte Couture Final Modifications
-**Last Updated:** 2026-02-05
+**Last Updated:** 2026-02-11
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** All 22 phases complete. Deployed to Vercel.
+**Current focus:** Phases 1-22 complete. 4 new phases (23-26) added from Feb 11 call. Wave 8-9 pending.
 
 ## Current Status
 
-- **Milestone:** Final Modifications (17 MODs + 12 UAT + 7 audit gaps)
-- **Phase:** 22 of 22 - Wave 7 Audit Gap Closure (3/3 plans) ✅ COMPLETE
+- **Milestone:** Final Modifications (17 MODs + 12 UAT + 7 audit + 22 Feb 11 call)
+- **Phase:** 22 of 26 complete - Phases 23-26 added from Feb 11 call (not yet planned)
 - **Original Deadline:** Thursday, January 23, 2026 (PASSED)
 - **Core Completion:** January 28, 2026 (Phases 1-11)
 - **Wave 4 Completion:** February 4, 2026 (Phases 12-14)
@@ -49,6 +49,10 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 20 - Stripe Cleanup | ✅ COMPLETE | 1/1 | Feb 4 |
 | 21 - Responsive Verification | ✅ COMPLETE | 4/4 | Feb 4 |
 | 22 - Audit Gap Closure | ✅ COMPLETE | 3/3 | Audit |
+| 23 - Intake & Pricing Fixes | 🔄 IN PROGRESS | 2/6 | Feb 11 |
+| 24 - Board & Kanban UI | 🔄 IN PROGRESS | 1/2 | Feb 11 |
+| 25 - Print, Mobile & Portal | Pending | 0/5 | Feb 11 |
+| 26 - Staff & Infrastructure | Pending | 0/6 | Feb 11 |
 
 ## Execution Waves
 
@@ -77,6 +81,14 @@ WAVE 6 (Final Verification) ✅ DONE
 
 WAVE 7 (Milestone Audit Gaps) ✅ DONE
 +-- Phase 22: Audit Gap Closure (4 bugs + 3 features) ✅ DONE
+
+WAVE 8 (Feb 11 Call - Parallel) ⏳ PENDING
+|-- Phase 23: Intake & Pricing Fixes
+|-- Phase 24: Board & Kanban UI Fixes
++-- Phase 25: Print, Mobile & Portal Fixes
+
+WAVE 9 (Infrastructure) ⏳ PENDING
++-- Phase 26: Staff Management & Infrastructure
 ```
 
 ## Feb 3 UAT Context
@@ -158,15 +170,23 @@ Key concerns from client:
 | Hidden chatbot not removed | 22-01 | GlobalChatWrapper wrapped in `hidden` div rather than removed. Import and component preserved for potential future re-enabling. |
 | Lightweight dialog component | 22-build | Created dialog.tsx without @radix-ui/react-dialog dependency. Uses native HTML + portal pattern matching shadcn/ui API. Only used by team-management-modal. |
 | Select accepts undefined value | 22-build | Select component value prop typed as `string \| undefined` for exactOptionalPropertyTypes compatibility. |
+| Overflow-hidden for rounded cards | 24-01 | RushOrderCard uses overflow-hidden to create clipping context for both border-radius enforcement and rush badge containment. Single property fixes both visual issues. |
+| Sticky header scroll pattern | 24-01 | Board page uses flex-col.overflow-y-auto with header.sticky instead of sibling scroll containers. Enables scrolling from anywhere on page including over header/filters. |
 
 ## Next Action
 
-**All 22 phases complete. Milestone finished.**
+**Wave 8 in progress** — Phases 23-25 parallel execution
 
-UAT testing prompt available at `.planning/UAT-PROMPT.md` with:
-- Staff PINs (1235/1236/1237), navigation paths, step-by-step test scripts
-- 12-item checklist covering all Phase 22 changes
-- Expected results for each test scenario
+**Phase 24 Status:**
+- ✅ Plan 01 complete: Kanban card polish and scroll fixes (2 tasks, 2 commits)
+- 🔄 Plan 02 pending: Gantt drag handles and tooltips
+
+**Remaining Wave 8 Plans:**
+- Phase 23: 4 more plans (inline editing, custom services, rush labels, date picker)
+- Phase 24: 1 more plan (Gantt improvements)
+- Phase 25: 5 plans (print layout, mobile nav, portal fixes)
+
+**Next:** Continue Phase 24 Plan 02 or pick up Phase 23/25 plans
 
 ## Wave 4 Summary (Feb 4)
 
@@ -398,13 +418,20 @@ Fixed 4 cascading build failures after adding all source files to git:
 |---|-------------|------|--------|-----------|
 | 001 | Reliable mobile kanban (tap-to-move) | 2026-02-08 | 5959112 | [001-reliable-mobile-kanban](./quick/001-reliable-mobile-kanban/) |
 
+### Roadmap Evolution
+
+- Phase 23 added: Intake & Pricing Fixes (garment categories, inline editing, custom services, rush labels, tax recalc, date picker)
+- Phase 24 added: Board & Kanban UI Fixes (rounded corners, rush badge, scroll, Gantt drag, tooltips)
+- Phase 25 added: Print, Mobile & Portal Fixes (print layout, nav in print, bottom nav, portal centering, phone)
+- Phase 26 added: Staff Management & Infrastructure (self-serve staff, SMS A2P, Stripe, domain, PWA, chatbot)
+
 ## Session Continuity
 
-- **Last session:** 2026-02-08
-- **Status:** 22/22 phases complete + quick tasks - Deployed to Vercel
-- **Stopped at:** Completed quick task 001: reliable mobile kanban
-- **Next:** UAT testing on live deployment (see .planning/UAT-PROMPT.md)
+- **Last session:** 2026-02-11
+- **Status:** Phase 24 Plan 01 complete - Kanban card polish and scroll fixes
+- **Stopped at:** Completed 24-01-PLAN.md (overflow-hidden for cards, sticky header for scroll)
+- **Next:** Continue Wave 8 parallel execution (Phases 23-25)
 - **Resume file:** None
 
 ---
-*State updated: 2026-02-08*
+*State updated: 2026-02-11*
