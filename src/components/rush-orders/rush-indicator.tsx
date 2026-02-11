@@ -154,10 +154,12 @@ export function RushOrderTimeline({
       )
     : estimatedDays;
 
+  const daysDifference = estimatedDays - rushDays;
+
   return (
     <div className={`space-y-2 ${className}`}>
       <div className='flex items-center justify-between'>
-        <span className='text-sm font-medium text-muted-foreground'>Timeline:</span>
+        <span className='text-sm font-medium text-muted-foreground'>Délai:</span>
         <div className='flex items-center space-x-2'>
           {isRush && (
             <RushIndicator
@@ -169,15 +171,20 @@ export function RushOrderTimeline({
           <span
             className={`font-bold ${isRush ? 'text-red-600' : 'text-foreground'}`}
           >
-            {rushDays} day{rushDays !== 1 ? 's' : ''}
+            {rushDays} jour{rushDays !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
 
-      {isRush && (
+      {isRush && daysDifference >= 1 && (
         <div className='text-xs text-red-600 bg-red-100 rounded px-2 py-1'>
-          ⚡ {estimatedDays - rushDays} day
-          {estimatedDays - rushDays !== 1 ? 's' : ''} faster than standard
+          ⚡ {daysDifference} jour{daysDifference !== 1 ? 's' : ''} plus rapide
+        </div>
+      )}
+
+      {isRush && daysDifference === 0 && (
+        <div className='text-xs text-red-600 bg-red-100 rounded px-2 py-1'>
+          ⚡ Service express
         </div>
       )}
     </div>
