@@ -54,7 +54,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 23 - Intake & Pricing Fixes | ✅ COMPLETE | 3/3 | Feb 11 |
 | 24 - Board & Kanban UI | ✅ COMPLETE | 2/2 | Feb 11 |
 | 25 - Print, Mobile & Portal | ✅ COMPLETE | 1/1 | Feb 11 |
-| 26 - Staff & Infrastructure | Pending | 0/6 | Feb 11 |
+| 26 - Staff & Infrastructure | In Progress | 1/2 | Feb 11 |
 
 ## Execution Waves
 
@@ -187,6 +187,8 @@ Key concerns from client:
 - [Phase 25-01]: Print layout overrides: Override body overflow:hidden to enable multi-page print content flow
 - [Phase 25-01]: Env var phone config: Use NEXT_PUBLIC_SHOP_PHONE with 514-667-0082 fallback for deployment-time configuration
 - [Phase 25-01]: Portal centering fix: Remove container class (max-w-7xl) conflict, use mx-auto max-w-lg w-full pattern
+- [Phase 26-01]: API route re-exports instead of duplicating handler logic
+- [Phase 26-01]: Chatbot component files retained for potential re-enablement
 
 ## Next Action
 
@@ -439,9 +441,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-02-12
+- **Last session:** 2026-02-11T19:50:56.923Z
 - **Status:** 25/26 phases complete — Wave 8 done, Wave 9 (Phase 26) remaining
-- **Stopped at:** Phase 25 verified complete (print hiding + portal fixes)
+- **Stopped at:** Completed 26-01-PLAN.md
 - **Next:** Plan and execute Phase 26 (Staff Management & Infrastructure)
 - **Resume file:** None
 
