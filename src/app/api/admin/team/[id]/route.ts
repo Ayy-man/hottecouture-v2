@@ -9,7 +9,7 @@ export async function PATCH(
   try {
     const { id } = params;
     const body = await request.json();
-    const { is_active, name, email, phone, role, color, weekly_capacity_hours } = body;
+    const { is_active, name, email, phone, pin, role, color, weekly_capacity_hours } = body;
 
     // Validate id
     if (!id || typeof id !== 'string') {
@@ -39,6 +39,15 @@ export async function PATCH(
 
     if (email !== undefined) updates.email = email ? email.trim() : null;
     if (phone !== undefined) updates.phone = phone ? phone.trim() : null;
+    if (pin !== undefined && pin !== '') {
+      if (!/^\d{4}$/.test(pin)) {
+        return NextResponse.json(
+          { success: false, error: 'PIN must be exactly 4 digits' },
+          { status: 400 }
+        );
+      }
+      updates.pin_hash = pin;
+    }
     if (role !== undefined) updates.role = role;
     if (color !== undefined) updates.color = color;
     if (weekly_capacity_hours !== undefined) {

@@ -272,6 +272,12 @@ const navigationItems: NavigationItem[] = [
     show: true,
   },
   {
+    label: 'Équipe',
+    href: '/admin/team',
+    icon: 'users',
+    show: true,
+  },
+  {
     label: 'Reports',
     href: '/reports',
     icon: 'chart-bar',

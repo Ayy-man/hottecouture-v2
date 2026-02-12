@@ -34,6 +34,7 @@ import {
   Phone,
   Clock,
   Palette,
+  Lock,
 } from 'lucide-react';
 
 interface StaffMember {
@@ -71,6 +72,7 @@ const DEFAULT_FORM = {
   name: '',
   email: '',
   phone: '',
+  pin: '',
   role: 'seamstress',
   color: '#6366f1',
   weekly_capacity_hours: 40,
@@ -136,6 +138,7 @@ export default function TeamManagementPage() {
           name: formData.name.trim(),
           email: formData.email?.trim() || undefined,
           phone: formData.phone?.trim() || undefined,
+          pin: formData.pin?.trim() || undefined,
           role: formData.role,
           color: formData.color,
           weekly_capacity_hours: formData.weekly_capacity_hours,
@@ -175,6 +178,7 @@ export default function TeamManagementPage() {
           name: formData.name.trim(),
           email: formData.email?.trim() || null,
           phone: formData.phone?.trim() || null,
+          pin: formData.pin?.trim() || undefined,
           role: formData.role,
           color: formData.color,
           weekly_capacity_hours: formData.weekly_capacity_hours,
@@ -264,6 +268,7 @@ export default function TeamManagementPage() {
       name: member.name,
       email: member.email || '',
       phone: member.phone || '',
+      pin: '',
       role: member.role || 'seamstress',
       color: member.color || '#6366f1',
       weekly_capacity_hours: member.weekly_capacity_hours || 40,
@@ -341,6 +346,25 @@ export default function TeamManagementPage() {
             value={formData.phone}
             onChange={e => setFormData({ ...formData, phone: e.target.value })}
             placeholder="514-555-1234"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="pin" className="flex items-center gap-1">
+            <Lock className="h-3 w-3" /> NIP (4 chiffres) {!isEdit && '*'}
+          </Label>
+          <Input
+            id="pin"
+            type="text"
+            inputMode="numeric"
+            pattern="\d{4}"
+            maxLength={4}
+            value={formData.pin}
+            onChange={e => {
+              const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+              setFormData({ ...formData, pin: val });
+            }}
+            placeholder={isEdit ? 'Laisser vide pour ne pas changer' : '1234'}
+            required={!isEdit}
           />
         </div>
         <div className="space-y-2">

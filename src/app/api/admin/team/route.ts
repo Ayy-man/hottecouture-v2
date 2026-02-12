@@ -33,7 +33,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, role, color, weekly_capacity_hours } = body;
+    const { name, email, phone, pin, role, color, weekly_capacity_hours } = body;
 
     // Validate name
     if (!name || typeof name !== 'string') {
@@ -75,6 +75,15 @@ export async function POST(request: NextRequest) {
 
     if (email) insertData.email = email.trim();
     if (phone) insertData.phone = phone.trim();
+    if (pin) {
+      if (!/^\d{4}$/.test(pin)) {
+        return NextResponse.json(
+          { success: false, error: 'PIN must be exactly 4 digits' },
+          { status: 400 }
+        );
+      }
+      insertData.pin_hash = pin;
+    }
     if (role) insertData.role = role;
     if (color) insertData.color = color;
     if (weekly_capacity_hours !== undefined) {
