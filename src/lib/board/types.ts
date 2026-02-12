@@ -31,6 +31,7 @@ export interface BoardOrder {
       quantity: number;
       assigned_seamstress_id?: string | null;
       assigned_seamstress_name?: string | null;
+      assigned_seamstress_color?: string | null;
     }>;
   }>;
   tasks: Array<{
