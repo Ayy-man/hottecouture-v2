@@ -9,7 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, ChevronDown } from 'lucide-react';
+import { User, LogOut, ChevronDown, Users } from 'lucide-react';
+import Link from 'next/link';
 
 export function StaffIndicator() {
   const { currentStaff, isAuthenticated, clockOut } = useStaffSession();
@@ -45,6 +46,17 @@ export function StaffIndicator() {
             })}
           </div>
         </div>
+        {currentStaff.staffRole === 'admin' && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/admin/team">
+                <Users className="w-4 h-4 mr-2" />
+                Gérer l&apos;équipe
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleClockOut} className="text-red-600 cursor-pointer">
           <LogOut className="w-4 h-4 mr-2" />

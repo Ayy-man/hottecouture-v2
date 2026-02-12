@@ -7,6 +7,7 @@ const STORAGE_KEY = 'hc_staff_session';
 export interface StaffSession {
   staffId: string;
   staffName: string;
+  staffRole: string;
   clockedInAt: string;
 }
 
@@ -44,6 +45,7 @@ export function useCurrentStaff() {
         const newSession: StaffSession = {
           staffId,
           staffName,
+          staffRole: result.staff?.role || 'seamstress',
           clockedInAt: new Date().toISOString(),
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSession));
@@ -72,6 +74,7 @@ export function useCurrentStaff() {
         const newSession: StaffSession = {
           staffId: result.staff.id,
           staffName: result.staff.name,
+          staffRole: result.staff.role || 'seamstress',
           clockedInAt: new Date().toISOString(),
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSession));
