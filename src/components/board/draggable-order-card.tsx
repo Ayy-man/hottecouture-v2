@@ -30,12 +30,15 @@ export function DraggableOrderCard({
   const isSelected = selectedOrderForMove === order.id;
 
   // Extract item-level assignments from garment services
-  const { uniqueAssignees, assigneeGroups, hasUnassigned } = useMemo(() => {
+  const { uniqueAssignees, assigneeGroups, assigneeColors, hasUnassigned, unassignedItems } = useMemo(() => {
     const itemAssignments = (order.garments || [])
       .flatMap((g: any) =>
         (g.services || []).map((s: any) => ({
+          garmentType: g.type || 'Garment',
+          serviceName: s.service?.name || s.custom_service_name || 'Service',
           assigneeName: s.assigned_seamstress_name,
           assigneeId: s.assigned_seamstress_id,
+          assigneeColor: s.assigned_seamstress_color,
         }))
       );
 
@@ -52,13 +55,24 @@ export function DraggableOrderCard({
         {} as Record<string, any[]>
       );
 
+    // Map assignee name -> color
+    const colorMap: Record<string, string> = {};
+    itemAssignments.forEach((item: any) => {
+      if (item.assigneeName && item.assigneeColor) {
+        colorMap[item.assigneeName] = item.assigneeColor;
+      }
+    });
+
     const unique = Object.keys(groups);
-    const unassigned = itemAssignments.some((item: any) => !item.assigneeId);
+    const unassignedList = itemAssignments.filter((item: any) => !item.assigneeId);
+    const unassigned = unassignedList.length > 0;
 
     return {
       uniqueAssignees: unique,
       assigneeGroups: groups,
+      assigneeColors: colorMap,
       hasUnassigned: unassigned,
+      unassignedItems: unassignedList,
     };
   }, [order.garments]);
 
@@ -120,6 +134,9 @@ export function DraggableOrderCard({
               <h4 className='font-semibold text-xs sm:text-sm ipad:text-xs lg:text-base'>
                 #{order.order_number}
               </h4>
+              <span className='text-xs sm:text-sm text-muted-foreground font-medium truncate max-w-[120px]'>
+                {order.client_name || 'Unknown Client'}
+              </span>
               {order.type && (
                 <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${
                   order.type === 'alteration'
@@ -137,10 +154,6 @@ export function DraggableOrderCard({
               )}
             </div>
           </div>
-
-          <p className='text-xs ipad:text-xs lg:text-sm text-muted-foreground mb-0.5 ipad:mb-1 lg:mb-1'>
-            {order.client_name || 'Unknown Client'}
-          </p>
 
           <p className='text-xs text-muted-foreground mb-0.5 ipad:mb-1 lg:mb-1'>
             {order.garments?.map((g: any) => g.type).join(', ') ||
@@ -163,8 +176,15 @@ export function DraggableOrderCard({
           {hasItemLevelAssignees && (
             <div className='mb-1 text-xs'>
               {uniqueAssignees.map(name => (
-                <div key={name} className='flex items-center gap-1'>
-                  <span className='w-1.5 h-1.5 rounded-full bg-primary' />
+                <div
+                  key={name}
+                  className='flex items-center gap-1'
+                  title={assigneeGroups[name]?.map((item: any) => `${item.garmentType} — ${item.serviceName}`).join('\n')}
+                >
+                  <span
+                    className='w-1.5 h-1.5 rounded-full flex-shrink-0'
+                    style={{ backgroundColor: assigneeColors[name] || '#6366f1' }}
+                  />
                   <span className='font-medium'>{name}</span>
                   <span className='text-muted-foreground'>
                     ({assigneeGroups[name]?.length || 0})
@@ -172,9 +192,12 @@ export function DraggableOrderCard({
                 </div>
               ))}
               {hasUnassigned && (
-                <div className='flex items-center gap-1 text-amber-600'>
+                <div
+                  className='flex items-center gap-1 text-amber-600'
+                  title={unassignedItems.map((item: any) => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+                >
                   <span className='w-1.5 h-1.5 rounded-full bg-amber-400' />
-                  <span>Unassigned items</span>
+                  <span>Unassigned ({unassignedItems.length})</span>
                 </div>
               )}
             </div>
@@ -182,7 +205,12 @@ export function DraggableOrderCard({
 
           {/* Show warning if completely unassigned */}
           {!hasItemLevelAssignees && (
-            <p className='text-xs text-amber-600 mb-1'>Unassigned</p>
+            <p
+              className='text-xs text-amber-600 mb-1'
+              title={unassignedItems.map((item: any) => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+            >
+              Unassigned ({unassignedItems.length})
+            </p>
           )}
 
           <div className='mt-1.5 ipad:mt-1 lg:mt-2 pt-1.5 ipad:pt-1 lg:pt-2 border-t border-border'>
@@ -213,6 +241,9 @@ export function DraggableOrderCard({
                 </div>
               )}
               <h4 className='font-semibold text-xs'>#{order.order_number}</h4>
+              <span className='text-xs text-muted-foreground font-medium truncate max-w-[80px]'>
+                {order.client_name || 'Unknown Client'}
+              </span>
               {order.type && (
                 <span className={`px-1 py-0.5 text-[10px] font-medium rounded-full ${
                   order.type === 'alteration'
@@ -227,10 +258,6 @@ export function DraggableOrderCard({
               )}
             </div>
           </div>
-
-          <p className='text-xs text-muted-foreground mb-1 truncate'>
-            {order.client_name || 'Unknown Client'}
-          </p>
 
           <p className='text-xs text-muted-foreground mb-1 truncate'>
             {order.garments?.map((g: any) => g.type).join(', ') ||
@@ -257,8 +284,15 @@ export function DraggableOrderCard({
           {hasItemLevelAssignees && (
             <div className='mb-1 text-[10px]'>
               {uniqueAssignees.slice(0, 2).map(name => (
-                <div key={name} className='flex items-center gap-1'>
-                  <span className='w-1 h-1 rounded-full bg-primary' />
+                <div
+                  key={name}
+                  className='flex items-center gap-1'
+                  title={assigneeGroups[name]?.map((item: any) => `${item.garmentType} — ${item.serviceName}`).join('\n')}
+                >
+                  <span
+                    className='w-1 h-1 rounded-full flex-shrink-0'
+                    style={{ backgroundColor: assigneeColors[name] || '#6366f1' }}
+                  />
                   <span className='font-medium truncate'>{name}</span>
                   <span className='text-muted-foreground'>
                     ({assigneeGroups[name]?.length || 0})
@@ -269,16 +303,24 @@ export function DraggableOrderCard({
                 <span className='text-muted-foreground'>+{uniqueAssignees.length - 2} more</span>
               )}
               {hasUnassigned && (
-                <div className='flex items-center gap-1 text-amber-600'>
+                <div
+                  className='flex items-center gap-1 text-amber-600'
+                  title={unassignedItems.map((item: any) => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+                >
                   <span className='w-1 h-1 rounded-full bg-amber-400' />
-                  <span>Unassigned</span>
+                  <span>Unassigned ({unassignedItems.length})</span>
                 </div>
               )}
             </div>
           )}
 
           {!hasItemLevelAssignees && (
-            <p className='text-[10px] text-amber-600 mb-1'>Unassigned</p>
+            <p
+              className='text-[10px] text-amber-600 mb-1'
+              title={unassignedItems.map((item: any) => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+            >
+              Unassigned ({unassignedItems.length})
+            </p>
           )}
 
           <div className='mt-1 pt-1 border-t border-border'>

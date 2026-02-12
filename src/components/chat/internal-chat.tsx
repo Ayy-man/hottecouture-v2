@@ -130,14 +130,14 @@ export function InternalChat() {
               <MessageCircle className="h-5 w-5" />
               <span className="font-semibold">Assistant Interne</span>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
+              type="button"
               onClick={() => setIsOpen(false)}
-              className="h-8 w-8 text-white hover:bg-white/20"
+              className="h-10 w-10 flex items-center justify-center rounded-md text-white hover:bg-white/20 transition-colors"
+              aria-label="Close chat"
             >
-              <X className="h-4 w-4" />
-            </Button>
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-muted/50">

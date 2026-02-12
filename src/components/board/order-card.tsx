@@ -48,7 +48,7 @@ export function OrderCard({
   const garmentTypes = order.garments.map(g => g.type).join(', ');
 
   // Extract item-level assignments from garment services
-  const { uniqueAssignees, assigneeGroups, hasUnassigned } = useMemo(() => {
+  const { uniqueAssignees, assigneeGroups, assigneeColors, hasUnassigned, unassignedItems } = useMemo(() => {
     const itemAssignments = order.garments
       .flatMap(g =>
         (g.services || []).map(s => ({
@@ -56,6 +56,7 @@ export function OrderCard({
           serviceName: s.service?.name || s.custom_service_name || 'Service',
           assigneeName: s.assigned_seamstress_name,
           assigneeId: s.assigned_seamstress_id,
+          assigneeColor: s.assigned_seamstress_color,
         }))
       );
 
@@ -72,13 +73,24 @@ export function OrderCard({
         {} as Record<string, typeof itemAssignments>
       );
 
+    // Map assignee name -> color
+    const colorMap: Record<string, string> = {};
+    itemAssignments.forEach(item => {
+      if (item.assigneeName && item.assigneeColor) {
+        colorMap[item.assigneeName] = item.assigneeColor;
+      }
+    });
+
     const unique = Object.keys(groups);
-    const unassigned = itemAssignments.some(item => !item.assigneeId);
+    const unassignedList = itemAssignments.filter(item => !item.assigneeId);
+    const unassigned = unassignedList.length > 0;
 
     return {
       uniqueAssignees: unique,
       assigneeGroups: groups,
+      assigneeColors: colorMap,
       hasUnassigned: unassigned,
+      unassignedItems: unassignedList,
     };
   }, [order.garments]);
 
@@ -117,6 +129,9 @@ export function OrderCard({
         <div className='flex items-center justify-between mb-3'>
           <div className='flex items-center space-x-2'>
             <h4 className='font-semibold text-lg'>#{order.order_number}</h4>
+            <span className='text-sm text-muted-foreground font-medium truncate max-w-[150px]'>
+              {order.client_name || 'Unknown Client'}
+            </span>
             {order.type && (
               <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                 order.type === 'alteration'
@@ -137,13 +152,6 @@ export function OrderCard({
               Rack: {order.rack_position}
             </span>
           )}
-        </div>
-
-        {/* Client */}
-        <div className='mb-2'>
-          <p className='text-sm font-medium text-foreground'>
-            {order.client_name || 'Unknown Client'}
-          </p>
         </div>
 
         {/* Garments */}
@@ -195,8 +203,15 @@ export function OrderCard({
             <p className='text-sm font-medium text-muted-foreground mb-1'>Assigned:</p>
             <div className='space-y-1'>
               {uniqueAssignees.map(name => (
-                <div key={name} className='flex items-center text-sm'>
-                  <span className='w-2 h-2 rounded-full bg-primary mr-2' />
+                <div
+                  key={name}
+                  className='flex items-center text-sm'
+                  title={assigneeGroups[name]?.map(item => `${item.garmentType} — ${item.serviceName}`).join('\n')}
+                >
+                  <span
+                    className='w-2 h-2 rounded-full mr-2 flex-shrink-0'
+                    style={{ backgroundColor: assigneeColors[name] || '#6366f1' }}
+                  />
                   <span className='font-medium'>{name}</span>
                   <span className='text-muted-foreground ml-1'>
                     ({assigneeGroups[name]?.length || 0} item
@@ -205,9 +220,12 @@ export function OrderCard({
                 </div>
               ))}
               {hasUnassigned && (
-                <div className='flex items-center text-sm text-amber-600'>
+                <div
+                  className='flex items-center text-sm text-amber-600'
+                  title={unassignedItems.map(item => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+                >
                   <span className='w-2 h-2 rounded-full bg-amber-400 mr-2' />
-                  <span>Some items unassigned</span>
+                  <span>Unassigned ({unassignedItems.length})</span>
                 </div>
               )}
             </div>

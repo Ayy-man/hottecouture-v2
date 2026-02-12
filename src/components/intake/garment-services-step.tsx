@@ -774,13 +774,9 @@ export function GarmentServicesStep({
                               className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                             >
                               <option value='other'>Autre</option>
-                              <option value='home'>Maison</option>
+                              <option value='alteration'>Retouches</option>
+                              <option value='custom'>Sur mesure</option>
                               <option value='outdoor'>Exterieur</option>
-                              <option value='womens'>Femmes</option>
-                              <option value='mens'>Hommes</option>
-                              <option value='outerwear'>Manteaux</option>
-                              <option value='formal'>Formel</option>
-                              <option value='activewear'>Sport</option>
                             </select>
                             <div className='flex gap-2'>
                               <button

@@ -40,15 +40,34 @@ export async function GET() {
         return a.name.localeCompare(b.name);
       }) || [];
 
-    // Group by category
+    // Map detailed categories to simplified display groups
+    // Clothing categories (womens, mens, outerwear, formal, activewear) → "alteration"
+    // home → "custom" (sur mesure / custom design: curtains, pillows, etc.)
+    // outdoor stays as outdoor
+    // other stays as other
+    const categoryMapping: Record<string, string> = {
+      womens: 'alteration',
+      mens: 'alteration',
+      outerwear: 'alteration',
+      formal: 'alteration',
+      activewear: 'alteration',
+      home: 'custom',
+      outdoor: 'outdoor',
+      other: 'other',
+      alteration: 'alteration',
+      custom: 'custom',
+    };
+
+    // Group by simplified category
     const groupedTypes: Record<string, any[]> = {};
     if (sortedGarmentTypes) {
       sortedGarmentTypes.forEach((type: any) => {
         if (type.category) {
-          if (!groupedTypes[type.category]) {
-            groupedTypes[type.category] = [];
+          const displayCategory = categoryMapping[type.category] || type.category;
+          if (!groupedTypes[displayCategory]) {
+            groupedTypes[displayCategory] = [];
           }
-          groupedTypes[type.category]!.push(type);
+          groupedTypes[displayCategory]!.push(type);
         }
       });
     }
@@ -59,15 +78,10 @@ export async function GET() {
         garmentTypes: sortedGarmentTypes,
         groupedTypes,
         categories: {
-          womens: 'Vêtements femmes',
-          mens: 'Vêtements hommes',
-          outerwear: 'Manteaux',
-          formal: 'Tenue de soirée',
-          activewear: 'Vêtements de sport',
-          home: 'Sur mesure',
+          alteration: 'Retouches',
+          custom: 'Sur mesure',
           outdoor: 'Extérieur',
           other: 'Autre',
-          alteration: 'Retouches',
         },
       },
       {
