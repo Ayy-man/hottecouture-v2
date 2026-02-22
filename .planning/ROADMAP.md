@@ -660,6 +660,15 @@ Plans:
 - [ ] 27-02-PLAN.md — Order detail modal: hide pricing, payments, client contact for seamstresses
 - [ ] 27-03-PLAN.md — Calendar/workload filtering + redirect guards on restricted pages
 
+### Phase 28: Feb 10 call UI polish and feature gaps
+
+**Goal:** [To be planned]
+**Depends on:** Phase 27
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 28 to break down)
+
 ---
 
 ## Suggested Schedule
