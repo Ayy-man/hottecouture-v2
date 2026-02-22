@@ -53,12 +53,12 @@ export default function HomePage() {
           )}
 
           {/* Action Cards */}
-          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 items-start justify-center pt-4'>
+          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-6 flex-1 items-center content-center pt-4'>
             {/* Create New Order Card */}
             <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-1 hover-lift'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <CardHeader className='pb-2'>
-                <div className='w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+              <CardHeader className='pb-3'>
+                <div className='w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
                     className='w-6 h-6 text-white'
                     fill='none'
@@ -73,18 +73,18 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <CardTitle className='text-lg font-bold text-text mb-1'>
+                <CardTitle className='text-xl font-bold text-text mb-2'>
                   Create New Order
                 </CardTitle>
-                <CardDescription className='text-text-secondary text-sm leading-relaxed'>
+                <CardDescription className='text-text-secondary text-sm leading-relaxed min-h-[40px]'>
                   Streamlined client onboarding and order creation
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
-                <a href='/intake' className='flex justify-center cursor-pointer'>
+                <a href='/intake' className='block cursor-pointer'>
                   <Button
                     {...createHapticButtonProps('medium')}
-                    className='w-auto px-6 h-10 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press btn-bounce relative overflow-hidden'
+                    className='w-full h-10 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press btn-bounce relative overflow-hidden'
                   >
                     Start New Order
                   </Button>
@@ -95,8 +95,8 @@ export default function HomePage() {
             {/* Kanban Board Card */}
             <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-2 hover-lift'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <CardHeader className='pb-2'>
-                <div className='w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+              <CardHeader className='pb-3'>
+                <div className='w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
                     className='w-6 h-6 text-white'
                     fill='none'
@@ -111,10 +111,10 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <CardTitle className='text-lg font-bold text-text mb-1'>
+                <CardTitle className='text-xl font-bold text-text mb-2'>
                   Kanban Board
                 </CardTitle>
-                <CardDescription className='text-text-secondary text-sm leading-relaxed'>
+                <CardDescription className='text-text-secondary text-sm leading-relaxed min-h-[40px]'>
                   Visual workflow management with drag-and-drop
                 </CardDescription>
               </CardHeader>
@@ -133,8 +133,8 @@ export default function HomePage() {
             {/* Order Status Card */}
             <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-3 hover-lift'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <CardHeader className='pb-2'>
-                <div className='w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+              <CardHeader className='pb-3'>
+                <div className='w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
                     className='w-6 h-6 text-white'
                     fill='none'
@@ -149,10 +149,10 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <CardTitle className='text-lg font-bold text-text mb-1'>
+                <CardTitle className='text-xl font-bold text-text mb-2'>
                   Order Status
                 </CardTitle>
-                <CardDescription className='text-text-secondary text-sm leading-relaxed'>
+                <CardDescription className='text-text-secondary text-sm leading-relaxed min-h-[40px]'>
                   Check order status and track progress
                 </CardDescription>
               </CardHeader>
@@ -171,8 +171,8 @@ export default function HomePage() {
             {/* Customer Portal Card */}
             <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-3 hover-lift'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <CardHeader className='pb-2'>
-                <div className='w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+              <CardHeader className='pb-3'>
+                <div className='w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
                     className='w-6 h-6 text-white'
                     fill='none'
@@ -187,10 +187,10 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <CardTitle className='text-lg font-bold text-text mb-1'>
+                <CardTitle className='text-xl font-bold text-text mb-2'>
                   Portail Client
                 </CardTitle>
-                <CardDescription className='text-text-secondary text-sm leading-relaxed'>
+                <CardDescription className='text-text-secondary text-sm leading-relaxed min-h-[40px]'>
                   Tester le portail public de suivi des commandes
                 </CardDescription>
               </CardHeader>

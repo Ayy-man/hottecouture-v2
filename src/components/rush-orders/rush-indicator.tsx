@@ -76,25 +76,20 @@ export function RushRibbon({
   return (
     <div
       className={`
-        absolute top-0 right-0
+        absolute top-2 right-2
         ${colorClass}
         text-white
         font-bold
         text-xs
-        px-2 py-1
-        transform rotate-45
-        translate-x-2 -translate-y-1
-        shadow-lg
+        px-2.5 py-1
+        rounded-full
+        shadow-md
         z-10
         ${animationClass}
         ${className}
       `}
-      style={{
-        width: '60px',
-        textAlign: 'center',
-      }}
     >
-      <div className='flex items-center justify-center space-x-1'>
+      <div className='flex items-center space-x-1'>
         <span>{icon}</span>
         <span>{text}</span>
       </div>
