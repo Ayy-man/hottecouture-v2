@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = (page - 1) * limit;
     const clientId = searchParams.get('client_id');
+    const seamstressId = searchParams.get('seamstressId');
 
     const supabase = await createServiceRoleClient();
 
@@ -23,10 +24,12 @@ export async function GET(request: Request) {
     }
 
     // Use RPC function to get all data in a single query
+    // p_assigned_seamstress_id filters to orders that have at least one garment_service assigned to this seamstress
     const { data: orders, error: ordersError } = await supabase.rpc('get_orders_with_details', {
       p_limit: limit,
       p_offset: offset,
-      p_client_id: clientId
+      p_client_id: clientId,
+      p_assigned_seamstress_id: seamstressId || null
     });
 
     if (ordersError) {
@@ -37,19 +40,27 @@ export async function GET(request: Request) {
     console.log('📊 ORDERS API: Found', orders?.length || 0, 'orders');
 
     // Get total count for pagination
-    let countQuery = supabase
-      .from('order')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_archived', false);
+    // When filtering by seamstressId, use the filtered result length instead of a separate count query
+    // (the RPC already handles the join-based filtering, so a separate count query would need the same join)
+    let count: number | null = null;
+    if (seamstressId) {
+      count = orders?.length ?? 0;
+    } else {
+      let countQuery = supabase
+        .from('order')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_archived', false);
 
-    if (clientId) {
-      countQuery = countQuery.eq('client_id', clientId);
-    }
+      if (clientId) {
+        countQuery = countQuery.eq('client_id', clientId);
+      }
 
-    const { count, error: countError } = await countQuery;
+      const { count: totalCount, error: countError } = await countQuery;
 
-    if (countError) {
-      console.error('❌ Error getting order count:', countError);
+      if (countError) {
+        console.error('❌ Error getting order count:', countError);
+      }
+      count = totalCount;
     }
 
     // Process the data

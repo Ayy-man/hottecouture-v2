@@ -24,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { useStaffSession } from '@/components/staff';
 
 interface PendingSmsConfirmation {
   orderId: string;
@@ -35,6 +36,8 @@ interface PendingSmsConfirmation {
 export default function BoardPage() {
   console.log('🎯 Board page rendering...');
   const toast = useToast();
+  const { currentStaff, isLoading: isStaffLoading } = useStaffSession();
+  const isSeamstress = currentStaff?.staffRole === 'seamstress';
 
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,10 +68,15 @@ export default function BoardPage() {
   }, [realtimeTrigger]);
 
   const handleRefresh = async () => {
+    if (isStaffLoading) return;
     setLoading(true);
     try {
       // Fetch with proper cache busting
-      const response = await fetch(`/api/orders?ts=${Date.now()}`, {
+      let url = `/api/orders?ts=${Date.now()}`;
+      if (isSeamstress && currentStaff?.staffId) {
+        url += `&seamstressId=${currentStaff.staffId}`;
+      }
+      const response = await fetch(url, {
         cache: 'no-store',
         next: { revalidate: 0 },
       });
@@ -91,6 +99,11 @@ export default function BoardPage() {
   };
 
   useEffect(() => {
+    // Gate on staff session resolution to prevent double-fetch during localStorage hydration.
+    // While isStaffLoading is true, isSeamstress would be false (session is null),
+    // causing an unfiltered fetch followed by a filtered one once session resolves.
+    if (isStaffLoading) return;
+
     // Clear orders state first to ensure we start fresh
     setOrders([]);
     setLoading(true);
@@ -110,8 +123,12 @@ export default function BoardPage() {
       try {
         console.log('🔍 Fetching orders from Supabase...');
 
-        // Fetch real orders from Supabase with proper cache busting
-        const url = `/api/orders?ts=${Date.now()}`;
+        // Build fetch URL — append seamstressId for seamstress role to get API-level filtering
+        let url = `/api/orders?ts=${Date.now()}`;
+        if (isSeamstress && currentStaff?.staffId) {
+          url += `&seamstressId=${currentStaff.staffId}`;
+          console.log('🔍 Board: Fetching seamstress-filtered orders for:', currentStaff.staffId);
+        }
         console.log('🔍 Board: Fetching from URL:', url);
 
         const response = await fetch(url, {
@@ -138,7 +155,7 @@ export default function BoardPage() {
     };
 
     fetchOrders();
-  }, [refreshKey]);
+  }, [refreshKey, isStaffLoading, isSeamstress, currentStaff?.staffId]);
 
   const handleOrderUpdate = async (orderId: string, newStatus: string) => {
     console.log(`🔄 Updating order ${orderId} to status: ${newStatus}`);
@@ -376,12 +393,14 @@ export default function BoardPage() {
                       selectedPipeline={selectedPipeline}
                       onPipelineChange={setSelectedPipeline}
                     />
-                    <AssigneeFilter
-                      orders={orders}
-                      selectedAssigneeId={selectedAssigneeId}
-                      onAssigneeChange={setSelectedAssigneeId}
-                      onExportSeamstress={handleExportSeamstress}
-                    />
+                    {!isSeamstress && (
+                      <AssigneeFilter
+                        orders={orders}
+                        selectedAssigneeId={selectedAssigneeId}
+                        onAssigneeChange={setSelectedAssigneeId}
+                        onExportSeamstress={handleExportSeamstress}
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -392,50 +411,56 @@ export default function BoardPage() {
                       selectedPipeline={selectedPipeline}
                       onPipelineChange={setSelectedPipeline}
                     />
-                    <AssigneeFilter
-                      orders={orders}
-                      selectedAssigneeId={selectedAssigneeId}
-                      onAssigneeChange={setSelectedAssigneeId}
-                      onExportSeamstress={handleExportSeamstress}
-                    />
+                    {!isSeamstress && (
+                      <AssigneeFilter
+                        orders={orders}
+                        selectedAssigneeId={selectedAssigneeId}
+                        onAssigneeChange={setSelectedAssigneeId}
+                        onExportSeamstress={handleExportSeamstress}
+                      />
+                    )}
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        className='hidden sm:flex border-border hover:bg-background h-8 px-2'
-                      >
-                        <MoreHorizontal className='w-4 h-4' />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end'>
-                      <DropdownMenuItem asChild>
-                        <Link href='/board/workload' className='flex items-center gap-2'>
-                          <Users className='w-4 h-4' />
-                          <span>Charge de Travail</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href='/archived' className='flex items-center gap-2'>
-                          <Archive className='w-4 h-4' />
-                          <span>Commandes Archivees</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleExportOrders}>
-                        <FileSpreadsheet className='w-4 h-4 mr-2' />
-                        <span>Export Orders</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleExportCapacity}>
-                        <FileSpreadsheet className='w-4 h-4 mr-2' />
-                        <span>Export Capacity</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button asChild size='sm' className='bg-foreground hover:bg-black text-white shadow-lg shadow-foreground/20 h-8'>
-                    <Link href='/intake'>Nouvelle Commande</Link>
-                  </Button>
+                  {!isSeamstress && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          className='hidden sm:flex border-border hover:bg-background h-8 px-2'
+                        >
+                          <MoreHorizontal className='w-4 h-4' />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align='end'>
+                        <DropdownMenuItem asChild>
+                          <Link href='/board/workload' className='flex items-center gap-2'>
+                            <Users className='w-4 h-4' />
+                            <span>Charge de Travail</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href='/archived' className='flex items-center gap-2'>
+                            <Archive className='w-4 h-4' />
+                            <span>Commandes Archivees</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleExportOrders}>
+                          <FileSpreadsheet className='w-4 h-4 mr-2' />
+                          <span>Export Orders</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportCapacity}>
+                          <FileSpreadsheet className='w-4 h-4 mr-2' />
+                          <span>Export Capacity</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  {!isSeamstress && (
+                    <Button asChild size='sm' className='bg-foreground hover:bg-black text-white shadow-lg shadow-foreground/20 h-8'>
+                      <Link href='/intake'>Nouvelle Commande</Link>
+                    </Button>
+                  )}
                 </div>
               </div>
             </header>
@@ -469,17 +494,19 @@ export default function BoardPage() {
             orderNumber={pendingSmsConfirmation?.orderNumber || 0}
           />
 
-          {/* Export Button (Bottom Left) - above mobile nav on small screens */}
-          <div className='fixed bottom-20 md:bottom-8 left-4 md:left-6 z-40'>
-            <Button
-              variant='secondary'
-              size='sm'
-              className='bg-white/90 backdrop-blur border border-border shadow-sm hover:bg-white text-xs touch-target-sm text-foreground'
-              onClick={() => setShowWorkListExport(true)}
-            >
-              Export Work List
-            </Button>
-          </div>
+          {/* Export Button (Bottom Left) - above mobile nav on small screens — hidden for seamstresses */}
+          {!isSeamstress && (
+            <div className='fixed bottom-20 md:bottom-8 left-4 md:left-6 z-40'>
+              <Button
+                variant='secondary'
+                size='sm'
+                className='bg-white/90 backdrop-blur border border-border shadow-sm hover:bg-white text-xs touch-target-sm text-foreground'
+                onClick={() => setShowWorkListExport(true)}
+              >
+                Export Work List
+              </Button>
+            </div>
+          )}
 
           {/* Export Modal */}
           {showWorkListExport && (
