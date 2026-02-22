@@ -170,7 +170,7 @@ export default function CustomerPortalPage() {
     <MuralBackground useMuralBackground={true} opacity={0.12}>
       <div className='h-full flex flex-col overflow-hidden'>
         <div className='flex-1 overflow-y-auto'>
-          <div className='mx-auto px-4 py-8 max-w-lg w-full'>
+          <div className='min-h-full flex flex-col justify-center mx-auto px-4 py-8 max-w-lg w-full'>
           {/* Header */}
           <div className='text-center mb-8 animate-fade-in-up'>
             <div className='flex items-center justify-center mb-4'>

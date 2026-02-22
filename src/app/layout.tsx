@@ -140,6 +140,7 @@ export default function RootLayout({
             </StaffSessionProvider>
           </AuthProvider>
         </ToastProvider>
+        <script dangerouslySetInnerHTML={{ __html: `if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')` }} />
       </body>
     </html>
   );

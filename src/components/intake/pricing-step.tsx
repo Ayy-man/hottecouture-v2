@@ -331,7 +331,7 @@ export function PricingStep({
                               className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
-                              Service express - 30,00$ (1-2 jours plus rapide)
+                              Service express - 30,00$ (1 à 3 jours plus tôt)
                             </span>
                           </label>
                           <label className='flex items-center space-x-2 cursor-pointer'>
@@ -350,7 +350,7 @@ export function PricingStep({
                             />
                             <span className='text-xs'>
                               Service express pour complets et robes de soirée -
-                              60,00$ (3+ jours plus rapide)
+                              60,00$ (3 à 4 jours plus tôt)
                             </span>
                           </label>
                         </div>
@@ -366,8 +366,8 @@ export function PricingStep({
                       orderType={data.type}
                       estimatedDays={
                         data.rush_fee_type === 'large'
-                          ? (data.type === 'alteration' ? 1 : 4)   // 3+ days faster
-                          : (data.type === 'alteration' ? 2 : 10)  // 1-2 days faster (small/default)
+                          ? (data.type === 'alteration' ? 1 : 4)   // 3-4 jours plus tôt
+                          : (data.type === 'alteration' ? 2 : 10)  // 1-3 jours plus tôt (small/default)
                       }
                     />
 

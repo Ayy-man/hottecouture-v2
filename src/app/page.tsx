@@ -81,10 +81,10 @@ export default function HomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
-                <a href='/intake' className='block cursor-pointer'>
+                <a href='/intake' className='flex justify-center cursor-pointer'>
                   <Button
                     {...createHapticButtonProps('medium')}
-                    className='w-full h-10 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press btn-bounce relative overflow-hidden'
+                    className='w-auto px-6 h-10 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press btn-bounce relative overflow-hidden'
                   >
                     Start New Order
                   </Button>

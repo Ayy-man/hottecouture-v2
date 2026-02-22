@@ -178,7 +178,7 @@ export function RushOrderTimeline({
 
       {isRush && daysDifference >= 1 && (
         <div className='text-xs text-red-600 bg-red-100 rounded px-2 py-1'>
-          ⚡ {daysDifference} jour{daysDifference !== 1 ? 's' : ''} plus rapide
+          ⚡ {daysDifference} jour{daysDifference !== 1 ? 's' : ''} plus tôt
         </div>
       )}
 

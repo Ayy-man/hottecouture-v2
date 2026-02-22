@@ -120,7 +120,7 @@ export function OrderCard({
       style={style}
       {...attributes}
       {...listeners}
-      className={`cursor-grab active:cursor-grabbing transition-all ${
+      className={`cursor-grab active:cursor-grabbing transition-all rounded-xl overflow-hidden ${
         isUpdating ? 'opacity-50' : ''
       } ${isDragging ? 'shadow-lg scale-105' : 'hover:shadow-md'}`}
     >
