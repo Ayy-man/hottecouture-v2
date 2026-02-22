@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { RoleBasedNav } from '@/components/navigation/role-based-nav'
 import { getCurrentUser } from '@/lib/security/auth'
+import { DashboardSeamstressGuard } from '@/components/security/dashboard-seamstress-guard'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -24,6 +25,7 @@ export default async function DashboardPage() {
   }
 
   return (
+    <DashboardSeamstressGuard>
     <div className="container mx-auto px-4 py-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8">
@@ -116,5 +118,6 @@ export default async function DashboardPage() {
         </div>
       </div>
     </div>
+    </DashboardSeamstressGuard>
   )
 }

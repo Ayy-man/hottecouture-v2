@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Archive, ArrowLeft, RotateCcw, Search } from 'lucide-react';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import Link from 'next/link';
+import { useStaffSession } from '@/components/staff';
 
 interface ArchivedOrder {
   id: string;
@@ -30,12 +32,21 @@ interface ArchivedOrder {
 }
 
 export default function ArchivedOrdersPage() {
+  const { currentStaff, isLoading } = useStaffSession();
+  const router = useRouter();
   const [orders, setOrders] = useState<ArchivedOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [isUnarchiving, setIsUnarchiving] = useState(false);
+
+  // Redirect seamstresses away from archived page
+  useEffect(() => {
+    if (!isLoading && currentStaff?.staffRole === 'seamstress') {
+      router.replace('/board');
+    }
+  }, [isLoading, currentStaff, router]);
 
   const fetchArchivedOrders = async () => {
     setLoading(true);
@@ -61,6 +72,9 @@ export default function ArchivedOrdersPage() {
   useEffect(() => {
     fetchArchivedOrders();
   }, []);
+
+  // Prevent flash of restricted content during redirect
+  if (currentStaff?.staffRole === 'seamstress') return null;
 
   const handleUnarchive = async (orderIds: string[]) => {
     setIsUnarchiving(true);

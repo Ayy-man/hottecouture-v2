@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Search, User, Phone, Mail, Package, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
+import { useStaffSession } from '@/components/staff'
 
 interface Client {
   id: string
@@ -36,6 +38,8 @@ function maskEmail(email: string): string {
 }
 
 export default function ClientsPage() {
+  const { currentStaff, isLoading } = useStaffSession()
+  const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -54,10 +58,20 @@ export default function ClientsPage() {
     })
   }
 
+  // Redirect seamstresses away from clients page
+  useEffect(() => {
+    if (!isLoading && currentStaff?.staffRole === 'seamstress') {
+      router.replace('/board')
+    }
+  }, [isLoading, currentStaff, router])
+
   // Load all clients
   useEffect(() => {
     loadClients()
   }, [])
+
+  // Prevent flash of restricted content during redirect
+  if (currentStaff?.staffRole === 'seamstress') return null
 
   const loadClients = async () => {
     try {

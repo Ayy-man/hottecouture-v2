@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { PipelineSelector } from '@/components/intake/pipeline-selector';
 import { ClientStep } from '@/components/intake/client-step';
@@ -11,6 +12,7 @@ import { OrderSummary } from '@/components/intake/order-summary';
 import { IntakeRequest, IntakeResponse, MeasurementsData } from '@/lib/dto';
 import { usePricing } from '@/lib/pricing/usePricing';
 import { MuralBackground } from '@/components/ui/mural-background';
+import { useStaffSession } from '@/components/staff';
 
 type IntakeStep =
   | 'pipeline'
@@ -72,6 +74,8 @@ const initialFormData: IntakeFormData = {
 };
 
 export default function IntakePage() {
+  const { currentStaff, isLoading } = useStaffSession();
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<IntakeStep>('client');
   const [formData, setFormData] = useState<IntakeFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -188,6 +192,16 @@ export default function IntakePage() {
       }
     }
   }, [currentStep, steps]);
+
+  // Redirect seamstresses away from intake
+  useEffect(() => {
+    if (!isLoading && currentStaff?.staffRole === 'seamstress') {
+      router.replace('/board');
+    }
+  }, [isLoading, currentStaff, router]);
+
+  // Prevent flash of restricted content during redirect
+  if (currentStaff?.staffRole === 'seamstress') return null;
 
   const handleSubmit = async () => {
     if (!formData.client) {
