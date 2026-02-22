@@ -649,6 +649,17 @@ Plans:
 - [x] 26-01-PLAN.md — Staff API route aliases, PWA manifest/metadata, chatbot removal
 - [x] 26-02-PLAN.md — External service configuration (SMS A2P, Stripe via GHL, custom domain) — DEFERRED
 
+### Phase 27: Role-based access control - seamstress view filtering
+
+**Goal:** Restrict seamstress views across the app: board shows only their assigned orders (API-level), order modal hides pricing/payments/client contact, calendar shows only their tasks + unassigned, workload shows only their gauge, navigation hides admin pages.
+**Depends on:** Phase 26
+**Plans:** 3 plans
+
+Plans:
+- [ ] 27-01-PLAN.md — API-level board filtering, board page RBAC, mobile nav role filtering
+- [ ] 27-02-PLAN.md — Order detail modal: hide pricing, payments, client contact for seamstresses
+- [ ] 27-03-PLAN.md — Calendar/workload filtering + redirect guards on restricted pages
+
 ---
 
 ## Suggested Schedule
