@@ -67,6 +67,9 @@ export function PricingStep({
   const [services, setServices] = useState<any[]>([]);
   const [isEditingTotal, setIsEditingTotal] = useState(false);
   const [editTotalValue, setEditTotalValue] = useState('');
+  const [isEditingRushFee, setIsEditingRushFee] = useState(false);
+  const [editRushFeeValue, setEditRushFeeValue] = useState('');
+  const [customRushFeeCents, setCustomRushFeeCents] = useState<number | null>(null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Fetch services for display names
@@ -124,10 +127,12 @@ export function PricingStep({
       console.log('🔍 PricingStep: calculated subtotal_cents:', subtotal_cents);
 
       const rush_fee_cents = data.rush
-        ? data.rush_fee_type === 'large'
-          ? 6000
-          : 3000
-        : 0; // $30 or $60 if rush
+        ? customRushFeeCents !== null
+          ? customRushFeeCents
+          : data.rush_fee_type === 'large'
+            ? 6000
+            : 3000
+        : 0;
 
       // Calculate taxable amount (subtotal + rush fee)
       const taxable_amount = subtotal_cents + rush_fee_cents;
@@ -157,7 +162,7 @@ export function PricingStep({
       setCalculation(calculation);
       setOriginalCalculation(calculation);
     });
-  }, [data.rush, data.rush_fee_type, garments, services]);
+  }, [data.rush, data.rush_fee_type, garments, services, customRushFeeCents]);
 
   const handleInputChange = (field: keyof OrderData, value: any) => {
     onUpdate({ ...data, [field]: value });
@@ -322,16 +327,14 @@ export function PricingStep({
                                 data.rush_fee_type === 'small' ||
                                 data.rush_fee_type === undefined
                               }
-                              onChange={e =>
-                                handleInputChange(
-                                  'rush_fee_type',
-                                  e.target.value
-                                )
-                              }
+                              onChange={e => {
+                                handleInputChange('rush_fee_type', e.target.value);
+                                setCustomRushFeeCents(null);
+                              }}
                               className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
-                              Service express - 30,00$ (1 à 3 jours plus tôt)
+                              Service express — {customRushFeeCents !== null && (data.rush_fee_type === 'small' || data.rush_fee_type === undefined) ? formatCurrency(customRushFeeCents) : '30,00$'} (1 à 3 jours plus tôt)
                             </span>
                           </label>
                           <label className='flex items-center space-x-2 cursor-pointer'>
@@ -340,17 +343,15 @@ export function PricingStep({
                               name='rush_fee_type'
                               value='large'
                               checked={data.rush_fee_type === 'large'}
-                              onChange={e =>
-                                handleInputChange(
-                                  'rush_fee_type',
-                                  e.target.value
-                                )
-                              }
+                              onChange={e => {
+                                handleInputChange('rush_fee_type', e.target.value);
+                                setCustomRushFeeCents(null);
+                              }}
                               className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
-                              Service express pour complets et robes de soirée -
-                              60,00$ (3 à 4 jours plus tôt)
+                              Service express pour complets et robes de soirée —
+                              {customRushFeeCents !== null && data.rush_fee_type === 'large' ? ` ${formatCurrency(customRushFeeCents)}` : ' 60,00$'} (3 à 4 jours plus tôt)
                             </span>
                           </label>
                         </div>
@@ -449,11 +450,80 @@ export function PricingStep({
                   </div>
 
                   {data.rush && (
-                    <div className='flex justify-between'>
+                    <div className='flex justify-between items-center'>
                       <span className='text-sm'>Frais express:</span>
-                      <span className='text-sm font-medium'>
-                        {formatCurrency(calculation.rush_fee_cents)}
-                      </span>
+                      {isEditingRushFee ? (
+                        <div className='flex items-center gap-1'>
+                          <span className='text-sm text-muted-foreground'>$</span>
+                          <input
+                            type='text'
+                            inputMode='decimal'
+                            value={editRushFeeValue}
+                            onChange={e => {
+                              const value = e.target.value.replace(/[^0-9.]/g, '');
+                              setEditRushFeeValue(value);
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                const dollars = parseFloat(editRushFeeValue) || 0;
+                                const cents = Math.round(dollars * 100);
+                                setCustomRushFeeCents(cents);
+                                setIsEditingRushFee(false);
+                              } else if (e.key === 'Escape') {
+                                setIsEditingRushFee(false);
+                              }
+                            }}
+                            className='w-20 px-2 py-0.5 text-sm font-medium border border-primary rounded focus:ring-2 focus:ring-primary focus:border-transparent'
+                            placeholder='0.00'
+                            autoFocus
+                          />
+                          <Button
+                            type='button'
+                            size='sm'
+                            variant='ghost'
+                            onClick={() => {
+                              const dollars = parseFloat(editRushFeeValue) || 0;
+                              const cents = Math.round(dollars * 100);
+                              setCustomRushFeeCents(cents);
+                              setIsEditingRushFee(false);
+                            }}
+                            className='text-xs px-2 h-7 text-primary'
+                          >
+                            ✓
+                          </Button>
+                          <Button
+                            type='button'
+                            size='sm'
+                            variant='ghost'
+                            onClick={() => {
+                              setCustomRushFeeCents(null);
+                              setIsEditingRushFee(false);
+                            }}
+                            className='text-xs px-2 h-7 text-muted-foreground'
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className='flex items-center gap-1'>
+                          <span className='text-sm font-medium'>
+                            {formatCurrency(calculation.rush_fee_cents)}
+                          </span>
+                          <button
+                            type='button'
+                            onClick={() => {
+                              setEditRushFeeValue((calculation.rush_fee_cents / 100).toFixed(2));
+                              setIsEditingRushFee(true);
+                            }}
+                            className='text-muted-foreground hover:text-primary transition-colors'
+                            title='Modifier les frais express'
+                          >
+                            <svg className='w-3.5 h-3.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -509,7 +579,9 @@ export function PricingStep({
                                 const tvq_cents = Math.round(taxableAmount * 0.09975);
                                 const tax_cents = tps_cents + tvq_cents;
                                 const rush_fee_cents = data.rush
-                                  ? data.rush_fee_type === 'large' ? 6000 : 3000
+                                  ? customRushFeeCents !== null
+                                    ? customRushFeeCents
+                                    : data.rush_fee_type === 'large' ? 6000 : 3000
                                   : 0;
                                 const subtotal_cents = Math.max(0, taxableAmount - rush_fee_cents);
 
