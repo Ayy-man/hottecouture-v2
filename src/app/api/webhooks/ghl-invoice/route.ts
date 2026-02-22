@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { validateWebhookSecret } from '@/lib/utils/timing-safe';
-import { parsePaymentTypeFromMetadata, type PaymentType } from '@/lib/payments/deposit-calculator';
+import { calculateDepositCents, parsePaymentTypeFromMetadata, type PaymentType } from '@/lib/payments/deposit-calculator';
 
 // Webhook secret for verification (set in GHL webhook config)
 const WEBHOOK_SECRET = process.env.GHL_WEBHOOK_SECRET || 'hotte-couture-ghl-webhook-2024';
@@ -162,78 +162,94 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Determine payment type using robust detection with fallbacks
-    // 1. Try to parse from termsNotes metadata (most reliable - new invoices)
+    // ── Detect payment type ──────────────────────────────────────────
+    // Priority: 1) termsNotes metadata  2) invoice number suffix  3) invoice name  4) order state
     const rawTerms = rawPayload.invoice.termsNotes || rawPayload.invoice.terms_notes;
     const metadataPaymentType = parsePaymentTypeFromMetadata(rawTerms);
 
-    // 2. Determine payment type with fallbacks for backward compatibility
     let detectedPaymentType: PaymentType = 'full';
+    let detectionMethod = 'default';
+
     if (metadataPaymentType) {
       detectedPaymentType = metadataPaymentType;
-      console.log(`📋 Payment type from metadata: ${detectedPaymentType}`);
+      detectionMethod = 'metadata';
+    } else if (invoiceNumber.toUpperCase().includes('-DEPOSIT')) {
+      detectedPaymentType = 'deposit';
+      detectionMethod = 'invoice_number_suffix';
+    } else if (invoiceNumber.toUpperCase().includes('-BALANCE')) {
+      detectedPaymentType = 'balance';
+      detectionMethod = 'invoice_number_suffix';
     } else {
-      // Fallback: Check invoice name patterns (backward compatible with old invoices)
-      const nameToCheck = (invoiceName || invoiceNumber || '').toLowerCase();
+      // Check invoice name for French keywords
+      const nameToCheck = (invoiceName || '').toLowerCase();
       if (nameToCheck.includes('dépôt') || nameToCheck.includes('depot')) {
         detectedPaymentType = 'deposit';
-        console.log(`📋 Payment type from name pattern (depot): deposit`);
+        detectionMethod = 'invoice_name';
       } else if (nameToCheck.includes('solde')) {
         detectedPaymentType = 'balance';
-        console.log(`📋 Payment type from name pattern (solde): balance`);
-      }
-      // Last resort: Amount-based detection for legacy invoices
-      else if (
-        order.type === 'custom' &&
-        !order.deposit_paid_at &&
-        invoice.total > 0 &&
-        invoice.total < (order.total_cents / 100) * 0.6
-      ) {
+        detectionMethod = 'invoice_name';
+      } else if (order.type === 'custom' && !order.deposit_paid_at) {
+        // Custom order with no deposit yet — this must be the deposit
         detectedPaymentType = 'deposit';
-        console.log(`📋 Payment type from amount heuristic: deposit (${invoice.total} < 60% of ${order.total_cents / 100})`);
+        detectionMethod = 'order_state';
       }
     }
+
+    console.log(`📋 Payment type: ${detectedPaymentType} (via ${detectionMethod})`);
 
     const isDeposit = detectedPaymentType === 'deposit';
     const isBalance = detectedPaymentType === 'balance';
 
-    // Calculate payment totals for partial payment support
-    const thisPaymentCents = Math.round(invoice.amountPaid * 100);
+    // ── Calculate amount ──────────────────────────────────────────────
+    // GHL webhook may not include amountPaid — derive from order data
+    let thisPaymentCents: number;
+
+    if (invoice.amountPaid > 0) {
+      // Amount was in the webhook payload (dollars → cents)
+      thisPaymentCents = Math.round(invoice.amountPaid * 100);
+      console.log(`💰 Amount from webhook: $${invoice.amountPaid} (${thisPaymentCents}¢)`);
+    } else {
+      // Amount NOT in payload — calculate from order based on payment type
+      if (isDeposit) {
+        thisPaymentCents = calculateDepositCents(order.total_cents);
+      } else if (isBalance) {
+        const depositPaid = order.deposit_cents || calculateDepositCents(order.total_cents);
+        thisPaymentCents = order.total_cents - depositPaid;
+      } else {
+        thisPaymentCents = order.total_cents;
+      }
+      console.log(`💰 Amount calculated from order: ${thisPaymentCents}¢ (type: ${detectedPaymentType})`);
+    }
+
     const previouslyPaidCents = order.deposit_paid_at ? (order.deposit_cents || 0) : 0;
     const totalPaidAfterCents = previouslyPaidCents + thisPaymentCents;
 
-    // Update order based on payment
+    // ── Update order ──────────────────────────────────────────────────
     const paidAt = invoice.paidAt || new Date().toISOString();
-    const updateData: Record<string, any> = {
-      paid_at: paidAt,
-    };
+    const updateData: Record<string, any> = {};
 
-    // Determine the new payment status
     let newPaymentStatus: string;
     let logMessage: string;
 
-    if (totalPaidAfterCents >= order.total_cents) {
-      // Fully paid
-      newPaymentStatus = 'paid';
-      logMessage = `Full payment completed for order #${orderNumber}: $${invoice.amountPaid}`;
-    } else if (isDeposit && !order.deposit_paid_at) {
+    if (isDeposit && !order.deposit_paid_at) {
       // Deposit payment
       newPaymentStatus = 'deposit_paid';
       updateData.deposit_paid_at = paidAt;
       updateData.deposit_cents = thisPaymentCents;
-      logMessage = `Deposit payment recorded for order #${orderNumber}: $${invoice.amountPaid}`;
-    } else if (isBalance && order.deposit_paid_at) {
-      // Balance payment after deposit - should complete the order
-      newPaymentStatus = totalPaidAfterCents >= order.total_cents ? 'paid' : 'partial';
-      logMessage = `Balance payment recorded for order #${orderNumber}: $${invoice.amountPaid}`;
-    } else if (totalPaidAfterCents > 0 && totalPaidAfterCents < order.total_cents) {
-      // Partial payment (not deposit, not completing balance)
-      newPaymentStatus = 'partial';
-      logMessage = `Partial payment recorded for order #${orderNumber}: $${invoice.amountPaid} (${totalPaidAfterCents}/${order.total_cents} cents)`;
+      updateData.deposit_payment_method = 'stripe';
+      logMessage = `Deposit of $${(thisPaymentCents / 100).toFixed(2)} recorded for order #${orderNumber}`;
+    } else if (isBalance || totalPaidAfterCents >= order.total_cents) {
+      // Balance payment or fully paid
+      newPaymentStatus = 'paid';
+      updateData.paid_at = paidAt;
+      updateData.payment_method = 'stripe';
+      logMessage = `Payment of $${(thisPaymentCents / 100).toFixed(2)} completed for order #${orderNumber} (fully paid)`;
     } else {
       // Full payment in one go
       newPaymentStatus = 'paid';
-      logMessage = `Full payment recorded for order #${orderNumber}: $${invoice.amountPaid}`;
+      updateData.paid_at = paidAt;
+      updateData.payment_method = 'stripe';
+      logMessage = `Full payment of $${(thisPaymentCents / 100).toFixed(2)} recorded for order #${orderNumber}`;
     }
 
     updateData.payment_status = newPaymentStatus;
@@ -268,10 +284,11 @@ export async function POST(request: NextRequest) {
         invoice_id: invoice.id,
         invoice_number: invoiceNumber,
         amount_paid_cents: thisPaymentCents,
+        amount_from_webhook: invoice.amountPaid > 0,
         total_paid_cents: totalPaidAfterCents,
         order_total_cents: order.total_cents,
         payment_type: detectedPaymentType,
-        detection_method: metadataPaymentType ? 'metadata' : 'fallback',
+        detection_method: detectionMethod,
         new_status: newPaymentStatus,
         contact_id: invoice.contactId,
       },
