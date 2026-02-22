@@ -445,7 +445,7 @@ export default function IntakePage() {
         </div>
 
         {/* Main Content Area */}
-        <div className='flex-1 min-w-0 flex flex-col'>
+        <div className='flex-1 min-w-0 min-h-0 flex flex-col'>
           {/* Error display */}
           {error && (
             <div className='mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex-shrink-0'>

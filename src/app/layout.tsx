@@ -129,7 +129,7 @@ export default function RootLayout({
                     </div>
                   </div>
                 </header>
-                <main className='row-start-2 row-end-3 min-h-0 overflow-hidden pb-16 md:pb-0 print:pb-0'>
+                <main className='row-start-2 row-end-3 min-h-0 overflow-y-auto pb-16 md:pb-0 print:pb-0'>
                   {children}
                 </main>
                 <MobileBottomNav />
