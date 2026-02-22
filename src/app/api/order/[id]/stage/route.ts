@@ -260,19 +260,24 @@ async function handleOrderStage(
       };
 
       // Call internal webhook endpoint (Agent B will handle Make.com integration)
-      const webhookResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/order-status`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(webhookPayload),
-        }
-      );
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+      if (appUrl) {
+        const webhookResponse = await fetch(
+          `${appUrl}/api/webhooks/order-status`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(webhookPayload),
+          }
+        );
 
-      if (webhookResponse.ok) {
-        console.log(`✅ Order status webhook triggered for order ${orderId} (${newStage})`);
+        if (webhookResponse.ok) {
+          console.log(`✅ Order status webhook triggered for order ${orderId} (${newStage})`);
+        } else {
+          console.warn(`⚠️ Order status webhook failed for order ${orderId}:`, await webhookResponse.text());
+        }
       } else {
-        console.warn(`⚠️ Order status webhook failed for order ${orderId}:`, await webhookResponse.text());
+        console.warn(`⚠️ Skipping order-status webhook: no NEXT_PUBLIC_APP_URL or VERCEL_URL configured`);
       }
     } catch (webhookError) {
       console.warn(`⚠️ Order status webhook error for order ${orderId}:`, webhookError);
@@ -295,25 +300,30 @@ async function handleOrderStage(
 
         console.log(`💳 Auto-sending payment link for order ${orderId} (type: ${paymentType})`);
 
-        const paymentResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/payments/create-checkout`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              orderId: orderId,
-              type: paymentType,
-              sendSms: true, // Auto-send notification via GHL
-            }),
-          }
-        );
+        const checkoutAppUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+        if (checkoutAppUrl) {
+          const paymentResponse = await fetch(
+            `${checkoutAppUrl}/api/payments/create-checkout`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: orderId,
+                type: paymentType,
+                sendSms: true, // Auto-send notification via GHL
+              }),
+            }
+          );
 
-        if (paymentResponse.ok) {
-          const paymentResult = await paymentResponse.json();
-          console.log(`✅ Payment link sent for order ${orderId}: ${paymentResult.checkoutUrl}`);
+          if (paymentResponse.ok) {
+            const paymentResult = await paymentResponse.json();
+            console.log(`✅ Payment link sent for order ${orderId}: ${paymentResult.checkoutUrl}`);
+          } else {
+            const errorText = await paymentResponse.text();
+            console.warn(`⚠️ Failed to create payment link for order ${orderId}:`, errorText);
+          }
         } else {
-          const errorText = await paymentResponse.text();
-          console.warn(`⚠️ Failed to create payment link for order ${orderId}:`, errorText);
+          console.warn(`⚠️ Skipping payment link: no NEXT_PUBLIC_APP_URL or VERCEL_URL configured`);
         }
       } catch (paymentError) {
         console.warn(`⚠️ Payment link error for order ${orderId}:`, paymentError);
