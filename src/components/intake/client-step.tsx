@@ -574,7 +574,7 @@ export function ClientStep({
 
       {/* Scrollable Content */}
       <div className='flex-1 overflow-y-auto min-h-0'>
-        <div className='p-4 space-y-4'>
+        <div className='p-4 pb-24 md:pb-4 space-y-4'>
           {!data ? (
             <>
               {/* Search section - hidden when create form is open */}

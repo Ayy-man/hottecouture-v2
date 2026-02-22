@@ -52,7 +52,7 @@ export function OrderSummary({
 
       {/* Scrollable Content */}
       <div className='flex-1 overflow-y-auto min-h-0'>
-        <div className='p-4 space-y-4'>
+        <div className='p-4 pb-24 md:pb-4 space-y-4'>
           {/* Success Message */}
           <Card className='bg-green-50 border-green-200'>
             <CardContent className='pt-4'>

@@ -102,7 +102,7 @@ export function AssignmentStep({
       </div>
 
       {/* Main Content Area */}
-      <div className='flex-1 overflow-y-auto p-4 bg-muted/50 min-h-0'>
+      <div className='flex-1 overflow-y-auto p-4 pb-24 md:pb-4 bg-muted/50 min-h-0'>
         <div className='max-w-md mx-auto space-y-4'>
           <div className='text-center mb-6'>
             <p className='text-sm text-muted-foreground'>
@@ -129,7 +129,13 @@ export function AssignmentStep({
                     <SelectContent>
                       {staff.map(s => (
                         <SelectItem key={s.id} value={s.id}>
-                          {s.name}
+                          <span className='flex items-center gap-2'>
+                            <span
+                              className='w-2.5 h-2.5 rounded-full flex-shrink-0'
+                              style={{ backgroundColor: s.color || '#6366f1' }}
+                            />
+                            {s.name}
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -139,7 +145,9 @@ export function AssignmentStep({
 
               {/* Per-item assignment list */}
               <div className='space-y-3'>
-                {items.map((item) => (
+                {items.map((item) => {
+                  const assignedStaff = staff.find(s => s.id === item.assignedSeamstressId);
+                  return (
                   <Card key={`${item.garmentIndex}-${item.serviceIndex}`}>
                     <CardContent className='p-4'>
                       <div className='flex items-center justify-between gap-4'>
@@ -163,7 +171,13 @@ export function AssignmentStep({
                             }
                           >
                             <SelectTrigger className='w-full'>
-                              <span className='truncate'>
+                              <span className='flex items-center gap-2 truncate'>
+                                {assignedStaff && (
+                                  <span
+                                    className='w-2.5 h-2.5 rounded-full flex-shrink-0'
+                                    style={{ backgroundColor: assignedStaff.color || '#6366f1' }}
+                                  />
+                                )}
                                 {getSeamstressName(item.assignedSeamstressId)}
                               </span>
                             </SelectTrigger>
@@ -171,7 +185,13 @@ export function AssignmentStep({
                               <SelectItem value='unassigned'>Non assigne</SelectItem>
                               {staff.map(s => (
                                 <SelectItem key={s.id} value={s.id}>
-                                  {s.name}
+                                  <span className='flex items-center gap-2'>
+                                    <span
+                                      className='w-2.5 h-2.5 rounded-full flex-shrink-0'
+                                      style={{ backgroundColor: s.color || '#6366f1' }}
+                                    />
+                                    {s.name}
+                                  </span>
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -180,7 +200,8 @@ export function AssignmentStep({
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}

@@ -231,7 +231,7 @@ export function PricingStep({
 
       {/* Scrollable Content */}
       <div className='flex-1 overflow-y-auto min-h-0'>
-        <div className='p-4 space-y-4'>
+        <div className='p-4 pb-24 md:pb-4 space-y-4'>
           {/* Due Date */}
           <Card>
             <CardHeader className='pb-3'>

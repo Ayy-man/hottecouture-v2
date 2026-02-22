@@ -464,7 +464,7 @@ export function OrderDetailModal({
         }
       }}
     >
-      <Card className='w-full max-w-full sm:max-w-6xl max-h-[95vh] overflow-y-auto bg-white shadow-2xl'>
+      <Card className='w-full max-w-full sm:max-w-6xl max-h-[80vh] md:max-h-[95vh] overflow-y-auto bg-white shadow-2xl'>
         <div className='p-3 sm:p-4'>
           {/* Header */}
           <div className='flex flex-col sm:flex-row justify-between items-start mb-4 gap-3'>
