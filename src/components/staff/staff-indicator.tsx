@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, ChevronDown, Users } from 'lucide-react';
+import { LogOut, ChevronDown, Users } from 'lucide-react';
 import Link from 'next/link';
 
 export function StaffIndicator() {
@@ -29,8 +29,11 @@ export function StaffIndicator() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-            <User className="w-4 h-4 text-muted-foreground" />
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+            style={{ backgroundColor: currentStaff.staffColor || '#6366f1' }}
+          >
+            {currentStaff.staffName?.charAt(0).toUpperCase()}
           </div>
           <span className="text-sm font-medium">{currentStaff.staffName}</span>
           <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />

@@ -50,6 +50,7 @@ export function useBoardData() {
             quantity: s.quantity || 1,
             assigned_seamstress_id: s.assigned_seamstress_id || null,
             assigned_seamstress_name: s.assigned_seamstress_name || null,
+            assigned_seamstress_color: s.assigned_seamstress_color || null,
           }))
         }))
 

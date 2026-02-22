@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 export interface StaffMember {
   id: string;
   name: string;
+  color?: string;
   is_active: boolean;
   pin_hash?: string;
   last_clock_in?: string;
@@ -22,7 +23,7 @@ export function useStaff() {
         const supabase = createClient();
         const { data, error: fetchError } = await supabase
           .from('staff')
-          .select('id, name, is_active, pin_hash, last_clock_in')
+          .select('id, name, color, is_active, pin_hash, last_clock_in')
           .eq('is_active', true)
           .order('name');
 

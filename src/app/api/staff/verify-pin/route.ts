@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       // Original flow: Verify specific staff member
       const { data, error } = await supabase
         .from('staff')
-        .select('id, name, role, pin_hash, is_active')
+        .select('id, name, role, color, pin_hash, is_active')
         .eq('id', staffId)
         .single();
 
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       // Since we store plain PINs currently (as noted in comments), we can match directly.
       const { data, error } = await supabase
         .from('staff')
-        .select('id, name, role, pin_hash, is_active')
+        .select('id, name, role, color, pin_hash, is_active')
         .eq('pin_hash', pin)
         .eq('is_active', true)
         .maybeSingle();
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
         id: staff.id,
         name: staff.name,
         role: staff.role || 'seamstress',
+        color: staff.color || '#6366f1',
       },
     });
   } catch (error) {

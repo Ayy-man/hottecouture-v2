@@ -8,6 +8,7 @@ export interface StaffSession {
   staffId: string;
   staffName: string;
   staffRole: string;
+  staffColor: string;
   clockedInAt: string;
 }
 
@@ -46,6 +47,7 @@ export function useCurrentStaff() {
           staffId,
           staffName,
           staffRole: result.staff?.role || 'seamstress',
+          staffColor: result.staff?.color || '#6366f1',
           clockedInAt: new Date().toISOString(),
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSession));
@@ -75,6 +77,7 @@ export function useCurrentStaff() {
           staffId: result.staff.id,
           staffName: result.staff.name,
           staffRole: result.staff.role || 'seamstress',
+          staffColor: result.staff.color || '#6366f1',
           clockedInAt: new Date().toISOString(),
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSession));

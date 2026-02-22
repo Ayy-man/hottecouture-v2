@@ -109,7 +109,13 @@ export function AssigneeFilter({
                 onClick={() => onAssigneeChange(member.id)}
                 className='flex items-center justify-between'
               >
-                <span>{member.name}</span>
+                <span className='flex items-center gap-2'>
+                  <span
+                    className='w-2.5 h-2.5 rounded-full flex-shrink-0'
+                    style={{ backgroundColor: member.color || '#6366f1' }}
+                  />
+                  {member.name}
+                </span>
                 <div className='flex items-center gap-2'>
                   <span className='text-xs text-muted-foreground'>
                     {assigneeCounts[member.id] || 0}

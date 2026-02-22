@@ -7,7 +7,7 @@
  * 1. Go to Automation → Workflows
  * 2. Create new workflow with trigger "Invoice Paid"
  * 3. Add action "Custom Webhook"
- * 4. Set URL to: https://hottecouture.vercel.app/api/webhooks/ghl-invoice
+ * 4. Set URL to: https://hottecouture-v2.vercel.app/api/webhooks/ghl-invoice
  * 5. Method: POST
  * 6. Add header: x-webhook-secret = your-secret
  */
