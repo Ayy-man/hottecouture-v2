@@ -60,6 +60,19 @@ export async function POST(request: NextRequest) {
 
     const { client, order, garments, notes, total_override_cents } = body;
 
+    // Validate: every service must have estimated_minutes > 0
+    for (const garment of garments) {
+      for (const service of garment.services || []) {
+        if (!service.estimatedMinutes || service.estimatedMinutes <= 0) {
+          console.warn(`⚠️ Intake API: Service "${service.serviceName || service.serviceId}" missing estimated time — rejecting`);
+          return NextResponse.json(
+            { error: `Le temps estimé est requis pour chaque service. Service manquant: ${service.serviceName || service.serviceId}` },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // 1. Create or find client
     let clientId: string;
 

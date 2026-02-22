@@ -104,7 +104,7 @@ const SelectContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => {
   const { open, setOpen, triggerRef } = useSelectContext()
   const contentRef = React.useRef<HTMLDivElement>(null)
-  const [position, setPosition] = React.useState({ top: 0, left: 0, width: 0, maxHeight: 240 })
+  const [position, setPosition] = React.useState({ top: 0, left: 0, width: 0, maxHeight: 360 })
   const [mounted, setMounted] = React.useState(false)
 
   React.useImperativeHandle(ref, () => contentRef.current!)
@@ -113,7 +113,7 @@ const SelectContent = React.forwardRef<
   React.useEffect(() => {
     if (open && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      const maxDropdownHeight = 240
+      const maxDropdownHeight = 360
       const padding = 8
 
       const spaceBelow = window.innerHeight - rect.bottom

@@ -17,11 +17,12 @@ export type Database = {
           last_name: string;
           phone: string | null;
           email: string | null;
-          preferred_contact: 'sms' | 'email';
+          preferred_contact: 'sms' | 'email' | 'phone';
           newsletter_consent: boolean;
           language: 'fr' | 'en';
           ghl_contact_id: string | null;
           notes: string | null;
+          mobile_phone: string | null;
         };
         Insert: {
           id?: string;
@@ -30,11 +31,12 @@ export type Database = {
           last_name: string;
           phone?: string | null;
           email?: string | null;
-          preferred_contact?: 'sms' | 'email';
+          preferred_contact?: 'sms' | 'email' | 'phone';
           newsletter_consent?: boolean;
           language?: 'fr' | 'en';
           ghl_contact_id?: string | null;
           notes?: string | null;
+          mobile_phone?: string | null;
         };
         Update: {
           id?: string;
@@ -43,11 +45,12 @@ export type Database = {
           last_name?: string;
           phone?: string | null;
           email?: string | null;
-          preferred_contact?: 'sms' | 'email';
+          preferred_contact?: 'sms' | 'email' | 'phone';
           newsletter_consent?: boolean;
           language?: 'fr' | 'en';
           ghl_contact_id?: string | null;
           notes?: string | null;
+          mobile_phone?: string | null;
         };
       };
       document: {
@@ -151,6 +154,7 @@ export type Database = {
           final_price_cents: number | null;
           notes: string | null;
           assigned_seamstress_id: string | null;
+          estimated_minutes: number | null;
         };
         Insert: {
           id?: string;
@@ -162,6 +166,7 @@ export type Database = {
           final_price_cents?: number | null;
           notes?: string | null;
           assigned_seamstress_id?: string | null;
+          estimated_minutes?: number | null;
         };
         Update: {
           id?: string;
@@ -173,6 +178,7 @@ export type Database = {
           final_price_cents?: number | null;
           notes?: string | null;
           assigned_seamstress_id?: string | null;
+          estimated_minutes?: number | null;
         };
       };
       price_change_log: {
@@ -605,7 +611,7 @@ export type Database = {
         | 'delivered'
         | 'archived';
       order_type: 'alteration' | 'custom';
-      preferred_contact: 'sms' | 'email';
+      preferred_contact: 'sms' | 'email' | 'phone';
       price_list_type: 'alteration' | 'custom';
       priority: 'normal' | 'rush' | 'custom';
       task_stage: 'pending' | 'working' | 'done' | 'ready' | 'delivered';

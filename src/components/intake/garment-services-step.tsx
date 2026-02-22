@@ -14,7 +14,7 @@ import { Service } from '@/lib/types/database';
 import { useStaff } from '@/lib/hooks/useStaff';
 import { formatCurrency } from '@/lib/pricing/calcTotal';
 import { nanoid } from 'nanoid';
-import { Camera, X, Search, Plus, Minus, Trash2, LayoutGrid, List } from 'lucide-react';
+import { Camera, X, Search, Plus, Minus, Trash2, LayoutGrid, List, Pencil } from 'lucide-react';
 import { useViewPreference } from '@/lib/hooks/useViewPreference';
 import { useToast } from '@/components/ui/toast';
 
@@ -1189,10 +1189,11 @@ export function GarmentServicesStep({
                                 setEditingPriceIndex(idx);
                                 setEditPriceValue(((svc.customPriceCents || 0) / 100).toFixed(2));
                               }}
-                              className="text-sm font-medium text-primary-600 hover:underline cursor-pointer"
+                              className="flex items-center gap-1 text-sm font-medium text-primary-600 hover:underline cursor-pointer group"
                               title="Cliquer pour modifier le prix"
                             >
                               {formatCurrency(svc.customPriceCents || 0)}
+                              <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </button>
                           )}
                           <span className="text-xs text-muted-foreground">
