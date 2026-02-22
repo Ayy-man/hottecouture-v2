@@ -15,6 +15,7 @@ import { HoldToArchiveButton } from '@/components/ui/hold-and-release-button';
 import { useToast } from '@/components/ui/toast';
 import { CollapsibleNotes } from '@/components/ui/collapsible-notes';
 import { ClipboardList } from 'lucide-react';
+import { useStaffSession } from '@/components/staff';
 
 interface OrderDetailModalProps {
   order: any;
@@ -29,6 +30,8 @@ export function OrderDetailModal({
   onClose,
 }: OrderDetailModalProps) {
   const toast = useToast();
+  const { currentStaff, isLoading: isStaffLoading } = useStaffSession();
+  const isSeamstress = currentStaff?.staffRole === 'seamstress';
   const [detailedOrder, setDetailedOrder] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [orderMeasurements, setOrderMeasurements] = useState<Record<string, any[]>>({});
@@ -493,13 +496,20 @@ export function OrderDetailModal({
             </Button>
           </div>
 
-          {loading && (
+          {/* Loading skeleton — prevents flash of financial data for seamstresses during hydration */}
+          {isStaffLoading && (
+            <div className='flex justify-center p-8'>
+              <LoadingLogo />
+            </div>
+          )}
+
+          {loading && !isStaffLoading && (
             <div className='flex items-center justify-center py-12'>
               <LoadingLogo size='lg' text='Loading order details...' />
             </div>
           )}
 
-          {!loading && (
+          {!loading && !isStaffLoading && (
             <>
               {/* Order Details Grid */}
               <div className='grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4'>
@@ -631,24 +641,28 @@ export function OrderDetailModal({
                       <span className='text-muted-foreground text-xs'>Name:</span>
                       <span className='font-medium text-xs'>{order.client_name || 'Unknown Client'}</span>
                     </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-muted-foreground text-xs'>Phone:</span>
-                      <span className='font-medium font-mono text-xs'>
-                        {order.client_phone ? (revealedContact ? order.client_phone : maskPhone(order.client_phone)) : 'N/A'}
-                      </span>
-                    </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-muted-foreground text-xs'>Email:</span>
-                      <span className='font-medium font-mono text-xs truncate max-w-[120px]'>
-                        {order.client_email ? (revealedContact ? order.client_email : maskEmail(order.client_email)) : 'N/A'}
-                      </span>
-                    </div>
+                    {!isSeamstress && (
+                      <div className='flex justify-between items-center'>
+                        <span className='text-muted-foreground text-xs'>Phone:</span>
+                        <span className='font-medium font-mono text-xs'>
+                          {order.client_phone ? (revealedContact ? order.client_phone : maskPhone(order.client_phone)) : 'N/A'}
+                        </span>
+                      </div>
+                    )}
+                    {!isSeamstress && (
+                      <div className='flex justify-between items-center'>
+                        <span className='text-muted-foreground text-xs'>Email:</span>
+                        <span className='font-medium font-mono text-xs truncate max-w-[120px]'>
+                          {order.client_email ? (revealedContact ? order.client_email : maskEmail(order.client_email)) : 'N/A'}
+                        </span>
+                      </div>
+                    )}
                     <div className='flex justify-between col-span-full'>
                       <span className='text-muted-foreground text-xs'>Language:</span>
                       <span className='font-medium text-xs'>{order.client_language || 'English'}</span>
                     </div>
                   </div>
-                  {(order.client_phone || order.client_email) && (
+                  {!isSeamstress && (order.client_phone || order.client_email) && (
                     <button
                       onClick={() => setRevealedContact(!revealedContact)}
                       className='flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors'
@@ -656,7 +670,7 @@ export function OrderDetailModal({
                       {revealedContact ? '🙈 Masquer' : '👁️ Afficher'}
                     </button>
                   )}
-                  {order.client_id && (
+                  {!isSeamstress && order.client_id && (
                     <Link
                       href={`/orders/history?clientId=${order.client_id}`}
                       className='text-xs text-primary-600 hover:text-primary-800 hover:underline transition-colors'
@@ -960,13 +974,15 @@ export function OrderDetailModal({
                                         Qty: {service.quantity}
                                       </div>
 
-                                      {/* Estimated Price (readonly) */}
-                                      <div className='text-xs text-muted-foreground'>
-                                        Est: ${(priceInfo.estimatedTotalCents / 100).toFixed(2)}
-                                      </div>
+                                      {/* Estimated Price (readonly) — hidden for seamstresses */}
+                                      {!isSeamstress && (
+                                        <div className='text-xs text-muted-foreground'>
+                                          Est: ${(priceInfo.estimatedTotalCents / 100).toFixed(2)}
+                                        </div>
+                                      )}
 
-                                      {/* Final Price (editable) */}
-                                      {isEditing ? (
+                                      {/* Final Price (editable) — hidden for seamstresses */}
+                                      {!isSeamstress && (isEditing ? (
                                         <div className='space-y-1'>
                                           <div className='flex items-center gap-1'>
                                             <span className='text-xs'>$</span>
@@ -1024,7 +1040,7 @@ export function OrderDetailModal({
                                             Edit Price
                                           </Button>
                                         </div>
-                                      )}
+                                      ))}
 
                                       {service.service?.estimated_minutes && (
                                         <div className='text-xs text-muted-foreground'>
@@ -1071,142 +1087,146 @@ export function OrderDetailModal({
                 </div>
               </div>
 
-              {/* Pricing */}
-              <div className='mb-4'>
-                <h3 className='text-base font-semibold text-foreground mb-2'>
-                  Pricing
-                </h3>
-                <div className='bg-muted/50 rounded-lg p-3'>
-                  <div className='space-y-2'>
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>Subtotal:</span>
-                      <span className='font-medium'>
-                        {formatCurrency(displayOrder.subtotal_cents || 0)}
-                      </span>
-                    </div>
-                    {displayOrder.rush_fee_cents > 0 && (
+              {/* Pricing — hidden for seamstresses */}
+              {!isSeamstress && (
+                <div className='mb-4'>
+                  <h3 className='text-base font-semibold text-foreground mb-2'>
+                    Pricing
+                  </h3>
+                  <div className='bg-muted/50 rounded-lg p-3'>
+                    <div className='space-y-2'>
                       <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>
-                          Rush Fee{' '}
-                          {displayOrder.rush_fee_type
-                            ? `(${displayOrder.rush_fee_type})`
-                            : ''}
-                          :
-                        </span>
-                        <span className='font-medium text-accent-contrast'>
-                          {formatCurrency(displayOrder.rush_fee_cents)}
-                        </span>
-                      </div>
-                    )}
-                    {displayOrder.tps_cents !== undefined &&
-                      displayOrder.tvq_cents !== undefined ? (
-                      <>
-                        <div className='flex justify-between'>
-                          <span className='text-muted-foreground'>TPS: Canada tax</span>
-                          <span className='font-medium'>
-                            {formatCurrency(displayOrder.tps_cents || 0)}
-                          </span>
-                        </div>
-                        <div className='flex justify-between'>
-                          <span className='text-muted-foreground'>TVQ: Québec tax</span>
-                          <span className='font-medium'>
-                            {formatCurrency(displayOrder.tvq_cents || 0)}
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Tax:</span>
+                        <span className='text-muted-foreground'>Subtotal:</span>
                         <span className='font-medium'>
-                          {formatCurrency(displayOrder.tax_cents || 0)}
+                          {formatCurrency(displayOrder.subtotal_cents || 0)}
                         </span>
                       </div>
-                    )}
-                    <div className='flex justify-between items-center border-t border-border pt-2'>
-                      <span className='text-lg font-semibold text-foreground'>
-                        Total:
-                      </span>
-                      {editingPrice ? (
-                        <div className='flex items-center gap-2'>
-                          <span className='text-sm text-muted-foreground'>$</span>
-                          <input
-                            type='number'
-                            step='0.01'
-                            value={(editPriceCents / 100).toFixed(2)}
-                            onChange={(e) => setEditPriceCents(Math.round(parseFloat(e.target.value || '0') * 100))}
-                            className='w-24 px-2 py-1 text-sm border border-primary-300 rounded focus:ring-2 focus:ring-primary-500'
-                            disabled={savingPrice}
-                          />
-                          <Button
-                            size='sm'
-                            onClick={handleSavePrice}
-                            disabled={savingPrice}
-                            className='bg-primary-600 hover:bg-primary-700 text-xs h-7 px-2'
-                          >
-                            {savingPrice ? '...' : 'OK'}
-                          </Button>
-                          <Button
-                            size='sm'
-                            variant='outline'
-                            onClick={handleCancelEditPrice}
-                            disabled={savingPrice}
-                            className='text-xs h-7 px-2'
-                          >
-                            ✕
-                          </Button>
+                      {displayOrder.rush_fee_cents > 0 && (
+                        <div className='flex justify-between'>
+                          <span className='text-muted-foreground'>
+                            Rush Fee{' '}
+                            {displayOrder.rush_fee_type
+                              ? `(${displayOrder.rush_fee_type})`
+                              : ''}
+                            :
+                          </span>
+                          <span className='font-medium text-accent-contrast'>
+                            {formatCurrency(displayOrder.rush_fee_cents)}
+                          </span>
                         </div>
-                      ) : (
-                        <span className='text-lg font-semibold text-foreground'>
-                          {formatCurrency(displayOrder.total_cents || 0)}
-                        </span>
                       )}
-                    </div>
-                    {displayOrder.deposit_cents > 0 && (
+                      {displayOrder.tps_cents !== undefined &&
+                        displayOrder.tvq_cents !== undefined ? (
+                        <>
+                          <div className='flex justify-between'>
+                            <span className='text-muted-foreground'>TPS: Canada tax</span>
+                            <span className='font-medium'>
+                              {formatCurrency(displayOrder.tps_cents || 0)}
+                            </span>
+                          </div>
+                          <div className='flex justify-between'>
+                            <span className='text-muted-foreground'>TVQ: Québec tax</span>
+                            <span className='font-medium'>
+                              {formatCurrency(displayOrder.tvq_cents || 0)}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className='flex justify-between'>
+                          <span className='text-muted-foreground'>Tax:</span>
+                          <span className='font-medium'>
+                            {formatCurrency(displayOrder.tax_cents || 0)}
+                          </span>
+                        </div>
+                      )}
+                      <div className='flex justify-between items-center border-t border-border pt-2'>
+                        <span className='text-lg font-semibold text-foreground'>
+                          Total:
+                        </span>
+                        {editingPrice ? (
+                          <div className='flex items-center gap-2'>
+                            <span className='text-sm text-muted-foreground'>$</span>
+                            <input
+                              type='number'
+                              step='0.01'
+                              value={(editPriceCents / 100).toFixed(2)}
+                              onChange={(e) => setEditPriceCents(Math.round(parseFloat(e.target.value || '0') * 100))}
+                              className='w-24 px-2 py-1 text-sm border border-primary-300 rounded focus:ring-2 focus:ring-primary-500'
+                              disabled={savingPrice}
+                            />
+                            <Button
+                              size='sm'
+                              onClick={handleSavePrice}
+                              disabled={savingPrice}
+                              className='bg-primary-600 hover:bg-primary-700 text-xs h-7 px-2'
+                            >
+                              {savingPrice ? '...' : 'OK'}
+                            </Button>
+                            <Button
+                              size='sm'
+                              variant='outline'
+                              onClick={handleCancelEditPrice}
+                              disabled={savingPrice}
+                              className='text-xs h-7 px-2'
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className='text-lg font-semibold text-foreground'>
+                            {formatCurrency(displayOrder.total_cents || 0)}
+                          </span>
+                        )}
+                      </div>
+                      {displayOrder.deposit_cents > 0 && (
+                        <div className='flex justify-between text-sm'>
+                          <span className='text-muted-foreground'>Deposit Paid:</span>
+                          <span className='font-medium'>
+                            {formatCurrency(displayOrder.deposit_cents)}
+                          </span>
+                        </div>
+                      )}
                       <div className='flex justify-between text-sm'>
-                        <span className='text-muted-foreground'>Deposit Paid:</span>
+                        <span className='text-muted-foreground'>Balance Due:</span>
                         <span className='font-medium'>
-                          {formatCurrency(displayOrder.deposit_cents)}
+                          {formatCurrency(
+                            displayOrder.balance_due_cents ||
+                            displayOrder.total_cents ||
+                            0
+                          )}
                         </span>
                       </div>
-                    )}
-                    <div className='flex justify-between text-sm'>
-                      <span className='text-muted-foreground'>Balance Due:</span>
-                      <span className='font-medium'>
-                        {formatCurrency(
-                          displayOrder.balance_due_cents ||
-                          displayOrder.total_cents ||
-                          0
-                        )}
-                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Payment Section */}
-              <div className='mb-4'>
-                <PaymentStatusSection
-                  order={{
-                    id: displayOrder.id,
-                    order_number: displayOrder.order_number,
-                    type: displayOrder.type || 'alteration',
-                    total_cents: displayOrder.total_cents || 0,
-                    deposit_cents: displayOrder.deposit_cents || 0,
-                    deposit_paid_at: displayOrder.deposit_paid_at || null,
-                    balance_due_cents: displayOrder.balance_due_cents || displayOrder.total_cents || 0,
-                    payment_status: displayOrder.payment_status || 'unpaid',
-                    paid_at: displayOrder.paid_at || null,
-                    payment_method: displayOrder.payment_method || null,
-                    deposit_payment_method: displayOrder.deposit_payment_method || null,
-                  }}
-                  onPaymentUpdate={fetchOrderDetails}
-                />
-              </div>
+              {/* Payment Section — hidden for seamstresses */}
+              {!isSeamstress && (
+                <div className='mb-4'>
+                  <PaymentStatusSection
+                    order={{
+                      id: displayOrder.id,
+                      order_number: displayOrder.order_number,
+                      type: displayOrder.type || 'alteration',
+                      total_cents: displayOrder.total_cents || 0,
+                      deposit_cents: displayOrder.deposit_cents || 0,
+                      deposit_paid_at: displayOrder.deposit_paid_at || null,
+                      balance_due_cents: displayOrder.balance_due_cents || displayOrder.total_cents || 0,
+                      payment_status: displayOrder.payment_status || 'unpaid',
+                      paid_at: displayOrder.paid_at || null,
+                      payment_method: displayOrder.payment_method || null,
+                      deposit_payment_method: displayOrder.deposit_payment_method || null,
+                    }}
+                    onPaymentUpdate={fetchOrderDetails}
+                  />
+                </div>
+              )}
 
               {/* Actions */}
               <div className='flex flex-wrap justify-end gap-2'>
-                {/* Archive/Unarchive Button */}
-                {displayOrder.status === 'archived' ? (
+                {/* Archive/Unarchive Button — hidden for seamstresses */}
+                {!isSeamstress && (displayOrder.status === 'archived' ? (
                   <HoldToArchiveButton
                     variant='unarchive'
                     onComplete={handleUnarchive}
@@ -1218,7 +1238,7 @@ export function OrderDetailModal({
                     onComplete={handleArchive}
                     disabled={archiving}
                   />
-                )}
+                ))}
                 <Button variant='outline' onClick={onClose}>
                   Close
                 </Button>
