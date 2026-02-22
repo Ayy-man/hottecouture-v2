@@ -8,12 +8,12 @@
 See: `.planning/PROJECT.md` (updated 2026-01-20)
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** ALL 26 PHASES COMPLETE. Milestone ready for completion.
+**Current focus:** Phase 27 — Role-based access control for seamstress view filtering.
 
 ## Current Status
 
-- **Milestone:** Final Modifications (17 MODs + 12 UAT + 7 audit + 22 Feb 11 call)
-- **Phase:** 26 of 26 complete (ALL PHASES DONE)
+- **Milestone:** Final Modifications (17 MODs + 12 UAT + 7 audit + 22 Feb 11 call + Feb 22 session)
+- **Phase:** 26 of 27 complete (Phase 27 pending)
 - **Phase 24 Completion:** February 11, 2026 (Board & Kanban UI Fixes)
 - **Phase 25 Completion:** February 11, 2026 (Print, Mobile & Portal Fixes)
 - **Phase 26 Completion:** February 12, 2026 (Staff & Infrastructure — code complete, external config deferred)
@@ -56,6 +56,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-20)
 | 24 - Board & Kanban UI | ✅ COMPLETE | 2/2 | Feb 11 |
 | 25 - Print, Mobile & Portal | ✅ COMPLETE | 1/1 | Feb 11 |
 | 26 - Staff & Infrastructure | ✅ COMPLETE | 2/2 | Feb 12 |
+| 27 - RBAC Seamstress Filtering | ⏳ PENDING | 0/? | Feb 22 |
 
 ## Execution Waves
 
@@ -92,6 +93,9 @@ WAVE 8 (Feb 11 Call - Parallel) ✅ DONE
 
 WAVE 9 (Infrastructure) ✅ DONE
 +-- Phase 26: Staff Management & Infrastructure ✅ DONE
+
+WAVE 10 (Access Control) ⏳ IN PROGRESS
++-- Phase 27: Role-Based Access Control - Seamstress View Filtering
 ```
 
 ## Feb 3 UAT Context
@@ -190,19 +194,23 @@ Key concerns from client:
 - [Phase 25-01]: Portal centering fix: Remove container class (max-w-7xl) conflict, use mx-auto max-w-lg w-full pattern
 - [Phase 26-01]: API route re-exports instead of duplicating handler logic
 - [Phase 26-01]: Chatbot component files retained for potential re-enablement
+- [Phase 27]: Gate fetchOrders on !isStaffLoading to prevent double-fetch during localStorage hydration for seamstress role detection
+- [Phase 27]: SEAMSTRESS_NAV allowlist pattern for mobile nav: explicit /board + /calendar list safer than denylist, use !isSeamstress conditional JSX (not CSS) to remove admin UI from DOM entirely
 
 ## Next Action
 
-**ALL 26 PHASES COMPLETE** — Milestone ready for completion.
+**Phase 27 — Pending.** Role-based access control - seamstress view filtering.
 
-**Phase 26 — Complete.** Staff Management & Infrastructure:
-- Created `/api/staff` and `/api/staff/[id]` route aliases (re-export from admin/team)
-- Fixed team-management-modal GET endpoint consistency (`/api/staff` everywhere)
-- PWA manifest + metadata (installable on iOS/Android)
-- Chatbot permanently removed from layout
-- External config (SMS A2P, Stripe, domain) deferred for client/developer
+**Design decisions (Feb 22):**
+- Board: seamstresses see only orders with items assigned to them
+- Order detail: seamstresses see ALL garments/tasks (full job context) but NO pricing, NO payments, NO client contact info
+- Calendar: only their tasks + unassigned pool
+- Workload: only their own utilization gauge
+- Navigation: hide Intake, Clients, Dashboard, Archived, Exports from seamstresses
+- API-level filtering using existing `p_assigned_seamstress_id` RPC parameter
+- Existing building blocks: RoleGate component, NavigationProvider permissions, getUserPermissions()
 
-**Next:** `/gsd:complete-milestone` — archive and close
+**Next:** `/gsd:plan-phase 27` — create detailed implementation plan
 
 ## Wave 4 Summary (Feb 4)
 
@@ -440,14 +448,15 @@ Fixed 4 cascading build failures after adding all source files to git:
 - Phase 24 added: Board & Kanban UI Fixes (rounded corners, rush badge, scroll, Gantt drag, tooltips)
 - Phase 25 added: Print, Mobile & Portal Fixes (print layout, nav in print, bottom nav, portal centering, phone)
 - Phase 26 added: Staff Management & Infrastructure (self-serve staff, SMS A2P, Stripe, domain, PWA, chatbot)
+- Phase 27 added: Role-based access control - seamstress view filtering (board filtering, hide pricing/payments/client contact from seamstresses)
 
 ## Session Continuity
 
-- **Last session:** 2026-02-12
-- **Status:** 26/26 phases complete — ALL WAVES DONE
-- **Stopped at:** Phase 26 verified complete
-- **Next:** `/gsd:complete-milestone` — archive and close
+- **Last session:** 2026-02-22T13:57:27.064Z
+- **Status:** 26/27 phases complete — Phase 27 pending
+- **Stopped at:** Completed 27-01-PLAN.md
+- **Next:** `/gsd:plan-phase 27` — plan RBAC implementation
 - **Resume file:** None
 
 ---
-*State updated: 2026-02-12*
+*State updated: 2026-02-22*
