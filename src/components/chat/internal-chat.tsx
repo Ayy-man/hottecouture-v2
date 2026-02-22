@@ -19,7 +19,7 @@ export function InternalChat() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: `Bonjour! 👋 Je suis l'assistant de Hotte Couture. Posez-moi vos questions:
+      content: `Bonjour! 🐉 Je suis Pupus, ton assistant dragon de Hotte Couture! Demande-moi n'importe quoi:
 
 • "Commandes du jour" ou "today"
 • "Commandes en retard"
@@ -27,7 +27,9 @@ export function InternalChat() {
 • "Commande #123"
 • "Cherche client Martin"
 • "Stats" ou "combien de commandes"
-• Questions sur les prix, délais, etc.`,
+• Questions sur les prix, délais, etc.
+
+Je suis là pour t'aider! 🔥`,
       timestamp: new Date(),
     },
   ]);
@@ -127,8 +129,8 @@ export function InternalChat() {
         <Card className="fixed bottom-4 right-4 z-[9999] w-96 max-w-[calc(100vw-2rem)] h-[500px] max-h-[calc(100vh-2rem)] flex flex-col shadow-2xl border-2 border-primary-200">
           <div className="flex items-center justify-between p-3 border-b bg-gradient-to-r from-primary-500 to-accent-clay text-white rounded-t-lg">
             <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              <span className="font-semibold">Assistant Interne</span>
+              <span className="text-lg">🐉</span>
+              <span className="font-semibold">Pupus</span>
             </div>
             <button
               type="button"
