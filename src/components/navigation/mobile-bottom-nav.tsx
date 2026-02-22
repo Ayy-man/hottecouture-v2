@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Home, ClipboardList, Users, Calendar, MessageCircle } from 'lucide-react';
+import { Home, ClipboardList, Users, Calendar, MessageCircle, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStaffSession } from '@/components/staff';
 
@@ -12,6 +12,7 @@ const navItems = [
   { href: '/clients', icon: Users, label: 'Clients' },
   { href: '/calendar', icon: Calendar, label: 'Calendar' },
   { href: '/chat', icon: MessageCircle, label: 'Chat' },
+  { href: '/admin/team', icon: UserCog, label: 'Team' },
 ];
 
 // Paths accessible to seamstress role (Board + Calendar only)
