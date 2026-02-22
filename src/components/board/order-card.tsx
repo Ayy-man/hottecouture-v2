@@ -142,7 +142,7 @@ export function OrderCard({
               </span>
             )}
             {order.rush && (
-              <span className='px-2 py-1 text-xs font-bold text-white bg-gradient-to-r from-accent-contrast to-primary-500 rounded'>
+              <span className='px-2 py-1 text-xs font-bold text-white bg-amber-500 rounded'>
                 Rush
               </span>
             )}

@@ -180,7 +180,7 @@ export function PaymentForm({
               </div>
             )}
             {summary.rushFee > 0 && (
-              <div className='flex justify-between text-accent-contrast'>
+              <div className='flex justify-between text-primary-900'>
                 <span>Rush Fee:</span>
                 <span>{formatPaymentAmount(summary.rushFee)}</span>
               </div>

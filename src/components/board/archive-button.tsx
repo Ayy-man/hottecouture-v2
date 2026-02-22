@@ -62,7 +62,7 @@ export function ArchiveButton({ onArchiveComplete }: ArchiveButtonProps) {
       size='sm'
       onClick={handleArchiveDelivered}
       disabled={isArchiving}
-      className='btn-press bg-gradient-to-r from-accent-taupe/20 to-accent-taupe/30 hover:from-accent-taupe/30 hover:to-accent-taupe/40 text-accent-contrast font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-accent-taupe/40'
+      className='btn-press bg-gradient-to-r from-primary-400/20 to-primary-400/30 hover:from-primary-400/30 hover:to-primary-400/40 text-primary-900 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-primary-400/40'
     >
       {isArchiving ? (
         <Loader2 className='w-4 h-4 mr-2 animate-spin' />

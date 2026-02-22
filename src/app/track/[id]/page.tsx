@@ -84,7 +84,7 @@ export default function TrackOrderPage() {
           {/* Header */}
           <div className='text-center mb-8'>
             <Link href='/' className='inline-block mb-4'>
-              <h1 className='text-3xl font-bold bg-gradient-to-r from-accent-taupe to-accent-contrast bg-clip-text text-transparent'>
+              <h1 className='text-3xl font-bold bg-gradient-to-r from-primary-400 to-primary-900 bg-clip-text text-transparent'>
                 Hotte Couture
               </h1>
             </Link>
