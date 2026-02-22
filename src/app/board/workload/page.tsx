@@ -110,6 +110,9 @@ function calculateEstimatedHours(order: Order): number {
 export default function WorkloadPage() {
   const toast = useToast();
   const { currentStaff } = useStaffSession();
+
+  const isSeamstress = currentStaff?.staffRole === 'seamstress';
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -510,23 +513,28 @@ export default function WorkloadPage() {
 
         <div className="flex-1 overflow-auto p-4 pb-24 md:pb-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Weekly Capacity
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex items-center justify-center py-4">
-                <GaugeCircle
-                  value={totalCapacityUsed}
-                  size="lg"
-                  primaryColor={totalCapacityUsed > 80 ? 'stroke-red-500' : 'stroke-green-500'}
-                />
-              </CardContent>
-            </Card>
+            {!isSeamstress && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Weekly Capacity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center py-4">
+                  <GaugeCircle
+                    value={totalCapacityUsed}
+                    size="lg"
+                    primaryColor={totalCapacityUsed > 80 ? 'stroke-red-500' : 'stroke-green-500'}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
-            {staffMembers.map((staff) => {
+            {(isSeamstress
+              ? staffMembers.filter(s => s.id === currentStaff?.staffId)
+              : staffMembers
+            ).map((staff) => {
               const workload = workloadBySeamstress[staff.id];
               if (!workload) return null;
 
@@ -554,7 +562,8 @@ export default function WorkloadPage() {
                         <div className="text-sm">{workload.totalHours.toFixed(1)}h</div>
                       </div>
                     </div>
-                    {/* Export Link - MOD-009 */}
+                    {/* Export Link - MOD-009 (managers/admins only) */}
+                    {!isSeamstress && (
                     <button
                       onClick={() => handleExportSeamstress(staff.id, staff.name)}
                       className="w-full flex items-center justify-center gap-2 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-colors border border-primary-200 hover:border-primary-300"
@@ -562,6 +571,7 @@ export default function WorkloadPage() {
                       <Download className="h-4 w-4" />
                       <span>Exporter Liste de Projet</span>
                     </button>
+                    )}
                   </CardContent>
                 </Card>
               );
@@ -590,7 +600,7 @@ export default function WorkloadPage() {
                                 <button
                                   onClick={() => handleOpenOrderModal(item.orderId)}
                                   className="text-primary hover:underline"
-                                  title={`View order #${item.orderNumber}`}
+                                  title={`${item.clientName} — ${item.serviceName}`}
                                 >
                                   #{item.orderNumber}
                                 </button>
@@ -647,8 +657,9 @@ export default function WorkloadPage() {
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
                           <div className="space-y-1">
-                            <div className="font-semibold">Commande #{item.orderNumber}</div>
-                            <div className="text-xs">{item.serviceName}</div>
+                            <div className="font-semibold">{item.clientName}</div>
+                            <div className="text-xs">{item.serviceName} — {item.garmentType}</div>
+                            <div className="text-xs text-muted-foreground">Commande #{item.orderNumber}</div>
                             {item.estimatedMinutes != null && (
                               <div className="text-xs text-muted-foreground">
                                 Temps estimé: {item.estimatedMinutes} min
@@ -674,7 +685,7 @@ export default function WorkloadPage() {
             )}
           </div>
 
-          {overloadedDays.length > 0 && (
+          {!isSeamstress && overloadedDays.length > 0 && (
             <Card className="border-red-200 bg-red-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-red-700 flex items-center gap-2">
@@ -699,30 +710,32 @@ export default function WorkloadPage() {
             </Card>
           )}
 
-          <Card className="flex-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Order Timeline</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[250px] md:h-[400px] overflow-auto">
-              {ganttFeatures.length > 0 ? (
-                <Gantt
-                  features={ganttFeatures}
-                  markers={[todayMarker]}
-                  range={ganttRange}
-                  zoom={100}
-                  showSidebar={true}
-                  onSelectFeature={(id) => {
-                    handleOpenOrderModal(id);
-                  }}
-                  onUpdateFeature={handleUpdateFeature}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  No active orders with due dates to display
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {!isSeamstress && (
+            <Card className="flex-1">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Order Timeline</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[250px] md:h-[400px] overflow-auto">
+                {ganttFeatures.length > 0 ? (
+                  <Gantt
+                    features={ganttFeatures}
+                    markers={[todayMarker]}
+                    range={ganttRange}
+                    zoom={100}
+                    showSidebar={true}
+                    onSelectFeature={(id) => {
+                      handleOpenOrderModal(id);
+                    }}
+                    onUpdateFeature={handleUpdateFeature}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No active orders with due dates to display
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {updatingOrder && (
             <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
