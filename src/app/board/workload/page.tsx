@@ -508,7 +508,7 @@ export default function WorkloadPage() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-4 space-y-4">
+        <div className="flex-1 overflow-auto p-4 pb-24 md:pb-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">

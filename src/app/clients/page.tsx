@@ -129,7 +129,7 @@ export default function ClientsPage() {
   return (
     <div className="h-full flex flex-col overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50">
       <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-4 mb-4">

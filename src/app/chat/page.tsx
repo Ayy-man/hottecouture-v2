@@ -114,7 +114,7 @@ export default function ChatPage() {
         <span className="font-semibold text-lg">Assistant Interne</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/50">
+      <div className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4 space-y-3 bg-muted/50">
         {messages.map((message) => (
           <div
             key={message.id}

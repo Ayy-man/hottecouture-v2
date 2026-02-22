@@ -175,7 +175,7 @@ export default function ArchivedOrdersPage() {
     <AuthGuard>
       <div className='h-full flex flex-col overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50'>
         <div className='flex-1 overflow-y-auto'>
-          <div className='container mx-auto px-4 py-8'>
+          <div className='container mx-auto px-4 py-8 pb-24 md:pb-8'>
           {/* Header */}
           <div className='mb-6 text-center'>
             <h1 className='text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2'>
