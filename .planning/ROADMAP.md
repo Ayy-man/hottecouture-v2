@@ -653,7 +653,7 @@ Plans:
 
 **Goal:** Restrict seamstress views across the app: board shows only their assigned orders (API-level), order modal hides pricing/payments/client contact, calendar shows only their tasks + unassigned, workload shows only their gauge, navigation hides admin pages.
 **Depends on:** Phase 26
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 27-01-PLAN.md — API-level board filtering, board page RBAC, mobile nav role filtering

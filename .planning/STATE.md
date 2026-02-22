@@ -196,6 +196,8 @@ Key concerns from client:
 - [Phase 26-01]: Chatbot component files retained for potential re-enablement
 - [Phase 27]: Gate fetchOrders on !isStaffLoading to prevent double-fetch during localStorage hydration for seamstress role detection
 - [Phase 27]: SEAMSTRESS_NAV allowlist pattern for mobile nav: explicit /board + /calendar list safer than denylist, use !isSeamstress conditional JSX (not CSS) to remove admin UI from DOM entirely
+- [Phase 27]: useStaffSession() called directly inside OrderDetailModal (no prop threading) — prevents flash of financial data via isStaffLoading guard
+- [Phase 27]: OrderDetailModal hides pricing, payment, client contact, price edit buttons, and archive button for seamstresses using !isSeamstress conditional rendering (DOM removal, not CSS)
 
 ## Next Action
 
@@ -452,9 +454,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-02-22T13:57:27.064Z
+- **Last session:** 2026-02-22T14:02:41.078Z
 - **Status:** 26/27 phases complete — Phase 27 pending
-- **Stopped at:** Completed 27-01-PLAN.md
+- **Stopped at:** Completed 27-02-PLAN.md
 - **Next:** `/gsd:plan-phase 27` — plan RBAC implementation
 - **Resume file:** None
 
