@@ -24,7 +24,7 @@ export const RUSH_ORDER_CONFIGS: Record<OrderType, RushOrderConfig> = {
     rushFeeMultiplier: 1.5,
     priority: 'high',
     visualIndicator: {
-      color: 'bg-gradient-to-r from-accent-contrast to-primary-500',
+      color: 'bg-amber-500 text-white',
       icon: '⚡',
       text: 'RUSH',
       animation: 'none',
@@ -41,7 +41,7 @@ export const RUSH_ORDER_CONFIGS: Record<OrderType, RushOrderConfig> = {
     rushFeeMultiplier: 2.0,
     priority: 'urgent',
     visualIndicator: {
-      color: 'bg-gradient-to-r from-accent-contrast to-primary-600',
+      color: 'bg-red-500 text-white',
       icon: '🔥',
       text: 'URGENT',
       animation: 'none',

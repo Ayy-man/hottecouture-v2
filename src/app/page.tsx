@@ -53,14 +53,14 @@ export default function HomePage() {
           )}
 
           {/* Action Cards */}
-          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-6 flex-1 items-center content-center pt-4'>
+          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-8 flex-1 items-center content-center py-8'>
             {/* Create New Order Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-1 hover-lift'>
-              <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <CardHeader className='pb-3'>
-                <div className='w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-1 hover-lift'>
+              <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none' />
+              <CardHeader className='p-8 pb-4'>
+                <div className='w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
-                    className='w-6 h-6 text-white'
+                    className='w-8 h-8 text-white'
                     fill='none'
                     stroke='currentColor'
                     viewBox='0 0 24 24'
@@ -73,32 +73,31 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <CardTitle className='text-xl font-bold text-text mb-2'>
+                <CardTitle className='text-2xl font-bold text-foreground mb-3'>
                   Create New Order
                 </CardTitle>
-                <CardDescription className='text-text-secondary text-sm leading-relaxed min-h-[40px]'>
-                  Streamlined client onboarding and order creation
+                <CardDescription className='text-muted-foreground text-base leading-relaxed'>
+                  Register a new client and start an alteration order
                 </CardDescription>
               </CardHeader>
-              <CardContent className='pt-0'>
-                <a href='/intake' className='block cursor-pointer'>
-                  <Button
-                    {...createHapticButtonProps('medium')}
-                    className='w-full h-10 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press btn-bounce relative overflow-hidden'
-                  >
-                    Start New Order
-                  </Button>
-                </a>
+              <CardContent className='px-8 pb-8 pt-2'>
+                <Button
+                  asChild
+                  {...createHapticButtonProps('medium')}
+                  className='w-full h-12 bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-[transform,box-shadow,background-color] duration-300 btn-press'
+                >
+                  <a href='/intake'>Start New Order</a>
+                </Button>
               </CardContent>
             </Card>
 
             {/* Kanban Board Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-2 hover-lift'>
-              <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <CardHeader className='pb-3'>
-                <div className='w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-2 hover-lift'>
+              <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none' />
+              <CardHeader className='p-8 pb-4'>
+                <div className='w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
-                    className='w-6 h-6 text-white'
+                    className='w-8 h-8 text-white'
                     fill='none'
                     stroke='currentColor'
                     viewBox='0 0 24 24'
@@ -111,32 +110,31 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <CardTitle className='text-xl font-bold text-text mb-2'>
+                <CardTitle className='text-2xl font-bold text-foreground mb-3'>
                   Kanban Board
                 </CardTitle>
-                <CardDescription className='text-text-secondary text-sm leading-relaxed min-h-[40px]'>
-                  Visual workflow management with drag-and-drop
+                <CardDescription className='text-muted-foreground text-base leading-relaxed'>
+                  Move orders through pipeline stages with drag-and-drop
                 </CardDescription>
               </CardHeader>
-              <CardContent className='pt-0'>
-                <a href='/board' className='block cursor-pointer'>
-                  <Button
-                    {...createHapticButtonProps('light')}
-                    className='w-full h-10 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press btn-bounce relative overflow-hidden'
-                  >
-                    View Board
-                  </Button>
-                </a>
+              <CardContent className='px-8 pb-8 pt-2'>
+                <Button
+                  asChild
+                  {...createHapticButtonProps('light')}
+                  className='w-full h-12 bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-[transform,box-shadow,background-color] duration-300 btn-press'
+                >
+                  <a href='/board'>View Board</a>
+                </Button>
               </CardContent>
             </Card>
 
             {/* Order Status Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-3 hover-lift'>
-              <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <CardHeader className='pb-3'>
-                <div className='w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-3 hover-lift'>
+              <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none' />
+              <CardHeader className='p-8 pb-4'>
+                <div className='w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
-                    className='w-6 h-6 text-white'
+                    className='w-8 h-8 text-white'
                     fill='none'
                     stroke='currentColor'
                     viewBox='0 0 24 24'
@@ -149,32 +147,31 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <CardTitle className='text-xl font-bold text-text mb-2'>
+                <CardTitle className='text-2xl font-bold text-foreground mb-3'>
                   Order Status
                 </CardTitle>
-                <CardDescription className='text-text-secondary text-sm leading-relaxed min-h-[40px]'>
-                  Check order status and track progress
+                <CardDescription className='text-muted-foreground text-base leading-relaxed'>
+                  Look up any order by number and see real-time progress
                 </CardDescription>
               </CardHeader>
-              <CardContent className='pt-0'>
-                <a href='/status' className='block cursor-pointer'>
-                  <Button
-                    {...createHapticButtonProps('medium')}
-                    className='w-full h-10 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press btn-bounce relative overflow-hidden'
-                  >
-                    Check Status
-                  </Button>
-                </a>
+              <CardContent className='px-8 pb-8 pt-2'>
+                <Button
+                  asChild
+                  {...createHapticButtonProps('medium')}
+                  className='w-full h-12 bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-[transform,box-shadow,background-color] duration-300 btn-press'
+                >
+                  <a href='/status'>Check Status</a>
+                </Button>
               </CardContent>
             </Card>
 
             {/* Customer Portal Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-3xl animate-fade-in-up-delay-3 hover-lift'>
-              <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-clay/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none'></div>
-              <CardHeader className='pb-3'>
-                <div className='w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-clay rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-4 hover-lift'>
+              <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none' />
+              <CardHeader className='p-8 pb-4'>
+                <div className='w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
-                    className='w-6 h-6 text-white'
+                    className='w-8 h-8 text-white'
                     fill='none'
                     stroke='currentColor'
                     viewBox='0 0 24 24'
@@ -187,22 +184,21 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <CardTitle className='text-xl font-bold text-text mb-2'>
-                  Portail Client
+                <CardTitle className='text-2xl font-bold text-foreground mb-3'>
+                  Customer Portal
                 </CardTitle>
-                <CardDescription className='text-text-secondary text-sm leading-relaxed min-h-[40px]'>
-                  Tester le portail public de suivi des commandes
+                <CardDescription className='text-muted-foreground text-base leading-relaxed'>
+                  Public tracking page where clients check their order status
                 </CardDescription>
               </CardHeader>
-              <CardContent className='pt-0'>
-                <a href='/portal' target='_blank' className='block cursor-pointer'>
-                  <Button
-                    {...createHapticButtonProps('medium')}
-                    className='w-full h-10 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer btn-press btn-bounce relative overflow-hidden'
-                  >
-                    Ouvrir Portail Client
-                  </Button>
-                </a>
+              <CardContent className='px-8 pb-8 pt-2'>
+                <Button
+                  asChild
+                  {...createHapticButtonProps('medium')}
+                  className='w-full h-12 bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-[transform,box-shadow,background-color] duration-300 btn-press'
+                >
+                  <a href='/portal' target='_blank'>Open Portal</a>
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -227,7 +223,7 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <h3 className='text-2xl font-bold text-white mb-4'>
-                  🚀 Ready to Test!
+                  Ready to Test
                 </h3>
                 <p className='text-muted-foreground mb-6 text-lg max-w-2xl mx-auto'>
                   The application is running in development mode. You can test
