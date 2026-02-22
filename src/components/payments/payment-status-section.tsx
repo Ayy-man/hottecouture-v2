@@ -75,7 +75,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       // Set URL first and copy to clipboard for "link only" mode
       const checkoutUrl = data.invoiceUrl;
       setLastSentUrl(checkoutUrl);
-      setSmsSent(sendSms);
+      setSmsSent(sendSms && data.smsSent === true);
 
       // For "link only" mode, also copy to clipboard automatically
       if (!sendSms && checkoutUrl) {

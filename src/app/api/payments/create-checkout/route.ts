@@ -6,6 +6,7 @@ import {
   findInvoiceForOrder,
   getInvoice,
   createText2PayInvoice,
+  sendSMS,
   centsToDollars,
   type AppClient,
   type GHLInvoice,
@@ -352,6 +353,27 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Invoice created for order ${orderNumber}, type: ${type}, amount: $${centsToDollars(amountCents)}`);
 
+    // Send SMS with payment link if requested
+    let smsSent = false;
+    if (sendSms && ghlContactId && client.phone) {
+      const lang = client.language === 'en' ? 'en' : 'fr';
+      const amountDisplay = `$${centsToDollars(amountCents)}`;
+      const smsMessage = lang === 'fr'
+        ? `Bonjour ${client.first_name || ''},\n\nVotre ${type === 'deposit' ? 'dépôt' : 'paiement'} de ${amountDisplay} pour la commande #${orderNumber} est prêt.\n\nPayez ici: ${invoiceUrl}\n\nMerci,\nHotte Couture`
+        : `Hello ${client.first_name || ''},\n\nYour ${type === 'deposit' ? 'deposit' : 'payment'} of ${amountDisplay} for order #${orderNumber} is ready.\n\nPay here: ${invoiceUrl}\n\nThank you,\nHotte Couture`;
+
+      console.log(`📱 Sending SMS to contact ${ghlContactId}...`);
+      const smsResult = await sendSMS(ghlContactId, smsMessage);
+      if (smsResult.success) {
+        smsSent = true;
+        console.log(`✅ SMS sent to ${client.phone} for order #${orderNumber}`);
+      } else {
+        console.error(`⚠️ SMS failed:`, smsResult.error);
+      }
+    } else if (sendSms && !client.phone) {
+      console.warn(`⚠️ SMS requested but client has no phone number`);
+    }
+
     return NextResponse.json({
       success: true,
       invoiceId: invoice._id,
@@ -359,6 +381,7 @@ export async function POST(request: NextRequest) {
       invoiceUrl: invoiceUrl,
       amount_cents: amountCents,
       type,
+      smsSent,
     });
   } catch (error) {
     console.error('❌ Create invoice error:', error);
