@@ -347,8 +347,13 @@ export default function WorkloadPage() {
       });
     }
 
+    // For seamstresses, only show their own orders on the timeline
+    if (isSeamstress && currentStaff) {
+      return features.filter(f => f.owner?.name === currentStaff.staffName);
+    }
+
     return features;
-  }, [activeOrders]);
+  }, [activeOrders, isSeamstress, currentStaff]);
 
   const todayMarker: GanttMarker = {
     id: 'today',
@@ -710,8 +715,7 @@ export default function WorkloadPage() {
             </Card>
           )}
 
-          {!isSeamstress && (
-            <Card className="flex-1">
+          <Card className="flex-1">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">Order Timeline</CardTitle>
               </CardHeader>
@@ -735,7 +739,6 @@ export default function WorkloadPage() {
                 )}
               </CardContent>
             </Card>
-          )}
 
           {updatingOrder && (
             <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
