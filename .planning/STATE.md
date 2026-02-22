@@ -198,6 +198,8 @@ Key concerns from client:
 - [Phase 27]: SEAMSTRESS_NAV allowlist pattern for mobile nav: explicit /board + /calendar list safer than denylist, use !isSeamstress conditional JSX (not CSS) to remove admin UI from DOM entirely
 - [Phase 27]: useStaffSession() called directly inside OrderDetailModal (no prop threading) — prevents flash of financial data via isStaffLoading guard
 - [Phase 27]: OrderDetailModal hides pricing, payment, client contact, price edit buttons, and archive button for seamstresses using !isSeamstress conditional rendering (DOM removal, not CSS)
+- [Phase 27]: DashboardSeamstressGuard client component for server component redirect: staff PIN session is localStorage-based (client-side only), cannot use useStaffSession in Next.js server components
+- [Phase 27]: filteredTasks memo in calendar: seamstresses see t.seamstressId === currentStaff.staffId OR unassigned tasks (!t.seamstressId)
 
 ## Next Action
 
@@ -454,9 +456,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-02-22T14:02:41.078Z
+- **Last session:** 2026-02-22T14:14:12.916Z
 - **Status:** 26/27 phases complete — Phase 27 pending
-- **Stopped at:** Completed 27-02-PLAN.md
+- **Stopped at:** Completed 27-03-PLAN.md
 - **Next:** `/gsd:plan-phase 27` — plan RBAC implementation
 - **Resume file:** None
 
