@@ -133,10 +133,10 @@ export function InternalChat() {
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="h-10 w-10 flex items-center justify-center rounded-md text-white hover:bg-white/20 transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40 transition-colors"
               aria-label="Close chat"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4 stroke-[3]" />
             </button>
           </div>
 
