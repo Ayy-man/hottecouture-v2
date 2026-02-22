@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Home, ClipboardList, Users, Calendar, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useStaffSession } from '@/components/staff';
 
 const navItems = [
   { href: '/board', icon: Home, label: 'Board' },
@@ -13,13 +14,24 @@ const navItems = [
   { href: '/chat', icon: MessageCircle, label: 'Chat' },
 ];
 
+// Paths accessible to seamstress role (Board + Calendar only)
+const SEAMSTRESS_NAV = ['/board', '/calendar'];
+
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { currentStaff } = useStaffSession();
+  const isSeamstress = currentStaff?.staffRole === 'seamstress';
+
+  // Filter nav items based on role. When currentStaff is null (not logged in),
+  // show all items — AuthGuard handles unauthenticated access separately.
+  const visibleItems = isSeamstress
+    ? navItems.filter(item => SEAMSTRESS_NAV.includes(item.href))
+    : navItems;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border md:hidden safe-area-bottom print:hidden">
       <div className="flex justify-around items-center h-16 px-2">
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
             <Link
