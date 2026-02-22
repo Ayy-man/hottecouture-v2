@@ -60,6 +60,8 @@ export default function CalendarPage() {
   const { loading: staffLoading } = useStaff();
   const { currentStaff } = useStaffSession();
 
+  const isSeamstress = currentStaff?.staffRole === 'seamstress';
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,9 +121,17 @@ export default function CalendarPage() {
     return tasks;
   }, [orders]);
 
+  // Filter tasks for seamstress role: show only their own tasks + unassigned
+  const filteredTasks = useMemo(() => {
+    if (!isSeamstress) return allTasks;
+    return allTasks.filter(t =>
+      t.seamstressId === currentStaff?.staffId || !t.seamstressId
+    );
+  }, [allTasks, isSeamstress, currentStaff?.staffId]);
+
   // Unassigned tasks sorted by due date
   const unassignedTasks = useMemo(() => {
-    return allTasks
+    return filteredTasks
       .filter(t => !t.seamstressId)
       .sort((a, b) => {
         // Items with due dates come first, sorted by date
@@ -132,13 +142,13 @@ export default function CalendarPage() {
         if (b.dueDate) return 1;
         return 0;
       });
-  }, [allTasks]);
+  }, [filteredTasks]);
 
   // Tasks for current week
   const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
 
   const weekTasks = useMemo(() => {
-    return allTasks
+    return filteredTasks
       .filter(t => {
         if (!t.dueDate) return false;
         const dueDate = parseISO(t.dueDate);
@@ -147,15 +157,15 @@ export default function CalendarPage() {
       .sort((a, b) => {
         return new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime();
       });
-  }, [allTasks, currentWeekStart, weekEnd]);
+  }, [filteredTasks, currentWeekStart, weekEnd]);
 
   // Overdue tasks
   const overdueTasks = useMemo(() => {
     const today = new Date();
-    return allTasks
+    return filteredTasks
       .filter(t => t.dueDate && isBefore(parseISO(t.dueDate), today) && !['done', 'ready', 'delivered'].includes(t.status))
       .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime());
-  }, [allTasks]);
+  }, [filteredTasks]);
 
   const handleAssignToMe = async (garmentServiceId: string) => {
     if (!currentStaff?.staffId) {
