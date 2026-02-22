@@ -19,6 +19,8 @@ export async function PATCH(
       );
     }
 
+    const supabase = await createServiceRoleClient();
+
     // Build update object
     const updates: Record<string, unknown> = {};
 
@@ -42,7 +44,22 @@ export async function PATCH(
     if (pin !== undefined && pin !== '') {
       if (!/^\d{4}$/.test(pin)) {
         return NextResponse.json(
-          { success: false, error: 'PIN must be exactly 4 digits' },
+          { success: false, error: 'Le NIP doit être exactement 4 chiffres' },
+          { status: 400 }
+        );
+      }
+      // Check PIN uniqueness (exclude current staff member)
+      const { data: pinExists } = await supabase
+        .from('staff')
+        .select('id, name')
+        .eq('pin_hash', pin)
+        .eq('is_active', true)
+        .neq('id', id)
+        .maybeSingle();
+
+      if (pinExists) {
+        return NextResponse.json(
+          { success: false, error: 'Ce NIP est déjà utilisé. Veuillez en choisir un autre.' },
           { status: 400 }
         );
       }
@@ -60,8 +77,6 @@ export async function PATCH(
         { status: 400 }
       );
     }
-
-    const supabase = await createServiceRoleClient();
 
     // If updating name, check for duplicates
     if (updates.name) {

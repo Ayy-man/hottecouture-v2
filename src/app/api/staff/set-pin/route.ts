@@ -20,12 +20,28 @@ export async function POST(request: NextRequest) {
     // Validate PIN format (4 digits)
     if (!/^\d{4}$/.test(newPin)) {
       return NextResponse.json(
-        { error: 'PIN must be exactly 4 digits' },
+        { error: 'Le NIP doit être exactement 4 chiffres' },
         { status: 400 }
       );
     }
 
-    // Update PIN (in production, hash the PIN with bcrypt)
+    // Check PIN uniqueness (exclude current staff member)
+    const { data: pinExists } = await supabase
+      .from('staff')
+      .select('id')
+      .eq('pin_hash', newPin)
+      .eq('is_active', true)
+      .neq('id', staffId)
+      .maybeSingle();
+
+    if (pinExists) {
+      return NextResponse.json(
+        { error: 'Ce NIP est déjà utilisé. Veuillez en choisir un autre.' },
+        { status: 400 }
+      );
+    }
+
+    // Update PIN
     const { error: updateError } = await supabase
       .from('staff')
       .update({ pin_hash: newPin })

@@ -26,6 +26,7 @@ import {
   Phone,
   Clock,
   Palette,
+  KeyRound,
 } from 'lucide-react';
 
 interface StaffMember {
@@ -33,6 +34,7 @@ interface StaffMember {
   name: string;
   email?: string;
   phone?: string;
+  pin?: string;
   role?: string;
   color?: string;
   weekly_capacity_hours?: number;
@@ -68,6 +70,7 @@ const DEFAULT_FORM: Omit<StaffMember, 'id' | 'is_active'> = {
   name: '',
   email: '',
   phone: '',
+  pin: '',
   role: 'seamstress',
   color: '#6366f1',
   weekly_capacity_hours: 40,
@@ -114,6 +117,10 @@ export function TeamManagementModal({
   const handleAdd = async () => {
     if (!formData.name.trim()) {
       toast.error('Le nom est requis');
+      return;
+    }
+    if (!formData.pin || !/^\d{4}$/.test(formData.pin)) {
+      toast.error('Le NIP doit être exactement 4 chiffres');
       return;
     }
 
@@ -229,6 +236,7 @@ export function TeamManagementModal({
       name: member.name,
       email: member.email || '',
       phone: member.phone || '',
+      pin: '', // Leave empty — only sends if changed
       role: member.role || 'seamstress',
       color: member.color || '#6366f1',
       weekly_capacity_hours: member.weekly_capacity_hours || 40,
@@ -335,6 +343,23 @@ export function TeamManagementModal({
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="514-555-1234"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pin" className="flex items-center gap-1">
+                    <KeyRound className="h-3 w-3" /> NIP {isAdding ? '*' : ''}
+                  </Label>
+                  <Input
+                    id="pin"
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={formData.pin}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                      setFormData({ ...formData, pin: val });
+                    }}
+                    placeholder={isAdding ? '4 chiffres' : 'Laisser vide pour garder'}
                   />
                 </div>
                 <div className="space-y-2">
@@ -461,6 +486,22 @@ export function TeamManagementModal({
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-1">
+                            <KeyRound className="h-3 w-3" /> NIP
+                          </Label>
+                          <Input
+                            type="password"
+                            inputMode="numeric"
+                            maxLength={4}
+                            value={formData.pin}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                              setFormData({ ...formData, pin: val });
+                            }}
+                            placeholder="Laisser vide pour garder"
                           />
                         </div>
                         <div className="space-y-2">

@@ -78,7 +78,21 @@ export async function POST(request: NextRequest) {
     if (pin) {
       if (!/^\d{4}$/.test(pin)) {
         return NextResponse.json(
-          { success: false, error: 'PIN must be exactly 4 digits' },
+          { success: false, error: 'Le NIP doit être exactement 4 chiffres' },
+          { status: 400 }
+        );
+      }
+      // Check PIN uniqueness
+      const { data: pinExists } = await supabase
+        .from('staff')
+        .select('id, name')
+        .eq('pin_hash', pin)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (pinExists) {
+        return NextResponse.json(
+          { success: false, error: 'Ce NIP est déjà utilisé. Veuillez en choisir un autre.' },
           { status: 400 }
         );
       }
