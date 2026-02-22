@@ -17,10 +17,8 @@ import {
   CheckCircle,
   Gift,
   Home,
-  ArrowLeft
 } from 'lucide-react';
 import { MuralBackground } from '@/components/ui/mural-background';
-import Link from 'next/link';
 
 /** Shop contact phone number — update when real number is provided */
 const SHOP_PHONE = process.env.NEXT_PUBLIC_SHOP_PHONE || '514-667-0082';
@@ -173,22 +171,11 @@ export default function CustomerPortalPage() {
           <div className='min-h-full flex flex-col justify-center mx-auto px-4 py-8 max-w-lg w-full'>
           {/* Header */}
           <div className='text-center mb-8 animate-fade-in-up'>
-            <div className='flex items-center justify-center mb-4'>
-              <Link href='/'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className='border-primary-200 hover:bg-primary-50 text-primary-700 rounded-xl'
-                >
-                  <ArrowLeft className='w-4 h-4 mr-2' />
-                  Accueil
-                </Button>
-              </Link>
-            </div>
             <h1 className='text-3xl font-bold bg-gradient-to-r from-primary-800 to-primary-500 bg-clip-text text-transparent'>
-              Portail Client
+              Hotte Couture
             </h1>
-            <p className='text-muted-foreground mt-1'>Vérifiez le statut de votre commande</p>
+            <p className='text-lg text-muted-foreground mt-1'>Portail Client</p>
+            <p className='text-sm text-muted-foreground'>Vérifiez le statut de votre commande</p>
           </div>
 
           {/* Main Card */}
