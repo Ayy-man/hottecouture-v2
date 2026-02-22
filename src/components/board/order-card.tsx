@@ -142,8 +142,8 @@ export function OrderCard({
               </span>
             )}
             {order.rush && (
-              <span className='px-2 py-1 text-xs font-bold text-white bg-amber-500 rounded'>
-                Rush
+              <span className='px-2 py-1 text-xs font-bold text-white bg-red-500 rounded'>
+                Urgent
               </span>
             )}
           </div>

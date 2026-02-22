@@ -66,7 +66,7 @@ export function OrderListView({
                 <span className='font-semibold'>#{order.order_number}</span>
                 {order.rush && (
                   <Badge variant='destructive' className='text-xs'>
-                    Rush
+                    Urgent
                   </Badge>
                 )}
               </div>

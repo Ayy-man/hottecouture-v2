@@ -475,8 +475,8 @@ export function OrderDetailModal({
               <h2 className='text-lg sm:text-xl font-bold text-foreground'>
                 Order #{displayOrder.order_number}
                 {displayOrder.rush && (
-                  <span className='ml-2 sm:ml-3 px-2 sm:px-3 py-1 text-xs sm:text-sm font-bold text-white bg-amber-500 rounded-full'>
-                    RUSH{' '}
+                  <span className='ml-2 sm:ml-3 px-2 sm:px-3 py-1 text-xs sm:text-sm font-bold text-white bg-red-500 rounded-full'>
+                    URGENT{' '}
                     {displayOrder.rush_fee_type
                       ? `(${displayOrder.rush_fee_type.toUpperCase()})`
                       : ''}

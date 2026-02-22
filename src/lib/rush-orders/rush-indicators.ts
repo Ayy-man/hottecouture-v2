@@ -24,9 +24,9 @@ export const RUSH_ORDER_CONFIGS: Record<OrderType, RushOrderConfig> = {
     rushFeeMultiplier: 1.5,
     priority: 'high',
     visualIndicator: {
-      color: 'bg-amber-500 text-white',
-      icon: '⚡',
-      text: 'RUSH',
+      color: 'bg-red-500 text-white',
+      icon: '🔥',
+      text: 'URGENT',
       animation: 'none',
     },
     timelineReduction: 50, // 50% faster
