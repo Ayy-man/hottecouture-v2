@@ -200,6 +200,9 @@ Key concerns from client:
 - [Phase 27]: OrderDetailModal hides pricing, payment, client contact, price edit buttons, and archive button for seamstresses using !isSeamstress conditional rendering (DOM removal, not CSS)
 - [Phase 27]: DashboardSeamstressGuard client component for server component redirect: staff PIN session is localStorage-based (client-side only), cannot use useStaffSession in Next.js server components
 - [Phase 27]: filteredTasks memo in calendar: seamstresses see t.seamstressId === currentStaff.staffId OR unassigned tasks (!t.seamstressId)
+- [Phase 29-01]: SSR guard via dynamic(ssr:false): 'use client' alone is insufficient for Next.js 14 — dynamic() removes module from server render graph entirely
+- [Phase 29-01]: EmojiPicker uses w-auto on PopoverContent so emoji-mart Picker controls its own width; only stores emoji.native Unicode string
+- [Phase 29-01]: Categories API iconOverride pattern: optional icon field, falls back to getIconForCategory() when absent — backward compatible
 
 ## Next Action
 
@@ -458,9 +461,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-02-22T14:14:12.916Z
+- **Last session:** 2026-02-23T22:05:19.598Z
 - **Status:** Ready to plan
-- **Stopped at:** Completed 27-03-PLAN.md
+- **Stopped at:** Completed 29-01-PLAN.md
 - **Next:** `/gsd:plan-phase 27` — plan RBAC implementation
 - **Resume file:** None
 

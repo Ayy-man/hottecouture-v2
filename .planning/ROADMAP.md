@@ -674,7 +674,7 @@ Plans:
 **Goal:** Add a full emoji picker (emoji-mart) to category create/edit forms and garment type create form, allowing users to override auto-assigned icons with any emoji of their choice. Update the categories API to accept optional icon overrides.
 **Depends on:** Phase 28
 **Requirements:** [EMOJI-01, EMOJI-02, EMOJI-03, EMOJI-04]
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 29-01-PLAN.md — Install emoji-mart, create EmojiPicker component, update categories API for icon override
