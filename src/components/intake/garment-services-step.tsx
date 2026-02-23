@@ -17,6 +17,7 @@ import { nanoid } from 'nanoid';
 import { Camera, X, Search, Plus, Minus, Trash2, LayoutGrid, List, Pencil } from 'lucide-react';
 import { useViewPreference } from '@/lib/hooks/useViewPreference';
 import { useToast } from '@/components/ui/toast';
+import { EmojiPicker } from '@/components/ui/emoji-picker';
 
 // ============================================================================
 // Type Definitions
@@ -120,6 +121,7 @@ export function GarmentServicesStep({
   const [showAddCustomForm, setShowAddCustomForm] = useState(false);
   const [customTypeName, setCustomTypeName] = useState('');
   const [customTypeCategory, setCustomTypeCategory] = useState('other');
+  const [customTypeIcon, setCustomTypeIcon] = useState('\u{1F4DD}');
 
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -347,7 +349,7 @@ export function GarmentServicesStep({
         body: JSON.stringify({
           name: customTypeName.trim(),
           category: customTypeCategory,
-          icon: '\u{1F4DD}',
+          icon: customTypeIcon,
         }),
       });
 
@@ -369,6 +371,7 @@ export function GarmentServicesStep({
       // Reset form
       setCustomTypeName('');
       setCustomTypeCategory('other');
+      setCustomTypeIcon('\u{1F4DD}');
       setShowAddCustomForm(false);
     } catch (error) {
       console.error('Error creating custom type:', error);
@@ -753,21 +756,28 @@ export function GarmentServicesStep({
                       <div className='border-t border-border'>
                         {showAddCustomForm ? (
                           <div className='p-3 space-y-2 bg-muted/50'>
-                            <input
-                              type='text'
-                              value={customTypeName}
-                              onChange={e => setCustomTypeName(e.target.value)}
-                              placeholder='Nom du type personnalise...'
-                              className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
-                              autoFocus
-                              onKeyDown={e => {
-                                if (e.key === 'Enter') handleCreateCustomType();
-                                if (e.key === 'Escape') {
-                                  setShowAddCustomForm(false);
-                                  setCustomTypeName('');
-                                }
-                              }}
-                            />
+                            <div className='flex items-center gap-2'>
+                              <EmojiPicker
+                                value={customTypeIcon}
+                                onSelect={(emoji) => setCustomTypeIcon(emoji)}
+                              />
+                              <input
+                                type='text'
+                                value={customTypeName}
+                                onChange={e => setCustomTypeName(e.target.value)}
+                                placeholder='Nom du type personnalise...'
+                                className='flex-1 px-3 py-2 border border-border rounded text-sm min-h-[44px]'
+                                autoFocus
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') handleCreateCustomType();
+                                  if (e.key === 'Escape') {
+                                    setShowAddCustomForm(false);
+                                    setCustomTypeName('');
+                                    setCustomTypeIcon('\u{1F4DD}');
+                                  }
+                                }}
+                              />
+                            </div>
                             <select
                               value={customTypeCategory}
                               onChange={e => setCustomTypeCategory(e.target.value)}
@@ -783,6 +793,7 @@ export function GarmentServicesStep({
                                 onClick={() => {
                                   setShowAddCustomForm(false);
                                   setCustomTypeName('');
+                                  setCustomTypeIcon('\u{1F4DD}');
                                 }}
                                 className='flex-1 px-3 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                               >
