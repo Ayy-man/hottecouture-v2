@@ -19,7 +19,7 @@ export function InternalChat() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: `Bonjour! 🐉 Je suis Pupus, ton assistant dragon de Hotte Couture! Demande-moi n'importe quoi:
+      content: `Bonjour! 🐉 Je suis Pupuce, ton assistant dragon de Hotte Couture! Demande-moi n'importe quoi:
 
 • "Commandes du jour" ou "today"
 • "Commandes en retard"
@@ -130,7 +130,7 @@ Je suis là pour t'aider! 🔥`,
           <div className="flex items-center justify-between p-3 border-b bg-gradient-to-r from-primary-500 to-accent-clay text-white rounded-t-lg">
             <div className="flex items-center gap-2">
               <span className="text-lg">🐉</span>
-              <span className="font-semibold">Pupus</span>
+              <span className="font-semibold">Pupuce</span>
             </div>
             <button
               type="button"
