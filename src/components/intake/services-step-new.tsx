@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
 import { Service } from '@/lib/types/database';
 import { formatCurrency } from '@/lib/pricing/calcTotal';
+import { EmojiPicker } from '@/components/ui/emoji-picker';
 
 interface Category {
   id: string;
@@ -71,6 +72,12 @@ export function ServicesStepNew({
   const [categoryUsageCount, setCategoryUsageCount] = useState<number | null>(
     null
   );
+
+  // Emoji picker states for category create
+  const [newCategoryIcon, setNewCategoryIcon] = useState('📦');
+
+  // Emoji picker states for category edit
+  const [editCategoryIcon, setEditCategoryIcon] = useState('');
 
   // Service CRUD states
   const [serviceContextMenuId, setServiceContextMenuId] = useState<
@@ -313,7 +320,7 @@ export function ServicesStepNew({
       const response = await fetch('/api/admin/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newCategoryName.trim() }),
+        body: JSON.stringify({ name: newCategoryName.trim(), icon: newCategoryIcon }),
       });
 
       const result = await response.json();
@@ -349,6 +356,7 @@ export function ServicesStepNew({
 
       // Reset form
       setNewCategoryName('');
+      setNewCategoryIcon('📦');
       setShowAddCategoryForm(false);
     } catch (error) {
       console.error('Error creating category:', error);
@@ -361,6 +369,7 @@ export function ServicesStepNew({
     if (category) {
       setEditingCategoryId(categoryId);
       setEditCategoryName(category.name);
+      setEditCategoryIcon(category.icon);
       setContextMenuId(null);
     }
   };
@@ -375,6 +384,7 @@ export function ServicesStepNew({
         body: JSON.stringify({
           id: editingCategoryId,
           name: editCategoryName.trim(),
+          icon: editCategoryIcon,
         }),
       });
 
@@ -413,6 +423,7 @@ export function ServicesStepNew({
   const handleCancelEditCategory = () => {
     setEditingCategoryId(null);
     setEditCategoryName('');
+    setEditCategoryIcon('');
   };
 
   const handleCheckCategoryUsage = async (categoryId: string) => {
@@ -969,17 +980,23 @@ export function ServicesStepNew({
                 {isEditing ? (
                   // Inline Edit Mode
                   <div className='flex flex-col items-center gap-1 px-1 py-1 bg-white border-2 border-primary-500 rounded'>
-                    <input
-                      type='text'
-                      value={editCategoryName}
-                      onChange={e => setEditCategoryName(e.target.value)}
-                      className='w-full px-2 py-1 border border-border rounded text-xs text-center min-h-[32px]'
-                      autoFocus
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') handleSaveEditCategory();
-                        if (e.key === 'Escape') handleCancelEditCategory();
-                      }}
-                    />
+                    <div className='flex items-center gap-1 w-full'>
+                      <EmojiPicker
+                        value={editCategoryIcon}
+                        onSelect={(emoji) => setEditCategoryIcon(emoji)}
+                      />
+                      <input
+                        type='text'
+                        value={editCategoryName}
+                        onChange={e => setEditCategoryName(e.target.value)}
+                        className='flex-1 px-2 py-1 border border-border rounded text-xs text-center min-h-[32px]'
+                        autoFocus
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleSaveEditCategory();
+                          if (e.key === 'Escape') handleCancelEditCategory();
+                        }}
+                      />
+                    </div>
                     <div className='flex gap-1'>
                       <button
                         onClick={handleSaveEditCategory}
@@ -1091,26 +1108,34 @@ export function ServicesStepNew({
           {/* Add Category Form */}
           {showAddCategoryForm && (
             <div className='flex flex-col items-center gap-1 px-1 py-1 bg-white border-2 border-primary-500 rounded animate-[fadeIn_0.2s_ease-out,zoomIn_0.2s_ease-out]'>
-              <input
-                type='text'
-                value={newCategoryName}
-                onChange={e => setNewCategoryName(e.target.value)}
-                placeholder='Category name...'
-                className='w-full px-2 py-1 border border-border rounded text-xs text-center min-h-[32px]'
-                autoFocus
-                onKeyDown={e => {
-                  if (e.key === 'Enter') handleCreateCategory();
-                  if (e.key === 'Escape') {
-                    setShowAddCategoryForm(false);
-                    setNewCategoryName('');
-                  }
-                }}
-              />
+              <div className='flex items-center gap-1 w-full'>
+                <EmojiPicker
+                  value={newCategoryIcon}
+                  onSelect={(emoji) => setNewCategoryIcon(emoji)}
+                />
+                <input
+                  type='text'
+                  value={newCategoryName}
+                  onChange={e => setNewCategoryName(e.target.value)}
+                  placeholder='Category name...'
+                  className='flex-1 px-2 py-1 border border-border rounded text-xs text-center min-h-[32px]'
+                  autoFocus
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleCreateCategory();
+                    if (e.key === 'Escape') {
+                      setShowAddCategoryForm(false);
+                      setNewCategoryName('');
+                      setNewCategoryIcon('📦');
+                    }
+                  }}
+                />
+              </div>
               <div className='flex gap-1'>
                 <button
                   onClick={() => {
                     setShowAddCategoryForm(false);
                     setNewCategoryName('');
+                    setNewCategoryIcon('📦');
                   }}
                   className='px-2 py-1 bg-muted text-muted-foreground rounded text-xs min-h-[32px] touch-manipulation'
                 >
