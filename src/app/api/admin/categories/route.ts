@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createServiceRoleClient();
     const body = await request.json();
-    const { name } = body;
+    const { name, icon: iconOverride } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -196,9 +196,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Auto-generate key and icon
+    // Auto-generate key and icon (icon override takes precedence over auto-assignment)
     const key = generateCategoryKey(name.trim());
-    const icon = getIconForCategory(name.trim());
+    const icon =
+      iconOverride && iconOverride.trim()
+        ? iconOverride.trim()
+        : getIconForCategory(name.trim());
 
     // Check if key already exists
     const { data: existing, error: checkError } = await (
@@ -316,7 +319,7 @@ export async function PUT(request: NextRequest) {
   try {
     const supabase = await createServiceRoleClient();
     const body = await request.json();
-    const { id, name } = body;
+    const { id, name, icon: iconOverride } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -360,8 +363,11 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Auto-update icon based on new name
-    const icon = getIconForCategory(name.trim());
+    // Update icon: use provided override if present, otherwise auto-assign from name
+    const icon =
+      iconOverride && iconOverride.trim()
+        ? iconOverride.trim()
+        : getIconForCategory(name.trim());
 
     // Update the category
     const { data: updatedCategory, error: updateError } = await (
