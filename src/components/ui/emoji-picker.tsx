@@ -36,7 +36,20 @@ export function EmojiPicker({ value, onSelect, disabled }: EmojiPickerProps) {
         </button>
       </PopoverTrigger>
       {/* w-auto lets the Picker control its own width (~352px). Do NOT set a fixed width. */}
-      <PopoverContent className="w-auto p-0 border-0 shadow-xl" align="start">
+      <PopoverContent
+        className="w-auto p-0 border-0 shadow-xl"
+        align="start"
+        onInteractOutside={(e) => {
+          // emoji-mart renders inside a Shadow DOM (custom <em-emoji-picker> element).
+          // Radix Popover's outside-click detection doesn't recognize Shadow DOM clicks
+          // as "inside" the popover content, so it closes before onEmojiSelect fires.
+          // Check if the click target is inside the emoji-mart shadow host.
+          const target = e.target as HTMLElement;
+          if (target?.closest?.('em-emoji-picker')) {
+            e.preventDefault();
+          }
+        }}
+      >
         <Picker
           data={data}
           onEmojiSelect={(emoji: any) => {
