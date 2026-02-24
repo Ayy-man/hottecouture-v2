@@ -136,6 +136,12 @@ export function GarmentServicesStep({
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Service manage mode (edit/delete)
+  const [manageMode, setManageMode] = useState(false);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [editServiceName, setEditServiceName] = useState('');
+  const [editServicePrice, setEditServicePrice] = useState('');
+
   // ===========================================================================
   // State: Staff Assignment (from assignment-step.tsx)
   // ===========================================================================
@@ -206,6 +212,68 @@ export function GarmentServicesStep({
       }
     } catch (error) {
       console.error('Error fetching services:', error);
+    }
+  };
+
+  // Service manage mode handlers
+  const handleStartEditService = (service: Service) => {
+    setEditingServiceId(service.id);
+    setEditServiceName(service.name);
+    setEditServicePrice((service.base_price_cents / 100).toFixed(2));
+  };
+
+  const handleSaveEditService = async () => {
+    if (!editingServiceId || !editServiceName.trim() || !editServicePrice.trim()) return;
+    const price = parseFloat(editServicePrice);
+    if (isNaN(price) || price <= 0) return;
+
+    try {
+      const response = await fetch('/api/admin/services', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingServiceId,
+          name: editServiceName.trim(),
+          price: price,
+        }),
+      });
+      if (response.ok) {
+        await fetchServices();
+        toast.success('Service mis à jour');
+      } else {
+        const result = await response.json();
+        toast.error(result.error || 'Échec de la mise à jour');
+      }
+    } catch (error) {
+      console.error('Error updating service:', error);
+      toast.error('Échec de la mise à jour');
+    }
+    setEditingServiceId(null);
+    setEditServiceName('');
+    setEditServicePrice('');
+  };
+
+  const handleCancelEditService = () => {
+    setEditingServiceId(null);
+    setEditServiceName('');
+    setEditServicePrice('');
+  };
+
+  const handleDeleteService = async (serviceId: string) => {
+    try {
+      const response = await fetch(`/api/admin/services?id=${serviceId}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (response.ok) {
+        await fetchServices();
+        toast.success('Service supprimé');
+      } else {
+        toast.error(result.error || 'Impossible de supprimer ce service');
+      }
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      toast.error('Échec de la suppression');
     }
   };
 
@@ -897,9 +965,24 @@ export function GarmentServicesStep({
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                  2. Services
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                    2. Services
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setManageMode(!manageMode);
+                      if (manageMode) {
+                        handleCancelEditService();
+                      }
+                    }}
+                    className={`p-1 rounded transition-colors ${manageMode ? 'text-primary-600 bg-primary-50' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}
+                    title={manageMode ? 'Terminer la gestion' : 'Gérer les services'}
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                </div>
                 {/* View Toggle */}
                 <div className="flex bg-muted p-1 rounded-lg border border-border">
                   <Button
@@ -956,22 +1039,98 @@ export function GarmentServicesStep({
               {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
                   {getServicesByCategory(activeTab).map(service => (
-                    <button
-                      key={service.id}
-                      onClick={() => addServiceToCurrentGarment(service)}
-                      className="p-3 bg-muted/50 hover:bg-muted rounded-lg text-left transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <span className="text-sm font-medium">{service.name}</span>
-                        <span className="text-sm text-primary-600 font-medium">
-                          {formatCurrency(service.base_price_cents)}
-                        </span>
-                      </div>
-                    </button>
+                    <div key={service.id} className="relative">
+                      {editingServiceId === service.id ? (
+                        <div className="p-3 bg-white rounded-lg border-2 border-primary-500 space-y-2">
+                          <input
+                            type="text"
+                            value={editServiceName}
+                            onChange={e => setEditServiceName(e.target.value)}
+                            className="w-full px-2 py-1.5 border border-border rounded text-sm"
+                            autoFocus
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleSaveEditService();
+                              if (e.key === 'Escape') handleCancelEditService();
+                            }}
+                          />
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={editServicePrice}
+                              onChange={e => setEditServicePrice(e.target.value)}
+                              className="w-24 px-2 py-1.5 border border-border rounded text-sm"
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') handleSaveEditService();
+                                if (e.key === 'Escape') handleCancelEditService();
+                              }}
+                            />
+                            <div className="flex gap-1 ml-auto">
+                              <button
+                                type="button"
+                                onClick={handleSaveEditService}
+                                className="px-2 py-1 bg-green-500 text-white rounded text-xs"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleCancelEditService}
+                                className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (manageMode) {
+                              handleStartEditService(service);
+                            } else {
+                              addServiceToCurrentGarment(service);
+                            }
+                          }}
+                          className={`w-full p-3 rounded-lg text-left transition-colors ${
+                            manageMode
+                              ? 'bg-muted/50 hover:bg-primary-50 border border-dashed border-muted-foreground/30'
+                              : 'bg-muted/50 hover:bg-muted'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <span className="text-sm font-medium">{service.name}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-sm text-primary-600 font-medium">
+                                {formatCurrency(service.base_price_cents)}
+                              </span>
+                              {manageMode && (
+                                <button
+                                  type="button"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    handleDeleteService(service.id);
+                                  }}
+                                  className="p-1 text-muted-foreground/60 hover:text-red-500 transition-colors"
+                                  title="Supprimer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          {manageMode && (
+                            <p className="text-[10px] text-muted-foreground mt-1">Cliquer pour modifier</p>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   ))}
                   {getServicesByCategory(activeTab).length === 0 && (
                     <p className="col-span-2 text-center text-sm text-muted-foreground py-4">
-                      Aucun service trouve
+                      Aucun service trouvé
                     </p>
                   )}
                 </div>
@@ -1022,13 +1181,35 @@ export function GarmentServicesStep({
                               -
                             </td>
                             <td className="px-4 py-2 whitespace-nowrap text-right">
-                              <button
-                                type="button"
-                                onClick={() => addServiceToCurrentGarment(service)}
-                                className="h-8 px-3 text-xs font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-md transition-colors min-w-[70px]"
-                              >
-                                Ajouter
-                              </button>
+                              <div className="flex items-center justify-end gap-1">
+                                {manageMode && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStartEditService(service)}
+                                      className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-primary-600 rounded-md transition-colors"
+                                      title="Modifier"
+                                    >
+                                      <Pencil className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteService(service.id)}
+                                      className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-red-500 rounded-md transition-colors"
+                                      title="Supprimer"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => addServiceToCurrentGarment(service)}
+                                  className="h-8 px-3 text-xs font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-md transition-colors min-w-[70px]"
+                                >
+                                  Ajouter
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
