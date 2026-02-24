@@ -1545,7 +1545,7 @@ export function ServicesStepNew({
                                         : service.id
                                     );
                                   }}
-                                  className='p-1 min-w-[32px] min-h-[32px] flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground touch-manipulation opacity-40 hover:opacity-100 active:opacity-100 transition-opacity flex-shrink-0'
+                                  className='p-1 min-w-[32px] min-h-[32px] flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground touch-manipulation opacity-70 hover:opacity-100 active:opacity-100 transition-opacity flex-shrink-0'
                                 >
                                   <svg
                                     className='w-4 h-4'
@@ -1560,11 +1560,21 @@ export function ServicesStepNew({
                                 Fixed {(service as any).estimated_minutes ? `· ⏱️ ${(service as any).estimated_minutes} min` : ''}
                               </p>
                               <div className='text-right'>
-                                <div className='text-sm font-bold text-green-600'>
+                                <button
+                                  type='button'
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    handleStartEditService(service.id);
+                                  }}
+                                  className='text-sm font-bold text-green-600 hover:text-primary-600 hover:underline cursor-pointer inline-flex items-center gap-1 group'
+                                >
                                   {formatCurrency(service.base_price_cents)}
                                   {(service as any).unit &&
                                     `/${(service as any).unit}`}
-                                </div>
+                                  <svg className='w-3 h-3 opacity-40 group-hover:opacity-100 group-active:opacity-100 transition-opacity' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
+                                  </svg>
+                                </button>
                               </div>
                             </div>
 
