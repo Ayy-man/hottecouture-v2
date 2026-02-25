@@ -451,9 +451,17 @@ export function GarmentServicesStep({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.garment-type-dropdown')) {
-        setIsDropdownOpen(false);
+      // The emoji picker renders in a Radix Portal (appended to document.body)
+      // and emoji-mart uses Shadow DOM, so clicks inside it appear "outside"
+      // the .garment-type-dropdown container. Ignore those clicks.
+      if (
+        target.closest('.garment-type-dropdown') ||
+        target.closest('em-emoji-picker') ||
+        target.closest('[data-radix-popper-content-wrapper]')
+      ) {
+        return;
       }
+      setIsDropdownOpen(false);
     };
 
     if (isDropdownOpen) {
