@@ -478,7 +478,7 @@ export default function LabelsPage() {
 
           {/* Labels - One per page for label printer */}
           <div ref={labelsRef} id="print-labels" className="space-y-4 print:space-y-0">
-            {garmentsWithQR.flatMap((garment, garmentIndex) =>
+            {garmentsWithQR.flatMap((garment) =>
               Array.from({ length: LABEL_CONFIG.copyCount }, (_, copyIndex) => {
                 const copyNumber = copyIndex + 1;
                 return (
