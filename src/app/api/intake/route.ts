@@ -356,7 +356,7 @@ export async function POST(request: NextRequest) {
       if (garment.services && garment.services.length > 0) {
         for (const service of garment.services) {
           // Check if this is a custom service
-          const isCustomService = service.serviceId.startsWith('custom-');
+          const isCustomService = service.serviceId.startsWith('custom-') || service.serviceId.startsWith('custom_');
           const serviceId = service.serviceId;
 
           if (isCustomService) {
