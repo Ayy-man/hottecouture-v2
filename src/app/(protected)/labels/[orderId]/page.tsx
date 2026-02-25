@@ -392,19 +392,15 @@ export default function LabelsPage() {
           </div>
 
           {/* Labels - One per page for label printer */}
-          <div ref={labelsRef} className="space-y-4">
+          <div ref={labelsRef} id="print-labels" className="space-y-4 print:space-y-0">
             {garmentsWithQR.flatMap((garment, garmentIndex) =>
               Array.from({ length: LABEL_CONFIG.copyCount }, (_, copyIndex) => {
-                const isLastLabel =
-                  garmentIndex === garmentsWithQR.length - 1 &&
-                  copyIndex === LABEL_CONFIG.copyCount - 1;
                 const copyNumber = copyIndex + 1;
                 return (
                   <div
                     key={`${garment.id}-copy-${copyNumber}`}
-                    className="border-2 border-border rounded-lg p-3 print:border-black relative group"
+                    className="print-label border-2 border-border rounded-lg p-3 print:border-black relative group"
                     style={{
-                      breakAfter: isLastLabel ? 'auto' : 'page',
                       width: LABEL_CONFIG.labelWidth,
                       height: LABEL_CONFIG.labelHeight,
                     }}
@@ -501,14 +497,57 @@ export default function LabelsPage() {
               size: ${LABEL_CONFIG.labelWidth} ${LABEL_CONFIG.labelHeight};
               margin: 0;
             }
-            body {
-              margin: 0;
-              padding: 0;
+
+            /* Hide EVERYTHING by default */
+            body * {
+              visibility: hidden;
             }
-            .print\\:hidden,
+
+            /* Only show the labels container and its children */
+            #print-labels,
+            #print-labels * {
+              visibility: visible;
+            }
+
+            /* Position labels at top of page */
+            #print-labels {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+            }
+
+            /* Reset body for print */
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              overflow: visible !important;
+              height: auto !important;
+              background: white !important;
+            }
+
+            /* Hide scripts, next.js chunks, nav, buttons */
+            script, noscript, iframe,
+            header, nav, footer,
             .no-print {
               display: none !important;
             }
+
+            /* Each label = one page */
+            .print-label {
+              width: ${LABEL_CONFIG.labelWidth};
+              height: ${LABEL_CONFIG.labelHeight};
+              page-break-after: always;
+              border: 2px solid black !important;
+              border-radius: 0 !important;
+              margin: 0 !important;
+              padding: 8px !important;
+              box-sizing: border-box;
+            }
+            .print-label:last-child {
+              page-break-after: auto;
+            }
+
             .print\\:border-black {
               border-color: black !important;
             }
