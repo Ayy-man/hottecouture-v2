@@ -307,17 +307,6 @@ export default function LabelsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-foreground mx-auto"></div>
-          <p className="mt-4 text-lg">Chargement des étiquettes...</p>
-        </div>
-      </div>
-    );
-  }
-
   /**
    * Print labels in a clean popup window — avoids Next.js scripts leaking into print output.
    */
@@ -402,6 +391,17 @@ export default function LabelsPage() {
       });
     }
   }, [orderData]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-foreground mx-auto"></div>
+          <p className="mt-4 text-lg">Chargement des étiquettes...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (error || !orderData) {
     return (
