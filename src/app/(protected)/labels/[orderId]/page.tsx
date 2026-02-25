@@ -376,14 +376,14 @@ export default function LabelsPage() {
       loaded++;
       if (loaded >= total) {
         setTimeout(() => {
-          printWindow.print();
-          printWindow.close();
+          printWindow!.print();
+          printWindow!.close();
         }, 300);
       }
     }
 
     if (total === 0) {
-      setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);
+      setTimeout(() => { printWindow!.print(); printWindow!.close(); }, 300);
     } else {
       images.forEach((img) => {
         if (img.complete) { tryPrint(); }
