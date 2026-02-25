@@ -318,6 +318,91 @@ export default function LabelsPage() {
     );
   }
 
+  /**
+   * Print labels in a clean popup window — avoids Next.js scripts leaking into print output.
+   */
+  const printLabels = useCallback(() => {
+    if (!labelsRef.current || !orderData) return;
+
+    const printWindow = window.open('', '_blank', 'width=600,height=400');
+    if (!printWindow) return;
+
+    const labelsHtml = labelsRef.current.innerHTML;
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html><head><title>Étiquettes — Commande #${orderData.orderNumber}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: white; font-family: Arial, sans-serif; }
+  @page { size: ${LABEL_CONFIG.labelWidth} ${LABEL_CONFIG.labelHeight}; margin: 0; }
+  .print-label {
+    width: ${LABEL_CONFIG.labelWidth};
+    height: ${LABEL_CONFIG.labelHeight};
+    border: 2px solid black;
+    padding: 8px;
+    page-break-after: always;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .print-label:last-child { page-break-after: auto; }
+  .no-print { display: none !important; }
+  .space-y-4 > * + * { margin-top: 0; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-3 { gap: 12px; }
+  .gap-2 { gap: 8px; }
+  .h-full { height: 100%; }
+  .w-24 { width: 96px; }
+  .h-24 { height: 96px; }
+  .flex-shrink-0 { flex-shrink: 0; }
+  .flex-1 { flex: 1; }
+  .space-y-1 > * + * { margin-top: 4px; }
+  .text-xs { font-size: 12px; }
+  .text-base { font-size: 16px; }
+  .font-bold { font-weight: bold; }
+  .font-medium { font-weight: 500; }
+  .text-red-600 { color: #dc2626; }
+  .text-muted-foreground\\/70 { color: rgba(100,100,100,0.7); }
+  .text-muted-foreground { color: #666; }
+  .absolute { position: absolute; }
+  .top-1 { top: 4px; }
+  .right-2 { right: 8px; }
+  .rounded { border-radius: 4px; }
+  .rounded-lg { border-radius: 8px; }
+  .border-2 { border: 2px solid #333; }
+  .object-contain { object-fit: contain; }
+  .w-full { width: 100%; }
+  .h-full { height: 100%; }
+  img { display: block; width: 100%; height: 100%; object-fit: contain; }
+</style></head><body>${labelsHtml}</body></html>`);
+
+    printWindow.document.close();
+    // Wait for images (QR codes) to load before printing
+    const images = printWindow.document.querySelectorAll('img');
+    let loaded = 0;
+    const total = images.length;
+
+    function tryPrint() {
+      loaded++;
+      if (loaded >= total) {
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+        }, 300);
+      }
+    }
+
+    if (total === 0) {
+      setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);
+    } else {
+      images.forEach((img) => {
+        if (img.complete) { tryPrint(); }
+        else { img.onload = tryPrint; img.onerror = tryPrint; }
+      });
+    }
+  }, [orderData]);
+
   if (error || !orderData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -355,9 +440,9 @@ export default function LabelsPage() {
               <Download className="w-5 h-5" />
               {busy === 'download' ? 'Téléchargement...' : 'Télécharger PNG'}
             </button>
-            {/* Browser print (for AirPrint printers) */}
+            {/* Browser print (opens clean window — no Next.js script junk) */}
             <button
-              onClick={() => window.print()}
+              onClick={printLabels}
               disabled={!!busy}
               className="bg-white hover:bg-gray-50 text-foreground border-2 border-border px-6 py-3 rounded-xl text-lg font-semibold shadow-lg active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
             >
@@ -490,69 +575,7 @@ export default function LabelsPage() {
           </div>
         </div>
 
-        {/* Print Styles - Individual labels */}
-        <style jsx global>{`
-          @media print {
-            @page {
-              size: ${LABEL_CONFIG.labelWidth} ${LABEL_CONFIG.labelHeight};
-              margin: 0;
-            }
-
-            /* Hide EVERYTHING by default */
-            body * {
-              visibility: hidden;
-            }
-
-            /* Only show the labels container and its children */
-            #print-labels,
-            #print-labels * {
-              visibility: visible;
-            }
-
-            /* Position labels at top of page */
-            #print-labels {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-            }
-
-            /* Reset body for print */
-            html, body {
-              margin: 0 !important;
-              padding: 0 !important;
-              overflow: visible !important;
-              height: auto !important;
-              background: white !important;
-            }
-
-            /* Hide scripts, next.js chunks, nav, buttons */
-            script, noscript, iframe,
-            header, nav, footer,
-            .no-print {
-              display: none !important;
-            }
-
-            /* Each label = one page */
-            .print-label {
-              width: ${LABEL_CONFIG.labelWidth};
-              height: ${LABEL_CONFIG.labelHeight};
-              page-break-after: always;
-              border: 2px solid black !important;
-              border-radius: 0 !important;
-              margin: 0 !important;
-              padding: 8px !important;
-              box-sizing: border-box;
-            }
-            .print-label:last-child {
-              page-break-after: auto;
-            }
-
-            .print\\:border-black {
-              border-color: black !important;
-            }
-          }
-        `}</style>
+        {/* No print styles needed — printLabels() opens a clean window */}
       </div>
     </div>
   );
