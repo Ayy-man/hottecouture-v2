@@ -55,9 +55,9 @@ export default function HomePage() {
           {/* Action Cards */}
           <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-8 flex-1 items-center content-center py-8'>
             {/* Create New Order Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-1 hover-lift'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-1 hover-lift flex flex-col'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none' />
-              <CardHeader className='p-8 pb-4'>
+              <CardHeader className='p-8 pb-4 flex-1'>
                 <div className='w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
                     className='w-8 h-8 text-white'
@@ -92,9 +92,9 @@ export default function HomePage() {
             </Card>
 
             {/* Kanban Board Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-2 hover-lift'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-2 hover-lift flex flex-col'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none' />
-              <CardHeader className='p-8 pb-4'>
+              <CardHeader className='p-8 pb-4 flex-1'>
                 <div className='w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
                     className='w-8 h-8 text-white'
@@ -129,9 +129,9 @@ export default function HomePage() {
             </Card>
 
             {/* Order Status Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-3 hover-lift'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-3 hover-lift flex flex-col'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none' />
-              <CardHeader className='p-8 pb-4'>
+              <CardHeader className='p-8 pb-4 flex-1'>
                 <div className='w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
                     className='w-8 h-8 text-white'
@@ -166,9 +166,9 @@ export default function HomePage() {
             </Card>
 
             {/* Customer Portal Card */}
-            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-4 hover-lift'>
+            <Card className='group relative overflow-hidden bg-white/95 backdrop-blur-md border-0 shadow-xl rounded-3xl animate-fade-in-up-delay-4 hover-lift flex flex-col'>
               <div className='absolute inset-0 bg-gradient-to-br from-primary-500/10 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none' />
-              <CardHeader className='p-8 pb-4'>
+              <CardHeader className='p-8 pb-4 flex-1'>
                 <div className='w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300'>
                   <svg
                     className='w-8 h-8 text-white'
