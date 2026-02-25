@@ -40,14 +40,12 @@ export function EmojiPicker({ value, onSelect, disabled }: EmojiPickerProps) {
         className="w-auto p-0 border-0 shadow-xl"
         align="start"
         onInteractOutside={(e) => {
-          // emoji-mart renders inside a Shadow DOM (custom <em-emoji-picker> element).
-          // Radix Popover's outside-click detection doesn't recognize Shadow DOM clicks
-          // as "inside" the popover content, so it closes before onEmojiSelect fires.
-          // Check if the click target is inside the emoji-mart shadow host.
-          const target = e.target as HTMLElement;
-          if (target?.closest?.('em-emoji-picker')) {
-            e.preventDefault();
-          }
+          // emoji-mart renders inside Shadow DOM (<em-emoji-picker> custom element).
+          // Radix's outside-click detection sees Shadow DOM clicks as "outside" the popover
+          // because: (1) e.target is the PopoverContent node, not the click target, and
+          // (2) Shadow DOM event retargeting is unreliable on touch devices (iPad).
+          // Fix: block ALL outside-dismiss. The popover closes via onEmojiSelect or Escape.
+          e.preventDefault();
         }}
       >
         <Picker
