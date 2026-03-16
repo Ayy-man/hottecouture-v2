@@ -449,7 +449,7 @@ export function GarmentServicesStep({
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const target = event.target as HTMLElement;
       // The emoji picker renders in a Radix Portal (appended to document.body)
       // and emoji-mart uses Shadow DOM, so clicks inside it appear "outside"
@@ -466,8 +466,10 @@ export function GarmentServicesStep({
 
     if (isDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
       };
     }
     return undefined;

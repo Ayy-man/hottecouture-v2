@@ -47,6 +47,8 @@ export function EmojiPicker({ value, onSelect, disabled }: EmojiPickerProps) {
           // Fix: block ALL outside-dismiss. The popover closes via onEmojiSelect or Escape.
           e.preventDefault();
         }}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onFocusOutside={(e) => e.preventDefault()}
       >
         <Picker
           data={data}

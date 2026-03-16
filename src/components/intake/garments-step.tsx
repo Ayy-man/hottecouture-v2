@@ -104,19 +104,26 @@ export function GarmentsStep({
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.garment-type-dropdown')) {
-        setIsDropdownOpen(false);
-        setContextMenuId(null);
-        setShowAddCustomForm(false);
+      if (
+        target.closest('.garment-type-dropdown') ||
+        target.closest('em-emoji-picker') ||
+        target.closest('[data-radix-popper-content-wrapper]')
+      ) {
+        return;
       }
+      setIsDropdownOpen(false);
+      setContextMenuId(null);
+      setShowAddCustomForm(false);
     };
 
     if (isDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
       };
     }
     return undefined;
