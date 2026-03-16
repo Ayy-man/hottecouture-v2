@@ -173,17 +173,26 @@ export async function POST(request: NextRequest) {
           `🔍 Intake API: processing service: ${service.serviceId}, qty: ${service.qty}, customPrice: ${service.customPriceCents}`
         );
 
-        // Get base price from service table
-        const { data: serviceData } = await supabase
-          .from('service')
-          .select('base_price_cents')
-          .eq('id', service.serviceId)
-          .single();
+        const isCustom = service.serviceId?.startsWith('custom-') || service.serviceId?.startsWith('custom_');
 
-        console.log(`🔍 Intake API: serviceData from DB:`, serviceData);
+        let basePrice = 5000;
+        let servicePrice = service.customPriceCents || basePrice;
 
-        const basePrice = (serviceData as any)?.base_price_cents || 5000;
-        const servicePrice = service.customPriceCents || basePrice;
+        if (!isCustom) {
+          // Get base price from service table (skip for custom services)
+          const { data: serviceData } = await supabase
+            .from('service')
+            .select('base_price_cents')
+            .eq('id', service.serviceId)
+            .single();
+
+          console.log(`🔍 Intake API: serviceData from DB:`, serviceData);
+
+          basePrice = (serviceData as any)?.base_price_cents || 5000;
+          servicePrice = service.customPriceCents || basePrice;
+        } else {
+          console.log(`🔍 Intake API: skipping DB lookup for custom service: ${service.serviceId}`);
+        }
 
         console.log(
           `🔍 Intake API: basePrice: ${basePrice}, servicePrice: ${servicePrice}, qty: ${service.qty}`
@@ -328,7 +337,7 @@ export async function POST(request: NextRequest) {
         .from('garment')
         .insert({
           order_id: (newOrder as any).id,
-          garment_type_id: garment.garment_type_id, // Use the ID instead of type
+          garment_type_id: garment.garment_type_id || null, // Use the ID instead of type
           type: garment.type, // Keep for backward compatibility
           color: garment.color || 'Unknown',
           brand: garment.brand || 'Unknown',
@@ -355,6 +364,15 @@ export async function POST(request: NextRequest) {
       // Create garment_services
       if (garment.services && garment.services.length > 0) {
         for (const service of garment.services) {
+          // Guard: reject services with missing serviceId
+          if (!service.serviceId) {
+            console.error('INTAKE_BUG: service missing serviceId', JSON.stringify(service));
+            return NextResponse.json(
+              { error: 'Un service est invalide (identifiant manquant). Veuillez rafraichir et reessayer.' },
+              { status: 400 }
+            );
+          }
+
           // Check if this is a custom service
           const isCustomService = service.serviceId.startsWith('custom-') || service.serviceId.startsWith('custom_');
           const serviceId = service.serviceId;
