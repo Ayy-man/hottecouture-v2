@@ -9,6 +9,7 @@ import {
 import { ToastProvider } from '@/components/ui/toast';
 import { MobileBottomNav } from '@/components/navigation/mobile-bottom-nav';
 import { GlobalChatWrapper } from '@/components/chat/global-chat-wrapper';
+import { LanguageToggle } from '@/components/ui/language-toggle';
 
 export default function ProtectedLayout({
   children,
@@ -33,10 +34,12 @@ export default function ProtectedLayout({
                   >
                     Home
                   </a>
+                  <LanguageToggle />
                   <StaffIndicator />
                 </nav>
-                {/* Mobile: show only staff indicator */}
-                <div className='flex md:hidden items-center'>
+                {/* Mobile: show staff indicator and language toggle */}
+                <div className='flex md:hidden items-center gap-2'>
+                  <LanguageToggle />
                   <StaffIndicator />
                 </div>
               </div>

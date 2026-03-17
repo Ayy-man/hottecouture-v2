@@ -1,13 +1,19 @@
-import { getRequestConfig } from 'next-intl/server'
+import { getRequestConfig } from 'next-intl/server';
+import { cookies } from 'next/headers';
 
-// Can be imported from a shared config
-const locales = ['en', 'fr']
+const locales = ['en', 'fr'] as const;
+const defaultLocale = 'fr';
 
-export default getRequestConfig(async ({ locale }) => {
-  // Use default locale if none provided
-  const validLocale = locale && locales.includes(locale) ? locale : 'fr'
+export default getRequestConfig(async () => {
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get('NEXT_LOCALE')?.value;
+
+  const locale = localeCookie && locales.includes(localeCookie as any)
+    ? localeCookie
+    : defaultLocale;
 
   return {
-    messages: (await import(`../../locales/${validLocale}.json`)).default
-  }
-})
+    locale,
+    messages: (await import(`../../locales/${locale}.json`)).default
+  };
+});

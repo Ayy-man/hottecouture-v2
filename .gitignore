@@ -124,3 +124,20 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+
+# macOS duplicate files (Finder copies)
+*\ 2.*
+*\ 3.*
+*\ 2/
+*\ 3/
+
+# Accidental nested repo copy
+/hottecouture-main/
+
+# Git backup / corrupted
+/.git_backup/
+/.git_corrupted/
+
+# Planning artifacts (keep tracked selectively)
+.planning/phases/*/RESEARCH.md
+.planning/phases/*/VERIFICATION.md

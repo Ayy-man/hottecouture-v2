@@ -1,14 +1,29 @@
+---
+gsd_state_version: 1.0
+milestone: v2.0
+milestone_name: "Production Launch"
+status: planning
+stopped_at: ""
+last_updated: "2026-03-16T00:00:00.000Z"
+progress:
+  total_phases: 11
+  completed_phases: 1
+  total_plans: 0
+  completed_plans: 0
+---
+
 # Project State
 
-**Project:** Hotte Couture Final Modifications
-**Last Updated:** 2026-02-12
+**Project:** Hotte Couture — Production Launch (Milestone 2)
+**Last Updated:** 2026-03-16
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-01-20)
+See: `.planning/PROJECT.md` (updated 2026-03-04)
+See: `.planning/ROADMAP-M2.md` for current milestone roadmap
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Phase 27 — Role-based access control for seamstress view filtering.
+**Current focus:** Milestone 2 — Production Launch (11 phases: original 4 bug fixes + 7 new from Mar 13 client brief)
 
 ## Current Status
 
@@ -97,6 +112,22 @@ WAVE 9 (Infrastructure) ✅ DONE
 WAVE 10 (Access Control) ⏳ IN PROGRESS
 +-- Phase 27: Role-Based Access Control - Seamstress View Filtering
 ```
+
+## Milestone 2 Progress (Mar 13 Client Brief)
+
+| Phase | Status | Requirement | Source |
+|-------|--------|-------------|--------|
+| 1 - Order Submission Fix | ✅ CODE COMPLETE | BUG-1 | M2 Original |
+| 2 - French Templates | ⏳ PENDING | BUG-3 | M2 Original |
+| 3 - Garment Type Admin | ⏳ PENDING | BUG-5 | M2 Original |
+| 4 - Emoji Picker Touch | ⏳ PENDING | BUG-6 | M2 Original |
+| 5 - Restore Empty Files | ⏳ PENDING (BLOCKER) | INFRA-1 | Mar 16 |
+| 6 - Order Form Restructure | ⏳ PENDING | MKT-116 | Mar 13 |
+| 7 - Fabric Items | ⏳ PENDING | MKT-117 | Mar 13 |
+| 8 - Notification Workflow | ⏳ PENDING | MKT-118 | Mar 13 |
+| 9 - Kanban Bugs | ⏳ PENDING | MKT-72 | Feb 26 |
+| 10 - French Translation | ⏳ PENDING | MKT-71 | Feb 22 |
+| 11 - iPad UX & Mobile | ⏳ PENDING | MKT-111 | Feb 3 |
 
 ## Feb 3 UAT Context
 
@@ -204,10 +235,22 @@ Key concerns from client:
 - [Phase 29-01]: EmojiPicker uses w-auto on PopoverContent so emoji-mart Picker controls its own width; only stores emoji.native Unicode string
 - [Phase 29-01]: Categories API iconOverride pattern: optional icon field, falls back to getIconForCategory() when absent — backward compatible
 - [Phase 29-02]: Dropped editCategoryIconOverridden flag: icon state value is sufficient, TypeScript TS6133 error confirmed flag was never read
+- [Phase quick-2]: Read errorData.error first (matching API response format) instead of errorData.message
+- [Phase quick-2]: Skip DB service lookup for custom_ and custom- prefixed serviceIds in pricing loop
+
+## Milestone 2 Progress
+
+| Phase | Status | Requirement |
+|-------|--------|-------------|
+| 1 - Order Submission Fix | ✅ CODE COMPLETE (awaiting deploy verification) | BUG-1 |
+| 2 - French Templates | ⏳ PENDING | BUG-3 |
+| 3 - Garment Type Admin | ⏳ PENDING | BUG-5 |
+| 4 - Emoji Picker Touch | ⏳ PENDING | BUG-6 |
 
 ## Next Action
 
-**Phase 27 — Pending.** Role-based access control - seamstress view filtering.
+**Phase 1 — Code complete.** All fixes from Quick Task 2 are in place (commits 8a22cb3, fc58bff). Needs deploy + manual e2e test of intake flow.
+**Phase 2 — Next.** French-ify all customer-facing templates.
 
 **Design decisions (Feb 22):**
 - Board: seamstresses see only orders with items assigned to them
@@ -449,6 +492,7 @@ Fixed 4 cascading build failures after adding all source files to git:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 001 | Reliable mobile kanban (tap-to-move) | 2026-02-08 | 5959112 | [001-reliable-mobile-kanban](./quick/001-reliable-mobile-kanban/) |
+| 002 | Fix order submission failure (ship blocker) | 2026-03-01 | fc58bff | [2-bug-1-order-submission-failure-ship-bloc](./quick/2-bug-1-order-submission-failure-ship-bloc/) |
 
 ### Roadmap Evolution
 
@@ -462,10 +506,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-02-23T22:08:49.053Z
-- **Status:** Ready to plan
-- **Stopped at:** Completed 29-02-PLAN.md
-- **Next:** `/gsd:plan-phase 27` — plan RBAC implementation
+- **Last session:** 2026-03-04
+- **Status:** Milestone 2 created, ready to plan/execute
+- **Next:** `/gsd:quick 1` or `/gsd:plan-phase 1` — verify order submission fix
 - **Resume file:** None
 
 ---

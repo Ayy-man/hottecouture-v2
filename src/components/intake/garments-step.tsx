@@ -106,9 +106,12 @@ export function GarmentsStep({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const target = event.target as HTMLElement;
+      // Ignore clicks inside the dropdown, emoji picker (Shadow DOM portal),
+      // or Radix popper content (portalled popover)
       if (
         target.closest('.garment-type-dropdown') ||
         target.closest('em-emoji-picker') ||
+        target.tagName?.startsWith('EM-') ||
         target.closest('[data-radix-popper-content-wrapper]')
       ) {
         return;
@@ -176,7 +179,7 @@ export function GarmentsStep({
           setCurrentGarment(prev => ({ ...prev, photo_path: result.path }));
         } else {
           console.error('Photo upload failed');
-          alert('Photo upload failed. Please try again.');
+          alert('Échec du téléchargement de la photo. Veuillez réessayer.');
         }
         setUploadingPhoto(false);
       };
@@ -233,7 +236,7 @@ export function GarmentsStep({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Failed to create custom garment type');
+        alert(result.error || 'Échec de la création du type de vêtement personnalisé');
         return;
       }
 
@@ -251,7 +254,7 @@ export function GarmentsStep({
       setShowAddCustomForm(false);
     } catch (error) {
       console.error('Error creating custom type:', error);
-      alert('Failed to create custom garment type');
+      alert('Échec de la création du type de vêtement personnalisé');
     }
   };
 
@@ -281,7 +284,7 @@ export function GarmentsStep({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Failed to update garment type');
+        alert(result.error || 'Échec de la mise à jour du type de vêtement');
         return;
       }
 
@@ -320,7 +323,7 @@ export function GarmentsStep({
       setEditName('');
     } catch (error) {
       console.error('Error updating type:', error);
-      alert('Failed to update garment type');
+      alert('Échec de la mise à jour du type de vêtement');
     }
   };
 
@@ -401,14 +404,11 @@ export function GarmentsStep({
       setUsageCount(null);
     } catch (error) {
       console.error('Error deleting type:', error);
-      alert('Failed to delete garment type');
+      alert('Échec de la suppression du type de vêtement');
     }
   };
 
   // Get custom types count
-  const customTypesCount = garmentTypes.filter(
-    t => t.is_custom && t.is_active !== false
-  ).length;
 
   if (loading) {
     return (
@@ -432,26 +432,26 @@ export function GarmentsStep({
                 d='M15 19l-7-7 7-7'
               />
             </svg>
-            <span className='font-medium'>Previous</span>
+            <span className='font-medium'>Précédent</span>
           </Button>
           <div className='flex-1 text-center'>
             <h2 className='text-lg font-semibold text-foreground'>
-              Add Garments
+              Ajouter des vêtements
             </h2>
-            <p className='text-sm text-muted-foreground'>Loading garment types...</p>
+            <p className='text-sm text-muted-foreground'>Chargement des types de vêtements...</p>
           </div>
           <Button
             onClick={onNext}
             disabled={true}
             className='bg-muted text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            Next
+            Suivant
           </Button>
         </div>
         <div className='flex-1 overflow-y-auto min-h-0 flex items-center justify-center'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4'></div>
-            <p className='text-muted-foreground'>Loading garment types...</p>
+            <p className='text-muted-foreground'>Chargement des types de vêtements...</p>
           </div>
         </div>
       </div>
@@ -480,13 +480,13 @@ export function GarmentsStep({
               d='M15 19l-7-7 7-7'
             />
           </svg>
-          <span className='font-medium'>Previous</span>
+          <span className='font-medium'>Précédent</span>
         </Button>
 
         <div className='flex-1 text-center'>
-          <h2 className='text-lg font-semibold text-foreground'>Add Garments</h2>
+          <h2 className='text-lg font-semibold text-foreground'>Ajouter des vêtements</h2>
           <p className='text-sm text-muted-foreground'>
-            Add garments that need alterations or custom work
+            Ajoutez les vêtements nécessitant des altérations ou du travail sur mesure
           </p>
         </div>
 
@@ -495,7 +495,7 @@ export function GarmentsStep({
           disabled={data.length === 0}
           className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          Next
+          Suivant
         </Button>
       </div>
 
@@ -507,7 +507,7 @@ export function GarmentsStep({
               onClick={() => setShowAddForm(true)}
               className='w-full btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-sm py-2'
             >
-              Add Garment
+              Ajouter un vêtement
             </Button>
           ) : (
             <div className='space-y-3 p-3 border border-border rounded-lg'>
@@ -516,7 +516,7 @@ export function GarmentsStep({
                   htmlFor='garmentType'
                   className='block text-sm font-medium mb-1'
                 >
-                  Garment Type *
+                  Type de vêtement *
                 </label>
                 <div className='relative'>
                   {/* Custom Dropdown Button */}
@@ -527,8 +527,8 @@ export function GarmentsStep({
                   >
                     <span className='truncate'>
                       {currentGarment.garment_type_id
-                        ? `${garmentTypes.find(gt => gt.id === currentGarment.garment_type_id)?.icon || ''} ${currentGarment.type || 'Choose a garment type...'}`
-                        : 'Choose a garment type...'}
+                        ? `${garmentTypes.find(gt => gt.id === currentGarment.garment_type_id)?.icon || ''} ${currentGarment.type || 'Choisir un type de vêtement...'}`
+                        : 'Choisir un type de vêtement...'}
                     </span>
                     <svg
                       className={`w-5 h-5 text-muted-foreground/70 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
@@ -606,13 +606,13 @@ export function GarmentsStep({
                                         className='px-3 py-2 bg-green-500 text-white rounded text-sm min-h-[44px] touch-manipulation'
                                         disabled={!editName.trim()}
                                       >
-                                        Save
+                                        Sauvegarder
                                       </button>
                                       <button
                                         onClick={handleCancelEdit}
                                         className='px-3 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                                       >
-                                        Cancel
+                                        Annuler
                                       </button>
                                     </div>
                                   ) : (
@@ -678,7 +678,7 @@ export function GarmentsStep({
                                             className='w-full px-4 py-3 text-left text-sm hover:bg-muted flex items-center gap-2 min-h-[44px] touch-manipulation'
                                           >
                                             <span>✏️</span>
-                                            <span>Edit Name</span>
+                                            <span>Modifier le nom</span>
                                           </button>
                                           <button
                                             type='button'
@@ -689,7 +689,7 @@ export function GarmentsStep({
                                             className='w-full px-4 py-3 text-left text-sm hover:bg-muted flex items-center gap-2 min-h-[44px] touch-manipulation text-red-600'
                                           >
                                             <span>🗑️</span>
-                                            <span>Delete</span>
+                                            <span>Supprimer</span>
                                           </button>
                                         </div>
                                       )}
@@ -710,7 +710,7 @@ export function GarmentsStep({
                               type='text'
                               value={customTypeName}
                               onChange={e => setCustomTypeName(e.target.value)}
-                              placeholder='Custom garment type name...'
+                              placeholder='Nom du type de vêtement personnalisé...'
                               className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                               autoFocus
                               onKeyDown={e => {
@@ -728,14 +728,14 @@ export function GarmentsStep({
                               }
                               className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                             >
-                              <option value='other'>Other</option>
-                              <option value='home'>Home</option>
-                              <option value='outdoor'>Outdoor</option>
-                              <option value='womens'>Women's</option>
-                              <option value='mens'>Men's</option>
-                              <option value='outerwear'>Outerwear</option>
-                              <option value='formal'>Formal</option>
-                              <option value='activewear'>Activewear</option>
+                              <option value='other'>Autre</option>
+                              <option value='home'>Maison</option>
+                              <option value='outdoor'>Plein air</option>
+                              <option value='womens'>Femmes</option>
+                              <option value='mens'>Hommes</option>
+                              <option value='outerwear'>Vêtements d&apos;extérieur</option>
+                              <option value='formal'>Formel</option>
+                              <option value='activewear'>Vêtements de sport</option>
                             </select>
                             <div className='flex gap-2'>
                               <button
@@ -745,39 +745,25 @@ export function GarmentsStep({
                                 }}
                                 className='flex-1 px-3 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                               >
-                                Cancel
+                                Annuler
                               </button>
                               <button
                                 onClick={handleCreateCustomType}
-                                disabled={
-                                  !customTypeName.trim() ||
-                                  customTypesCount >= 10
-                                }
+                                disabled={!customTypeName.trim()}
                                 className='flex-1 px-3 py-2 bg-primary-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50'
                               >
-                                Create
+                                Créer
                               </button>
                             </div>
-                            {customTypesCount >= 10 && (
-                              <p className='text-xs text-red-600'>
-                                Maximum 10 custom types reached
-                              </p>
-                            )}
                           </div>
                         ) : (
                           <button
                             type='button'
                             onClick={() => setShowAddCustomForm(true)}
-                            disabled={customTypesCount >= 10}
-                            className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-muted/50 flex items-center gap-2 min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
+                            className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-muted/50 flex items-center gap-2 min-h-[44px] touch-manipulation'
                           >
                             <span>+</span>
-                            <span>Add Custom Type...</span>
-                            {customTypesCount >= 10 && (
-                              <span className='ml-auto text-xs text-red-600'>
-                                (Limit reached)
-                              </span>
-                            )}
+                            <span>Ajouter un type personnalisé...</span>
                           </button>
                         )}
                       </div>
@@ -789,22 +775,22 @@ export function GarmentsStep({
                     <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
                       <div className='bg-white rounded-lg p-6 max-w-md w-full mx-4'>
                         <h3 className='text-lg font-semibold mb-4'>
-                          Delete Garment Type?
+                          Supprimer le type de vêtement?
                         </h3>
                         <p className='text-sm text-muted-foreground mb-2'>
-                          Are you sure you want to delete this garment type?
+                          Êtes-vous sûr de vouloir supprimer ce type de vêtement?
                         </p>
                         {usageCount !== null && (
                           <p className='text-sm text-muted-foreground mb-4'>
                             {usageCount > 0 ? (
                               <span className='text-red-600 font-semibold'>
-                                This type is used in {usageCount} order(s).
-                                Cannot delete.
+                                Ce type est utilisé dans {usageCount} commande(s).
+                                Impossible de supprimer.
                               </span>
                             ) : (
                               <span className='text-green-600'>
-                                This type is not used in any orders. Safe to
-                                delete.
+                                Ce type n&apos;est utilisé dans aucune commande. Suppression
+                                sécuritaire.
                               </span>
                             )}
                           </p>
@@ -817,14 +803,14 @@ export function GarmentsStep({
                             }}
                             className='flex-1 px-4 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                           >
-                            Cancel
+                            Annuler
                           </button>
                           <button
                             onClick={handleDeleteType}
                             disabled={usageCount !== null && usageCount > 0}
                             className='flex-1 px-4 py-2 bg-red-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
                           >
-                            Delete
+                            Supprimer
                           </button>
                         </div>
                       </div>
@@ -844,7 +830,7 @@ export function GarmentsStep({
                         clipRule='evenodd'
                       />
                     </svg>
-                    Garment type selected
+                    Type de vêtement sélectionné
                   </div>
                 )}
               </div>
@@ -854,7 +840,7 @@ export function GarmentsStep({
                   htmlFor='labelCode'
                   className='block text-xs font-medium mb-1'
                 >
-                  Label Code
+                  Code d'étiquette
                 </label>
                 <input
                   id='labelCode'
@@ -862,10 +848,10 @@ export function GarmentsStep({
                   value={currentGarment.labelCode}
                   readOnly
                   className='w-full px-3 py-2 border border-border rounded-md bg-muted/50 text-muted-foreground min-h-[36px] text-sm'
-                  placeholder='Auto-generated'
+                  placeholder='Généré automatiquement'
                 />
                 <p className='text-xs text-muted-foreground mt-1'>
-                  This code will be used to identify the garment
+                  Ce code sera utilisé pour identifier le vêtement
                 </p>
               </div>
 
@@ -882,13 +868,13 @@ export function GarmentsStep({
                   onChange={e => updateGarmentField('notes', e.target.value)}
                   rows={2}
                   className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[60px] text-sm touch-manipulation'
-                  placeholder='Special instructions, damage notes, etc.'
+                  placeholder='Instructions spéciales, notes de dommages, etc.'
                 />
               </div>
 
               <div>
                 <label className='block text-xs font-medium mb-1'>
-                  Photo (optional)
+                  Photo (optionnel)
                 </label>
                 <input
                   ref={fileInputRef}
@@ -940,7 +926,7 @@ export function GarmentsStep({
                   onClick={() => setShowAddForm(false)}
                   className='flex-1 btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border text-sm py-2'
                 >
-                  Cancel
+                  Annuler
                 </Button>
                 <Button
                   onClick={addGarment}
@@ -949,7 +935,7 @@ export function GarmentsStep({
                   }
                   className='flex-1 btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm py-2'
                 >
-                  Add Garment
+                  Ajouter le vêtement
                 </Button>
               </div>
             </div>
@@ -958,7 +944,7 @@ export function GarmentsStep({
           {data.length > 0 && (
             <div className='space-y-2'>
               <h3 className='font-medium text-sm'>
-                Added Garments ({data.length})
+                Vêtements ajoutés ({data.length})
               </h3>
               {data.map((garment, index) => {
                 return (
@@ -994,19 +980,19 @@ export function GarmentsStep({
                         </div>
                         {garment.color && (
                           <div className='text-xs text-muted-foreground'>
-                            <span className='font-medium'>Color:</span>{' '}
+                            <span className='font-medium'>Couleur :</span>{' '}
                             {garment.color}
                           </div>
                         )}
                         {garment.brand && (
                           <div className='text-xs text-muted-foreground'>
-                            <span className='font-medium'>Brand:</span>{' '}
+                            <span className='font-medium'>Marque :</span>{' '}
                             {garment.brand}
                           </div>
                         )}
                         {garment.notes && (
                           <div className='text-xs text-muted-foreground italic'>
-                            <span className='font-medium'>Notes:</span>{' '}
+                            <span className='font-medium'>Notes :</span>{' '}
                             {garment.notes}
                           </div>
                         )}
@@ -1017,7 +1003,7 @@ export function GarmentsStep({
                             onClick={() => removeGarment(index)}
                             className='btn-press bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 text-red-700 font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-red-300 text-xs px-2 py-1'
                           >
-                            Remove
+                            Retirer
                           </Button>
                         </div>
                       </div>

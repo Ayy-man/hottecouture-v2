@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
+    console.log('INTAKE_DEBUG_PAYLOAD:', JSON.stringify(body).substring(0, 2000));
     console.log('📝 Intake API: Request body received', {
       correlationId,
       hasClient: !!body.client,
@@ -703,12 +704,12 @@ export async function POST(request: NextRequest) {
       qrcode: qrCodeDataUrl, // Actual QR code image as data URL
     });
   } catch (error) {
+    console.error('INTAKE_FATAL_ERROR:', JSON.stringify({
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    }, null, 2));
     console.error('❌ Intake API error:', error);
-    console.error(
-      '❌ Error stack:',
-      error instanceof Error ? error.stack : 'No stack trace'
-    );
-    console.error('❌ Request body that caused error: Check request body');
     return NextResponse.json(
       {
         error: 'Internal server error',

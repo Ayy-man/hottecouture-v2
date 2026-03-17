@@ -252,7 +252,7 @@ export default function IntakePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to submit order');
+        throw new Error(errorData.error || errorData.message || errorData.details || 'Failed to submit order');
       }
 
       const result: IntakeResponse = await response.json();

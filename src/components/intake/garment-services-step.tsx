@@ -123,6 +123,12 @@ export function GarmentServicesStep({
   const [customTypeCategory, setCustomTypeCategory] = useState('other');
   const [customTypeIcon, setCustomTypeIcon] = useState('\u{1F4DD}');
 
+  // Garment type manage mode (edit/delete)
+  const [garmentManageMode, setGarmentManageMode] = useState(false);
+  const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
+  const [editTypeName, setEditTypeName] = useState('');
+  const [editTypeIcon, setEditTypeIcon] = useState('');
+
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -148,10 +154,6 @@ export function GarmentServicesStep({
   const { staff } = useStaff();
   const toast = useToast();
 
-  // Get custom types count (max 10 allowed)
-  const customTypesCount = garmentTypes.filter(
-    t => t.is_custom && t.is_active !== false
-  ).length;
 
   // BUG-002 fix: Helper to get seamstress name from ID (avoids showing UUID)
   const getSeamstressName = (id: string | null): string => {
@@ -191,6 +193,66 @@ export function GarmentServicesStep({
       }
     } catch (error) {
       console.error('Error loading garment types:', error);
+    }
+  };
+
+  // Garment type manage mode handlers
+  const handleStartEditType = (type: GarmentType) => {
+    setEditingTypeId(type.id);
+    setEditTypeName(type.name);
+    setEditTypeIcon(type.icon);
+  };
+
+  const handleSaveEditType = async () => {
+    if (!editingTypeId || !editTypeName.trim()) return;
+
+    try {
+      const response = await fetch('/api/admin/garment-types', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingTypeId,
+          name: editTypeName.trim(),
+          icon: editTypeIcon,
+        }),
+      });
+      if (response.ok) {
+        await loadGarmentTypes();
+        toast.success('Type mis à jour');
+      } else {
+        const result = await response.json();
+        toast.error(result.error || 'Échec de la mise à jour');
+      }
+    } catch (error) {
+      console.error('Error updating garment type:', error);
+      toast.error('Échec de la mise à jour');
+    }
+    setEditingTypeId(null);
+    setEditTypeName('');
+    setEditTypeIcon('');
+  };
+
+  const handleCancelEditType = () => {
+    setEditingTypeId(null);
+    setEditTypeName('');
+    setEditTypeIcon('');
+  };
+
+  const handleDeleteType = async (typeId: string) => {
+    try {
+      const response = await fetch(`/api/admin/garment-types?id=${typeId}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (response.ok) {
+        await loadGarmentTypes();
+        toast.success('Type supprimé');
+      } else {
+        toast.error(result.error || result.message || 'Impossible de supprimer ce type');
+      }
+    } catch (error) {
+      console.error('Error deleting garment type:', error);
+      toast.error('Échec de la suppression');
     }
   };
 
@@ -424,7 +486,7 @@ export function GarmentServicesStep({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Failed to create custom garment type');
+        alert(result.error || 'Échec de la création du type de vêtement personnalisé');
         return;
       }
 
@@ -443,20 +505,21 @@ export function GarmentServicesStep({
       setShowAddCustomForm(false);
     } catch (error) {
       console.error('Error creating custom type:', error);
-      alert('Failed to create custom garment type');
+      alert('Échec de la création du type de vêtement personnalisé');
     }
   };
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking/tapping outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as HTMLElement;
+      const target = (event instanceof TouchEvent ? event.target : event.target) as HTMLElement;
       // The emoji picker renders in a Radix Portal (appended to document.body)
       // and emoji-mart uses Shadow DOM, so clicks inside it appear "outside"
       // the .garment-type-dropdown container. Ignore those clicks.
       if (
         target.closest('.garment-type-dropdown') ||
         target.closest('em-emoji-picker') ||
+        target.tagName?.startsWith('EM-') ||
         target.closest('[data-radix-popper-content-wrapper]')
       ) {
         return;
@@ -502,7 +565,7 @@ export function GarmentServicesStep({
           setCurrentGarment(prev => ({ ...prev, photo_path: result.path }));
         } else {
           console.error('Photo upload failed');
-          alert('Photo upload failed. Please try again.');
+          alert('Échec du téléchargement de la photo. Veuillez réessayer.');
         }
         setUploadingPhoto(false);
       };
@@ -771,9 +834,25 @@ export function GarmentServicesStep({
           {/* Section 1: Garment Configuration */}
           <Card>
             <CardContent className="p-4 space-y-4">
-              <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                1. Type de vetement
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                  1. Type de vetement
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGarmentManageMode(!garmentManageMode);
+                    if (garmentManageMode) {
+                      handleCancelEditType();
+                    }
+                  }}
+                  className={`px-2 py-1 rounded transition-colors flex items-center gap-1 text-xs ${garmentManageMode ? 'text-primary-600 bg-primary-50 font-medium' : 'text-muted-foreground hover:text-primary-600 hover:bg-muted/50'}`}
+                  title={garmentManageMode ? 'Terminer la gestion' : 'Gérer les types'}
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>{garmentManageMode ? 'OK' : 'Gérer'}</span>
+                </button>
+              </div>
 
               {/* Garment Type Dropdown */}
               <div className="garment-type-dropdown">
@@ -815,17 +894,76 @@ export function GarmentServicesStep({
                               {categoryLabels[category] || category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ')}
                             </div>
                             {activeTypes.map(type => (
-                              <button
-                                key={type.id}
-                                type="button"
-                                onClick={() => handleGarmentTypeChange(type.id)}
-                                className={`w-full px-3 py-3 text-left flex items-center gap-2 hover:bg-muted/50 min-h-[44px] ${
-                                  currentGarment.garment_type_id === type.id ? 'bg-primary-50' : ''
-                                }`}
-                              >
-                                <span>{type.icon}</span>
-                                <span className="text-sm">{type.name}</span>
-                              </button>
+                              garmentManageMode ? (
+                                <div key={type.id} className="px-3 py-2 min-h-[44px]">
+                                  {editingTypeId === type.id ? (
+                                    <div className="flex items-center gap-2">
+                                      <EmojiPicker
+                                        value={editTypeIcon}
+                                        onSelect={(emoji) => setEditTypeIcon(emoji)}
+                                      />
+                                      <input
+                                        type="text"
+                                        value={editTypeName}
+                                        onChange={e => setEditTypeName(e.target.value)}
+                                        className="flex-1 px-2 py-1 border border-border rounded text-sm min-h-[36px]"
+                                        autoFocus
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter') handleSaveEditType();
+                                          if (e.key === 'Escape') handleCancelEditType();
+                                        }}
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={handleSaveEditType}
+                                        className="px-2 py-1 bg-primary-500 text-white rounded text-xs min-h-[36px] touch-manipulation"
+                                      >
+                                        OK
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={handleCancelEditType}
+                                        className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs min-h-[36px] touch-manipulation"
+                                      >
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <span>{type.icon}</span>
+                                      <span className="text-sm flex-1">{type.name}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleStartEditType(type)}
+                                        className="p-1.5 text-muted-foreground hover:text-primary-600 rounded touch-manipulation"
+                                        title="Modifier"
+                                      >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteType(type.id)}
+                                        className="p-1.5 text-muted-foreground hover:text-red-600 rounded touch-manipulation"
+                                        title="Supprimer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <button
+                                  key={type.id}
+                                  type="button"
+                                  onClick={() => handleGarmentTypeChange(type.id)}
+                                  className={`w-full px-3 py-3 text-left flex items-center gap-2 hover:bg-muted/50 min-h-[44px] ${
+                                    currentGarment.garment_type_id === type.id ? 'bg-primary-50' : ''
+                                  }`}
+                                >
+                                  <span>{type.icon}</span>
+                                  <span className="text-sm">{type.name}</span>
+                                </button>
+                              )
                             ))}
                           </div>
                         );
@@ -879,32 +1017,21 @@ export function GarmentServicesStep({
                               </button>
                               <button
                                 onClick={handleCreateCustomType}
-                                disabled={!customTypeName.trim() || customTypesCount >= 10}
+                                disabled={!customTypeName.trim()}
                                 className='flex-1 px-3 py-2 bg-primary-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50'
                               >
                                 Creer
                               </button>
                             </div>
-                            {customTypesCount >= 10 && (
-                              <p className='text-xs text-red-600'>
-                                Maximum 10 types personnalises atteint
-                              </p>
-                            )}
                           </div>
                         ) : (
                           <button
                             type='button'
                             onClick={() => setShowAddCustomForm(true)}
-                            disabled={customTypesCount >= 10}
-                            className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-muted/50 flex items-center gap-2 min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
+                            className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-muted/50 flex items-center gap-2 min-h-[44px] touch-manipulation'
                           >
                             <span>+</span>
                             <span>Ajouter un type personnalise...</span>
-                            {customTypesCount >= 10 && (
-                              <span className='ml-auto text-xs text-red-600'>
-                                (Limite atteinte)
-                              </span>
-                            )}
                           </button>
                         )}
                       </div>

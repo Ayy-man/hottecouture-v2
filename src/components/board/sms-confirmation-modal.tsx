@@ -43,14 +43,14 @@ export function SmsConfirmationModal({
             </svg>
           </div>
           <h3 className='text-lg font-semibold text-foreground mb-2'>
-            Send Pickup Notification?
+            Envoyer la notification de ramassage?
           </h3>
           <p className='text-sm text-muted-foreground'>
-            Order <span className='font-semibold'>#{orderNumber}</span> for{' '}
-            <span className='font-semibold'>{clientName}</span> is ready.
+            Commande <span className='font-semibold'>#{orderNumber}</span> pour{' '}
+            <span className='font-semibold'>{clientName}</span> est prête.
           </p>
           <p className='text-sm text-muted-foreground mt-2'>
-            This will send an SMS to notify the customer their order is ready for pickup.
+            Ceci enverra un SMS pour aviser le client que sa commande est prête à récupérer.
           </p>
         </div>
 
@@ -60,13 +60,13 @@ export function SmsConfirmationModal({
             variant='outline'
             className='flex-1'
           >
-            Skip SMS
+            Passer le SMS
           </Button>
           <Button
             onClick={onConfirm}
             className='flex-1 bg-purple-600 hover:bg-purple-700 text-white'
           >
-            Send SMS
+            Envoyer SMS
           </Button>
         </div>
       </div>
