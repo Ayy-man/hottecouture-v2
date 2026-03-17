@@ -28,7 +28,7 @@ export function OrderSummary({
   if (!order) {
     return (
       <div className='text-center py-8'>
-        <div className='text-lg text-muted-foreground'>No order data available</div>
+        <div className='text-lg text-muted-foreground'>Aucune donnée de commande disponible</div>
       </div>
     );
   }
@@ -73,10 +73,10 @@ export function OrderSummary({
                   </svg>
                 </div>
                 <h2 className='text-xl font-bold text-green-800 mb-2'>
-                  Order Created Successfully!
+                  Commande créée avec succès !
                 </h2>
                 <p className='text-sm text-green-600'>
-                  Order #{order.orderNumber} has been created successfully
+                  La commande #{order.orderNumber} a été créée avec succès
                 </p>
               </div>
             </CardContent>
@@ -85,51 +85,51 @@ export function OrderSummary({
           {/* Order Details */}
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-lg'>Order Details</CardTitle>
+              <CardTitle className='text-lg'>Détails de la commande</CardTitle>
               <CardDescription className='text-sm'>
-                Order #{order.orderNumber} - {new Date().toLocaleDateString()}
+                Commande #{order.orderNumber} - {new Date().toLocaleDateString()}
               </CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <div>
                   <h3 className='font-medium text-sm mb-2'>
-                    Order Information
+                    Informations de la commande
                   </h3>
                   <div className='space-y-1'>
                     <div className='flex justify-between'>
                       <span className='text-xs text-muted-foreground'>
-                        Order Number:
+                        Numéro de commande :
                       </span>
                       <span className='text-xs font-medium'>
                         #{order.orderNumber}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-muted-foreground'>Order ID:</span>
+                      <span className='text-xs text-muted-foreground'>Identifiant :</span>
                       <span className='font-mono text-xs'>{order.orderId}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-muted-foreground'>Status:</span>
+                      <span className='text-xs text-muted-foreground'>Statut :</span>
                       <span className='px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs'>
-                        Pending
+                        En attente
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className='font-medium text-sm mb-2'>Pricing Summary</h3>
+                  <h3 className='font-medium text-sm mb-2'>Résumé des prix</h3>
                   <div className='space-y-1'>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-muted-foreground'>Subtotal:</span>
+                      <span className='text-xs text-muted-foreground'>Sous-total :</span>
                       <span className='text-xs font-medium'>
                         {formatCurrency(order.totals.subtotal_cents)}
                       </span>
                     </div>
                     {order.totals.rush_fee_cents > 0 && (
                       <div className='flex justify-between'>
-                        <span className='text-xs text-muted-foreground'>Rush Fee:</span>
+                        <span className='text-xs text-muted-foreground'>Frais express :</span>
                         <span className='text-xs font-medium'>
                           {formatCurrency(order.totals.rush_fee_cents)}
                         </span>
@@ -140,7 +140,7 @@ export function OrderSummary({
                       <>
                         <div className='flex justify-between'>
                           <span className='text-xs text-muted-foreground'>
-                            TPS: Canada tax
+                            TPS (taxe fédérale)
                           </span>
                           <span className='text-xs font-medium'>
                             {formatCurrency(order.totals.tps_cents)}
@@ -148,7 +148,7 @@ export function OrderSummary({
                         </div>
                         <div className='flex justify-between'>
                           <span className='text-xs text-muted-foreground'>
-                            TVQ: Québec tax
+                            TVQ (taxe provinciale)
                           </span>
                           <span className='text-xs font-medium'>
                             {formatCurrency(order.totals.tvq_cents)}
@@ -157,14 +157,14 @@ export function OrderSummary({
                       </>
                     ) : (
                       <div className='flex justify-between'>
-                        <span className='text-xs text-muted-foreground'>Tax:</span>
+                        <span className='text-xs text-muted-foreground'>Taxe :</span>
                         <span className='text-xs font-medium'>
                           {formatCurrency(order.totals.tax_cents)}
                         </span>
                       </div>
                     )}
                     <div className='flex justify-between text-sm font-bold border-t pt-1'>
-                      <span>Total:</span>
+                      <span>Total :</span>
                       <span className='text-primary'>
                         {formatCurrency(order.totals.total_cents)}
                       </span>
@@ -179,20 +179,20 @@ export function OrderSummary({
           {order.qrcode && (
             <Card>
               <CardHeader className='pb-3'>
-                <CardTitle className='text-lg'>Order QR Code</CardTitle>
+                <CardTitle className='text-lg'>Code QR de la commande</CardTitle>
                 <CardDescription className='text-sm'>
-                  Use this QR code to track the order
+                  Utilisez ce code QR pour suivre la commande
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
                 <div className='text-center'>
                   <img
                     src={order.qrcode}
-                    alt='Order QR Code'
+                    alt='Code QR de la commande'
                     className='w-24 h-24 mx-auto border border-border rounded'
                   />
                   <p className='text-xs text-muted-foreground mt-2'>
-                    Order #{order.orderNumber}
+                    Commande #{order.orderNumber}
                   </p>
                 </div>
               </CardContent>
@@ -205,21 +205,21 @@ export function OrderSummary({
               onClick={onPrintLabels}
               className='flex-1 py-2 text-sm btn-press bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation'
             >
-              Print Labels
+              Imprimer les étiquettes
             </Button>
             <Button
               onClick={onNewOrder}
               variant='outline'
               className='flex-1 py-2 text-sm btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border touch-manipulation'
             >
-              New Order
+              Nouvelle commande
             </Button>
           </div>
 
           {/* Next Steps */}
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-lg'>What's Next?</CardTitle>
+              <CardTitle className='text-lg'>Prochaines étapes</CardTitle>
             </CardHeader>
             <CardContent className='pt-0'>
               <div className='space-y-2'>
@@ -228,10 +228,9 @@ export function OrderSummary({
                     1
                   </div>
                   <div>
-                    <h4 className='font-medium text-sm'>Print Labels</h4>
+                    <h4 className='font-medium text-sm'>Imprimer les étiquettes</h4>
                     <p className='text-xs text-muted-foreground'>
-                      Print labels for each garment to track them through the
-                      process
+                      Imprimez les étiquettes pour chaque vêtement afin de les suivre tout au long du processus
                     </p>
                   </div>
                 </div>
@@ -240,10 +239,9 @@ export function OrderSummary({
                     2
                   </div>
                   <div>
-                    <h4 className='font-medium text-sm'>Start Work</h4>
+                    <h4 className='font-medium text-sm'>Commencer le travail</h4>
                     <p className='text-xs text-muted-foreground'>
-                      Begin working on the garments according to the selected
-                      services
+                      Commencez à travailler sur les vêtements selon les services sélectionnés
                     </p>
                   </div>
                 </div>
@@ -252,9 +250,9 @@ export function OrderSummary({
                     3
                   </div>
                   <div>
-                    <h4 className='font-medium text-sm'>Update Status</h4>
+                    <h4 className='font-medium text-sm'>Mettre à jour le statut</h4>
                     <p className='text-xs text-muted-foreground'>
-                      Update the order status as work progresses
+                      Mettez à jour le statut de la commande au fur et à mesure de l&apos;avancement
                     </p>
                   </div>
                 </div>
