@@ -38,7 +38,7 @@ WAVE 5 (Polish — Parallel)
 | 2 | French Templates | All customer-facing text in French | BUG-3 | 2 | ⏳ |
 | 3 | Garment Type Admin | Edit/delete/reorder garment types | BUG-5 | 2 | ⏳ |
 | 4 | Emoji Picker Touch | Fix iPad emoji picker closing | BUG-6 | 2 | ⏳ |
-| 5 | Restore Empty Files | Restore all 0-byte API/page files from git | INFRA-1 | 1 | ⏳ |
+| 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ⏳ |
 | 6 | Order Form Restructure | Split into 4 sections: Client/Alteration/Accessories/Pricing | MKT-116 | 3 | ⏳ |
 | 7 | Fabric Items | Add fabric-by-yard and fabric-by-sqft in Accessories | MKT-117 | 3 | ⏳ |
 | 8 | Notification Workflow | Auto SMS at pending, SMS+voice at ready, invoices at ready only | MKT-118 | 4 | ⏳ |
@@ -138,28 +138,26 @@ Plans:
 
 ## Phase 5: Restore Empty Files from Git
 
-**Goal:** Restore all API routes, page files, and webhooks that were accidentally emptied (0 bytes).
+**Goal:** Restore `src/app/api/orders/route.ts` — the only file emptied to 0 bytes — from commit `0f76a39` (Phase 27 version with seamstress RBAC filtering).
 
 **Requirements:** INFRA-1
 **Type:** Quick phase (BLOCKER)
 **Dependencies:** None — must complete before Phases 6-11
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Restore api/orders/route.ts from commit 0f76a39 + verify build
+
+**Research note:** The ROADMAP originally listed many files as 0 bytes, but commit `563d2cd` already restored all except `src/app/api/orders/route.ts`. The referenced commit `32990c2` does not exist in this repo (repo was reinitialized after APFS corruption). The correct source is `0f76a39`.
 
 **Success Criteria:**
-1. All previously-functional API routes restored from git commit `32990c2`
-2. All protected pages restored (board, dashboard, clients, calendar, status, archived, chat, booking)
-3. All webhook routes restored (order-status, order-ready, stripe, payment)
-4. Labels page + API restored
-5. Export routes restored (orders, seamstress, capacity, worklist)
-6. App builds and runs without errors
+1. `src/app/api/orders/route.ts` restored from commit `0f76a39` (120 lines, includes `get_orders_with_details` RPC)
+2. No empty source files remain in `src/`
+3. TypeScript compiles without errors
+4. Phase 27 seamstress RBAC filtering preserved (seamstressId query param + RPC call)
 
-**Key Files (currently 0 bytes — need restoration):**
-- `src/app/(protected)/board/page.tsx` + all other protected pages
-- `src/app/api/order/[id]/status/route.ts` + stage, details routes
-- `src/app/api/orders/*.ts` (archive, unarchive, history, search)
-- `src/app/api/labels/[orderId]/route.ts`
-- `src/app/api/admin/export/*.ts`
-- `src/app/api/webhooks/*.ts`
-- `src/app/layout.tsx`, `src/app/(protected)/layout.tsx`
+**Key Files:**
+- `src/app/api/orders/route.ts` (currently 0 bytes — only file needing restoration)
 
 ---
 
