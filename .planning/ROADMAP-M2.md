@@ -1,7 +1,7 @@
 # Roadmap: Milestone 2 — Production Launch
 
 **Created:** 2026-03-04
-**Updated:** 2026-03-16
+**Updated:** 2026-03-18
 **Phases:** 11
 **Requirements:** 4 bugs (M2 original) + 7 items (Mar 13 client brief)
 
@@ -70,11 +70,15 @@ WAVE 5 (Polish — Parallel)
 
 ## Phase 2: French-ify All Customer-Facing Templates
 
-**Goal:** Replace all English customer-facing strings with French equivalents.
+**Goal:** Replace all remaining English customer-facing strings with French equivalents in order-summary.tsx and fix hardcoded phone number in track page.
 
 **Requirements:** BUG-3
 **Type:** Quick phase
 **Dependencies:** None
+**Plans:** 1 plan
+
+Plans:
+- [ ] 02-01-PLAN.md — French string replacement in order-summary.tsx + track page phone fix
 
 **Success Criteria:**
 1. All SMS notification templates are in French
@@ -84,10 +88,8 @@ WAVE 5 (Polish — Parallel)
 5. `locales/fr.json` is the primary locale, complete and accurate
 
 **Key Files:**
-- `locales/fr.json` / `locales/en.json`
-- `src/lib/webhooks/sms-webhook.ts`
-- `src/components/board/sms-confirmation-modal.tsx`
-- All components with hardcoded English strings
+- `src/components/intake/order-summary.tsx`
+- `src/app/(protected)/track/[id]/page.tsx`
 
 ---
 
