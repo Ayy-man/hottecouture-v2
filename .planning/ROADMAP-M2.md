@@ -100,6 +100,11 @@ Plans:
 **Requirements:** BUG-5
 **Type:** Quick phase
 **Dependencies:** None
+**Plans:** 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Migrations (display_order column + test data cleanup) + extend PUT API handler
+- [ ] 03-02-PLAN.md — Admin page at /admin/garment-types with inline edit, delete, reorder
 
 **Success Criteria:**
 1. Admin page lists all garment types with name and emoji
@@ -110,9 +115,10 @@ Plans:
 6. Test entries ("h", "testingG", "TAPIS") cleaned from database
 
 **Key Files:**
-- `src/app/api/garment-types/` (API routes)
-- New or existing admin page for garment types
-- Supabase migration for test data cleanup
+- `src/app/api/admin/garment-types/route.ts` (extended PUT handler)
+- `src/app/(protected)/admin/garment-types/page.tsx` (new admin page)
+- `supabase/migrations/0041_add_garment_type_display_order.sql`
+- `supabase/migrations/0042_cleanup_test_garment_types.sql`
 
 ---
 
