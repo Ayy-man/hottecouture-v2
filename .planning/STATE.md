@@ -121,7 +121,7 @@ WAVE 10 (Access Control) ⏳ IN PROGRESS
 | 2 - French Templates | ⏳ PENDING | BUG-3 | M2 Original |
 | 3 - Garment Type Admin | ⏳ PENDING | BUG-5 | M2 Original |
 | 4 - Emoji Picker Touch | ⏳ PENDING | BUG-6 | M2 Original |
-| 5 - Restore Empty Files | ⏳ PENDING (BLOCKER) | INFRA-1 | Mar 16 |
+| 5 - Restore Empty Files | ✅ COMPLETE | INFRA-1 | Mar 16 |
 | 6 - Order Form Restructure | ⏳ PENDING | MKT-116 | Mar 13 |
 | 7 - Fabric Items | ⏳ PENDING | MKT-117 | Mar 13 |
 | 8 - Notification Workflow | ⏳ PENDING | MKT-118 | Mar 13 |
@@ -237,6 +237,7 @@ Key concerns from client:
 - [Phase 29-02]: Dropped editCategoryIconOverridden flag: icon state value is sufficient, TypeScript TS6133 error confirmed flag was never read
 - [Phase quick-2]: Read errorData.error first (matching API response format) instead of errorData.message
 - [Phase quick-2]: Skip DB service lookup for custom_ and custom- prefixed serviceIds in pricing loop
+- [Phase 05-01]: Restore from commit 0f76a39 (not remote bbd4871): 0f76a39 preserves Phase 27 seamstress RBAC filtering via get_orders_with_details RPC; remote branch version uses simple .from('order').select('*') without filtering
 
 ## Milestone 2 Progress
 
@@ -249,8 +250,9 @@ Key concerns from client:
 
 ## Next Action
 
-**Phase 1 — Code complete.** All fixes from Quick Task 2 are in place (commits 8a22cb3, fc58bff). Needs deploy + manual e2e test of intake flow.
-**Phase 2 — Next.** French-ify all customer-facing templates.
+**Phase 5 — COMPLETE.** Restored `src/app/api/orders/route.ts` from commit `0f76a39` (commit a317fd8). INFRA-1 blocker resolved.
+**Phase 2/3/4 — Parallel.** Original bug fixes (French templates, garment type admin, emoji picker touch) can now proceed in Wave 2.
+**Phase 6 — Next after Wave 2.** Order Form Restructure (MKT-116) — depends on Phase 5 which is now unblocked.
 
 **Design decisions (Feb 22):**
 - Board: seamstresses see only orders with items assigned to them
@@ -506,10 +508,11 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-03-04
-- **Status:** Milestone 2 created, ready to plan/execute
-- **Next:** `/gsd:quick 1` or `/gsd:plan-phase 1` — verify order submission fix
+- **Last session:** 2026-03-18
+- **Status:** Phase 5 (INFRA-1 blocker) complete — api/orders/route.ts restored
+- **Stopped at:** Completed 05-restore-empty-files/05-01-PLAN.md
+- **Next:** Wave 2 parallel phases (2, 3, 4) — French templates, garment type admin, emoji picker touch
 - **Resume file:** None
 
 ---
-*State updated: 2026-02-22*
+*State updated: 2026-03-18*

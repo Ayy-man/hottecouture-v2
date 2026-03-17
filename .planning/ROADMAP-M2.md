@@ -38,7 +38,7 @@ WAVE 5 (Polish — Parallel)
 | 2 | French Templates | All customer-facing text in French | BUG-3 | 2 | ⏳ |
 | 3 | Garment Type Admin | Edit/delete/reorder garment types | BUG-5 | 2 | ⏳ |
 | 4 | Emoji Picker Touch | Fix iPad emoji picker closing | BUG-6 | 2 | ⏳ |
-| 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ⏳ |
+| 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ✅ COMPLETE |
 | 6 | Order Form Restructure | Split into 4 sections: Client/Alteration/Accessories/Pricing | MKT-116 | 3 | ⏳ |
 | 7 | Fabric Items | Add fabric-by-yard and fabric-by-sqft in Accessories | MKT-117 | 3 | ⏳ |
 | 8 | Notification Workflow | Auto SMS at pending, SMS+voice at ready, invoices at ready only | MKT-118 | 4 | ⏳ |
@@ -146,7 +146,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 05-01-PLAN.md — Restore api/orders/route.ts from commit 0f76a39 + verify build
+- [x] 05-01-PLAN.md — Restore api/orders/route.ts from commit 0f76a39 + verify build (commit a317fd8)
 
 **Research note:** The ROADMAP originally listed many files as 0 bytes, but commit `563d2cd` already restored all except `src/app/api/orders/route.ts`. The referenced commit `32990c2` does not exist in this repo (repo was reinitialized after APFS corruption). The correct source is `0f76a39`.
 
