@@ -25,6 +25,13 @@ import { findOrCreateContact } from './contacts';
 // ============================================================================
 
 const MESSAGE_TEMPLATES = {
+  ORDER_CREATED: {
+    fr: (data: MessageData) =>
+      `Bonjour ${data.firstName}, Haute Couture a bien reçu votre commande #${data.orderNumber}. Suivez l'avancement ici : ${data.trackingUrl}`,
+    en: (data: MessageData) =>
+      `Hello ${data.firstName}, Haute Couture has received your order #${data.orderNumber}. Track it here: ${data.trackingUrl}`,
+  },
+
   DEPOSIT_REQUEST: {
     fr: (data: MessageData) =>
       `Bonjour ${data.firstName},
@@ -470,4 +477,65 @@ export async function sendPickupReminder(
     success: true,
     data: { messageSent: result.data?.messageSent || false },
   };
+}
+
+/**
+ * Send welcome SMS when an order is created (pending status)
+ * Called by intake route after GHL contact sync succeeds.
+ * Uses the GHL contactId directly to avoid a redundant findOrCreateContact lookup.
+ */
+export async function sendWelcomeSms(
+  contactId: string,
+  client: Pick<AppClient, 'first_name' | 'language'>,
+  orderNumber: number
+): Promise<GHLResult<{ messageSent: boolean }>> {
+  const trackingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://hottecouture.ca'}/portal?order=${orderNumber}`;
+  const message = buildMessage('ORDER_CREATED', client.language, {
+    firstName: client.first_name,
+    orderNumber,
+    trackingUrl,
+  });
+
+  if (!message) {
+    return { success: false, error: 'Failed to build welcome message' };
+  }
+
+  const result = await sendSMS(contactId, message);
+  if (result.success) {
+    console.log(`Welcome SMS sent for order #${orderNumber}`);
+    return { success: true, data: { messageSent: true } };
+  } else {
+    console.warn(`Welcome SMS failed for order #${orderNumber}:`, result.error);
+    return { success: false, error: result.error };
+  }
+}
+
+/**
+ * Trigger a GHL voice broadcast when an order reaches ready status.
+ * Requires GHL_VOICE_CAMPAIGN_ID env var to be set.
+ * Gracefully skips (returns success) if the env var is absent — Audrey has not yet
+ * recorded the script and the campaign may not exist in the GHL account.
+ */
+export async function sendVoiceBroadcast(
+  contactId: string
+): Promise<GHLResult<{ called: boolean }>> {
+  const campaignId = process.env.GHL_VOICE_CAMPAIGN_ID;
+  if (!campaignId) {
+    console.warn('GHL_VOICE_CAMPAIGN_ID not set — skipping voice broadcast');
+    return { success: true, data: { called: false } };
+  }
+
+  const result = await ghlFetch<any>({
+    method: 'POST',
+    path: `/contacts/${contactId}/campaigns/${campaignId}/trigger`,
+    body: {},
+  });
+
+  if (result.success) {
+    console.log(`Voice broadcast triggered for contact ${contactId}`);
+    return { success: true, data: { called: true } };
+  } else {
+    console.warn(`Voice broadcast failed for contact ${contactId}:`, result.error);
+    return { success: false, error: result.error };
+  }
 }
