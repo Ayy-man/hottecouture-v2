@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { PipelineSelector } from '@/components/intake/pipeline-selector';
 import { ClientStep } from '@/components/intake/client-step';
-import { GarmentServicesStep } from '@/components/intake/garment-services-step';
+import { AlterationStep } from '@/components/intake/alteration-step';
+import { AccessoriesStep } from '@/components/intake/accessories-step';
 import { PricingStep } from '@/components/intake/pricing-step';
 import { AssignmentStep, AssignmentItem } from '@/components/intake/assignment-step';
 import { OrderSummary } from '@/components/intake/order-summary';
@@ -17,7 +18,8 @@ import { useStaffSession } from '@/components/staff';
 type IntakeStep =
   | 'pipeline'
   | 'client'
-  | 'garment-services'  // Merged: replaces 'garments' and 'services'
+  | 'alteration'
+  | 'accessories'
   | 'pricing'
   | 'assignment'
   | 'summary';
@@ -96,27 +98,32 @@ export default function IntakePage() {
         {
           key: 'client',
           title: 'Client',
-          description: 'Client information and contact details',
+          description: 'Informations client',
         },
         {
           key: 'pipeline',
-          title: 'Service Type',
-          description: 'Choose alteration or custom design',
+          title: 'Type',
+          description: 'Type de commande',
         },
         {
-          key: 'garment-services',
-          title: 'Articles',
-          description: 'Add garments, services, and assign',
+          key: 'alteration',
+          title: 'Retouches',
+          description: 'Articles et retouches',
+        },
+        {
+          key: 'accessories',
+          title: 'Accessoires',
+          description: 'Produits et accessoires',
         },
         {
           key: 'pricing',
-          title: 'Pricing & Due Date',
-          description: 'Final pricing and due date',
+          title: 'Tarification',
+          description: 'Tarification et date',
         },
         {
           key: 'assignment',
-          title: 'Assignment',
-          description: 'Review assignments',
+          title: 'Attribution',
+          description: 'Attributer les taches',
         },
       ],
       []
@@ -209,12 +216,12 @@ export default function IntakePage() {
 
   const handleSubmit = async () => {
     if (!formData.client) {
-      setError('Client information is required');
+      setError('Les informations client sont requises');
       return;
     }
 
     if (formData.garments.length === 0) {
-      setError('At least one garment is required');
+      setError('Au moins un article (retouche ou accessoire) est requis');
       return;
     }
 
@@ -297,9 +304,9 @@ export default function IntakePage() {
             onPrev={prevStep}
           />
         );
-      case 'garment-services':
+      case 'alteration':
         return (
-          <GarmentServicesStep
+          <AlterationStep
             data={formData.garments}
             onUpdate={garments => updateFormData({ garments })}
             onNext={nextStep}
@@ -307,6 +314,15 @@ export default function IntakePage() {
             orderType={formData.order.type}
             client={formData.client}
             onChangeCustomer={() => setCurrentStep('client')}
+          />
+        );
+      case 'accessories':
+        return (
+          <AccessoriesStep
+            data={formData.garments}
+            onUpdate={garments => updateFormData({ garments })}
+            onNext={nextStep}
+            onPrev={prevStep}
           />
         );
       case 'pricing':
