@@ -107,3 +107,13 @@ None - no external service configuration required.
 ---
 *Phase: 08-notification-workflow-overhaul*
 *Completed: 2026-03-18*
+
+## Self-Check: PASSED
+
+- `src/app/api/intake/route.ts` — FOUND
+- `src/app/api/order/[id]/stage/route.ts` — FOUND
+- `src/app/(protected)/board/page.tsx` — FOUND
+- `.planning/phases/08-notification-workflow-overhaul/08-02-SUMMARY.md` — FOUND
+- Commit `3ad6cc8` (Task 1: welcome SMS in intake route) — FOUND
+- Commit `b168ad5` (Task 2: stage handler + board page) — FOUND
+- Commit `3a14b8b` (docs: metadata) — FOUND
