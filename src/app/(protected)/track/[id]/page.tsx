@@ -42,6 +42,7 @@ export default function TrackOrderPage() {
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const SHOP_PHONE = process.env.NEXT_PUBLIC_SHOP_PHONE || '514-667-0082';
 
   useEffect(() => {
     if (!orderId) return;
@@ -205,8 +206,8 @@ export default function TrackOrderPage() {
                 <div className='mt-6 pt-6 border-t border-border text-center'>
                   <p className='text-sm text-muted-foreground'>
                     Des questions? Contactez-nous au{' '}
-                    <a href='tel:+15148551234' className='text-primary-600 font-medium hover:underline'>
-                      (514) 855-1234
+                    <a href={`tel:${SHOP_PHONE.replace(/-/g, '')}`} className='text-primary-600 font-medium hover:underline'>
+                      {SHOP_PHONE}
                     </a>
                   </p>
                 </div>
