@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-18T00:16:42.326Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-18T06:20:44.514Z"
 progress:
   total_phases: 38
   completed_phases: 22
   total_plans: 55
-  completed_plans: 45
+  completed_plans: 46
 ---
 
 # Project State
@@ -240,6 +240,9 @@ Key concerns from client:
 - [Phase 05-01]: Restore from commit 0f76a39 (not remote bbd4871): 0f76a39 preserves Phase 27 seamstress RBAC filtering via get_orders_with_details RPC; remote branch version uses simple .from('order').select('*') without filtering
 - [Phase 02-01]: Hardcoded French strings in order-summary.tsx (not useTranslations) — project convention from Phases 19, 22-01
 - [Phase 02-01]: SHOP_PHONE env var fallback 514-667-0082 matches portal page pattern (Phase 25-01)
+- [Phase 03-01]: display_order seeded from category/is_common/name sort to match public GET /api/garment-types order
+- [Phase 03-01]: is_custom guard on cleanup migration prevents accidental soft-delete of seeded production garment types
+- [Phase 03-01]: name made optional in PUT /api/admin/garment-types to support reorder-only calls with only { id, display_order }
 
 ## Milestone 2 Progress
 
@@ -510,9 +513,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-03-18T00:01:17.742Z
+- **Last session:** 2026-03-18T06:20:44.511Z
 - **Status:** Ready to plan
-- **Stopped at:** Completed 02-01-PLAN.md
+- **Stopped at:** Completed 03-01-PLAN.md
 - **Next:** Wave 2 parallel phases (2, 3, 4) — French templates, garment type admin, emoji picker touch
 - **Resume file:** None
 

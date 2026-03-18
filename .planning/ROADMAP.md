@@ -61,7 +61,7 @@ WAVE 9 (Infrastructure & Staff)
 |---|-------|------|--------|------|--------|
 | 1 | Item-Level Assignment | Assign seamstresses to items, not orders | Jan 13 | 1 | ✓ |
 | 2 | Item-Level Pricing | Editable final price per item | Jan 13 | 1 | ✓ |
-| 3 | Merge Steps | Combine garment + service selection | Jan 13 | 2 | ✓ |
+| 3 | 1/2 | In Progress|  | 2 | ✓ |
 | 4 | Reduce Space | 40% vertical space reduction | Jan 13 | 2 | ✓ |
 | 5 | List View | Grid/List toggle + product names | Jan 13 | 2 | ✓ |
 | 6 | Manage Task | Per-item button + Save & Close | Jan 13 | 2 | ✓ |
@@ -144,7 +144,7 @@ Plans:
 **Goal:** Reduce page navigation during order intake by combining garment and service selection.
 
 **Status:** ✓ Complete
-**Plans:** 2/2 complete
+**Plans:** 1/2 plans executed
 
 Plans:
 - [x] 03-01-PLAN.md — Create merged GarmentServicesStep component
