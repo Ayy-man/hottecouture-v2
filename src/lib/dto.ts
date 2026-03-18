@@ -61,9 +61,12 @@ export const garmentCreateSchema = z.object({
   services: z
     .array(
       z.object({
-        serviceId: uuidSchema,
-        qty: z.number().int().min(1, 'Quantity must be at least 1'),
+        serviceId: z.string().min(1, 'Service ID is required'),
+        qty: z.number().min(0.01, 'Quantity must be greater than 0'),
         customPriceCents: z.number().int().min(0).optional(),
+        isAccessory: z.boolean().optional(),
+        serviceName: z.string().optional(),
+        estimatedMinutes: z.number().min(0).optional(),
       })
     )
     .min(1, 'At least one service is required'),

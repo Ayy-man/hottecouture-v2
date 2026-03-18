@@ -49,6 +49,7 @@ interface IntakeFormData {
       customPriceCents?: number;
       assignedSeamstressId?: string | null; // Per-item assignment
       estimatedMinutes?: number; // User-provided time estimate
+      isAccessory?: boolean; // true for accessories, false/undefined for alterations
     }>;
   }>;
   order: {
@@ -164,6 +165,9 @@ export default function IntakePage() {
           }
           if (existingService.estimatedMinutes !== undefined) {
             updatedService.estimatedMinutes = existingService.estimatedMinutes;
+          }
+          if (existingService.isAccessory !== undefined) {
+            updatedService.isAccessory = existingService.isAccessory;
           }
           garment.services[serviceIndex] = updatedService;
         }
