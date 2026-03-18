@@ -178,7 +178,7 @@ Plans:
 
 Plans:
 - [x] 06-01-PLAN.md — DB migration (NUMERIC qty + service recategorization) + dto.ts decimal qty + isAccessory flag in IntakeFormData (commits c0220ac, c72e34d)
-- [ ] 06-02-PLAN.md — AlterationStep + AccessoriesStep components + intake page 6-step flow
+- [x] 06-02-PLAN.md — AlterationStep + AccessoriesStep components + intake page 6-step flow (commits 9a8a35e, 8d84ba9)
 - [ ] 06-03-PLAN.md — Intake API accessory bypass + calendar gate + AssignmentStep filter
 
 **Success Criteria:**

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-18T07:00:00.000Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-18T14:07:04.207Z"
 progress:
   total_phases: 38
   completed_phases: 23
-  total_plans: 57
-  completed_plans: 48
+  total_plans: 58
+  completed_plans: 49
 ---
 
 # Project State
@@ -251,6 +251,9 @@ Key concerns from client:
 - [Phase 06-01]: NUMERIC(10,2) USING cast for quantity column — safe in-place conversion, existing INT rows become exact decimal equivalents
 - [Phase 06-01]: Normalize alteration→alterations first before recategorization — ORDER matters in migration
 - [Phase 06-01]: Dual recategorization strategy (keyword SIMILAR TO + explicit code IN list) — covers future French/English named services AND existing seeded ZIPPER/BUTTONS
+- [Phase 06-02]: AlterationStep exports Garment, GarmentService, GarmentType interfaces — AccessoriesStep imports from alteration-step to avoid type duplication
+- [Phase 06-02]: AccessoriesStep appends to LAST garment — preserves garment grouping when accessories follow alterations
+- [Phase 06-02]: Placeholder garment type='Accessoires' auto-created when no alteration garments exist — enables accessories-only orders
 
 ## Milestone 2 Progress
 
@@ -521,9 +524,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-03-18T06:32:00.530Z
+- **Last session:** 2026-03-18T14:06:54.111Z
 - **Status:** Ready to plan
-- **Stopped at:** Completed 03-02-PLAN.md
+- **Stopped at:** Completed 06-02-PLAN.md
 - **Next:** Wave 2 parallel phases (2, 3, 4) — French templates, garment type admin, emoji picker touch
 - **Resume file:** None
 
