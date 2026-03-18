@@ -39,7 +39,7 @@ WAVE 5 (Polish — Parallel)
 | 3 | Garment Type Admin | Edit/delete/reorder garment types | BUG-5 | 2 | ✅ COMPLETE |
 | 4 | Emoji Picker Touch | Fix iPad emoji picker closing | BUG-6 | 2 | ⏳ |
 | 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ✅ COMPLETE |
-| 6 | Order Form Restructure | Split into 4 sections: Client/Alteration/Accessories/Pricing | MKT-116 | 3 | ⏳ |
+| 6 | Order Form Restructure | Split into 4 sections: Client/Alteration/Accessories/Pricing | MKT-116 | 3 | ✅ COMPLETE |
 | 7 | Fabric Items | Add fabric-by-yard and fabric-by-sqft in Accessories | MKT-117 | 3 | ⏳ |
 | 8 | Notification Workflow | Auto SMS at pending, SMS+voice at ready, invoices at ready only | MKT-118 | 4 | ⏳ |
 | 9 | Kanban Bugs | Fix labels, add cancelled status, enable order editing | MKT-72 | 4 | ⏳ |
@@ -179,7 +179,7 @@ Plans:
 Plans:
 - [x] 06-01-PLAN.md — DB migration (NUMERIC qty + service recategorization) + dto.ts decimal qty + isAccessory flag in IntakeFormData (commits c0220ac, c72e34d)
 - [x] 06-02-PLAN.md — AlterationStep + AccessoriesStep components + intake page 6-step flow (commits 9a8a35e, 8d84ba9)
-- [ ] 06-03-PLAN.md — Intake API accessory bypass + calendar gate + AssignmentStep filter
+- [x] 06-03-PLAN.md — Intake API accessory bypass + calendar gate + AssignmentStep filter (commits 69c0d87, 78d2db4)
 
 **Success Criteria:**
 1. Form has 4 clear sections: Client Info → Alteration → Accessories → Pricing/Finalization

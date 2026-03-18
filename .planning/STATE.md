@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-18T14:07:04.207Z"
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-03-18T14:14:47.138Z"
 progress:
   total_phases: 38
-  completed_phases: 23
+  completed_phases: 24
   total_plans: 58
-  completed_plans: 49
+  completed_plans: 50
 ---
 
 # Project State
@@ -254,6 +254,9 @@ Key concerns from client:
 - [Phase 06-02]: AlterationStep exports Garment, GarmentService, GarmentType interfaces — AccessoriesStep imports from alteration-step to avoid type duplication
 - [Phase 06-02]: AccessoriesStep appends to LAST garment — preserves garment grouping when accessories follow alterations
 - [Phase 06-02]: Placeholder garment type='Accessoires' auto-created when no alteration garments exist — enables accessories-only orders
+- [Phase 06-03]: isAccessory continue guard skips estimatedMinutes check — accessories have no production time
+- [Phase 06-03]: hasAlterationServices flag gates calendar event — accessories-only orders skip production calendar
+- [Phase 06-03]: Assignment filter in useMemo not in AssignmentStep — filtering logic stays in page.tsx data preparation layer
 
 ## Milestone 2 Progress
 
@@ -524,9 +527,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-03-18T14:06:54.111Z
+- **Last session:** 2026-03-18T14:14:47.135Z
 - **Status:** Ready to plan
-- **Stopped at:** Completed 06-02-PLAN.md
+- **Stopped at:** Completed 06-03-PLAN.md
 - **Next:** Wave 2 parallel phases (2, 3, 4) — French templates, garment type admin, emoji picker touch
 - **Resume file:** None
 
