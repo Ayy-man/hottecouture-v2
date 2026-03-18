@@ -37,7 +37,7 @@ WAVE 5 (Polish — Parallel)
 | 1 | Order Submission Fix | Verify e2e order creation works | BUG-1 | 1 | ✅ CODE COMPLETE |
 | 2 | French Templates | All customer-facing text in French | BUG-3 | 2 | ✅ COMPLETE |
 | 3 | Garment Type Admin | Edit/delete/reorder garment types | BUG-5 | 2 | ✅ COMPLETE |
-| 4 | Emoji Picker Touch | Fix iPad emoji picker closing | BUG-6 | 2 | ⏳ |
+| 4 | Emoji Picker Touch | Fix iPad emoji picker closing | BUG-6 | 2 | ✅ COMPLETE |
 | 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ✅ COMPLETE |
 | 6 | Order Form Restructure | Split into 4 sections: Client/Alteration/Accessories/Pricing | MKT-116 | 3 | ✅ COMPLETE |
 | 7 | Fabric Items | Add fabric-by-yard and fabric-by-sqft in Accessories | MKT-117 | 3 | ⏳ |
