@@ -28,6 +28,7 @@ interface AddedAccessory {
   serviceName: string;
   qty: number;
   customPriceCents: number;
+  unit?: string | null;      // from service.unit — used for fabric items
   // Which garment index this was added to
   garmentIndex: number;
   // Index within that garment's services array
@@ -49,6 +50,8 @@ export function AccessoriesStep({
   const [loading, setLoading] = useState(true);
   // Track qty per service before adding
   const [pendingQty, setPendingQty] = useState<Record<string, number>>({});
+  // Track per-unit price edits per service before adding
+  const [pendingPrice, setPendingPrice] = useState<Record<string, number>>({});
   const toast = useToast();
 
   const supabase = createClient();
@@ -98,14 +101,17 @@ export function AccessoriesStep({
   // Collect all accessory services currently in formData for display
   const addedAccessories: AddedAccessory[] = useMemo(() => {
     const result: AddedAccessory[] = [];
+    const serviceMap = new Map(services.map(s => [s.id, s]));
     data.forEach((garment, garmentIndex) => {
       garment.services.forEach((svc, serviceIndex) => {
         if (svc.isAccessory === true) {
+          const catalogService = serviceMap.get(svc.serviceId);
           result.push({
             serviceId: svc.serviceId,
             serviceName: svc.serviceName || svc.customServiceName || 'Accessoire',
             qty: svc.qty,
             customPriceCents: svc.customPriceCents || 0,
+            unit: catalogService?.unit ?? null,
             garmentIndex,
             serviceIndex,
           });
@@ -113,7 +119,7 @@ export function AccessoriesStep({
       });
     });
     return result;
-  }, [data]);
+  }, [data, services]);
 
   // ===========================================================================
   // Handlers
@@ -125,6 +131,10 @@ export function AccessoriesStep({
     setPendingQty(prev => ({ ...prev, [serviceId]: Math.max(0.25, qty) }));
   };
 
+  const handlePriceChange = (serviceId: string, priceCents: number) => {
+    setPendingPrice(prev => ({ ...prev, [serviceId]: Math.max(0, priceCents) }));
+  };
+
   const handleAddAccessory = (service: Service) => {
     const qty = getQtyForService(service.id);
 
@@ -132,7 +142,7 @@ export function AccessoriesStep({
       serviceId: service.id,
       serviceName: service.name,
       qty,
-      customPriceCents: service.base_price_cents,
+      customPriceCents: pendingPrice[service.id] ?? service.base_price_cents,
       assignedSeamstressId: null,
       estimatedMinutes: 0,
       isAccessory: true,
@@ -179,8 +189,9 @@ export function AccessoriesStep({
     onUpdate(updatedGarments);
     toast.success(`${service.name} ajoute aux accessoires`);
 
-    // Reset qty for this service
+    // Reset qty and price for this service
     setPendingQty(prev => ({ ...prev, [service.id]: 0.25 }));
+    setPendingPrice(prev => ({ ...prev, [service.id]: service.base_price_cents }));
   };
 
   const handleRemoveAccessory = (garmentIndex: number, serviceIndex: number) => {
@@ -308,13 +319,32 @@ export function AccessoriesStep({
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{service.name}</p>
                         <p className="text-xs text-primary-600 font-medium">
-                          {formatCurrency(service.base_price_cents)} / unite
+                          {formatCurrency(pendingPrice[service.id] ?? service.base_price_cents)}
+                          {service.unit ? ` / ${service.unit}` : ' / unite'}
                         </p>
+                      </div>
+
+                      {/* Price Input (per unit - editable before adding) */}
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs text-muted-foreground whitespace-nowrap">
+                          Prix/{service.unit ?? 'unite'}:
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min="0"
+                          step="0.01"
+                          value={((pendingPrice[service.id] ?? service.base_price_cents) / 100).toFixed(2)}
+                          onChange={e => handlePriceChange(service.id, Math.round(parseFloat(e.target.value || '0') * 100))}
+                          className="w-20 text-center border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500"
+                        />
                       </div>
 
                       {/* Quantity Input (decimal) */}
                       <div className="flex items-center gap-2">
-                        <label className="text-xs text-muted-foreground whitespace-nowrap">Qte:</label>
+                        <label className="text-xs text-muted-foreground whitespace-nowrap">
+                          {service.unit ?? 'Qte'}:
+                        </label>
                         <input
                           type="number"
                           inputMode="decimal"
@@ -370,7 +400,8 @@ export function AccessoriesStep({
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{acc.serviceName}</p>
                         <p className="text-xs text-muted-foreground">
-                          Qte: {acc.qty} &times; {formatCurrency(acc.customPriceCents)} ={' '}
+                          {acc.qty} {acc.unit ?? 'unite'} &times;{' '}
+                          {formatCurrency(acc.customPriceCents)}/{acc.unit ?? 'unite'} ={' '}
                           {formatCurrency(acc.customPriceCents * acc.qty)}
                         </p>
                       </div>
