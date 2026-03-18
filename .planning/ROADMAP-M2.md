@@ -35,7 +35,7 @@ WAVE 5 (Polish — Parallel)
 | # | Phase | Goal | Requirement | Wave | Status |
 |---|-------|------|-------------|------|--------|
 | 1 | Order Submission Fix | Verify e2e order creation works | BUG-1 | 1 | ✅ CODE COMPLETE |
-| 2 | French Templates | All customer-facing text in French | BUG-3 | 2 | ⏳ |
+| 2 | French Templates | All customer-facing text in French | BUG-3 | 2 | ✅ COMPLETE |
 | 3 | Garment Type Admin | Edit/delete/reorder garment types | BUG-5 | 2 | ⏳ |
 | 4 | Emoji Picker Touch | Fix iPad emoji picker closing | BUG-6 | 2 | ⏳ |
 | 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ✅ COMPLETE |
@@ -78,7 +78,7 @@ WAVE 5 (Polish — Parallel)
 **Plans:** 1 plan
 
 Plans:
-- [ ] 02-01-PLAN.md — French string replacement in order-summary.tsx + track page phone fix
+- [x] 02-01-PLAN.md — French string replacement in order-summary.tsx + track page phone fix (commits 7001f1d, 65649f7)
 
 **Success Criteria:**
 1. All SMS notification templates are in French
