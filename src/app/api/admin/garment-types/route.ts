@@ -215,7 +215,7 @@ export async function PUT(request: NextRequest) {
   try {
     const supabase = await createServiceRoleClient();
     const body = await request.json();
-    const { id, name, category, icon } = body;
+    const { id, name, category, icon, display_order } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -224,46 +224,51 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (!name || !name.trim()) {
+    if (name !== undefined && (!name || !name.trim())) {
       return NextResponse.json(
         { error: 'Garment type name is required' },
         { status: 400 }
       );
     }
 
-    // Check if name already exists (excluding current type)
-    const { data: existing, error: checkError } = await (
-      supabase.from('garment_type') as any
-    )
-      .select('id, name')
-      .eq('name', name.trim())
-      .eq('is_active', true)
-      .neq('id', id)
-      .single();
+    if (name !== undefined) {
+      // Check if name already exists (excluding current type)
+      const { data: existing, error: checkError } = await (
+        supabase.from('garment_type') as any
+      )
+        .select('id, name')
+        .eq('name', name.trim())
+        .eq('is_active', true)
+        .neq('id', id)
+        .single();
 
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Error checking existing type:', checkError);
-      return NextResponse.json(
-        {
-          error: 'Failed to check existing types',
-          details: checkError.message,
-        },
-        { status: 500 }
-      );
-    }
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing type:', checkError);
+        return NextResponse.json(
+          {
+            error: 'Failed to check existing types',
+            details: checkError.message,
+          },
+          { status: 500 }
+        );
+      }
 
-    if (existing) {
-      return NextResponse.json(
-        { error: `Garment type "${name}" already exists` },
-        { status: 400 }
-      );
+      if (existing) {
+        return NextResponse.json(
+          { error: `Garment type "${name}" already exists` },
+          { status: 400 }
+        );
+      }
     }
 
     // Update the garment type
     const updateData: any = {
-      name: name.trim(),
       updated_at: new Date().toISOString(),
     };
+
+    if (name !== undefined) {
+      updateData.name = name.trim();
+    }
 
     if (category !== undefined) {
       updateData.category = category;
@@ -271,6 +276,10 @@ export async function PUT(request: NextRequest) {
 
     if (icon !== undefined) {
       updateData.icon = icon;
+    }
+
+    if (display_order !== undefined) {
+      updateData.display_order = display_order;
     }
 
     const { data: updatedType, error: updateError } = await (
