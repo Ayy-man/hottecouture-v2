@@ -100,6 +100,17 @@ None - no external service configuration required.
 - The `isAccessory` flag and `hasAlterationServices` guard (Phase 06-03) already ensure fabric items are excluded from the production calendar
 - Phase 8 (Notification Workflow, MKT-118) can proceed independently
 
+## Self-Check: PASSED
+
+- FOUND: supabase/migrations/0044_seed_fabric_services.sql
+- FOUND: src/components/intake/accessories-step.tsx
+- FOUND: .planning/phases/07-fabric-items-accessories/07-01-SUMMARY.md
+- FOUND commit: e7e4c49 (feat: seed fabric accessory service records)
+- FOUND commit: 617a296 (feat: add unit labels and per-unit price input to AccessoriesStep)
+- FOUND commit: b168ad5 (docs: complete fabric items in accessories plan)
+- All 9 acceptance criteria for Task 2 verified via grep
+- TypeScript compiled with no errors (empty output = exit 0)
+
 ---
 *Phase: 07-fabric-items-accessories*
 *Completed: 2026-03-18*
