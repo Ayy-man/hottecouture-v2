@@ -119,7 +119,7 @@ WAVE 10 (Access Control) ⏳ IN PROGRESS
 |-------|--------|-------------|--------|
 | 1 - Order Submission Fix | ✅ CODE COMPLETE | BUG-1 | M2 Original |
 | 2 - French Templates | ⏳ PENDING | BUG-3 | M2 Original |
-| 3 - Garment Type Admin | ⏳ PENDING | BUG-5 | M2 Original |
+| 3 - Garment Type Admin | ✅ COMPLETE | BUG-5 | M2 Original |
 | 4 - Emoji Picker Touch | ⏳ PENDING | BUG-6 | M2 Original |
 | 5 - Restore Empty Files | ✅ COMPLETE | INFRA-1 | Mar 16 |
 | 6 - Order Form Restructure | ⏳ PENDING | MKT-116 | Mar 13 |
@@ -243,6 +243,9 @@ Key concerns from client:
 - [Phase 03-01]: display_order seeded from category/is_common/name sort to match public GET /api/garment-types order
 - [Phase 03-01]: is_custom guard on cleanup migration prevents accidental soft-delete of seeded production garment types
 - [Phase 03-01]: name made optional in PUT /api/admin/garment-types to support reorder-only calls with only { id, display_order }
+- [Phase 03-02]: No create button on admin garment-types page — types created via intake flow custom type form, keeping scope focused on edit/delete/reorder
+- [Phase 03-02]: EmojiPicker used for emoji editing in admin page — reuses iPad-safe component from Phase 29 (BUG-6 fixes apply here too)
+- [Phase 03-02]: sortedTypes derived variable (sorted by display_order) used as source of truth for index-based boundary checks in handleMoveUp/handleMoveDown
 - [Phase 03-02]: No create-new button on garment types admin page — types created via intake flow custom type form
 
 ## Milestone 2 Progress
@@ -251,7 +254,7 @@ Key concerns from client:
 |-------|--------|-------------|
 | 1 - Order Submission Fix | ✅ CODE COMPLETE (awaiting deploy verification) | BUG-1 |
 | 2 - French Templates | ✅ COMPLETE | BUG-3 |
-| 3 - Garment Type Admin | ⏳ PENDING | BUG-5 |
+| 3 - Garment Type Admin | ✅ COMPLETE | BUG-5 |
 | 4 - Emoji Picker Touch | ⏳ PENDING | BUG-6 |
 
 ## Next Action

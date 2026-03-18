@@ -36,7 +36,7 @@ WAVE 5 (Polish — Parallel)
 |---|-------|------|-------------|------|--------|
 | 1 | Order Submission Fix | Verify e2e order creation works | BUG-1 | 1 | ✅ CODE COMPLETE |
 | 2 | French Templates | All customer-facing text in French | BUG-3 | 2 | ✅ COMPLETE |
-| 3 | Garment Type Admin | Edit/delete/reorder garment types | BUG-5 | 2 | ⏳ |
+| 3 | Garment Type Admin | Edit/delete/reorder garment types | BUG-5 | 2 | ✅ COMPLETE |
 | 4 | Emoji Picker Touch | Fix iPad emoji picker closing | BUG-6 | 2 | ⏳ |
 | 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ✅ COMPLETE |
 | 6 | Order Form Restructure | Split into 4 sections: Client/Alteration/Accessories/Pricing | MKT-116 | 3 | ⏳ |
@@ -104,7 +104,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Migrations (display_order column + test data cleanup) + extend PUT API handler (commits 28f0b9e, d36a332)
-- [ ] 03-02-PLAN.md — Admin page at /admin/garment-types with inline edit, delete, reorder
+- [x] 03-02-PLAN.md — Admin page at /admin/garment-types with inline edit, delete, reorder (commit dc54f48)
 
 **Success Criteria:**
 1. Admin page lists all garment types with name and emoji
