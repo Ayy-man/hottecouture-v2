@@ -242,6 +242,11 @@ Plans:
 **Requirements:** MKT-118
 **Type:** Medium phase
 **Dependencies:** Phase 5 (restored webhook routes)
+**Plans:** 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Add ORDER_CREATED template + sendWelcomeSms() + sendVoiceBroadcast() to GHL lib
+- [ ] 08-02-PLAN.md — Wire welcome SMS into intake route + remove manual SMS gate from stage handler + remove SmsConfirmationModal from board page
 
 **Success Criteria:**
 1. Auto SMS at `pending`: welcome message with portal tracking link
@@ -260,12 +265,11 @@ Plans:
 - Remove manual SMS confirmation modal for automated statuses
 
 **Key Files:**
-- `src/lib/ghl/messaging.ts` (new template)
+- `src/lib/ghl/messaging.ts` (new template + new functions)
+- `src/lib/ghl/types.ts` (MessagingAction union update)
 - `src/app/api/intake/route.ts` (auto-SMS at creation)
-- `src/app/api/order/[id]/status/route.ts` (status change triggers)
-- `src/app/api/webhooks/order-ready/route.ts`
-- `src/lib/ghl/invoices.ts` (timing enforcement)
-- `src/components/board/sms-confirmation-modal.tsx`
+- `src/app/api/order/[id]/stage/route.ts` (auto-fire on ready, voice broadcast)
+- `src/app/(protected)/board/page.tsx` (remove SmsConfirmationModal)
 
 ---
 
