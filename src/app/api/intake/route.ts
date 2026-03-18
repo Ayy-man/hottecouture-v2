@@ -61,13 +61,15 @@ export async function POST(request: NextRequest) {
 
     const { client, order, garments, notes, total_override_cents } = body;
 
-    // Validate: every service must have estimated_minutes > 0
+    // Validate: every alteration service must have estimated_minutes > 0
+    // Accessories (isAccessory: true) are exempt — they have no time estimate
     for (const garment of garments) {
       for (const service of garment.services || []) {
+        if (service.isAccessory) continue; // Skip time check for accessories
         if (!service.estimatedMinutes || service.estimatedMinutes <= 0) {
-          console.warn(`⚠️ Intake API: Service "${service.serviceName || service.serviceId}" missing estimated time — rejecting`);
+          console.warn(`⚠️ Intake API: Alteration service "${service.serviceName || service.serviceId}" missing estimated time — rejecting`);
           return NextResponse.json(
-            { error: `Le temps estimé est requis pour chaque service. Service manquant: ${service.serviceName || service.serviceId}` },
+            { error: `Le temps estimé est requis pour chaque retouche. Service manquant: ${service.serviceName || service.serviceId}` },
             { status: 400 }
           );
         }
@@ -660,8 +662,22 @@ export async function POST(request: NextRequest) {
 
     // Push to calendar if any items are assigned
     // Use first assigned seamstress for the calendar event (simpler than multiple events)
+
+    // Determine if order has any alteration services (not just accessories)
+    // Only alteration work feeds the production calendar
+    let hasAlterationServices = false;
+    for (const garment of garments) {
+      for (const service of garment.services || []) {
+        if (!service.isAccessory) {
+          hasAlterationServices = true;
+          break;
+        }
+      }
+      if (hasAlterationServices) break;
+    }
+
     const calendarAssignee = order.assigned_to || firstAssignedSeamstress;
-    if (calendarAssignee && dueDate) {
+    if (calendarAssignee && dueDate && hasAlterationServices) {
       try {
         const calendarData = formatOrderForCalendar({
           id: (newOrder as any).id,
