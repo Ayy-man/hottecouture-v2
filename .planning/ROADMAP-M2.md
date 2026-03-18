@@ -174,6 +174,12 @@ Plans:
 **Requirements:** MKT-116
 **Type:** Major phase (architectural)
 **Dependencies:** Phase 5 (restored files)
+**Plans:** 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — DB migration (NUMERIC qty + service recategorization) + dto.ts decimal qty + isAccessory flag in IntakeFormData
+- [ ] 06-02-PLAN.md — AlterationStep + AccessoriesStep components + intake page 6-step flow
+- [ ] 06-03-PLAN.md — Intake API accessory bypass + calendar gate + AssignmentStep filter
 
 **Success Criteria:**
 1. Form has 4 clear sections: Client Info → Alteration → Accessories → Pricing/Finalization
