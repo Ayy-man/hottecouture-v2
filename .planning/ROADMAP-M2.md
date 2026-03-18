@@ -216,6 +216,10 @@ Plans:
 **Requirements:** MKT-117
 **Type:** Small phase
 **Dependencies:** Phase 6 (Accessories section must exist)
+**Plans:** 1 plan
+
+Plans:
+- [ ] 07-01-PLAN.md — Seed migration for 2 fabric services + AccessoriesStep unit labels and price input
 
 **Success Criteria:**
 1. "Fabric by the yard" available in Accessories with decimal quantity, unit label "yard"
@@ -230,8 +234,8 @@ Plans:
 - Price display: "X yards × $Y/yard = $Z"
 
 **Key Files:**
-- New Supabase migration (seed data)
-- `src/components/intake/` (Accessories section from Phase 6)
+- `supabase/migrations/0044_seed_fabric_services.sql` (new seed data)
+- `src/components/intake/accessories-step.tsx` (unit labels + price input)
 
 ---
 
