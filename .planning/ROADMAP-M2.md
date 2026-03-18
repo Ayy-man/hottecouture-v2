@@ -41,7 +41,7 @@ WAVE 5 (Polish — Parallel)
 | 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ✅ COMPLETE |
 | 6 | Order Form Restructure | Split into 4 sections: Client/Alteration/Accessories/Pricing | MKT-116 | 3 | ✅ COMPLETE |
 | 7 | Fabric Items | Add fabric-by-yard and fabric-by-sqft in Accessories | MKT-117 | 3 | ✅ COMPLETE |
-| 8 | Notification Workflow | Auto SMS at pending, SMS+voice at ready, invoices at ready only | MKT-118 | 4 | ⏳ |
+| 8 | Notification Workflow | Auto SMS at pending, SMS+voice at ready, invoices at ready only | MKT-118 | 4 | ✅ COMPLETE |
 | 9 | Kanban Bugs | Fix labels, add cancelled status, enable order editing | MKT-72 | 4 | ⏳ |
 | 10 | French Translation | Wire next-intl into all components, full French UI | MKT-71 | 5 | ⏳ |
 | 11 | iPad UX & Mobile | Compact iPad layout, Save+Close, exports, phone responsive | MKT-111 | 5 | ⏳ |
