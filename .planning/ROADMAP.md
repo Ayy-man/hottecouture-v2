@@ -66,7 +66,7 @@ WAVE 9 (Infrastructure & Staff)
 | 5 | List View | Grid/List toggle + product names | Jan 13 | 2 | ✓ |
 | 6 | Manage Task | Per-item button + Save & Close | Jan 13 | 2 | ✓ |
 | 7 | Exports | CSV exports for tasks, orders, capacity | Jan 13 | 2 | ✓ |
-| 8 | Timer Removal | Remove stopwatch, add manual input | Jan 13 | 2 | ✓ |
+| 8 | 1/2 | In Progress|  | 2 | ✓ |
 | 9 | Responsive | iPhone + iPad portrait support | Jan 13 | 2 | ✓ |
 | 10 | Calendar | Fix scrolling + unassigned category | Jan 13 | 2 | ✓ |
 | 11 | Cleanup & Polish | Close implementation gaps | Jan 13 | 3 | ✓ |
@@ -193,7 +193,7 @@ Plans:
 **Goal:** Remove stopwatch completely, replace with manual time input.
 
 **Status:** ✓ Complete
-**Plans:** 2/2 complete
+**Plans:** 1/2 plans executed
 
 ---
 

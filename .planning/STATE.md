@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-03-18T14:14:47.138Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-18T14:54:20.038Z"
 progress:
-  total_phases: 38
+  total_phases: 39
   completed_phases: 24
-  total_plans: 58
-  completed_plans: 50
+  total_plans: 61
+  completed_plans: 51
 ---
 
 # Project State
@@ -257,6 +257,9 @@ Key concerns from client:
 - [Phase 06-03]: isAccessory continue guard skips estimatedMinutes check — accessories have no production time
 - [Phase 06-03]: hasAlterationServices flag gates calendar event — accessories-only orders skip production calendar
 - [Phase 06-03]: Assignment filter in useMemo not in AssignmentStep — filtering logic stays in page.tsx data preparation layer
+- [Phase 08-01]: sendWelcomeSms accepts contactId directly (not AppClient) — avoids redundant findOrCreateContact lookup since intake route already has the GHL contact ID from prior sync
+- [Phase 08-01]: sendVoiceBroadcast gracefully skips when GHL_VOICE_CAMPAIGN_ID is absent — Audrey has not yet recorded the voice script, so campaign may not exist
+- [Phase 08-01]: ORDER_CREATED template uses /portal?order= path (not /track/) — welcome SMS links to customer portal, not just tracking timeline
 
 ## Milestone 2 Progress
 
@@ -527,9 +530,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-03-18T14:14:47.135Z
+- **Last session:** 2026-03-18T14:54:20.035Z
 - **Status:** Ready to plan
-- **Stopped at:** Completed 06-03-PLAN.md
+- **Stopped at:** Completed 08-01-PLAN.md
 - **Next:** Wave 2 parallel phases (2, 3, 4) — French templates, garment type admin, emoji picker touch
 - **Resume file:** None
 
