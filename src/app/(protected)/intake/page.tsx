@@ -134,10 +134,13 @@ export default function IntakePage() {
   }, []);
 
   // Compute assignment items from garments and services
+  // Accessories do not need seamstress assignment — filter them out
   const assignmentItems: AssignmentItem[] = useMemo(() => {
     const items: AssignmentItem[] = [];
     formData.garments.forEach((garment, garmentIndex) => {
       garment.services.forEach((service, serviceIndex) => {
+        // Accessories do not need seamstress assignment — skip them
+        if (service.isAccessory) return;
         items.push({
           garmentIndex,
           garmentType: garment.type,

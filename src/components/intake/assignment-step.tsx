@@ -18,6 +18,7 @@ export interface AssignmentItem {
   serviceIndex: number;
   serviceName: string;
   assignedSeamstressId: string | null;
+  isAccessory?: boolean;  // true for accessory products, undefined/false for alterations
 }
 
 interface AssignmentStepProps {
