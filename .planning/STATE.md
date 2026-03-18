@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-18T06:44:55.823Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-18T07:00:00.000Z"
 progress:
   total_phases: 38
   completed_phases: 23
   total_plans: 57
-  completed_plans: 47
+  completed_plans: 48
 ---
 
 # Project State
@@ -247,6 +247,10 @@ Key concerns from client:
 - [Phase 03-02]: EmojiPicker used for emoji editing in admin page — reuses iPad-safe component from Phase 29 (BUG-6 fixes apply here too)
 - [Phase 03-02]: sortedTypes derived variable (sorted by display_order) used as source of truth for index-based boundary checks in handleMoveUp/handleMoveDown
 - [Phase 03-02]: No create-new button on garment types admin page — types created via intake flow custom type form
+- [Phase 06-01]: serviceId changed from uuidSchema to z.string().min(1) — custom services use custom_ prefixed nanoid IDs, not UUIDs
+- [Phase 06-01]: NUMERIC(10,2) USING cast for quantity column — safe in-place conversion, existing INT rows become exact decimal equivalents
+- [Phase 06-01]: Normalize alteration→alterations first before recategorization — ORDER matters in migration
+- [Phase 06-01]: Dual recategorization strategy (keyword SIMILAR TO + explicit code IN list) — covers future French/English named services AND existing seeded ZIPPER/BUTTONS
 
 ## Milestone 2 Progress
 
