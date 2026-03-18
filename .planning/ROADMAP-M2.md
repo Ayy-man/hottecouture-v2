@@ -40,7 +40,7 @@ WAVE 5 (Polish — Parallel)
 | 4 | Emoji Picker Touch | Fix iPad emoji picker closing | BUG-6 | 2 | ✅ COMPLETE |
 | 5 | Restore Empty Files | Restore api/orders/route.ts (only empty file) from git | INFRA-1 | 1 | ✅ COMPLETE |
 | 6 | Order Form Restructure | Split into 4 sections: Client/Alteration/Accessories/Pricing | MKT-116 | 3 | ✅ COMPLETE |
-| 7 | Fabric Items | Add fabric-by-yard and fabric-by-sqft in Accessories | MKT-117 | 3 | ⏳ |
+| 7 | Fabric Items | Add fabric-by-yard and fabric-by-sqft in Accessories | MKT-117 | 3 | ✅ COMPLETE |
 | 8 | Notification Workflow | Auto SMS at pending, SMS+voice at ready, invoices at ready only | MKT-118 | 4 | ⏳ |
 | 9 | Kanban Bugs | Fix labels, add cancelled status, enable order editing | MKT-72 | 4 | ⏳ |
 | 10 | French Translation | Wire next-intl into all components, full French UI | MKT-71 | 5 | ⏳ |
@@ -219,7 +219,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 07-01-PLAN.md — Seed migration for 2 fabric services + AccessoriesStep unit labels and price input
+- [x] 07-01-PLAN.md — Seed migration for 2 fabric services + AccessoriesStep unit labels and price input (commits e7e4c49, 617a296)
 
 **Success Criteria:**
 1. "Fabric by the yard" available in Accessories with decimal quantity, unit label "yard"

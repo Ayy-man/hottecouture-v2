@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-18T14:54:20.038Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-18T15:02:20.188Z"
 progress:
   total_phases: 39
-  completed_phases: 24
+  completed_phases: 25
   total_plans: 61
-  completed_plans: 51
+  completed_plans: 52
 ---
 
 # Project State
@@ -122,8 +122,8 @@ WAVE 10 (Access Control) ⏳ IN PROGRESS
 | 3 - Garment Type Admin | ✅ COMPLETE | BUG-5 | M2 Original |
 | 4 - Emoji Picker Touch | ⏳ PENDING | BUG-6 | M2 Original |
 | 5 - Restore Empty Files | ✅ COMPLETE | INFRA-1 | Mar 16 |
-| 6 - Order Form Restructure | ⏳ PENDING | MKT-116 | Mar 13 |
-| 7 - Fabric Items | ⏳ PENDING | MKT-117 | Mar 13 |
+| 6 - Order Form Restructure | ✅ COMPLETE | MKT-116 | Mar 13 |
+| 7 - Fabric Items | ✅ COMPLETE | MKT-117 | Mar 13 |
 | 8 - Notification Workflow | ⏳ PENDING | MKT-118 | Mar 13 |
 | 9 - Kanban Bugs | ⏳ PENDING | MKT-72 | Feb 26 |
 | 10 - French Translation | ⏳ PENDING | MKT-71 | Feb 22 |
@@ -260,6 +260,9 @@ Key concerns from client:
 - [Phase 08-01]: sendWelcomeSms accepts contactId directly (not AppClient) — avoids redundant findOrCreateContact lookup since intake route already has the GHL contact ID from prior sync
 - [Phase 08-01]: sendVoiceBroadcast gracefully skips when GHL_VOICE_CAMPAIGN_ID is absent — Audrey has not yet recorded the voice script, so campaign may not exist
 - [Phase 08-01]: ORDER_CREATED template uses /portal?order= path (not /track/) — welcome SMS links to customer portal, not just tracking timeline
+- [Phase 07-01]: base_price_cents=0 for FABRIC_YARD/FABRIC_SQFT forces per-order price entry — no default catalog price
+- [Phase 07-01]: category='accessories' (not 'fabrics') for fabric services — matches AccessoriesStep .in('category', ['accessories', 'accessory']) filter
+- [Phase 07-01]: pendingPrice state in AccessoriesStep: per-service price tracked in Record<serviceId, priceCents> before add, fallback to service.base_price_cents
 
 ## Milestone 2 Progress
 
@@ -530,9 +533,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-03-18T14:54:20.035Z
+- **Last session:** 2026-03-18T15:02:20.184Z
 - **Status:** Ready to plan
-- **Stopped at:** Completed 08-01-PLAN.md
+- **Stopped at:** Completed 07-01-PLAN.md
 - **Next:** Wave 2 parallel phases (2, 3, 4) — French templates, garment type admin, emoji picker touch
 - **Resume file:** None
 

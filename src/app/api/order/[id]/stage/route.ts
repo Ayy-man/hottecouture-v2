@@ -12,6 +12,7 @@ import { orderStageSchema, OrderStage, OrderStageResponse } from '@/lib/dto';
 // Note: Auto-create tasks logic removed - garment_service IS the task
 import {
   sendReadyPickup,
+  sendVoiceBroadcast,
   isGHLConfigured,
   type AppClient,
   type AppOrder,
@@ -286,7 +287,7 @@ async function handleOrderStage(
   }
 
   // Auto-send notification when order moves to "Ready"
-  if (newStage === 'ready' && shouldSendNotification && isGHLConfigured()) {
+  if (newStage === 'ready' && isGHLConfigured()) {
     const orderData = order as any;
     const paymentStatus = orderData.payment_status;
 
@@ -359,6 +360,22 @@ async function handleOrderStage(
       } catch (notifyError) {
         console.warn(`⚠️ Pickup notification error for order ${orderId}:`, notifyError);
       }
+    }
+
+    // Voice broadcast at ready (fires after SMS, regardless of payment status)
+    // Only active if GHL_VOICE_CAMPAIGN_ID env var is set
+    try {
+      if (client?.ghl_contact_id) {
+        const voiceResult = await sendVoiceBroadcast(client.ghl_contact_id);
+        if (voiceResult.success && voiceResult.data?.called) {
+          console.log(`Voice broadcast triggered for order ${orderId}`);
+        }
+        // If called: false, env var not set — already logged in sendVoiceBroadcast
+      } else {
+        console.warn(`Voice broadcast skipped: no ghl_contact_id for order ${orderId}`);
+      }
+    } catch (voiceErr) {
+      console.warn(`Voice broadcast error for order ${orderId} (non-blocking):`, voiceErr);
     }
   }
 

@@ -13,7 +13,6 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { MuralBackground } from '@/components/ui/mural-background';
 import { WorkListExport } from '@/components/board/worklist-export';
-import { SmsConfirmationModal } from '@/components/board/sms-confirmation-modal';
 import { LayoutGrid, List, Users, MoreHorizontal, Archive, FileSpreadsheet } from 'lucide-react';
 import { triggerDownload } from '@/lib/exports/csv-utils';
 import Link from 'next/link';
@@ -25,13 +24,6 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useStaffSession } from '@/components/staff';
-
-interface PendingSmsConfirmation {
-  orderId: string;
-  orderNumber: number;
-  clientName: string;
-  newStatus: string;
-}
 
 export default function BoardPage() {
   console.log('🎯 Board page rendering...');
@@ -49,7 +41,6 @@ export default function BoardPage() {
   const [refreshKey] = useState(0);
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
   const [showWorkListExport, setShowWorkListExport] = useState(false);
-  const [pendingSmsConfirmation, setPendingSmsConfirmation] = useState<PendingSmsConfirmation | null>(null);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
   // Read order query param
@@ -159,21 +150,8 @@ export default function BoardPage() {
 
   const handleOrderUpdate = async (orderId: string, newStatus: string) => {
     console.log(`🔄 Updating order ${orderId} to status: ${newStatus}`);
-
-    const targetOrder = orders.find(o => o.id === orderId);
-
-    // If moving to "ready", show SMS confirmation modal instead of immediate update
-    if (newStatus === 'ready' && targetOrder) {
-      setPendingSmsConfirmation({
-        orderId,
-        orderNumber: targetOrder.order_number,
-        clientName: targetOrder.client_name || 'Client',
-        newStatus,
-      });
-      return;
-    }
-
-    // For other status changes, proceed immediately without notification
+    // All status changes (including ready) proceed immediately.
+    // Notifications are now auto-fired server-side in the stage handler.
     await executeOrderUpdate(orderId, newStatus, false);
   };
 
@@ -239,13 +217,6 @@ export default function BoardPage() {
         newSet.delete(orderId);
         return newSet;
       });
-    }
-  };
-
-  const handleSmsConfirm = () => {
-    if (pendingSmsConfirmation) {
-      executeOrderUpdate(pendingSmsConfirmation.orderId, pendingSmsConfirmation.newStatus, true);
-      setPendingSmsConfirmation(null);
     }
   };
 
@@ -485,14 +456,6 @@ export default function BoardPage() {
               </div>
             </main>
           </div>
-
-          <SmsConfirmationModal
-            isOpen={!!pendingSmsConfirmation}
-            onCancel={() => setPendingSmsConfirmation(null)}
-            onConfirm={handleSmsConfirm}
-            clientName={pendingSmsConfirmation?.clientName || ''}
-            orderNumber={pendingSmsConfirmation?.orderNumber || 0}
-          />
 
           {/* Export Button (Bottom Left) - above mobile nav on small screens — hidden for seamstresses */}
           {!isSeamstress && (
