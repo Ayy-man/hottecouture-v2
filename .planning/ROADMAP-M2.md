@@ -103,7 +103,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Migrations (display_order column + test data cleanup) + extend PUT API handler
+- [x] 03-01-PLAN.md — Migrations (display_order column + test data cleanup) + extend PUT API handler (commits 28f0b9e, d36a332)
 - [ ] 03-02-PLAN.md — Admin page at /admin/garment-types with inline edit, delete, reorder
 
 **Success Criteria:**
