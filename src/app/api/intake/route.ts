@@ -12,6 +12,7 @@ import {
 import {
   syncClientToGHL,
   isGHLConfigured,
+  sendWelcomeSms,
   type AppClient,
 } from '@/lib/ghl';
 
@@ -649,6 +650,24 @@ export async function POST(request: NextRequest) {
             .update({ ghl_contact_id: ghlSyncResult.data })
             .eq('id', clientId);
           console.log('✅ GHL contact synced:', ghlSyncResult.data);
+
+          // Send welcome SMS using the contact ID we just synced (non-blocking)
+          try {
+            const welcomeResult = await sendWelcomeSms(
+              ghlSyncResult.data,
+              {
+                first_name: client.first_name || '',
+                language: ((client.language || 'fr') as 'fr' | 'en'),
+              },
+              (newOrder as any).order_number
+            );
+            if (!welcomeResult.success) {
+              console.warn('Welcome SMS failed (non-blocking):', welcomeResult.error);
+            }
+          } catch (welcomeErr) {
+            console.warn('Welcome SMS error (non-blocking):', welcomeErr);
+            // Do NOT return error — order creation already succeeded
+          }
         } else {
           console.warn('⚠️ GHL sync failed:', ghlSyncResult.error);
         }
