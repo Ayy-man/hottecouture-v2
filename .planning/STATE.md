@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-18T15:02:20.188Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-18T15:08:37.232Z"
 progress:
   total_phases: 39
-  completed_phases: 25
+  completed_phases: 26
   total_plans: 61
-  completed_plans: 52
+  completed_plans: 53
 ---
 
 # Project State
@@ -263,6 +263,9 @@ Key concerns from client:
 - [Phase 07-01]: base_price_cents=0 for FABRIC_YARD/FABRIC_SQFT forces per-order price entry — no default catalog price
 - [Phase 07-01]: category='accessories' (not 'fabrics') for fabric services — matches AccessoriesStep .in('category', ['accessories', 'accessory']) filter
 - [Phase 07-01]: pendingPrice state in AccessoriesStep: per-service price tracked in Record<serviceId, priceCents> before add, fallback to service.base_price_cents
+- [Phase 08-02]: Welcome SMS placed inside ghlSyncResult.success block — contactId guaranteed in scope, no extra findOrCreateContact call
+- [Phase 08-02]: shouldSendNotification variable retained in stage/route.ts but removed from ready condition — avoids DTO schema change
+- [Phase 08-02]: Server-side auto-fire pattern: notifications triggered in stage handler, board page calls executeOrderUpdate directly with sendNotification:false for all statuses
 
 ## Milestone 2 Progress
 
@@ -533,9 +536,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-03-18T15:02:20.184Z
+- **Last session:** 2026-03-18T15:08:37.229Z
 - **Status:** Ready to plan
-- **Stopped at:** Completed 07-01-PLAN.md
+- **Stopped at:** Completed 08-02-PLAN.md
 - **Next:** Wave 2 parallel phases (2, 3, 4) — French templates, garment type admin, emoji picker touch
 - **Resume file:** None
 

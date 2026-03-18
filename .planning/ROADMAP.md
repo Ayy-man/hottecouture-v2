@@ -65,8 +65,8 @@ WAVE 9 (Infrastructure & Staff)
 | 4 | Reduce Space | 40% vertical space reduction | Jan 13 | 2 | ✓ |
 | 5 | List View | Grid/List toggle + product names | Jan 13 | 2 | ✓ |
 | 6 | Manage Task | Per-item button + Save & Close | Jan 13 | 2 | ✓ |
-| 7 | Exports | CSV exports for tasks, orders, capacity | Jan 13 | 2 | ✓ |
-| 8 | 1/2 | In Progress|  | 2 | ✓ |
+| 7 | 3/3 | Complete   | 2026-03-18 | 2 | ✓ |
+| 8 | 2/2 | Complete   | 2026-03-18 | 2 | ✓ |
 | 9 | Responsive | iPhone + iPad portrait support | Jan 13 | 2 | ✓ |
 | 10 | Calendar | Fix scrolling + unassigned category | Jan 13 | 2 | ✓ |
 | 11 | Cleanup & Polish | Close implementation gaps | Jan 13 | 3 | ✓ |
@@ -184,7 +184,7 @@ Plans:
 **Goal:** Add CSV export capabilities and team member management.
 
 **Status:** ✓ Complete
-**Plans:** 3/3 complete
+**Plans:** 3/3 plans complete
 
 ---
 
@@ -193,7 +193,7 @@ Plans:
 **Goal:** Remove stopwatch completely, replace with manual time input.
 
 **Status:** ✓ Complete
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 ---
 

@@ -98,3 +98,12 @@ None - no external service configuration required for this plan. `GHL_VOICE_CAMP
 ---
 *Phase: 08-notification-workflow-overhaul*
 *Completed: 2026-03-18*
+
+## Self-Check: PASSED
+
+- `src/lib/ghl/types.ts` — FOUND
+- `src/lib/ghl/messaging.ts` — FOUND
+- `.planning/phases/08-notification-workflow-overhaul/08-01-SUMMARY.md` — FOUND
+- Commit `a789388` (Task 1: MessagingAction union) — FOUND
+- Commit `82a6afc` (Task 2: template + functions) — FOUND
+- Commit `e0fe505` (docs: metadata) — FOUND
