@@ -91,6 +91,7 @@ export interface GHLTagResponse {
 // ============================================================================
 
 export type MessagingAction =
+  | 'ORDER_CREATED'
   | 'DEPOSIT_REQUEST'
   | 'READY_PICKUP'
   | 'READY_PICKUP_PAID'
