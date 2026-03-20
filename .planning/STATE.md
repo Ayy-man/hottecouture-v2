@@ -533,6 +533,7 @@ Fixed 4 cascading build failures after adding all source files to git:
 - Phase 27 added: Role-based access control - seamstress view filtering (board filtering, hide pricing/payments/client contact from seamstresses)
 - Phase 28 added: Feb 10 call UI polish and feature gaps (17 items from Amin call review)
 - Phase 29 added: Emoji icon picker for categories and garment types
+- Phase 30 added: Accessories UX Overhaul — Category Grouping & Service Recategorization
 
 ## Session Continuity
 
