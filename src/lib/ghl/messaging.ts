@@ -506,7 +506,7 @@ export async function sendWelcomeSms(
     return { success: true, data: { messageSent: true } };
   } else {
     console.warn(`Welcome SMS failed for order #${orderNumber}:`, result.error);
-    return { success: false, error: result.error };
+    return { success: false, error: result.error || 'SMS send failed' };
   }
 }
 
@@ -536,6 +536,6 @@ export async function sendVoiceBroadcast(
     return { success: true, data: { called: true } };
   } else {
     console.warn(`Voice broadcast failed for contact ${contactId}:`, result.error);
-    return { success: false, error: result.error };
+    return { success: false, error: result.error || 'Voice broadcast failed' };
   }
 }
