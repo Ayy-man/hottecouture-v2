@@ -24,9 +24,11 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useStaffSession } from '@/components/staff';
+import { useTranslations } from 'next-intl';
 
 export default function BoardPage() {
   console.log('🎯 Board page rendering...');
+  const t = useTranslations('board');
   const toast = useToast();
   const { currentStaff, isLoading: isStaffLoading } = useStaffSession();
   const isSeamstress = currentStaff?.staffRole === 'seamstress';
@@ -209,7 +211,7 @@ export default function BoardPage() {
 
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       if (errorMessage.includes('work time')) {
-        toast.error('Cannot mark as done: Please record work hours first.');
+        toast.error(t('errors.recordWorkHoursFirst'));
       }
     } finally {
       setUpdatingOrders(prev => {
@@ -233,10 +235,10 @@ export default function BoardPage() {
       <div className='flex items-center justify-center h-screen bg-background'>
         <div className='text-center'>
           <h1 className='text-2xl font-bold text-red-600 mb-4'>
-            Unable to load orders
+            {t('errors.unableToLoad')}
           </h1>
           <p className='text-muted-foreground mb-4'>{error}</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+          <Button onClick={() => window.location.reload()}>{t('errors.tryAgain')}</Button>
         </div>
       </div>
     );
@@ -249,13 +251,13 @@ export default function BoardPage() {
       const data = await response.json();
       if (data.success) {
         triggerDownload(data.csvContent, data.filename);
-        toast.success(`Exported tasks for ${seamstressName}`);
+        toast.success(t('actions.exportedTasks', { name: seamstressName }));
       } else {
-        toast.error(data.error || 'Export failed');
+        toast.error(data.error || t('actions.exportFailed'));
         console.error('Export error details:', data);
       }
     } catch (error) {
-      toast.error('Export failed: Network error');
+      toast.error(t('actions.exportNetworkError'));
       console.error('Export network error:', error);
     }
   };
@@ -266,13 +268,13 @@ export default function BoardPage() {
       const data = await response.json();
       if (data.success) {
         triggerDownload(data.csvContent, data.filename);
-        toast.success('Orders exported');
+        toast.success(t('actions.ordersExported'));
       } else {
-        toast.error(data.error || 'Export failed');
+        toast.error(data.error || t('actions.exportFailed'));
         console.error('Export error details:', data);
       }
     } catch (error) {
-      toast.error('Export failed: Network error');
+      toast.error(t('actions.exportNetworkError'));
       console.error('Export network error:', error);
     }
   };
@@ -283,13 +285,13 @@ export default function BoardPage() {
       const data = await response.json();
       if (data.success) {
         triggerDownload(data.csvContent, data.filename);
-        toast.success('Capacity exported');
+        toast.success(t('actions.capacityExported'));
       } else {
-        toast.error(data.error || 'Export failed');
+        toast.error(data.error || t('actions.exportFailed'));
         console.error('Export error details:', data);
       }
     } catch (error) {
-      toast.error('Export failed: Network error');
+      toast.error(t('actions.exportNetworkError'));
       console.error('Export network error:', error);
     }
   };
@@ -335,7 +337,7 @@ export default function BoardPage() {
               <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 max-w-[1920px] mx-auto w-full'>
                 <div className='flex items-center gap-4'>
                   <h1 className='text-xl sm:text-2xl font-bold text-foreground tracking-tight'>
-                    Tableau de Production
+                    {t('title')}
                   </h1>
                   <div className='h-6 w-px bg-border hidden sm:block' />
                   <div className='flex bg-muted p-1 rounded-lg border border-border'>
@@ -346,7 +348,7 @@ export default function BoardPage() {
                       className={`gap-2 h-8 ${viewMode === 'kanban' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                       <LayoutGrid className='w-4 h-4' />
-                      <span className='hidden sm:inline'>Board</span>
+                      <span className='hidden sm:inline'>{t('viewMode.board')}</span>
                     </Button>
                     <Button
                       variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -355,7 +357,7 @@ export default function BoardPage() {
                       className={`gap-2 h-8 ${viewMode === 'list' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                       <List className='w-4 h-4' />
-                      <span className='hidden sm:inline'>List</span>
+                      <span className='hidden sm:inline'>{t('viewMode.list')}</span>
                     </Button>
                   </div>
                   <div className='hidden md:flex items-center gap-2'>
@@ -406,30 +408,30 @@ export default function BoardPage() {
                         <DropdownMenuItem asChild>
                           <Link href='/board/workload' className='flex items-center gap-2'>
                             <Users className='w-4 h-4' />
-                            <span>Charge de Travail</span>
+                            <span>{t('menu.workload')}</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href='/archived' className='flex items-center gap-2'>
                             <Archive className='w-4 h-4' />
-                            <span>Commandes Archivees</span>
+                            <span>{t('menu.archivedOrders')}</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleExportOrders}>
                           <FileSpreadsheet className='w-4 h-4 mr-2' />
-                          <span>Export Orders</span>
+                          <span>{t('menu.exportOrders')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleExportCapacity}>
                           <FileSpreadsheet className='w-4 h-4 mr-2' />
-                          <span>Export Capacity</span>
+                          <span>{t('menu.exportCapacity')}</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
                   {!isSeamstress && (
                     <Button asChild size='sm' className='bg-foreground hover:bg-black text-white shadow-lg shadow-foreground/20 h-8'>
-                      <Link href='/intake'>Nouvelle Commande</Link>
+                      <Link href='/intake'>{t('menu.newOrder')}</Link>
                     </Button>
                   )}
                 </div>
@@ -466,7 +468,7 @@ export default function BoardPage() {
                 className='bg-white/90 backdrop-blur border border-border shadow-sm hover:bg-white text-xs touch-target-sm text-foreground'
                 onClick={() => setShowWorkListExport(true)}
               >
-                Export Work List
+                {t('menu.exportOrders')}
               </Button>
             </div>
           )}
@@ -478,7 +480,7 @@ export default function BoardPage() {
                 <div className='p-4 border-b border-border'>
                   <div className='flex items-center justify-between'>
                     <h3 className='text-lg font-semibold text-foreground'>
-                      Export Work List
+                      {t('menu.exportOrders')}
                     </h3>
                     <Button
                       variant='ghost'

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +26,8 @@ export function PipelineFilter({
   className = '',
 }: PipelineFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const t = useTranslations('board.pipeline');
+  const tf = useTranslations('board.filters');
 
   const pipelineStats = getPipelineStats(orders);
   const totalOrders = orders.length;
@@ -32,27 +35,27 @@ export function PipelineFilter({
   const pipelines = [
     {
       type: 'all' as const,
-      name: 'All Orders',
+      name: tf('all'),
       icon: Filter,
       color: 'bg-muted text-foreground',
       count: totalOrders,
-      description: 'View all orders across all pipelines',
+      description: t('allDescription'),
     },
     {
       type: 'alteration' as OrderType,
-      name: 'Alterations',
+      name: t('alterations'),
       icon: Scissors,
       color: 'bg-blue-100 text-blue-800',
       count: pipelineStats.alteration,
-      description: 'Standard garment alterations and repairs',
+      description: t('alterationsDescription'),
     },
     {
       type: 'custom' as OrderType,
-      name: 'Custom Design',
+      name: t('customDesign'),
       icon: Sparkles,
       color: 'bg-purple-100 text-purple-800',
       count: pipelineStats.custom,
-      description: 'Custom design and creation work',
+      description: t('customDesignDescription'),
     },
   ];
 
@@ -61,7 +64,7 @@ export function PipelineFilter({
       {/* Ultra Compact Filter Bar */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center space-x-1'>
-          <span className='text-xs font-medium text-foreground'>Pipeline:</span>
+          <span className='text-xs font-medium text-foreground'>{tf('pipeline')}:</span>
           <div className='flex items-center space-x-1'>
             {pipelines.map(pipeline => {
               const Icon = pipeline.icon;
@@ -115,7 +118,7 @@ export function PipelineFilter({
       {isExpanded && (
         <Card>
           <CardHeader>
-            <CardTitle className='text-lg'>Pipeline Overview</CardTitle>
+            <CardTitle className='text-lg'>{t('overview')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
@@ -158,8 +161,8 @@ export function PipelineFilter({
                       <div className='text-right text-sm text-muted-foreground'>
                         {config && (
                           <>
-                            <div>{config.estimatedDays} days avg</div>
-                            <div>{config.rushMultiplier}x rush</div>
+                            <div>{t('daysAvg', { days: config.estimatedDays })}</div>
+                            <div>{t('rushMultiplier', { multiplier: config.rushMultiplier })}</div>
                           </>
                         )}
                       </div>
@@ -167,7 +170,7 @@ export function PipelineFilter({
 
                     {isSelected && (
                       <div className='mt-2 text-xs text-primary font-medium'>
-                        Currently viewing
+                        {t('currentlyViewing')}
                       </div>
                     )}
                   </div>
@@ -177,25 +180,25 @@ export function PipelineFilter({
 
             {/* Pipeline Statistics */}
             <div className='mt-6 pt-4 border-t'>
-              <h4 className='font-semibold mb-3'>Pipeline Statistics</h4>
+              <h4 className='font-semibold mb-3'>{t('statistics')}</h4>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4 text-sm'>
                 <div className='text-center'>
                   <div className='text-lg font-bold text-foreground'>
                     {totalOrders}
                   </div>
-                  <div className='text-muted-foreground'>Total Orders</div>
+                  <div className='text-muted-foreground'>{t('totalOrders')}</div>
                 </div>
                 <div className='text-center'>
                   <div className='text-lg font-bold text-blue-600'>
                     {pipelineStats.alteration || 0}
                   </div>
-                  <div className='text-muted-foreground'>Alterations</div>
+                  <div className='text-muted-foreground'>{t('alterations')}</div>
                 </div>
                 <div className='text-center'>
                   <div className='text-lg font-bold text-purple-600'>
                     {pipelineStats.custom || 0}
                   </div>
-                  <div className='text-muted-foreground'>Custom Design</div>
+                  <div className='text-muted-foreground'>{t('customDesign')}</div>
                 </div>
                 <div className='text-center'>
                   <div className='text-lg font-bold text-green-600'>
@@ -204,7 +207,7 @@ export function PipelineFilter({
                     ) || 0}
                     %
                   </div>
-                  <div className='text-muted-foreground'>Alteration %</div>
+                  <div className='text-muted-foreground'>{t('alterationPercent')}</div>
                 </div>
               </div>
             </div>

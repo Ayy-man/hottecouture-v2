@@ -6,6 +6,7 @@ import { fr } from 'date-fns/locale';
 import { PRINT_TASKS_CONFIG } from '@/lib/config/production';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TaskOrder {
   id: string;
@@ -27,6 +28,8 @@ interface TaskOrder {
 }
 
 export default function PrintTasksPage() {
+  const t = useTranslations('printTasks');
+  const tc = useTranslations('common');
   const [orders, setOrders] = useState<TaskOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -93,8 +96,8 @@ export default function PrintTasksPage() {
   };
 
   const getPriorityBadge = (priority: string) => {
-    if (priority === 'rush') return '🔴 RUSH';
-    if (priority === 'custom') return '🟡 Custom';
+    if (priority === 'rush') return `🔴 ${t('rush')}`;
+    if (priority === 'custom') return `🟡 ${t('custom')}`;
     return '';
   };
 
@@ -103,7 +106,7 @@ export default function PrintTasksPage() {
   if (loading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
-        <p className='text-muted-foreground'>Chargement...</p>
+        <p className='text-muted-foreground'>{tc('loading')}</p>
       </div>
     );
   }
@@ -111,10 +114,10 @@ export default function PrintTasksPage() {
   return (
     <div className='min-h-screen bg-white'>
       <div className='no-print p-4 bg-muted/50 border-b flex items-center justify-between'>
-        <h1 className='text-lg font-semibold'>Aperçu avant impression</h1>
+        <h1 className='text-lg font-semibold'>{t('title')}</h1>
         <Button onClick={() => window.print()} className='bg-blue-600 hover:bg-blue-700'>
           <Printer className='w-4 h-4 mr-2' />
-          Imprimer
+          {t('print')}
         </Button>
       </div>
 
@@ -124,13 +127,13 @@ export default function PrintTasksPage() {
             {PRINT_TASKS_CONFIG.title} {todayDate}
           </h1>
           <p className='text-sm text-muted-foreground mt-1'>
-            {sortedOrders.length} tâche{sortedOrders.length !== 1 ? 's' : ''} à compléter
+            {t('taskCount', { count: sortedOrders.length })}
           </p>
         </div>
 
         {sortedOrders.length === 0 ? (
           <p className='text-center text-muted-foreground py-12'>
-            Aucune tâche en attente ou en cours.
+            {t('noTasks')}
           </p>
         ) : (
           <table className='w-full border-collapse'>
@@ -138,11 +141,11 @@ export default function PrintTasksPage() {
               <tr className='border-b-2 border-foreground'>
                 <th className='w-8 py-2 text-left'>☐</th>
                 <th className='py-2 text-left text-sm font-semibold'>#</th>
-                <th className='py-2 text-left text-sm font-semibold'>Client</th>
-                <th className='py-2 text-left text-sm font-semibold'>Services</th>
-                <th className='py-2 text-left text-sm font-semibold'>Échéance</th>
-                <th className='py-2 text-left text-sm font-semibold'>Priorité</th>
-                <th className='py-2 text-left text-sm font-semibold'>Notes</th>
+                <th className='py-2 text-left text-sm font-semibold'>{t('client')}</th>
+                <th className='py-2 text-left text-sm font-semibold'>{t('services')}</th>
+                <th className='py-2 text-left text-sm font-semibold'>{t('dueDate')}</th>
+                <th className='py-2 text-left text-sm font-semibold'>{t('priority')}</th>
+                <th className='py-2 text-left text-sm font-semibold'>{t('notes')}</th>
               </tr>
             </thead>
             <tbody>
@@ -171,7 +174,7 @@ export default function PrintTasksPage() {
         )}
 
         <div className='mt-8 pt-4 border-t border-border text-center text-xs text-muted-foreground print:mt-4'>
-          Imprimé le {format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+          {t('printedOn', { date: format(new Date(), "d MMMM yyyy 'à' HH:mm", { locale: fr }) })}
         </div>
       </div>
 

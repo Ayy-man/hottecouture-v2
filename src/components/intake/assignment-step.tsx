@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { useStaff } from '@/lib/hooks/useStaff';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface AssignmentItem {
   garmentIndex: number;
@@ -40,13 +41,15 @@ export function AssignmentStep({
   onPrev,
   isSubmitting = false,
 }: AssignmentStepProps) {
+  const t = useTranslations('intake.assignment');
+  const tc = useTranslations('common');
   const { staff, loading } = useStaff();
 
   // Helper to get seamstress name from ID
   const getSeamstressName = (id: string | null): string => {
-    if (!id) return 'Non assigne';
+    if (!id) return t('unassigned');
     const found = staff.find(s => s.id === id);
-    return found ? found.name : 'Non assigne';
+    return found ? found.name : t('unassigned');
   };
 
 
@@ -85,11 +88,11 @@ export function AssignmentStep({
                 d='M15 19l-7-7 7-7'
               />
             </svg>
-            Retour
+            {tc('back')}
           </Button>
         </div>
         <h2 className='text-lg font-semibold text-foreground'>
-          Assigner les taches
+          {t('title')}
         </h2>
         <div className='w-1/3 flex justify-end'>
           <Button
@@ -97,7 +100,7 @@ export function AssignmentStep({
             disabled={isSubmitting}
             className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-4 py-2 rounded-lg font-medium'
           >
-            {isSubmitting ? 'Creation...' : 'Creer la commande'}
+            {isSubmitting ? t('creating') : t('createOrder')}
           </Button>
         </div>
       </div>
@@ -107,7 +110,7 @@ export function AssignmentStep({
         <div className='max-w-md mx-auto space-y-4'>
           <div className='text-center mb-6'>
             <p className='text-sm text-muted-foreground'>
-              Assignez chaque tache a une couturiere
+              {t('description')}
             </p>
           </div>
 
@@ -121,11 +124,11 @@ export function AssignmentStep({
               {items.length > 1 && staff.length > 0 && (
                 <div className='mb-6'>
                   <label className='block text-sm font-medium text-muted-foreground mb-2'>
-                    Assigner tout a...
+                    {t('assignAllLabel')}
                   </label>
                   <Select onValueChange={handleAssignAll}>
                     <SelectTrigger className='w-full'>
-                      <SelectValue placeholder='Assigner tout a...' />
+                      <SelectValue placeholder={t('assignAllPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {staff.map(s => (
@@ -183,7 +186,7 @@ export function AssignmentStep({
                               </span>
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value='unassigned'>Non assigne</SelectItem>
+                              <SelectItem value='unassigned'>{t('unassigned')}</SelectItem>
                               {staff.map(s => (
                                 <SelectItem key={s.id} value={s.id}>
                                   <span className='flex items-center gap-2'>
@@ -209,13 +212,13 @@ export function AssignmentStep({
 
           {!loading && staff.length === 0 && (
             <p className='text-center text-sm text-amber-600 mt-4'>
-              Aucun membre du personnel disponible. Ajoutez du personnel dans les parametres.
+              {t('noStaff')}
             </p>
           )}
 
           {!loading && items.length === 0 && (
             <p className='text-center text-sm text-amber-600 mt-4'>
-              Aucun service selectionne. Retournez a l etape des services.
+              {t('noServices')}
             </p>
           )}
         </div>

@@ -16,6 +16,7 @@ import { useToast } from '@/components/ui/toast';
 import { CollapsibleNotes } from '@/components/ui/collapsible-notes';
 import { ClipboardList, Pencil, Trash2, Plus, X } from 'lucide-react';
 import { useStaffSession } from '@/components/staff';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface OrderDetailModalProps {
   order: any;
@@ -30,6 +31,12 @@ export function OrderDetailModal({
   onClose,
 }: OrderDetailModalProps) {
   const toast = useToast();
+  const t = useTranslations('board.modal');
+  const tc = useTranslations('common');
+  const tb = useTranslations('board');
+  const tl = useTranslations('labels');
+  const tcard = useTranslations('board.card');
+  const locale = useLocale();
   const { currentStaff, isLoading: isStaffLoading } = useStaffSession();
   const isSeamstress = currentStaff?.staffRole === 'seamstress';
   const [detailedOrder, setDetailedOrder] = useState<any>(null);
@@ -101,11 +108,11 @@ export function OrderDetailModal({
         window.location.reload();
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Failed to archive order');
+        toast.error(error.error || t('archiveFailed'));
       }
     } catch (error) {
       console.error('Error archiving order:', error);
-      toast.error('Failed to archive order');
+      toast.error(t('archiveFailed'));
     } finally {
       setArchiving(false);
     }
@@ -126,11 +133,11 @@ export function OrderDetailModal({
         window.location.reload();
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Failed to restore order');
+        toast.error(error.error || t('restoreFailed'));
       }
     } catch (error) {
       console.error('Error restoring order:', error);
-      toast.error('Failed to restore order');
+      toast.error(t('restoreFailed'));
     } finally {
       setArchiving(false);
     }
@@ -257,7 +264,7 @@ export function OrderDetailModal({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to save notes');
+        throw new Error(error.error || t('notesSaveFailed'));
       }
 
       const result = await response.json();
@@ -275,7 +282,7 @@ export function OrderDetailModal({
       setEditingNotes('');
     } catch (error) {
       console.error('Error saving garment notes:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to save notes');
+      toast.error(error instanceof Error ? error.message : t('notesSaveFailed'));
     } finally {
       setSavingNotes(null);
     }
@@ -309,7 +316,7 @@ export function OrderDetailModal({
       if (!response.ok) {
         const error = await response.json();
         console.error('❌ Failed to save time:', error);
-        throw new Error(error.error || 'Failed to save actual time');
+        throw new Error(error.error || t('timeSaveFailed'));
       }
 
       const result = await response.json();
@@ -329,7 +336,7 @@ export function OrderDetailModal({
       setEditingTimeMinutes(0);
     } catch (error) {
       console.error('Error saving time estimate:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to save time estimate');
+      toast.error(error instanceof Error ? error.message : t('timeEstimateFailed'));
     } finally {
       setSavingTime(null);
     }
@@ -351,7 +358,7 @@ export function OrderDetailModal({
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Échec de la mise à jour du prix');
+        throw new Error(error.error || t('priceUpdateFailed'));
       }
       // Update local state
       if (detailedOrder) {
@@ -360,7 +367,7 @@ export function OrderDetailModal({
       setEditingPrice(false);
     } catch (error) {
       console.error('Error saving price:', error);
-      toast.error(error instanceof Error ? error.message : 'Échec de la mise à jour du prix');
+      toast.error(error instanceof Error ? error.message : t('priceUpdateFailed'));
     } finally {
       setSavingPrice(false);
     }
@@ -381,7 +388,7 @@ export function OrderDetailModal({
     setSavingServicePrice(serviceId);
     try {
       // Get current staff name from localStorage or default
-      const staffName = localStorage.getItem('currentStaffName') || 'Staff';
+      const staffName = localStorage.getItem('currentStaffName') || t('staffFallback');
 
       const response = await fetch(`/api/garment-service/${serviceId}/price`, {
         method: 'PATCH',
@@ -394,7 +401,7 @@ export function OrderDetailModal({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to update price');
+        throw new Error(error.error || t('priceUpdateFailed'));
       }
 
       const result = await response.json();
@@ -425,7 +432,7 @@ export function OrderDetailModal({
       setEditServicePriceCents(0);
     } catch (error) {
       console.error('Error saving service price:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update price');
+      toast.error(error instanceof Error ? error.message : t('priceUpdateFailed'));
     } finally {
       setSavingServicePrice(null);
     }
@@ -664,8 +671,8 @@ export function OrderDetailModal({
   };
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Not set';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return t('notSet');
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -697,10 +704,10 @@ export function OrderDetailModal({
           <div className='flex flex-col sm:flex-row justify-between items-start mb-4 gap-3'>
             <div className='flex-1'>
               <h2 className='text-lg sm:text-xl font-bold text-foreground'>
-                Order #{displayOrder.order_number}
+                {tcard('orderNumber')}{displayOrder.order_number}
                 {displayOrder.rush && (
                   <span className='ml-2 sm:ml-3 px-2 sm:px-3 py-1 text-xs sm:text-sm font-bold text-white bg-red-500 rounded-full'>
-                    URGENT{' '}
+                    {tcard('rush')}{' '}
                     {displayOrder.rush_fee_type
                       ? `(${displayOrder.rush_fee_type.toUpperCase()})`
                       : ''}
@@ -708,7 +715,7 @@ export function OrderDetailModal({
                 )}
               </h2>
               <p className='text-muted-foreground mt-1 text-sm sm:text-base'>
-                {displayOrder.client_name || 'Unknown Client'}
+                {displayOrder.client_name || tb('card.unknownClient')}
               </p>
             </div>
             <div className='flex gap-2 w-full sm:w-auto'>
@@ -719,7 +726,7 @@ export function OrderDetailModal({
                   className='flex-1 sm:flex-initial'
                 >
                   <Pencil className='w-4 h-4 mr-1' />
-                  Edit Order
+                  {t('editOrder')}
                 </Button>
               )}
               {editMode && (
@@ -728,7 +735,7 @@ export function OrderDetailModal({
                   onClick={exitEditMode}
                   className='flex-1 sm:flex-initial border-green-500 text-green-700 hover:bg-green-50'
                 >
-                  Done Editing
+                  {t('doneEditing')}
                 </Button>
               )}
               <Button
@@ -736,7 +743,7 @@ export function OrderDetailModal({
                 onClick={onClose}
                 className='flex-1 sm:flex-initial'
               >
-                ✕ Close
+                ✕ {tc('close')}
               </Button>
             </div>
           </div>
@@ -750,7 +757,7 @@ export function OrderDetailModal({
 
           {loading && !isStaffLoading && (
             <div className='flex items-center justify-center py-12'>
-              <LoadingLogo size='lg' text='Loading order details...' />
+              <LoadingLogo size='lg' text={t('loadingDetails')} />
             </div>
           )}
 
@@ -761,33 +768,33 @@ export function OrderDetailModal({
                 {/* Basic Info */}
                 <div className='space-y-2'>
                   <h3 className='text-base font-semibold text-foreground mb-2'>
-                    Order Information
+                    {t('orderInformation')}
                   </h3>
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm'>
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground text-xs'>Type:</span>
+                      <span className='text-muted-foreground text-xs'>{t('type')}</span>
                       <span className='font-medium capitalize text-xs'>{order.type}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground text-xs'>Status:</span>
+                      <span className='text-muted-foreground text-xs'>{t('status')}</span>
                       <span className='font-medium capitalize text-xs'>{order.status}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground text-xs'>Priority:</span>
-                      <span className='font-medium capitalize text-xs'>{order.priority || 'Normal'}</span>
+                      <span className='text-muted-foreground text-xs'>{t('priority')}</span>
+                      <span className='font-medium capitalize text-xs'>{order.priority || t('normalPriority')}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-muted-foreground text-xs'>Due:</span>
+                      <span className='text-muted-foreground text-xs'>{t('due')}</span>
                       <span className='font-medium text-xs'>{formatDate(order.due_date)}</span>
                     </div>
                     <div className='flex justify-between col-span-full'>
-                      <span className='text-muted-foreground text-xs'>Created:</span>
+                      <span className='text-muted-foreground text-xs'>{t('created')}</span>
                       <span className='font-medium text-xs'>{formatDate(order.created_at)}</span>
                     </div>
                     {RACK_CONFIG.editableStatuses.includes(order.status) ? (
                       <div className='col-span-full space-y-2 pt-2 border-t border-border mt-1'>
                         <label className='block text-sm font-medium text-muted-foreground'>
-                          {RACK_CONFIG.label}
+                          {t('rackLabel')}
                         </label>
                         <div className='flex gap-2'>
                           <select
@@ -817,11 +824,11 @@ export function OrderDetailModal({
                             disabled={savingRack}
                             className='flex-1 px-3 py-2 border border-border rounded-md text-sm focus:ring-2 focus:ring-blue-500'
                           >
-                            <option value=''>{RACK_CONFIG.placeholder}</option>
+                            <option value=''>{t('rackPlaceholder')}</option>
                             {RACK_CONFIG.positions.map(pos => (
                               <option key={pos} value={pos}>{pos}</option>
                             ))}
-                            <option value='other'>{RACK_CONFIG.otherOption}</option>
+                            <option value='other'>{t('rackOther')}</option>
                           </select>
                           {rackPosition === 'other' && (
                             <>
@@ -829,7 +836,7 @@ export function OrderDetailModal({
                                 type='text'
                                 value={customRackPosition}
                                 onChange={(e) => setCustomRackPosition(e.target.value)}
-                                placeholder={RACK_CONFIG.placeholder}
+                                placeholder={t('rackPlaceholder')}
                                 className='w-24 px-3 py-2 border border-border rounded-md text-sm focus:ring-2 focus:ring-blue-500'
                                 disabled={savingRack}
                               />
@@ -856,18 +863,18 @@ export function OrderDetailModal({
                                 disabled={savingRack || !customRackPosition.trim()}
                                 className='bg-blue-600 hover:bg-blue-700 text-white'
                               >
-                                {savingRack ? '...' : 'OK'}
+                                {savingRack ? '...' : t('ok')}
                               </Button>
                             </>
                           )}
                         </div>
                         {savingRack && (
-                          <p className='text-xs text-blue-600'>Enregistrement...</p>
+                          <p className='text-xs text-blue-600'>{t('saving')}</p>
                         )}
                       </div>
                     ) : order.rack_position ? (
                       <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>{RACK_CONFIG.label}:</span>
+                        <span className='text-muted-foreground'>{t('rackLabel')}:</span>
                         <span className='font-medium'>
                           {order.rack_position}
                         </span>
@@ -879,32 +886,32 @@ export function OrderDetailModal({
                 {/* Client Info */}
                 <div className='space-y-2'>
                   <h3 className='text-base font-semibold text-foreground mb-2'>
-                    Client Information
+                    {t('clientInformation')}
                   </h3>
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm'>
                     <div className='flex justify-between col-span-full'>
-                      <span className='text-muted-foreground text-xs'>Name:</span>
-                      <span className='font-medium text-xs'>{order.client_name || 'Unknown Client'}</span>
+                      <span className='text-muted-foreground text-xs'>{t('name')}</span>
+                      <span className='font-medium text-xs'>{order.client_name || tb('card.unknownClient')}</span>
                     </div>
                     {!isSeamstress && (
                       <div className='flex justify-between items-center'>
-                        <span className='text-muted-foreground text-xs'>Phone:</span>
+                        <span className='text-muted-foreground text-xs'>{t('phone')}</span>
                         <span className='font-medium font-mono text-xs'>
-                          {order.client_phone ? (revealedContact ? order.client_phone : maskPhone(order.client_phone)) : 'N/A'}
+                          {order.client_phone ? (revealedContact ? order.client_phone : maskPhone(order.client_phone)) : t('notAvailable')}
                         </span>
                       </div>
                     )}
                     {!isSeamstress && (
                       <div className='flex justify-between items-center'>
-                        <span className='text-muted-foreground text-xs'>Email:</span>
+                        <span className='text-muted-foreground text-xs'>{t('email')}</span>
                         <span className='font-medium font-mono text-xs truncate max-w-[120px]'>
-                          {order.client_email ? (revealedContact ? order.client_email : maskEmail(order.client_email)) : 'N/A'}
+                          {order.client_email ? (revealedContact ? order.client_email : maskEmail(order.client_email)) : t('notAvailable')}
                         </span>
                       </div>
                     )}
                     <div className='flex justify-between col-span-full'>
-                      <span className='text-muted-foreground text-xs'>Language:</span>
-                      <span className='font-medium text-xs'>{order.client_language || 'English'}</span>
+                      <span className='text-muted-foreground text-xs'>{t('language')}</span>
+                      <span className='font-medium text-xs'>{order.client_language || t('notAvailable')}</span>
                     </div>
                   </div>
                   {!isSeamstress && (order.client_phone || order.client_email) && (
@@ -912,7 +919,7 @@ export function OrderDetailModal({
                       onClick={() => setRevealedContact(!revealedContact)}
                       className='flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors'
                     >
-                      {revealedContact ? '🙈 Masquer' : '👁️ Afficher'}
+                      {revealedContact ? `🙈 ${t('hide')}` : `👁️ ${t('show')}`}
                     </button>
                   )}
                   {!isSeamstress && order.client_id && (
@@ -920,13 +927,13 @@ export function OrderDetailModal({
                       href={`/orders/history?clientId=${order.client_id}`}
                       className='text-xs text-primary-600 hover:text-primary-800 hover:underline transition-colors'
                     >
-                      📋 Voir l'historique des commandes
+                      📋 {t('viewOrderHistory')}
                     </Link>
                   )}
                   {order.client_notes && (
                     <div className='mt-2 pt-2 border-t border-border'>
                       <span className='text-muted-foreground text-xs font-medium'>
-                        Client Notes:
+                        {t('clientNotes')}
                       </span>
                       <div className='mt-1 p-2 bg-yellow-50 rounded text-xs text-muted-foreground'>
                         {order.client_notes}
@@ -940,15 +947,15 @@ export function OrderDetailModal({
               {Object.keys(orderMeasurements).length > 0 && (
                 <div className='mb-4'>
                   <h3 className='text-base font-semibold text-foreground mb-2'>
-                    📏 Mesures
+                    📏 {t('measurements')}
                   </h3>
                   <div className='bg-purple-50 rounded-lg p-3'>
                     {Object.entries(orderMeasurements).map(([category, items]) => (
                       <div key={category} className='mb-4 last:mb-0'>
                         <h4 className='text-sm font-medium text-purple-700 mb-2 capitalize'>
-                          {category === 'body' ? 'Mesures corporelles' :
-                           category === 'curtain' ? 'Rideaux' :
-                           category === 'upholstery' ? 'Rembourrage' : category}
+                          {category === 'body' ? t('bodyMeasurements') :
+                           category === 'curtain' ? t('curtains') :
+                           category === 'upholstery' ? t('upholstery') : category}
                         </h4>
                         <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
                           {(items as any[]).map((m: any) => (
@@ -969,7 +976,7 @@ export function OrderDetailModal({
               {/* Garments */}
               <div className='mb-4'>
                 <h3 className='text-base font-semibold text-foreground mb-2'>
-                  Garments ({displayOrder.garments?.length || 0})
+                  {t('garments', { count: displayOrder.garments?.length || 0 })}
                 </h3>
                 <div className='space-y-3'>
                   {displayOrder.garments?.map((garment: any, index: number) => (
@@ -995,7 +1002,7 @@ export function OrderDetailModal({
                         </div>
                         <div className='flex items-center gap-2'>
                           <span className='text-sm text-muted-foreground'>
-                            Label: {garment.label_code}
+                            {t('label')} {garment.label_code}
                           </span>
                           {editMode && (
                             <Button
@@ -1004,7 +1011,7 @@ export function OrderDetailModal({
                               onClick={() => handleDeleteGarment(garment.id)}
                               disabled={deletingGarment === garment.id}
                               className='text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0'
-                              title='Remove garment'
+                              title={t('removeGarment')}
                             >
                               {deletingGarment === garment.id ? '...' : <Trash2 className='w-4 h-4' />}
                             </Button>
@@ -1021,7 +1028,7 @@ export function OrderDetailModal({
                                 id: garment.id,
                                 url: `/api/photo/${garment.photo_path}`,
                                 alt: garment.type,
-                                caption: `Label: ${garment.label_code}`,
+                                caption: t('labelCaption', { code: garment.label_code }),
                               },
                             ]}
                             className='w-48'
@@ -1030,21 +1037,21 @@ export function OrderDetailModal({
                       )}
                       {!garment.photo_path && (
                         <div className='mb-3 text-sm text-muted-foreground'>
-                          No photo available
+                          {t('noPhoto')}
                         </div>
                       )}
 
                       <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3'>
                         <div>
-                          <span className='text-muted-foreground'>Color:</span>
+                          <span className='text-muted-foreground'>{t('color')}</span>
                           <span className='ml-2'>
-                            {garment.color || 'Not specified'}
+                            {garment.color || t('notSpecified')}
                           </span>
                         </div>
                         <div>
-                          <span className='text-muted-foreground'>Brand:</span>
+                          <span className='text-muted-foreground'>{t('brand')}</span>
                           <span className='ml-2'>
-                            {garment.brand || 'Not specified'}
+                            {garment.brand || t('notSpecified')}
                           </span>
                         </div>
                       </div>
@@ -1054,14 +1061,14 @@ export function OrderDetailModal({
                         {editingGarmentId === garment.id ? (
                           <div className='space-y-2'>
                             <label className='block text-xs font-medium text-muted-foreground mb-1'>
-                              Notes:
+                              {t('notesLabel')}
                             </label>
                             <Textarea
                               value={editingNotes}
                               onChange={e => setEditingNotes(e.target.value)}
                               rows={3}
                               className='w-full min-h-[60px] text-sm'
-                              placeholder='Special instructions, damage notes, etc.'
+                              placeholder={t('notesPlaceholder')}
                               disabled={savingNotes === garment.id}
                             />
                             <div className='flex gap-2'>
@@ -1071,7 +1078,7 @@ export function OrderDetailModal({
                                 disabled={savingNotes === garment.id}
                                 className='bg-primary hover:bg-primary-600'
                               >
-                                {savingNotes === garment.id ? 'Saving...' : 'Save'}
+                                {savingNotes === garment.id ? t('saving') : tc('save')}
                               </Button>
                               <Button
                                 size='sm'
@@ -1079,7 +1086,7 @@ export function OrderDetailModal({
                                 onClick={handleCancelEditNotes}
                                 disabled={savingNotes === garment.id}
                               >
-                                Cancel
+                                {tc('cancel')}
                               </Button>
                             </div>
                           </div>
@@ -1087,7 +1094,7 @@ export function OrderDetailModal({
                           <CollapsibleNotes
                             notes={garment.notes}
                             onEdit={() => handleStartEditNotes(garment.id, garment.notes)}
-                            label='Notes'
+                            label={t('notesLabel')}
                             defaultExpanded={false}
                           />
                         )}
@@ -1098,7 +1105,7 @@ export function OrderDetailModal({
                         {editingTimeGarmentId === garment.id ? (
                           <div className='space-y-2'>
                             <label className='block text-xs font-medium text-purple-700'>
-                              Estimated Time
+                              {t('estimatedTime')}
                             </label>
                             <div className='flex items-center gap-2'>
                               <input
@@ -1110,7 +1117,7 @@ export function OrderDetailModal({
                                 className='w-16 px-2 py-1 text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500'
                                 disabled={savingTime === garment.id}
                               />
-                              <span className='text-xs text-purple-600'>h</span>
+                              <span className='text-xs text-purple-600'>{t('timeH')}</span>
                               <input
                                 type='number'
                                 min='0'
@@ -1120,7 +1127,7 @@ export function OrderDetailModal({
                                 className='w-16 px-2 py-1 text-sm border border-purple-300 rounded focus:ring-2 focus:ring-purple-500'
                                 disabled={savingTime === garment.id}
                               />
-                              <span className='text-xs text-purple-600'>m</span>
+                              <span className='text-xs text-purple-600'>{t('timeM')}</span>
                             </div>
                             <div className='flex gap-2'>
                               <Button
@@ -1129,7 +1136,7 @@ export function OrderDetailModal({
                                 disabled={savingTime === garment.id}
                                 className='bg-purple-600 hover:bg-purple-700 text-xs'
                               >
-                                {savingTime === garment.id ? 'Saving...' : 'Save'}
+                                {savingTime === garment.id ? t('saving') : tc('save')}
                               </Button>
                               <Button
                                 size='sm'
@@ -1138,21 +1145,21 @@ export function OrderDetailModal({
                                 disabled={savingTime === garment.id}
                                 className='text-xs'
                               >
-                                Cancel
+                                {tc('cancel')}
                               </Button>
                             </div>
                           </div>
                         ) : (
                           <div className='flex items-center justify-between'>
                             <span className='text-xs font-medium text-purple-700'>
-                              Work Hours:{' '}
+                              {t('workHours')}{' '}
                               {(() => {
                                 // Prefer actual_minutes (recorded work), fallback to estimated
                                 const workMinutes = garment.actual_minutes || garment.estimated_minutes;
                                 if (workMinutes && workMinutes > 0) {
                                   const h = Math.floor(workMinutes / 60);
                                   const m = workMinutes % 60;
-                                  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+                                  return h > 0 ? `${h}${t('timeH')} ${m}${t('timeM')}` : `${m}${t('timeM')}`;
                                 }
                                 const totalMinutes = garment.services?.reduce(
                                   (sum: number, s: any) => {
@@ -1162,10 +1169,10 @@ export function OrderDetailModal({
                                   },
                                   0
                                 ) || 0;
-                                if (totalMinutes === 0) return 'Not recorded';
+                                if (totalMinutes === 0) return t('notRecorded');
                                 const h = Math.floor(totalMinutes / 60);
                                 const m = totalMinutes % 60;
-                                return h > 0 ? `${h}h ${m}m` : `${m}m`;
+                                return h > 0 ? `${h}${t('timeH')} ${m}${t('timeM')}` : `${m}${t('timeM')}`;
                               })()}
                             </span>
                             <Button
@@ -1182,7 +1189,7 @@ export function OrderDetailModal({
                               }}
                               className='text-xs text-purple-600 hover:text-purple-800 h-6 px-2'
                             >
-                              Edit
+                              {tc('edit')}
                             </Button>
                           </div>
                         )}
@@ -1192,7 +1199,7 @@ export function OrderDetailModal({
                       {garment.services && garment.services.length > 0 && (
                         <div className='mt-2 pt-2 border-t border-border'>
                           <h5 className='text-xs font-medium text-blue-600 mb-1'>
-                            Services Required:
+                            {t('servicesRequired')}
                           </h5>
                           <div className='space-y-1'>
                             {garment.services.map((service: any, serviceIndex: number) => {
@@ -1210,7 +1217,7 @@ export function OrderDetailModal({
                                       <h6 className='font-medium text-foreground'>
                                         {service.service?.name ||
                                           service.custom_service_name ||
-                                          'Service'}
+                                          tcard('serviceFallback')}
                                       </h6>
                                       {service.service?.description && (
                                         <p className='text-sm text-muted-foreground mt-1'>
@@ -1220,7 +1227,7 @@ export function OrderDetailModal({
                                       {service.notes && (
                                         <div className='mt-2'>
                                           <span className='text-xs font-medium text-muted-foreground'>
-                                            Service Notes:
+                                            {t('serviceNotes')}
                                           </span>
                                           <p className='text-xs text-muted-foreground mt-1 bg-white rounded p-2'>
                                             {service.notes}
@@ -1237,7 +1244,7 @@ export function OrderDetailModal({
                                           onClick={() => handleDeleteService(garment.id, service.id)}
                                           disabled={deletingService === service.id}
                                           className='text-red-500 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0'
-                                          title='Remove service'
+                                          title={t('removeService')}
                                         >
                                           {deletingService === service.id ? '...' : <X className='w-3 h-3' />}
                                         </Button>
@@ -1279,18 +1286,18 @@ export function OrderDetailModal({
                                           }}
                                           className='text-muted-foreground hover:text-blue-600 cursor-pointer underline decoration-dotted'
                                         >
-                                          Qty: {service.quantity}
+                                          {t('quantity')} {service.quantity}
                                         </button>
                                       ) : (
                                         <div className='text-muted-foreground'>
-                                          Qty: {service.quantity}
+                                          {t('quantity')} {service.quantity}
                                         </div>
                                       )}
 
                                       {/* Estimated Price (readonly) — hidden for seamstresses */}
                                       {!isSeamstress && (
                                         <div className='text-xs text-muted-foreground'>
-                                          Est: ${(priceInfo.estimatedTotalCents / 100).toFixed(2)}
+                                          {t('estimated')} ${(priceInfo.estimatedTotalCents / 100).toFixed(2)}
                                         </div>
                                       )}
 
@@ -1318,7 +1325,7 @@ export function OrderDetailModal({
                                               disabled={isSaving}
                                               className='bg-blue-600 hover:bg-blue-700 text-xs h-6 px-2'
                                             >
-                                              {isSaving ? '...' : 'Save'}
+                                              {isSaving ? '...' : tc('save')}
                                             </Button>
                                             <Button
                                               size='sm'
@@ -1327,7 +1334,7 @@ export function OrderDetailModal({
                                               disabled={isSaving}
                                               className='text-xs h-6 px-2'
                                             >
-                                              Cancel
+                                              {tc('cancel')}
                                             </Button>
                                           </div>
                                         </div>
@@ -1338,7 +1345,7 @@ export function OrderDetailModal({
                                               ${(priceInfo.totalCents / 100).toFixed(2)}
                                             </span>
                                             {priceInfo.hasFinalPrice && (
-                                              <span className='text-[10px] text-green-600 font-medium'>FINAL</span>
+                                              <span className='text-[10px] text-green-600 font-medium'>{t('finalPrice')}</span>
                                             )}
                                           </div>
                                           <Button
@@ -1350,16 +1357,16 @@ export function OrderDetailModal({
                                             )}
                                             className='text-xs text-blue-600 hover:text-blue-800 h-5 px-1 mt-1'
                                           >
-                                            Edit Price
+                                            {t('editPrice')}
                                           </Button>
                                         </div>
                                       ))}
 
                                       {service.service?.estimated_minutes && (
                                         <div className='text-xs text-muted-foreground'>
-                                          Est time:{' '}
-                                          {Math.floor(service.service.estimated_minutes / 60)}h{' '}
-                                          {service.service.estimated_minutes % 60}m
+                                          {t('estTime')}{' '}
+                                          {Math.floor(service.service.estimated_minutes / 60)}{t('timeH')}{' '}
+                                          {service.service.estimated_minutes % 60}{t('timeM')}
                                           {service.quantity > 1 && ` x ${service.quantity}`}
                                         </div>
                                       )}
@@ -1438,7 +1445,7 @@ export function OrderDetailModal({
                             className='text-xs shrink-0'
                           >
                             <ClipboardList className='w-4 h-4 mr-1' />
-                            Manage Tasks
+                            {t('manageTasks')}
                           </Button>
                         </div>
                       </div>
@@ -1500,12 +1507,12 @@ export function OrderDetailModal({
               {!isSeamstress && (
                 <div className='mb-4'>
                   <h3 className='text-base font-semibold text-foreground mb-2'>
-                    Pricing
+                    {t('pricing')}
                   </h3>
                   <div className='bg-muted/50 rounded-lg p-3'>
                     <div className='space-y-2'>
                       <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Subtotal:</span>
+                        <span className='text-muted-foreground'>{t('subtotal')}</span>
                         <span className='font-medium'>
                           {formatCurrency(displayOrder.subtotal_cents || 0)}
                         </span>
@@ -1513,7 +1520,7 @@ export function OrderDetailModal({
                       {displayOrder.rush_fee_cents > 0 && (
                         <div className='flex justify-between'>
                           <span className='text-muted-foreground'>
-                            Rush Fee{' '}
+                            {t('rushFee')}{' '}
                             {displayOrder.rush_fee_type
                               ? `(${displayOrder.rush_fee_type})`
                               : ''}
@@ -1528,13 +1535,13 @@ export function OrderDetailModal({
                         displayOrder.tvq_cents !== undefined ? (
                         <>
                           <div className='flex justify-between'>
-                            <span className='text-muted-foreground'>TPS: Canada tax</span>
+                            <span className='text-muted-foreground'>{t('tpsTax')}</span>
                             <span className='font-medium'>
                               {formatCurrency(displayOrder.tps_cents || 0)}
                             </span>
                           </div>
                           <div className='flex justify-between'>
-                            <span className='text-muted-foreground'>TVQ: Québec tax</span>
+                            <span className='text-muted-foreground'>{t('tvqTax')}</span>
                             <span className='font-medium'>
                               {formatCurrency(displayOrder.tvq_cents || 0)}
                             </span>
@@ -1542,7 +1549,7 @@ export function OrderDetailModal({
                         </>
                       ) : (
                         <div className='flex justify-between'>
-                          <span className='text-muted-foreground'>Tax:</span>
+                          <span className='text-muted-foreground'>{t('tax')}</span>
                           <span className='font-medium'>
                             {formatCurrency(displayOrder.tax_cents || 0)}
                           </span>
@@ -1550,7 +1557,7 @@ export function OrderDetailModal({
                       )}
                       <div className='flex justify-between items-center border-t border-border pt-2'>
                         <span className='text-lg font-semibold text-foreground'>
-                          Total:
+                          {t('total')}
                         </span>
                         {editingPrice ? (
                           <div className='flex items-center gap-2'>
@@ -1569,7 +1576,7 @@ export function OrderDetailModal({
                               disabled={savingPrice}
                               className='bg-primary-600 hover:bg-primary-700 text-xs h-7 px-2'
                             >
-                              {savingPrice ? '...' : 'OK'}
+                              {savingPrice ? '...' : t('ok')}
                             </Button>
                             <Button
                               size='sm'
@@ -1589,14 +1596,14 @@ export function OrderDetailModal({
                       </div>
                       {displayOrder.deposit_cents > 0 && (
                         <div className='flex justify-between text-sm'>
-                          <span className='text-muted-foreground'>Deposit Paid:</span>
+                          <span className='text-muted-foreground'>{t('depositPaid')}</span>
                           <span className='font-medium'>
                             {formatCurrency(displayOrder.deposit_cents)}
                           </span>
                         </div>
                       )}
                       <div className='flex justify-between text-sm'>
-                        <span className='text-muted-foreground'>Balance Due:</span>
+                        <span className='text-muted-foreground'>{t('balanceDue')}</span>
                         <span className='font-medium'>
                           {formatCurrency(
                             displayOrder.balance_due_cents ||
@@ -1649,14 +1656,14 @@ export function OrderDetailModal({
                   />
                 ))}
                 <Button variant='outline' onClick={onClose}>
-                  Close
+                  {tc('close')}
                 </Button>
                 <Button variant='outline' onClick={() => setShowTaskModal(true)}>
-                  Manage Tasks
+                  {t('manageTasks')}
                 </Button>
                 <Button asChild>
                   <a href={`/labels/${displayOrder.id}`} target='_blank'>
-                    Print Labels
+                    {tl('print')}
                   </a>
                 </Button>
               </div>

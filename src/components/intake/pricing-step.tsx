@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// import { useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -61,7 +61,9 @@ export function PricingStep({
   totalOverrideCents,
   onTotalOverrideChange,
 }: PricingStepProps) {
-  // const t = useTranslations('intake.pricing')
+  const t = useTranslations('intake.pricing');
+  const tc = useTranslations('common');
+  const ts = useTranslations('intake.submit');
   const [calculation, setCalculation] = useState<any>(null);
   const [originalCalculation, setOriginalCalculation] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
@@ -215,14 +217,14 @@ export function PricingStep({
               d='M15 19l-7-7 7-7'
             />
           </svg>
-          <span className='font-medium'>Précédent</span>
+          <span className='font-medium'>{tc('previous')}</span>
         </Button>
 
         <div className='flex-1 text-center'>
           <h2 className='text-lg font-semibold text-foreground'>
-            Tarification
+            {t('title')}
           </h2>
-          <p className='text-sm text-muted-foreground'>Tarification et date de livraison</p>
+          <p className='text-sm text-muted-foreground'>{t('subtitle')}</p>
         </div>
 
         <Button
@@ -230,7 +232,7 @@ export function PricingStep({
           disabled={isSubmitting}
           className='bg-gradient-to-r from-secondary-500 to-accent-olive hover:from-secondary-600 hover:to-accent-olive text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          {isSubmitting ? 'Traitement...' : 'Soumettre la commande 🚀'}
+          {isSubmitting ? ts('processing') : ts('submitOrder')}
         </Button>
       </div>
 
@@ -240,9 +242,9 @@ export function PricingStep({
           {/* Due Date */}
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-lg'>Date de livraison</CardTitle>
+              <CardTitle className='text-lg'>{t('dueDate')}</CardTitle>
               <CardDescription className='text-sm'>
-                Quand cette commande doit-elle être terminée? (Par défaut: 10 jours ouvrables)
+                {t('dueDateDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
@@ -255,7 +257,7 @@ export function PricingStep({
                     <span className={data.due_date ? 'text-foreground' : 'text-muted-foreground'}>
                       {data.due_date
                         ? format(parseISO(data.due_date), 'PPP', { locale: fr })
-                        : 'Choisir une date'}
+                        : t('chooseDatePlaceholder')}
                     </span>
                     <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -288,9 +290,9 @@ export function PricingStep({
           {/* Rush Order */}
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-lg'>Service express</CardTitle>
+              <CardTitle className='text-lg'>{t('rushOrder')}</CardTitle>
               <CardDescription className='text-sm'>
-                Les services express sont complétés plus rapidement mais incluent des frais supplémentaires
+                {t('rushDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
@@ -307,7 +309,7 @@ export function PricingStep({
                       className='w-5 h-5 text-primary border-border rounded focus:ring-primary touch-manipulation'
                     />
                     <label htmlFor='rush' className='text-sm font-medium'>
-                      Ceci est un service express
+                      {t('isRush')}
                     </label>
                   </div>
 
@@ -315,7 +317,7 @@ export function PricingStep({
                     <div className='ml-8 space-y-2'>
                       <div>
                         <label className='text-xs font-medium text-muted-foreground mb-2 block'>
-                          Type de service express
+                          {t('rushTypeLabel')}
                         </label>
                         <div className='space-y-2'>
                           <label className='flex items-center space-x-2 cursor-pointer'>
@@ -334,7 +336,8 @@ export function PricingStep({
                               className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
-                              Service express — {customRushFeeCents !== null && (data.rush_fee_type === 'small' || data.rush_fee_type === undefined) ? formatCurrency(customRushFeeCents) : '30,00$'} (1 à 3 jours plus tôt)
+                              {t('rushSmallLabel')}
+                              {customRushFeeCents !== null && (data.rush_fee_type === 'small' || data.rush_fee_type === undefined) ? ` (${formatCurrency(customRushFeeCents)})` : ''}
                             </span>
                           </label>
                           <label className='flex items-center space-x-2 cursor-pointer'>
@@ -350,8 +353,8 @@ export function PricingStep({
                               className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
-                              Service express pour complets et robes de soirée —
-                              {customRushFeeCents !== null && data.rush_fee_type === 'large' ? ` ${formatCurrency(customRushFeeCents)}` : ' 60,00$'} (3 à 4 jours plus tôt)
+                              {t('rushLargeLabel')}
+                              {customRushFeeCents !== null && data.rush_fee_type === 'large' ? ` (${formatCurrency(customRushFeeCents)})` : ''}
                             </span>
                           </label>
                         </div>
@@ -374,7 +377,7 @@ export function PricingStep({
 
                     <div className='p-4 bg-red-50 border border-red-200 rounded-lg'>
                       <p className='text-red-800 font-medium text-sm'>
-                        ⚡ Les services express sont prioritaires et complétés plus rapidement.
+                        {t('rushNote')}
                       </p>
                     </div>
                   </div>
@@ -388,10 +391,10 @@ export function PricingStep({
             <Card className='bg-muted/50 border-border'>
               <CardHeader className='pb-3'>
                 <CardTitle className='text-foreground text-lg'>
-                  Articles
+                  {t('items')}
                 </CardTitle>
                 <CardDescription className='text-sm'>
-                  Vérifiez les vêtements et services de cette commande
+                  {t('itemsDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
@@ -419,7 +422,7 @@ export function PricingStep({
                           key={sIndex}
                           className='ml-3 text-xs text-muted-foreground mb-1'
                         >
-                          • {getServiceName(service.serviceId)}: {isHourly ? `${service.qty}h` : `Qté ${service.qty}`} × ${(unitPrice / 100).toFixed(2)}{isHourly ? '/h' : ''}
+                          • {getServiceName(service.serviceId)}: {isHourly ? `${service.qty}h` : `${t('qty')} ${service.qty}`} × ${(unitPrice / 100).toFixed(2)}{isHourly ? '/h' : ''}
                         </div>
                       );
                     })}
@@ -434,16 +437,16 @@ export function PricingStep({
             <Card className='bg-primary/5 border-primary/20'>
               <CardHeader className='pb-3'>
                 <CardTitle className='text-primary text-lg'>
-                  Résumé de la commande
+                  {t('orderSummary')}
                 </CardTitle>
                 <CardDescription className='text-sm'>
-                  Vérifiez le détail des prix de cette commande
+                  {t('summaryDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
                 <div className='space-y-2'>
                   <div className='flex justify-between'>
-                    <span className='text-sm'>Sous-total:</span>
+                    <span className='text-sm'>{t('subtotal')}:</span>
                     <span className='text-sm font-medium'>
                       {formatCurrency(calculation.subtotal_cents)}
                     </span>
@@ -451,7 +454,7 @@ export function PricingStep({
 
                   {data.rush && (
                     <div className='flex justify-between items-center'>
-                      <span className='text-sm'>Frais express:</span>
+                      <span className='text-sm'>{t('rushFee')}:</span>
                       {isEditingRushFee ? (
                         <div className='flex items-center gap-1'>
                           <span className='text-sm text-muted-foreground'>$</span>
@@ -516,7 +519,7 @@ export function PricingStep({
                               setIsEditingRushFee(true);
                             }}
                             className='text-muted-foreground hover:text-primary transition-colors'
-                            title='Modifier les frais express'
+                            title={t('editRushFee')}
                           >
                             <svg className='w-3.5 h-3.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
@@ -528,14 +531,14 @@ export function PricingStep({
                   )}
 
                   <div className='flex justify-between'>
-                    <span className='text-sm'>TPS (5%)</span>
+                    <span className='text-sm'>{t('tpsLabel')}</span>
                     <span className='text-sm font-medium'>
                       {formatCurrency(calculation.tps_cents || 0)}
                     </span>
                   </div>
 
                   <div className='flex justify-between'>
-                    <span className='text-sm'>TVQ (9,975%)</span>
+                    <span className='text-sm'>{t('tvqLabel')}</span>
                     <span className='text-sm font-medium'>
                       {formatCurrency(calculation.tvq_cents || 0)}
                     </span>
@@ -545,7 +548,7 @@ export function PricingStep({
                     {isEditingTotal ? (
                       <div className='space-y-2'>
                         <div className='flex items-center gap-2'>
-                          <span className='text-lg font-bold'>Total:</span>
+                          <span className='text-lg font-bold'>{t('total')}:</span>
                           <div className='flex items-center gap-1'>
                             <span className='text-muted-foreground'>$</span>
                             <input
@@ -602,7 +605,7 @@ export function PricingStep({
                             }}
                             className='bg-primary text-white text-xs'
                           >
-                            Enregistrer
+                            {tc('save')}
                           </Button>
                           <Button
                             type='button'
@@ -617,13 +620,13 @@ export function PricingStep({
                             }}
                             className='text-xs'
                           >
-                            Réinitialiser ({formatCurrency(calculation.total_cents)})
+                            {t('reset', { amount: formatCurrency(calculation.total_cents) })}
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <div className='flex justify-between items-center'>
-                        <span className='text-lg font-bold'>Total:</span>
+                        <span className='text-lg font-bold'>{t('total')}:</span>
                         <div className='flex items-center gap-2'>
                           <div className='text-right'>
                             <span className={`text-xl font-bold ${totalOverrideCents ? 'text-green-700' : 'text-primary'}`}>
@@ -647,7 +650,7 @@ export function PricingStep({
                             }}
                             className='text-xs text-muted-foreground hover:text-primary'
                           >
-                            Modifier
+                            {tc('edit')}
                           </Button>
                         </div>
                       </div>
@@ -662,9 +665,9 @@ export function PricingStep({
           {data.type === 'custom' && (
             <Card>
               <CardHeader className='pb-3'>
-                <CardTitle className='text-lg'>Dépôt</CardTitle>
+                <CardTitle className='text-lg'>{t('deposit')}</CardTitle>
                 <CardDescription className='text-sm'>
-                  Montant du dépôt requis pour cette commande sur mesure
+                  {t('depositDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
@@ -680,14 +683,14 @@ export function PricingStep({
                       className='w-5 h-5 text-primary border-border rounded focus:ring-primary touch-manipulation'
                     />
                     <label htmlFor='deposit_required' className='text-sm font-medium'>
-                      Dépôt requis
+                      {t('deposit')}
                     </label>
                   </div>
 
                   {data.deposit_required && (
                     <div className='ml-8'>
                       <label className='text-xs font-medium text-muted-foreground mb-1 block'>
-                        Montant du dépôt ($)
+                        {t('depositAmountLabel')}
                       </label>
                       <div className='flex items-center gap-2'>
                         <span className='text-muted-foreground'>$</span>
@@ -707,7 +710,7 @@ export function PricingStep({
                       </div>
                       {calculation && data.deposit_amount_cents && (
                         <p className='text-xs text-muted-foreground mt-2'>
-                          Solde restant: {formatCurrency(calculation.total_cents - data.deposit_amount_cents)}
+                          {t('remainingBalance')} {formatCurrency(calculation.total_cents - data.deposit_amount_cents)}
                         </p>
                       )}
                     </div>
@@ -723,9 +726,9 @@ export function PricingStep({
               <CardContent className='py-4'>
                 <div className='flex items-center justify-between'>
                   <div>
-                    <span className='text-sm font-medium'>Impression automatique</span>
+                    <span className='text-sm font-medium'>{t('autoPrint')}</span>
                     <p className='text-xs text-muted-foreground'>
-                      Ouvrir automatiquement l'impression des étiquettes
+                      {t('autoPrintDescription')}
                     </p>
                   </div>
                   <label className='relative inline-flex items-center cursor-pointer'>

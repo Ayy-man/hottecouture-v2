@@ -221,7 +221,7 @@ export function formatCurrency(
   currency: string = 'CAD'
 ): string {
   const dollars = cents / 100;
-  return new Intl.NumberFormat('en-CA', {
+  return new Intl.NumberFormat('fr-CA', {
     style: 'currency',
     currency,
   }).format(dollars);

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
 import { fr, enCA } from 'date-fns/locale';
 import { Calendar, Clock, Check, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TimeSlot {
   start: string;
@@ -15,42 +16,9 @@ interface BookingPageProps {
   searchParams: { order_id?: string; lang?: 'fr' | 'en' };
 }
 
-const translations = {
-  fr: {
-    title: 'Réserver un rendez-vous',
-    subtitle: 'Choisissez une date et une heure pour votre essayage',
-    selectDate: 'Sélectionnez une date',
-    selectTime: 'Sélectionnez une heure',
-    noSlots: 'Aucun créneau disponible pour cette date',
-    book: 'Réserver',
-    booking: 'Réservation en cours...',
-    success: 'Rendez-vous confirmé!',
-    successMessage: 'Vous recevrez une confirmation par SMS.',
-    error: 'Une erreur est survenue',
-    tryAgain: 'Veuillez réessayer',
-    notes: 'Notes additionnelles (optionnel)',
-    notesPlaceholder: 'Informations supplémentaires pour votre rendez-vous...',
-  },
-  en: {
-    title: 'Book an Appointment',
-    subtitle: 'Choose a date and time for your fitting',
-    selectDate: 'Select a date',
-    selectTime: 'Select a time',
-    noSlots: 'No available slots for this date',
-    book: 'Book',
-    booking: 'Booking...',
-    success: 'Appointment Confirmed!',
-    successMessage: 'You will receive a confirmation by SMS.',
-    error: 'An error occurred',
-    tryAgain: 'Please try again',
-    notes: 'Additional notes (optional)',
-    notesPlaceholder: 'Additional information for your appointment...',
-  },
-};
-
 export default function BookingPage({ searchParams }: BookingPageProps) {
+  const t = useTranslations('booking');
   const lang = searchParams.lang || 'fr';
-  const t = translations[lang];
   const locale = lang === 'fr' ? fr : enCA;
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -84,14 +52,14 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
           setSlots(data.slots || []);
         }
       } catch {
-        setError(t.error);
+        setError(t('error'));
         setSlots([]);
       }
       setLoading(false);
     };
 
     fetchSlots();
-  }, [selectedDate, t.error]);
+  }, [selectedDate, t]);
 
   const handleBook = async () => {
     if (!selectedSlot || !searchParams.order_id) return;
@@ -119,7 +87,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
         setSuccess(true);
       }
     } catch {
-      setError(t.error);
+      setError(t('error'));
     }
 
     setBooking(false);
@@ -132,8 +100,8 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">{t.success}</h1>
-          <p className="text-muted-foreground">{t.successMessage}</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t('confirmed')}</h1>
+          <p className="text-muted-foreground">{t('confirmationMessage')}</p>
           {selectedSlot && (
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <p className="font-medium text-foreground">
@@ -155,14 +123,14 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
         <div className="max-w-2xl mx-auto p-4 md:p-8">
         <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
           <div className="text-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t.title}</h1>
-            <p className="text-muted-foreground">{t.subtitle}</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t('title')}</h1>
+            <p className="text-muted-foreground">{t('subtitle')}</p>
           </div>
 
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="w-5 h-5 text-muted-foreground" />
-              <h2 className="font-semibold text-foreground">{t.selectDate}</h2>
+              <h2 className="font-semibold text-foreground">{t('selectDate')}</h2>
             </div>
             <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
               {dates.map(date => (
@@ -196,7 +164,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <Clock className="w-5 h-5 text-muted-foreground" />
-                <h2 className="font-semibold text-foreground">{t.selectTime}</h2>
+                <h2 className="font-semibold text-foreground">{t('selectTime')}</h2>
               </div>
 
               {loading ? (
@@ -204,7 +172,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
                 </div>
               ) : slots.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">{t.noSlots}</p>
+                <p className="text-center text-muted-foreground py-8">{t('noSlots')}</p>
               ) : (
                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                   {slots.map(slot => (
@@ -228,12 +196,12 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
           {selectedSlot && (
             <div className="mb-8">
               <label className="block text-sm font-medium text-foreground mb-2">
-                {t.notes}
+                {t('notesLabel')}
               </label>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                placeholder={t.notesPlaceholder}
+                placeholder={t('notesPlaceholder')}
                 className="w-full p-3 border rounded-lg resize-none h-24 focus:ring-2 focus:ring-black focus:border-transparent"
               />
             </div>
@@ -243,7 +211,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
             <div className="mb-6 p-4 bg-red-50 rounded-lg flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-red-600" />
               <div>
-                <p className="text-red-800 font-medium">{t.error}</p>
+                <p className="text-red-800 font-medium">{t('error')}</p>
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             </div>
@@ -254,7 +222,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
             disabled={!selectedSlot || booking || !searchParams.order_id}
             className="w-full py-4 bg-black text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-foreground/90 transition-colors"
           >
-            {booking ? t.booking : t.book}
+            {booking ? t('booking') : t('book')}
           </button>
         </div>
         </div>

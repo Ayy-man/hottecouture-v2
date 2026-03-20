@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -26,6 +27,9 @@ export function AssigneeFilter({
   onExportSeamstress,
 }: AssigneeFilterProps) {
   const { staff, loading } = useStaff();
+  const t = useTranslations('board.filters');
+  const ta = useTranslations('board.actions');
+  const tc = useTranslations('common');
 
   // Count orders per assignee (orders with at least one item assigned to them)
   const assigneeCounts = useMemo(() => {
@@ -75,7 +79,7 @@ export function AssigneeFilter({
         >
           <Users className='w-3 h-3' />
           <span className='hidden sm:inline'>
-            {selectedStaff ? selectedStaff.name : 'Assignee'}
+            {selectedStaff ? selectedStaff.name : t('assignee')}
           </span>
           {selectedAssigneeId && (
             <span
@@ -95,12 +99,12 @@ export function AssigneeFilter({
           onClick={() => onAssigneeChange(null)}
           className='flex items-center justify-between'
         >
-          <span>All Assignees</span>
+          <span>{t('allAssignees')}</span>
           {!selectedAssigneeId && <Check className='w-4 h-4' />}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {loading ? (
-          <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
+          <DropdownMenuItem disabled>{tc('loading')}</DropdownMenuItem>
         ) : (
           <>
             {staff.map(member => (
@@ -135,7 +139,7 @@ export function AssigneeFilter({
                   className='flex items-center gap-2 text-primary'
                 >
                   <Download className='w-4 h-4' />
-                  <span>Export {selectedStaff.name}&apos;s Tasks</span>
+                  <span>{ta('exportedTasks', { name: selectedStaff.name })}</span>
                 </DropdownMenuItem>
               </>
             )}
@@ -144,7 +148,7 @@ export function AssigneeFilter({
               onClick={() => onAssigneeChange('unassigned')}
               className='flex items-center justify-between text-amber-600'
             >
-              <span>Unassigned</span>
+              <span>{t('unassigned')}</span>
               <div className='flex items-center gap-2'>
                 <span className='text-xs'>{unassignedCount}</span>
                 {selectedAssigneeId === 'unassigned' && <Check className='w-4 h-4' />}

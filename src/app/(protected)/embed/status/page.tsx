@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface OrderStatus {
   order_number: number;
@@ -20,6 +21,8 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function EmbeddableStatusPage() {
+  const t = useTranslations('embed');
+  const locale = useLocale();
   const [searchValue, setSearchValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<OrderStatus[]>([]);
@@ -36,8 +39,8 @@ export default function EmbeddableStatusPage() {
 
     try {
       const isOrderNumber = /^\d+$/.test(searchValue.trim());
-      const params = new URLSearchParams({ lang: 'fr' });
-      
+      const params = new URLSearchParams({ lang: locale });
+
       if (isOrderNumber) {
         params.set('order', searchValue.trim());
       } else {
@@ -51,39 +54,41 @@ export default function EmbeddableStatusPage() {
         setOrders(data.orders);
       } else {
         setOrders([]);
-        setError(data.message || 'Aucune commande trouvée');
+        setError(data.message || t('search'));
       }
     } catch {
-      setError('Erreur de connexion');
+      setError(t('searching'));
       setOrders([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const localeName = locale === 'fr' ? 'fr-CA' : 'en-CA';
+
   return (
-    <html lang="fr">
+    <html lang={locale}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Suivi Commande - Hotte Couture</title>
+        <title>{t('title')} - Hotte Couture</title>
       </head>
-      <body style={{ 
-        margin: 0, 
-        padding: '16px', 
+      <body style={{
+        margin: 0,
+        padding: '16px',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         backgroundColor: '#f9fafb',
         minHeight: '100vh',
         boxSizing: 'border-box'
       }}>
         <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-          <h2 style={{ 
-            margin: '0 0 16px 0', 
-            fontSize: '18px', 
+          <h2 style={{
+            margin: '0 0 16px 0',
+            fontSize: '18px',
             fontWeight: 600,
             color: '#1f2937',
             textAlign: 'center'
           }}>
-            🧵 Suivi de commande
+            {t('title')}
           </h2>
 
           <form onSubmit={handleSearch} style={{ marginBottom: '16px' }}>
@@ -91,7 +96,7 @@ export default function EmbeddableStatusPage() {
               type="text"
               value={searchValue}
               onChange={e => setSearchValue(e.target.value)}
-              placeholder="Téléphone ou # commande"
+              placeholder={t('searchPlaceholder')}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -117,7 +122,7 @@ export default function EmbeddableStatusPage() {
                 cursor: loading ? 'not-allowed' : 'pointer',
               }}
             >
-              {loading ? 'Recherche...' : 'Rechercher'}
+              {loading ? t('searching') : t('search')}
             </button>
           </form>
 
@@ -137,7 +142,7 @@ export default function EmbeddableStatusPage() {
           {searched && orders.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {orders.map(order => (
-                <div 
+                <div
                   key={order.order_number}
                   style={{
                     backgroundColor: 'white',
@@ -151,8 +156,8 @@ export default function EmbeddableStatusPage() {
                     backgroundColor: STATUS_COLORS[order.status] || '#6B7280',
                   }} />
                   <div style={{ padding: '12px' }}>
-                    <div style={{ 
-                      display: 'flex', 
+                    <div style={{
+                      display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       marginBottom: '8px',
@@ -171,9 +176,9 @@ export default function EmbeddableStatusPage() {
                       </span>
                     </div>
                     <div style={{ fontSize: '14px', color: '#6b7280' }}>
-                      <div>{order.items_count} article{order.items_count > 1 ? 's' : ''}</div>
+                      <div>{order.items_count} {t('items')}</div>
                       {order.estimated_completion && (
-                        <div>Date prévue: {new Date(order.estimated_completion).toLocaleDateString('fr-CA')}</div>
+                        <div>{t('expectedDate')} {new Date(order.estimated_completion).toLocaleDateString(localeName)}</div>
                       )}
                     </div>
                   </div>
@@ -182,9 +187,9 @@ export default function EmbeddableStatusPage() {
             </div>
           )}
 
-          <p style={{ 
-            textAlign: 'center', 
-            fontSize: '11px', 
+          <p style={{
+            textAlign: 'center',
+            fontSize: '11px',
             color: '#9ca3af',
             marginTop: '16px',
           }}>

@@ -95,9 +95,10 @@ export function formatDateForDisplay(
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  }
+  },
+  locale: string = 'fr-CA'
 ): string {
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat(locale, options).format(date);
 }
 
 /**

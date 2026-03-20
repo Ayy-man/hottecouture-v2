@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-// import { useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl';
 import { format, parseISO, isAfter, isToday } from 'date-fns';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,9 @@ export function OrderCard({
   isDragging = false,
   onAssign,
 }: OrderCardProps) {
-  // const t = useTranslations('board.card')
+  const t = useTranslations('board.card');
+  const ta = useTranslations('board.actions');
+  const ts = useTranslations('board.status');
   const {
     attributes,
     listeners,
@@ -53,7 +55,7 @@ export function OrderCard({
       .flatMap(g =>
         (g.services || []).map(s => ({
           garmentType: g.type,
-          serviceName: s.service?.name || s.custom_service_name || 'Service',
+          serviceName: s.service?.name || s.custom_service_name || t('serviceFallback'),
           assigneeName: s.assigned_seamstress_name,
           assigneeId: s.assigned_seamstress_id,
           assigneeColor: s.assigned_seamstress_color,
@@ -109,7 +111,7 @@ export function OrderCard({
     .flatMap(garment => garment.services || [])
     .map(
       service =>
-        service.service?.name || service.custom_service_name || 'Custom Service'
+        service.service?.name || service.custom_service_name || t('customService')
     )
     .filter((name, index, array) => array.indexOf(name) === index) // Remove duplicates
     .slice(0, 3); // Show max 3 services
@@ -130,7 +132,7 @@ export function OrderCard({
           <div className='flex items-center space-x-2'>
             <h4 className='font-semibold text-lg'>#{order.order_number}</h4>
             <span className='text-sm text-muted-foreground font-medium truncate max-w-[150px]'>
-              {order.client_name || 'Unknown Client'}
+              {order.client_name || t('unknownClient')}
             </span>
             {order.type && (
               <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
@@ -138,18 +140,18 @@ export function OrderCard({
                   ? 'bg-blue-100 text-blue-700'
                   : 'bg-purple-100 text-purple-700'
               }`}>
-                {order.type === 'alteration' ? 'Alteration' : 'Sur mesure'}
+                {order.type === 'alteration' ? t('alteration') : t('custom')}
               </span>
             )}
             {order.rush && (
               <span className='px-2 py-1 text-xs font-bold text-white bg-red-500 rounded'>
-                Urgent
+                {t('rush')}
               </span>
             )}
           </div>
           {order.rack_position && (
             <span className='px-2 py-1 text-xs bg-muted text-muted-foreground rounded'>
-              Rack: {order.rack_position}
+              {t('rackPrefix')} {order.rack_position}
             </span>
           )}
         </div>
@@ -157,19 +159,19 @@ export function OrderCard({
         {/* Garments */}
         <div className='mb-2'>
           <p className='text-sm text-muted-foreground'>
-            <span className='font-medium'>Garments:</span> {garmentTypes}
+            <span className='font-medium'>{t('garmentPrefix')}</span> {garmentTypes}
           </p>
         </div>
 
         {/* Services */}
         <div className='mb-2'>
           <p className='text-sm text-muted-foreground'>
-            <span className='font-medium'>Services:</span>{' '}
+            <span className='font-medium'>{t('servicesPrefix')}</span>{' '}
             {serviceNames.length > 0 ? (
               <span>
                 {serviceNames.join(', ')}
                 {order.services_count > serviceNames.length &&
-                  ` (+${order.services_count - serviceNames.length} more)`}
+                  ` ${t('moreServices', { count: order.services_count - serviceNames.length })}`}
               </span>
             ) : (
               order.services_count
@@ -189,10 +191,10 @@ export function OrderCard({
                     : 'text-muted-foreground'
               }`}
             >
-              <span className='font-medium'>Due:</span>{' '}
+              <span className='font-medium'>{t('duePrefix')}</span>{' '}
               {format(parseISO(order.due_date), 'MMM dd, yyyy')}
-              {isOverdue && ' (Overdue)'}
-              {isDueToday && ' (Today)'}
+              {isOverdue && ` ${t('overdue')}`}
+              {isDueToday && ` ${t('today')}`}
             </p>
           </div>
         )}
@@ -200,7 +202,7 @@ export function OrderCard({
         {/* Item-Level Assignments */}
         {hasItemLevelAssignees && (
           <div className='mb-3'>
-            <p className='text-sm font-medium text-muted-foreground mb-1'>Assigned:</p>
+            <p className='text-sm font-medium text-muted-foreground mb-1'>{t('assigned')}</p>
             <div className='space-y-1'>
               {uniqueAssignees.map(name => (
                 <div
@@ -214,18 +216,17 @@ export function OrderCard({
                   />
                   <span className='font-medium'>{name}</span>
                   <span className='text-muted-foreground ml-1'>
-                    ({assigneeGroups[name]?.length || 0} item
-                    {(assigneeGroups[name]?.length || 0) > 1 ? 's' : ''})
+                    ({assigneeGroups[name]?.length || 0} {(assigneeGroups[name]?.length || 0) > 1 ? t('itemPlural') : t('itemSingular')})
                   </span>
                 </div>
               ))}
               {hasUnassigned && (
                 <div
                   className='flex items-center text-sm text-amber-600'
-                  title={unassignedItems.map(item => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+                  title={unassignedItems.map(item => `${order.client_name || t('unknownClient')}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
                 >
                   <span className='w-2 h-2 rounded-full bg-amber-400 mr-2' />
-                  <span>Unassigned ({unassignedItems.length})</span>
+                  <span>{t('unassignedCount', { count: unassignedItems.length })}</span>
                 </div>
               )}
             </div>
@@ -236,7 +237,7 @@ export function OrderCard({
         {!hasItemLevelAssignees && legacyAssignees.length === 0 && (
           <div className='mb-3'>
             <p className='text-sm text-amber-600'>
-              <span className='font-medium'>Unassigned</span>
+              <span className='font-medium'>{t('noAssignee')}</span>
             </p>
           </div>
         )}
@@ -245,7 +246,7 @@ export function OrderCard({
         {!hasItemLevelAssignees && legacyAssignees.length > 0 && (
           <div className='mb-3'>
             <p className='text-sm text-muted-foreground'>
-              <span className='font-medium'>Assignee:</span>{' '}
+              <span className='font-medium'>{t('assignee')}:</span>{' '}
               {legacyAssignees.join(', ')}
             </p>
           </div>
@@ -259,7 +260,7 @@ export function OrderCard({
             className='flex-1 text-xs'
             disabled={isUpdating}
           >
-            View Details
+            {ta('viewDetails')}
           </Button>
           {/* Show "Assign to Me" only when there are unassigned items and onAssign is provided */}
           {((hasItemLevelAssignees && hasUnassigned) ||
@@ -272,7 +273,7 @@ export function OrderCard({
                 disabled={isUpdating}
                 onClick={() => onAssign(order.id)}
               >
-                Assign to Me
+                {ta('assignToMe')}
               </Button>
             )}
         </div>
@@ -280,7 +281,7 @@ export function OrderCard({
         {/* Loading indicator */}
         {isUpdating && (
           <div className='absolute inset-0 bg-card bg-opacity-75 flex items-center justify-center rounded-lg'>
-            <div className='text-sm text-muted-foreground'>Updating...</div>
+            <div className='text-sm text-muted-foreground'>{ts('updating')}</div>
           </div>
         )}
       </CardContent>

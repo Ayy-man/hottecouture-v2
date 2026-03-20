@@ -20,6 +20,7 @@ import {
   RushOrderCard,
 } from '@/components/rush-orders/rush-indicator';
 import { MuralBackground } from '@/components/ui/mural-background';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface Order {
   id: string;
@@ -50,6 +51,9 @@ interface Order {
 }
 
 export default function OrderStatusPage() {
+  const t = useTranslations('status');
+  const tNav = useTranslations('navigation');
+  const locale = useLocale();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [lastName, setLastName] = useState('');
   const [orders, setOrders] = useState<Order[]>([]);
@@ -76,7 +80,7 @@ export default function OrderStatusPage() {
     e.preventDefault();
 
     if (!phoneNumber.trim() && !lastName.trim()) {
-      setError('Veuillez entrer un numéro de téléphone ou un nom de famille.');
+      setError(t('errors.required'));
       return;
     }
 
@@ -94,15 +98,15 @@ export default function OrderStatusPage() {
         setOrders(data.orders || []);
 
         if (data.orders.length === 0) {
-          setError('Aucune commande trouvée avec ces informations.');
+          setError(t('errors.searchFailed'));
         }
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Échec de la recherche');
+        throw new Error(errorData.error || t('errors.searchFailed'));
       }
     } catch (err) {
       console.error('Error searching orders:', err);
-      setError(err instanceof Error ? err.message : 'Échec de la recherche');
+      setError(err instanceof Error ? err.message : t('errors.searchFailed'));
       setOrders([]);
     } finally {
       setLoading(false);
@@ -137,33 +141,21 @@ export default function OrderStatusPage() {
   };
 
   const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'En attente';
-      case 'working':
-        return 'En cours';
-      case 'done':
-        return 'Terminé';
-      case 'ready':
-        return 'Prêt';
-      case 'delivered':
-        return 'Livré';
-      case 'cancelled':
-        return 'Annulé';
-      default:
-        return status;
-    }
+    const key = `order.statuses.${status}` as Parameters<typeof t>[0];
+    return t(key);
   };
 
+  const localeName = locale === 'fr' ? 'fr-CA' : 'en-CA';
+
   const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('fr-CA', {
+    return new Intl.NumberFormat(localeName, {
       style: 'currency',
       currency: 'CAD',
     }).format(cents / 100);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-CA', {
+    return new Date(dateString).toLocaleDateString(localeName, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -183,15 +175,15 @@ export default function OrderStatusPage() {
                 className='border-primary-200 hover:bg-primary-50 text-primary-700 rounded-xl'
               >
                 <ArrowLeft className='w-4 h-4 mr-2' />
-                Accueil
+                {tNav('home')}
               </Button>
             </Link>
           </div>
           <h1 className='text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-800 to-primary-500 bg-clip-text text-transparent'>
-            Statut de commande
+            {t('title')}
           </h1>
           <p className='text-muted-foreground mt-1 max-w-2xl mx-auto'>
-            Recherchez votre commande par téléphone ou nom de famille
+            {t('description')}
           </p>
         </div>
 
@@ -204,10 +196,10 @@ export default function OrderStatusPage() {
                 <div className='w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center'>
                   <Search className='w-4 h-4 text-white' />
                 </div>
-                <h2 className='text-lg font-bold text-foreground'>Rechercher une commande</h2>
+                <h2 className='text-lg font-bold text-foreground'>{t('search.title')}</h2>
               </div>
               <p className='text-sm text-muted-foreground mb-4 ml-10'>
-                Entrez votre téléphone ou nom de famille
+                {t('search.description')}
               </p>
 
               <form onSubmit={handleSearch} className='space-y-4'>
@@ -217,14 +209,14 @@ export default function OrderStatusPage() {
                       htmlFor='phone'
                       className='block text-sm font-medium text-foreground mb-1.5'
                     >
-                      Numéro de téléphone
+                      {t('search.phone')}
                     </label>
                     <div className='relative'>
                       <Phone className='absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 w-4 h-4' />
                       <Input
                         id='phone'
                         type='tel'
-                        placeholder='ex: 514-555-1234'
+                        placeholder={t('search.phonePlaceholder')}
                         value={phoneNumber}
                         onChange={e => setPhoneNumber(e.target.value)}
                         className='pl-10 rounded-xl border-primary-200 focus:border-primary-400 focus:ring-primary-400'
@@ -237,14 +229,14 @@ export default function OrderStatusPage() {
                       htmlFor='lastName'
                       className='block text-sm font-medium text-foreground mb-1.5'
                     >
-                      Nom de famille
+                      {t('search.lastName')}
                     </label>
                     <div className='relative'>
                       <User className='absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 w-4 h-4' />
                       <Input
                         id='lastName'
                         type='text'
-                        placeholder='ex: Tremblay'
+                        placeholder={t('search.lastNamePlaceholder')}
                         value={lastName}
                         onChange={e => setLastName(e.target.value)}
                         className='pl-10 rounded-xl border-primary-200 focus:border-primary-400 focus:ring-primary-400'
@@ -262,12 +254,12 @@ export default function OrderStatusPage() {
                     {loading ? (
                       <>
                         <RefreshCw className='w-4 h-4 mr-2 animate-spin' />
-                        Recherche...
+                        {t('search.searching')}
                       </>
                     ) : (
                       <>
                         <Search className='w-4 h-4 mr-2' />
-                        Rechercher
+                        {t('search.search')}
                       </>
                     )}
                   </Button>
@@ -279,7 +271,7 @@ export default function OrderStatusPage() {
                       onClick={handleNewSearch}
                       className='border-primary-200 hover:bg-primary-50 text-primary-700 rounded-xl'
                     >
-                      Nouvelle recherche
+                      {t('actions.newSearch')}
                     </Button>
                   )}
                 </div>
@@ -305,10 +297,10 @@ export default function OrderStatusPage() {
               {orders.length > 0 && (
                 <div className='text-center mb-6 animate-fade-in-up-delay-2'>
                   <h2 className='text-2xl font-bold bg-gradient-to-r from-primary-800 to-primary-500 bg-clip-text text-transparent mb-1'>
-                    {orders.length} commande{orders.length !== 1 ? 's' : ''} trouvée{orders.length !== 1 ? 's' : ''}
+                    {orders.length} {t('ordersFound')}
                   </h2>
                   <p className='text-muted-foreground font-medium'>
-                    pour {orders[0]?.client_name} &bull; {revealedContact ? orders[0]?.client_phone : maskPhone(orders[0]?.client_phone || '')}
+                    {orders[0]?.client_name} &bull; {revealedContact ? orders[0]?.client_phone : maskPhone(orders[0]?.client_phone || '')}
                   </p>
                 </div>
               )}
@@ -344,7 +336,7 @@ export default function OrderStatusPage() {
                           {formatCurrency(order.total_cents)}
                         </div>
                         <div className='text-sm text-muted-foreground'>
-                          Créé le {formatDate(order.created_at)}
+                          {t('createdAt')} {formatDate(order.created_at)}
                         </div>
                       </div>
                     </div>
@@ -353,7 +345,7 @@ export default function OrderStatusPage() {
                     <div className='grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6'>
                       <div className='bg-primary-50/50 rounded-xl p-4 border border-primary-100'>
                         <h4 className='font-semibold text-foreground mb-2'>
-                          Informations du client
+                          {t('clientInfo')}
                         </h4>
                         <div className='space-y-1.5 text-sm text-muted-foreground'>
                           <div className='flex items-center gap-2'>
@@ -378,37 +370,36 @@ export default function OrderStatusPage() {
                             onClick={() => setRevealedContact(!revealedContact)}
                             className='flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 transition-colors mt-1'
                           >
-                            {revealedContact ? 'Masquer' : 'Afficher'}
+                            {revealedContact ? t('hide') : t('show')}
                           </button>
                         </div>
                       </div>
 
                       <div className='bg-primary-50/50 rounded-xl p-4 border border-primary-100'>
                         <h4 className='font-semibold text-foreground mb-2'>
-                          Détails de la commande
+                          {t('orderDetails')}
                         </h4>
                         <div className='space-y-1.5 text-sm text-muted-foreground'>
                           <div className='flex items-center gap-2'>
                             <Calendar className='w-4 h-4 text-primary-400' />
                             <span>
-                              Échéance :{' '}
+                              {t('dueDate')}{' '}
                               {order.due_date
                                 ? formatDate(order.due_date)
-                                : 'Non définie'}
+                                : t('notDefined')}
                             </span>
                           </div>
                           <div className='flex items-center gap-2'>
                             <Package className='w-4 h-4 text-primary-400' />
                             <span>
-                              {order.garments.length} vêtement
-                              {order.garments.length !== 1 ? 's' : ''}
+                              {order.garments.length} {t('garments')}
                             </span>
                           </div>
                           {order.work_completed_at && (
                             <div className='flex items-center gap-2'>
                               <span className='w-4 h-4 text-primary-400 text-center'>&#10003;</span>
                               <span>
-                                Terminé le {formatDate(order.work_completed_at)}
+                                {t('completedOn')} {formatDate(order.work_completed_at)}
                               </span>
                             </div>
                           )}
@@ -419,7 +410,7 @@ export default function OrderStatusPage() {
                     {/* Garments */}
                     <div className='space-y-4'>
                       <h4 className='font-semibold text-foreground'>
-                        Vêtements et services
+                        {t('garmentsAndServices')}
                       </h4>
                       {order.garments.map((garment, index) => (
                         <div key={index} className='bg-primary-50/40 rounded-xl p-4 border border-primary-100'>
@@ -431,7 +422,7 @@ export default function OrderStatusPage() {
                             </h5>
                             {garment.label_code && (
                               <Badge variant='outline' className='text-xs rounded-lg border-primary-200'>
-                                Étiquette : {garment.label_code}
+                                {t('label')} {garment.label_code}
                               </Badge>
                             )}
                           </div>
@@ -465,7 +456,7 @@ export default function OrderStatusPage() {
                           className='flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300'
                         >
                           <a href={`/labels/${order.id}`} target='_blank'>
-                            Imprimer étiquettes
+                            {t('actions.printLabels')}
                           </a>
                         </Button>
                         <Button
@@ -473,7 +464,7 @@ export default function OrderStatusPage() {
                           onClick={handleNewSearch}
                           className='flex-1 border-primary-200 hover:bg-primary-50 text-primary-700 rounded-xl'
                         >
-                          Nouvelle recherche
+                          {t('actions.newSearch')}
                         </Button>
                       </div>
                     </div>

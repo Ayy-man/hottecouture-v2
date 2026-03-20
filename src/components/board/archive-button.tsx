@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Archive, Loader2, CheckCircle } from 'lucide-react';
 
@@ -11,6 +12,7 @@ interface ArchiveButtonProps {
 export function ArchiveButton({ onArchiveComplete }: ArchiveButtonProps) {
   const [isArchiving, setIsArchiving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const t = useTranslations('board.archive');
 
   const handleArchiveDelivered = async () => {
     setIsArchiving(true);
@@ -32,11 +34,11 @@ export function ArchiveButton({ onArchiveComplete }: ArchiveButtonProps) {
         onArchiveComplete?.();
       } else {
         console.error('❌ Archive failed:', result);
-        alert(`Archive failed: ${result.error}`);
+        alert(`${t('failed')}: ${result.error}`);
       }
     } catch (error) {
       console.error('❌ Archive error:', error);
-      alert('Failed to archive orders. Please try again.');
+      alert(t('failedRetry'));
     } finally {
       setIsArchiving(false);
     }
@@ -51,7 +53,7 @@ export function ArchiveButton({ onArchiveComplete }: ArchiveButtonProps) {
         disabled
       >
         <CheckCircle className='w-4 h-4 mr-2' />
-        Archived!
+        {t('success')}
       </Button>
     );
   }
@@ -69,7 +71,7 @@ export function ArchiveButton({ onArchiveComplete }: ArchiveButtonProps) {
       ) : (
         <Archive className='w-4 h-4 mr-2' />
       )}
-      Archive Delivered
+      {t('archiveDelivered')}
     </Button>
   );
 }

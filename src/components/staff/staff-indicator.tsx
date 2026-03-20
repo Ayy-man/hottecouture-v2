@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useStaffSession } from './staff-session-provider';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,13 +15,14 @@ import Link from 'next/link';
 
 export function StaffIndicator() {
   const { currentStaff, isAuthenticated, clockOut } = useStaffSession();
+  const t = useTranslations('staff');
 
   if (!isAuthenticated || !currentStaff) {
     return null;
   }
 
   const handleClockOut = () => {
-    if (confirm('Voulez-vous vraiment vous déconnecter?')) {
+    if (confirm(t('confirmLogout'))) {
       clockOut();
     }
   };
@@ -43,10 +45,10 @@ export function StaffIndicator() {
         <div className="px-2 py-1.5">
           <div className="text-sm font-medium">{currentStaff.staffName}</div>
           <div className="text-xs text-muted-foreground">
-            Connecté depuis {new Date(currentStaff.clockedInAt).toLocaleTimeString('fr-CA', {
+            {t('connectedSince', { time: new Date(currentStaff.clockedInAt).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
-            })}
+            }) })}
           </div>
         </div>
         {currentStaff.staffRole === 'admin' && (
@@ -55,7 +57,7 @@ export function StaffIndicator() {
             <DropdownMenuItem asChild className="cursor-pointer">
               <Link href="/admin/team">
                 <Users className="w-4 h-4 mr-2" />
-                Gérer l&apos;équipe
+                {t('manageTeam')}
               </Link>
             </DropdownMenuItem>
           </>
@@ -63,7 +65,7 @@ export function StaffIndicator() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleClockOut} className="text-red-600 cursor-pointer">
           <LogOut className="w-4 h-4 mr-2" />
-          Se déconnecter
+          {t('logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

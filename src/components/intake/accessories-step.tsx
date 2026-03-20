@@ -114,6 +114,8 @@ export function AccessoriesStep({
 }: AccessoriesStepProps) {
   const t = useTranslations('intake.accessories');
   const tc = useTranslations('common');
+  const tm = useTranslations('intake.manage');
+  const te = useTranslations('intake.errors');
   const [services, setServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -189,7 +191,7 @@ export function AccessoriesStep({
           const catalogService = serviceMap.get(svc.serviceId);
           result.push({
             serviceId: svc.serviceId,
-            serviceName: svc.serviceName || svc.customServiceName || 'Accessoire',
+            serviceName: svc.serviceName || svc.customServiceName || t('fallbackName'),
             qty: svc.qty,
             customPriceCents: svc.customPriceCents || 0,
             unit: catalogService?.unit ?? null,
@@ -200,7 +202,7 @@ export function AccessoriesStep({
       });
     });
     return result;
-  }, [data, services]);
+  }, [data, services, t]);
 
   // ===========================================================================
   // Search auto-expand effect
@@ -265,14 +267,14 @@ export function AccessoriesStep({
           .order('display_order')
           .order('name');
         setServices(fetchedServices || []);
-        toast.success('Service modifie');
+        toast.success(t('serviceUpdated'));
       } else {
         const result = await response.json();
-        toast.error(result.error || 'Erreur de mise a jour');
+        toast.error(result.error || te('updateFailed'));
       }
     } catch (error) {
       console.error('Error updating service:', error);
-      toast.error('Erreur de mise a jour');
+      toast.error(te('updateFailed'));
     }
     setEditingServiceId(null);
     setEditServiceName('');
@@ -300,13 +302,13 @@ export function AccessoriesStep({
           .order('display_order')
           .order('name');
         setServices(fetchedServices || []);
-        toast.success('Service supprime');
+        toast.success(t('serviceDeleted'));
       } else {
-        toast.error(result.error || result.message || 'Impossible de supprimer');
+        toast.error(result.error || result.message || te('deleteFailed'));
       }
     } catch (error) {
       console.error('Error deleting service:', error);
-      toast.error('Erreur de suppression');
+      toast.error(te('deleteFailed'));
     }
   };
 
@@ -376,7 +378,7 @@ export function AccessoriesStep({
     }
 
     onUpdate(updatedGarments);
-    toast.success(`${service.name} ajoute aux accessoires`);
+    toast.success(t('addedToast', { name: service.name }));
 
     // Reset qty and price for this service
     setPendingQty(prev => ({ ...prev, [service.id]: 0.25 }));
@@ -412,15 +414,15 @@ export function AccessoriesStep({
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Retour
+            {tc('back')}
           </Button>
-          <h2 className="text-lg font-semibold text-foreground">Accessoires</h2>
-          <Button disabled className="opacity-50">Suivant</Button>
+          <h2 className="text-lg font-semibold text-foreground">{t('title')}</h2>
+          <Button disabled className="opacity-50">{tc('next')}</Button>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Chargement...</p>
+            <p className="text-muted-foreground">{tc('loading')}</p>
           </div>
         </div>
       </div>
@@ -443,13 +445,13 @@ export function AccessoriesStep({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Retour
+          {tc('back')}
         </Button>
 
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-foreground">Accessoires</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('title')}</h2>
           <p className="text-xs text-muted-foreground">
-            {addedAccessories.length} accessoire{addedAccessories.length !== 1 ? 's' : ''} selectionne{addedAccessories.length !== 1 ? 's' : ''}
+            {t('selectedCount', { count: addedAccessories.length })}
           </p>
         </div>
 
@@ -458,7 +460,7 @@ export function AccessoriesStep({
           onClick={onNext}
           className="bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white"
         >
-          Suivant
+          {tc('next')}
         </Button>
       </div>
 
@@ -469,7 +471,7 @@ export function AccessoriesStep({
           {/* Empty state hint */}
           {addedAccessories.length === 0 && (
             <div className="text-center py-3 text-sm text-muted-foreground bg-muted/30 rounded-lg">
-              Aucun accessoire selectionne. Vous pouvez passer a la tarification.
+              {t('emptyState')}
             </div>
           )}
 
@@ -478,7 +480,7 @@ export function AccessoriesStep({
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center gap-2">
                 <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                  Produits et accessoires
+                  {t('productsHeading')}
                 </h3>
                 <button
                   type="button"
@@ -491,10 +493,10 @@ export function AccessoriesStep({
                       ? 'text-primary-600 bg-primary-50 font-medium'
                       : 'text-muted-foreground hover:text-primary-600 hover:bg-muted/50'
                   }`}
-                  title={manageMode ? 'Terminer' : 'Gerer'}
+                  title={manageMode ? tm('done') : tm('manage')}
                 >
                   <Pencil className="w-3.5 h-3.5" />
-                  <span>{manageMode ? 'OK' : 'Gerer'}</span>
+                  <span>{manageMode ? tm('done') : tm('manage')}</span>
                 </button>
               </div>
 
@@ -505,7 +507,7 @@ export function AccessoriesStep({
                   type="text"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="Rechercher un accessoire..."
+                  placeholder={t('searchPlaceholder')}
                   className="w-full pl-10 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
@@ -513,7 +515,7 @@ export function AccessoriesStep({
               {/* Service List — Accordion */}
               {groupedCategories.length === 0 ? (
                 <p className="text-center text-sm text-muted-foreground py-6">
-                  Aucun accessoire trouve
+                  {t('notFound')}
                 </p>
               ) : (
                 <div className="space-y-1">
@@ -597,14 +599,14 @@ export function AccessoriesStep({
                                       <p className="text-sm font-medium truncate">{service.name}</p>
                                       <p className="text-xs text-primary-600 font-medium">
                                         {formatCurrency(pendingPrice[service.id] ?? service.base_price_cents)}
-                                        {service.unit ? ` / ${service.unit}` : ' / unite'}
+                                        {service.unit ? ` / ${service.unit}` : ` ${t('perUnit')}`}
                                       </p>
                                     </div>
 
                                     {/* Price Input (per unit - editable before adding) */}
                                     <div className="flex items-center gap-2">
                                       <label className="text-xs text-muted-foreground whitespace-nowrap">
-                                        Prix/{service.unit ?? 'unite'}:
+                                        {t('pricePerUnit', { unit: service.unit ?? t('unit') })}
                                       </label>
                                       <input
                                         type="number"
@@ -620,7 +622,7 @@ export function AccessoriesStep({
                                     {/* Quantity Input (decimal) */}
                                     <div className="flex items-center gap-2">
                                       <label className="text-xs text-muted-foreground whitespace-nowrap">
-                                        {service.unit ?? 'Qte'}:
+                                        {service.unit ?? t('qty')}:
                                       </label>
                                       <input
                                         type="number"
@@ -640,7 +642,7 @@ export function AccessoriesStep({
                                       className="flex items-center gap-1 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm min-h-[44px] touch-manipulation transition-colors whitespace-nowrap"
                                     >
                                       <Plus className="w-4 h-4" />
-                                      Ajouter
+                                      {tc('add')}
                                     </button>
 
                                     {/* Manage mode edit/delete buttons */}
@@ -650,7 +652,7 @@ export function AccessoriesStep({
                                           type="button"
                                           onClick={() => handleStartEditService(service)}
                                           className="p-1.5 text-muted-foreground hover:text-primary-600 rounded touch-manipulation"
-                                          title="Modifier"
+                                          title={tc('edit')}
                                         >
                                           <Pencil className="w-3.5 h-3.5" />
                                         </button>
@@ -658,7 +660,7 @@ export function AccessoriesStep({
                                           type="button"
                                           onClick={() => handleDeleteService(service.id)}
                                           className="p-1.5 text-muted-foreground hover:text-red-600 rounded touch-manipulation"
-                                          title="Supprimer"
+                                          title={tc('delete')}
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
                                         </button>
@@ -684,10 +686,10 @@ export function AccessoriesStep({
               <CardContent className="p-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                    Accessoires selectionnes ({addedAccessories.length})
+                    {t('selectedHeading', { count: addedAccessories.length })}
                   </h3>
                   <span className="text-sm font-medium">
-                    Total:{' '}
+                    {t('total')}{' '}
                     {formatCurrency(
                       addedAccessories.reduce(
                         (sum, a) => sum + a.customPriceCents * a.qty,
@@ -706,8 +708,8 @@ export function AccessoriesStep({
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{acc.serviceName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {acc.qty} {acc.unit ?? 'unite'} &times;{' '}
-                          {formatCurrency(acc.customPriceCents)}/{acc.unit ?? 'unite'} ={' '}
+                          {acc.qty} {acc.unit ?? t('unit')} &times;{' '}
+                          {formatCurrency(acc.customPriceCents)}/{acc.unit ?? t('unit')} ={' '}
                           {formatCurrency(acc.customPriceCents * acc.qty)}
                         </p>
                       </div>
@@ -715,7 +717,7 @@ export function AccessoriesStep({
                         type="button"
                         onClick={() => handleRemoveAccessory(acc.garmentIndex, acc.serviceIndex)}
                         className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg touch-manipulation"
-                        title="Supprimer"
+                        title={tc('delete')}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

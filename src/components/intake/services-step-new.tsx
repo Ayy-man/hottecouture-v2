@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Service } from '@/lib/types/database';
 import { formatCurrency } from '@/lib/pricing/calcTotal';
 import { EmojiPicker } from '@/components/ui/emoji-picker';
+import { useTranslations } from 'next-intl';
 
 interface Category {
   id: string;
@@ -52,6 +53,11 @@ export function ServicesStepNew({
   client,
   onChangeCustomer,
 }: ServicesStepProps) {
+  const t = useTranslations('intake.services');
+  const tc = useTranslations('common');
+  const tg = useTranslations('intake.garments');
+  const te = useTranslations('intake.errors');
+
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -336,7 +342,7 @@ export function ServicesStepNew({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Échec de la création de la catégorie');
+        alert(result.error || t('categoryCreateFailed'));
         return;
       }
 
@@ -401,7 +407,7 @@ export function ServicesStepNew({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Échec de la mise à jour de la catégorie');
+        alert(result.error || t('categoryUpdateFailed'));
         return;
       }
 
@@ -426,7 +432,7 @@ export function ServicesStepNew({
       setEditCategoryName('');
     } catch (error) {
       console.error('Error updating category:', error);
-      alert('Échec de la mise à jour de la catégorie');
+      alert(t('categoryUpdateFailed'));
     }
   };
 
@@ -470,7 +476,7 @@ export function ServicesStepNew({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.message || result.error || 'Échec de la suppression de la catégorie');
+        alert(result.message || result.error || t('categoryDeleteFailed'));
         setDeleteConfirmId(null);
         setCategoryUsageCount(null);
         return;
@@ -506,7 +512,7 @@ export function ServicesStepNew({
       setCategoryUsageCount(null);
     } catch (error) {
       console.error('Error deleting category:', error);
-      alert('Échec de la suppression de la catégorie');
+      alert(t('categoryDeleteFailed'));
     }
   };
 
@@ -518,7 +524,7 @@ export function ServicesStepNew({
 
     const price = parseFloat(newServicePrice);
     if (isNaN(price) || price <= 0) {
-      alert('Veuillez entrer un prix valide supérieur à 0');
+      alert(te('invalidPrice'));
       return;
     }
 
@@ -538,7 +544,7 @@ export function ServicesStepNew({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Échec de la création du service');
+        alert(result.error || t('serviceCreateFailed'));
         return;
       }
 
@@ -554,7 +560,7 @@ export function ServicesStepNew({
       setShowAddServiceForm(false);
     } catch (error) {
       console.error('Error creating service:', error);
-      alert('Échec de la création du service');
+      alert(t('serviceCreateFailed'));
     }
   };
 
@@ -581,7 +587,7 @@ export function ServicesStepNew({
 
     const price = parseFloat(editServicePrice);
     if (isNaN(price) || price <= 0) {
-      alert('Veuillez entrer un prix valide supérieur à 0');
+      alert(te('invalidPrice'));
       return;
     }
 
@@ -602,7 +608,7 @@ export function ServicesStepNew({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Échec de la mise à jour du service');
+        alert(result.error || t('serviceUpdateFailed'));
         return;
       }
 
@@ -617,7 +623,7 @@ export function ServicesStepNew({
       setEditServiceEstimatedMinutes(15);
     } catch (error) {
       console.error('Error updating service:', error);
-      alert('Échec de la mise à jour du service');
+      alert(t('serviceUpdateFailed'));
     }
   };
 
@@ -661,7 +667,7 @@ export function ServicesStepNew({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.message || result.error || 'Échec de la suppression du service');
+        alert(result.message || result.error || t('serviceDeleteFailed'));
         setDeleteServiceConfirmId(null);
         setServiceUsageCount(null);
         return;
@@ -674,7 +680,7 @@ export function ServicesStepNew({
       setServiceUsageCount(null);
     } catch (error) {
       console.error('Error deleting service:', error);
-      alert('Échec de la suppression du service');
+      alert(t('serviceDeleteFailed'));
     }
   };
 
@@ -864,7 +870,7 @@ export function ServicesStepNew({
       <Card>
         <CardContent className='p-6'>
           <div className='flex items-center justify-center h-32'>
-            <p className='text-muted-foreground'>Loading services...</p>
+            <p className='text-muted-foreground'>{t('loadingServices')}</p>
           </div>
         </CardContent>
       </Card>
@@ -893,27 +899,27 @@ export function ServicesStepNew({
               d='M15 19l-7-7 7-7'
             />
           </svg>
-          <span className='font-medium'>Previous</span>
+          <span className='font-medium'>{tc('previous')}</span>
         </Button>
 
         <div className='flex-1 text-center'>
           <h2 className='text-lg font-semibold text-foreground'>
-            Select Services
+            {t('selectServices')}
           </h2>
           {client ? (
             <p className='text-sm text-muted-foreground'>
-              Client: {client.first_name} {client.last_name}{' '}
+              {t('addingServicesTo')} {client.first_name} {client.last_name}{' '}
               {onChangeCustomer && (
                 <button
                   onClick={onChangeCustomer}
                   className='text-primary-600 hover:underline font-medium ml-1'
                 >
-                  (Change)
+                  {t('changeClient')}
                 </button>
               )}
             </p>
           ) : (
-            <p className='text-sm text-muted-foreground'>Choose what you need</p>
+            <p className='text-sm text-muted-foreground'>{t('chooseDescription')}</p>
           )}
         </div>
 
@@ -922,7 +928,7 @@ export function ServicesStepNew({
           disabled={data.length === 0}
           className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          Next
+          {tc('next')}
         </Button>
       </div>
 
@@ -960,7 +966,7 @@ export function ServicesStepNew({
       {data.length === 1 && (
         <div className='bg-primary-50 px-4 py-2 border-b border-primary-100 flex items-center justify-center'>
           <span className='text-primary-800 text-sm font-medium flex items-center gap-2'>
-            Adding services to:
+            {t('addingServicesTo')}
             <span className='bg-white px-2 py-0.5 rounded-md shadow-sm border border-primary-100'>
               #{1} {data[0]?.labelCode}
             </span>
@@ -1013,13 +1019,13 @@ export function ServicesStepNew({
                         className='px-2 py-1 bg-green-500 text-white rounded text-xs min-h-[32px] touch-manipulation'
                         disabled={!editCategoryName.trim()}
                       >
-                        Save
+                        {tc('save')}
                       </button>
                       <button
                         onClick={handleCancelEditCategory}
                         className='px-2 py-1 bg-muted text-muted-foreground rounded text-xs min-h-[32px] touch-manipulation'
                       >
-                        Cancel
+                        {tc('cancel')}
                       </button>
                     </div>
                   </div>
@@ -1083,7 +1089,7 @@ export function ServicesStepNew({
                           className='w-full px-3 py-2.5 text-left text-xs hover:bg-muted flex items-center gap-2 min-h-[44px] touch-manipulation'
                         >
                           <span>✏️</span>
-                          <span>Edit Name</span>
+                          <span>{t('editName')}</span>
                         </button>
                         <button
                           type='button'
@@ -1094,7 +1100,7 @@ export function ServicesStepNew({
                           className='w-full px-3 py-2.5 text-left text-xs hover:bg-muted flex items-center gap-2 min-h-[44px] touch-manipulation text-red-600'
                         >
                           <span>🗑️</span>
-                          <span>Delete</span>
+                          <span>{tc('delete')}</span>
                         </button>
                       </div>
                     )}
@@ -1111,7 +1117,7 @@ export function ServicesStepNew({
               className='flex flex-col items-center gap-0.5 px-0.5 py-1 rounded text-xs font-medium transition-all duration-200 bg-muted text-muted-foreground hover:bg-muted border-2 border-dashed border-border'
             >
               <span className='text-base'>+</span>
-              <span className='text-xs leading-tight text-center'>Add</span>
+              <span className='text-xs leading-tight text-center'>{tc('add')}</span>
             </button>
           )}
 
@@ -1127,7 +1133,7 @@ export function ServicesStepNew({
                   type='text'
                   value={newCategoryName}
                   onChange={e => setNewCategoryName(e.target.value)}
-                  placeholder='Nom de la catégorie...'
+                  placeholder={t('categoryNamePlaceholder')}
                   className='flex-1 px-2 py-1 border border-border rounded text-xs text-center min-h-[32px]'
                   autoFocus
                   onKeyDown={e => {
@@ -1149,19 +1155,19 @@ export function ServicesStepNew({
                   }}
                   className='px-2 py-1 bg-muted text-muted-foreground rounded text-xs min-h-[32px] touch-manipulation'
                 >
-                  Annuler
+                  {tc('cancel')}
                 </button>
                 <button
                   onClick={handleCreateCategory}
                   disabled={!newCategoryName.trim() || categoriesCount >= 8}
                   className='px-2 py-1 bg-primary-500 text-white rounded text-xs min-h-[32px] touch-manipulation disabled:opacity-50'
                 >
-                  Créer
+                  {tc('create')}
                 </button>
               </div>
               {categoriesCount >= 8 && (
                 <p className='text-xs text-red-600 text-center'>
-                  Maximum 8 catégories
+                  {t('maxCategories')}
                 </p>
               )}
             </div>
@@ -1173,20 +1179,19 @@ export function ServicesStepNew({
       {deleteConfirmId && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-[fadeIn_0.2s_ease-out]'>
           <div className='bg-white rounded-lg p-6 max-w-md w-full mx-4 animate-[fadeIn_0.2s_ease-out,zoomIn_0.2s_ease-out]'>
-            <h3 className='text-lg font-semibold mb-4'>Supprimer la catégorie?</h3>
+            <h3 className='text-lg font-semibold mb-4'>{t('deleteCategoryTitle')}</h3>
             <p className='text-sm text-muted-foreground mb-2'>
-              Êtes-vous sûr de vouloir supprimer cette catégorie?
+              {t('deleteCategoryConfirm')}
             </p>
             {categoryUsageCount !== null && (
               <p className='text-sm text-muted-foreground mb-4'>
                 {categoryUsageCount > 0 ? (
                   <span className='text-red-600 font-semibold'>
-                    Cette catégorie est utilisée par {categoryUsageCount} service(s).
-                    Impossible de supprimer.
+                    {t('categoryInUse', { count: categoryUsageCount })}
                   </span>
                 ) : (
                   <span className='text-green-600'>
-                    Cette catégorie n&apos;est utilisée par aucun service. Suppression sécuritaire.
+                    {t('categorySafeToDelete')}
                   </span>
                 )}
               </p>
@@ -1199,14 +1204,14 @@ export function ServicesStepNew({
                 }}
                 className='flex-1 px-4 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
               >
-                Annuler
+                {tc('cancel')}
               </button>
               <button
                 onClick={handleDeleteCategory}
                 disabled={categoryUsageCount !== null && categoryUsageCount > 0}
                 className='flex-1 px-4 py-2 bg-red-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed'
               >
-                Supprimer
+                {tc('delete')}
               </button>
             </div>
           </div>
@@ -1231,7 +1236,7 @@ export function ServicesStepNew({
                     className='flex-shrink-0 px-4 py-3 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 min-h-[44px] touch-manipulation whitespace-nowrap'
                   >
                     <span>+</span>
-                    <span>Ajouter un service</span>
+                    <span>{t('addNewService')}</span>
                   </button>
                 )}
 
@@ -1255,14 +1260,14 @@ export function ServicesStepNew({
                       type='text'
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
-                      placeholder='Rechercher un service...'
+                      placeholder={t('searchPlaceholder')}
                       className='w-full pl-10 pr-10 py-3 border-2 border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm min-h-[44px] touch-manipulation'
                     />
                     {searchTerm && (
                       <button
                         onClick={() => setSearchTerm('')}
                         className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground transition-colors'
-                        aria-label='Effacer la recherche'
+                        aria-label={tc('clear')}
                       >
                         <svg
                           className='w-5 h-5'
@@ -1287,18 +1292,18 @@ export function ServicesStepNew({
               {showAddServiceForm && (
                 <div className='bg-white rounded-lg p-4 shadow-md border-2 border-primary-500 animate-[fadeIn_0.3s_ease-out,slideUp_0.3s_ease-out]'>
                   <h3 className='font-semibold text-foreground mb-3'>
-                    Ajouter un nouveau service
+                    {t('addNewService')}
                   </h3>
                   <div className='space-y-3'>
                     <div>
                       <label className='block text-xs font-medium text-muted-foreground mb-1'>
-                        Nom du service *
+                        {t('serviceName')}
                       </label>
                       <input
                         type='text'
                         value={newServiceName}
                         onChange={e => setNewServiceName(e.target.value)}
-                        placeholder='ex: Ourlet pantalon, Ajuster la taille...'
+                        placeholder={t('serviceNamePlaceholder')}
                         className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                         autoFocus
                         onKeyDown={e => {
@@ -1316,7 +1321,7 @@ export function ServicesStepNew({
                     <div className='grid grid-cols-3 gap-3'>
                       <div>
                         <label className='block text-xs font-medium text-muted-foreground mb-1'>
-                          Prix ($) *
+                          {t('priceLabel')}
                         </label>
                         <input
                           type='number'
@@ -1330,7 +1335,7 @@ export function ServicesStepNew({
                       </div>
                       <div>
                         <label className='block text-xs font-medium text-muted-foreground mb-1'>
-                          Temps estimé (min)
+                          {t('timeLabelMin')}
                         </label>
                         <input
                           type='number'
@@ -1345,13 +1350,13 @@ export function ServicesStepNew({
                       </div>
                       <div>
                         <label className='block text-xs font-medium text-muted-foreground mb-1'>
-                          Unité (optionnel)
+                          {t('unitLabel')}
                         </label>
                         <input
                           type='text'
                           value={newServiceUnit}
                           onChange={e => setNewServiceUnit(e.target.value)}
-                          placeholder='ex: mètre...'
+                          placeholder={t('unitPlaceholder')}
                           maxLength={50}
                           className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                         />
@@ -1359,14 +1364,14 @@ export function ServicesStepNew({
                     </div>
                     <div>
                       <label className='block text-xs font-medium text-muted-foreground mb-1'>
-                        Catégorie
+                        {t('category')}
                       </label>
                       <select
                         value={newServiceCategory}
                         onChange={e => setNewServiceCategory(e.target.value)}
                         className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                       >
-                        <option value=''>Sélectionner une catégorie...</option>
+                        <option value=''>{t('selectCategory')}</option>
                         {categories
                           .filter(c => c.is_active)
                           .map(cat => (
@@ -1388,7 +1393,7 @@ export function ServicesStepNew({
                         }}
                         className='flex-1 px-4 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                       >
-                        Annuler
+                        {tc('cancel')}
                       </button>
                       <button
                         onClick={handleCreateService}
@@ -1397,7 +1402,7 @@ export function ServicesStepNew({
                         }
                         className='flex-1 px-4 py-2 bg-primary-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50'
                       >
-                        Créer
+                        {tc('create')}
                       </button>
                     </div>
                   </div>

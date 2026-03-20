@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { MuralBackground } from '@/components/ui/mural-background';
 import { Package, Calendar, Clock, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface OrderDetails {
   id: string;
@@ -28,22 +29,60 @@ interface OrderDetails {
   }>;
 }
 
-const statusLabels: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-800', icon: <Clock className='w-4 h-4' /> },
-  deposit_paid: { label: 'Dépôt reçu', color: 'bg-blue-100 text-blue-800', icon: <CheckCircle2 className='w-4 h-4' /> },
-  in_progress: { label: 'En cours', color: 'bg-purple-100 text-purple-800', icon: <Package className='w-4 h-4' /> },
-  ready: { label: 'Prêt à ramasser', color: 'bg-green-100 text-green-800', icon: <CheckCircle2 className='w-4 h-4' /> },
-  delivered: { label: 'Livré', color: 'bg-gray-100 text-gray-800', icon: <CheckCircle2 className='w-4 h-4' /> },
-  cancelled: { label: 'Annulé', color: 'bg-red-100 text-red-800', icon: <Clock className='w-4 h-4' /> },
+/** Map API status keys to translation keys in track.stages */
+const STATUS_TO_TRANSLATION_KEY: Record<string, string> = {
+  pending: 'pending',
+  deposit_paid: 'depositReceived',
+  in_progress: 'working',
+  ready: 'ready',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800',
+  deposit_paid: 'bg-blue-100 text-blue-800',
+  in_progress: 'bg-purple-100 text-purple-800',
+  ready: 'bg-green-100 text-green-800',
+  delivered: 'bg-gray-100 text-gray-800',
+  cancelled: 'bg-red-100 text-red-800',
+};
+
+const STATUS_ICONS: Record<string, React.ReactNode> = {
+  pending: <Clock className='w-4 h-4' />,
+  deposit_paid: <CheckCircle2 className='w-4 h-4' />,
+  in_progress: <Package className='w-4 h-4' />,
+  ready: <CheckCircle2 className='w-4 h-4' />,
+  delivered: <CheckCircle2 className='w-4 h-4' />,
+  cancelled: <Clock className='w-4 h-4' />,
 };
 
 export default function TrackOrderPage() {
+  const t = useTranslations('track');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
   const params = useParams();
   const orderId = params?.id as string;
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const SHOP_PHONE = process.env.NEXT_PUBLIC_SHOP_PHONE || '514-667-0082';
+
+  const getStatusLabel = (status: string): string => {
+    const key = STATUS_TO_TRANSLATION_KEY[status];
+    if (key) {
+      return t(`stages.${key}` as Parameters<typeof t>[0]);
+    }
+    return status;
+  };
+
+  const getStatusColor = (status: string): string => {
+    return STATUS_COLORS[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getStatusIcon = (status: string): React.ReactNode => {
+    return STATUS_ICONS[status] || <Package className='w-4 h-4' />;
+  };
 
   useEffect(() => {
     if (!orderId) return;
@@ -52,30 +91,29 @@ export default function TrackOrderPage() {
       try {
         const response = await fetch(`/api/order/${orderId}/details`);
         if (!response.ok) {
-          throw new Error('Commande non trouvée');
+          throw new Error(t('notFound'));
         }
         const data = await response.json();
         setOrder(data.order);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
+        setError(err instanceof Error ? err.message : t('loadError'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrder();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
+  const localeName = locale === 'fr' ? 'fr-CA' : 'en-CA';
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-CA', {
+    return new Date(dateString).toLocaleDateString(localeName, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
-  };
-
-  const getStatusInfo = (status: string) => {
-    return statusLabels[status] || { label: status, color: 'bg-gray-100 text-gray-800', icon: <Package className='w-4 h-4' /> };
   };
 
   return (
@@ -90,7 +128,7 @@ export default function TrackOrderPage() {
                 Hotte Couture
               </h1>
             </Link>
-            <p className='text-muted-foreground'>Suivi de votre commande</p>
+            <p className='text-muted-foreground'>{t('subtitle')}</p>
           </div>
 
           {/* Content */}
@@ -98,7 +136,7 @@ export default function TrackOrderPage() {
             <Card className='bg-white/90 backdrop-blur'>
               <CardContent className='p-8 text-center'>
                 <div className='animate-spin w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full mx-auto'></div>
-                <p className='mt-4 text-muted-foreground'>Chargement...</p>
+                <p className='mt-4 text-muted-foreground'>{tCommon('loading')}</p>
               </CardContent>
             </Card>
           )}
@@ -108,7 +146,7 @@ export default function TrackOrderPage() {
               <CardContent className='p-8 text-center'>
                 <p className='text-red-600 font-medium'>{error}</p>
                 <p className='mt-2 text-muted-foreground text-sm'>
-                  Veuillez vérifier le lien ou contactez-nous pour obtenir de l&apos;aide.
+                  {t('checkLink')}
                 </p>
               </CardContent>
             </Card>
@@ -121,16 +159,16 @@ export default function TrackOrderPage() {
                 <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4'>
                   <div>
                     <h2 className='text-2xl font-bold text-foreground'>
-                      Commande #{order.order_number}
+                      {t('orderNumber')}{order.order_number}
                     </h2>
                     <p className='text-muted-foreground text-sm'>
-                      {order.type === 'alteration' ? 'Altération' : 'Sur mesure'}
-                      {order.rush && ' • Express'}
+                      {order.type === 'alteration' ? t('alteration') : t('custom')}
+                      {order.rush && ` \u2022 ${t('express')}`}
                     </p>
                   </div>
-                  <Badge className={`${getStatusInfo(order.status).color} flex items-center gap-2 px-4 py-2`}>
-                    {getStatusInfo(order.status).icon}
-                    {getStatusInfo(order.status).label}
+                  <Badge className={`${getStatusColor(order.status)} flex items-center gap-2 px-4 py-2`}>
+                    {getStatusIcon(order.status)}
+                    {getStatusLabel(order.status)}
                   </Badge>
                 </div>
 
@@ -149,7 +187,7 @@ export default function TrackOrderPage() {
                           </div>
                           <span className={`text-[10px] sm:text-xs mt-1 text-center
                             ${isActive ? 'font-semibold text-primary-600' : 'text-muted-foreground'}`}>
-                            {getStatusInfo(step).label}
+                            {getStatusLabel(step)}
                           </span>
                         </div>
                       );
@@ -162,7 +200,7 @@ export default function TrackOrderPage() {
                   <div className='flex items-center gap-2 text-sm'>
                     <Calendar className='w-4 h-4 text-muted-foreground' />
                     <div>
-                      <p className='text-muted-foreground'>Créée le</p>
+                      <p className='text-muted-foreground'>{t('createdOn')}</p>
                       <p className='font-medium'>{formatDate(order.created_at)}</p>
                     </div>
                   </div>
@@ -170,7 +208,7 @@ export default function TrackOrderPage() {
                     <div className='flex items-center gap-2 text-sm'>
                       <Clock className='w-4 h-4 text-muted-foreground' />
                       <div>
-                        <p className='text-muted-foreground'>Prévue pour</p>
+                        <p className='text-muted-foreground'>{t('expectedFor')}</p>
                         <p className='font-medium'>{formatDate(order.due_date)}</p>
                       </div>
                     </div>
@@ -179,7 +217,7 @@ export default function TrackOrderPage() {
 
                 {/* Garments */}
                 <div>
-                  <h3 className='font-semibold text-foreground mb-3'>Vos articles</h3>
+                  <h3 className='font-semibold text-foreground mb-3'>{t('yourItems')}</h3>
                   <div className='space-y-3'>
                     {order.garments.map((garment, index) => (
                       <div key={index} className='p-3 bg-muted/30 rounded-lg'>
@@ -187,14 +225,14 @@ export default function TrackOrderPage() {
                           <Package className='w-4 h-4 text-primary-500' />
                           <span className='font-medium'>{garment.type}</span>
                           {garment.color && (
-                            <span className='text-sm text-muted-foreground'>• {garment.color}</span>
+                            <span className='text-sm text-muted-foreground'>&bull; {garment.color}</span>
                           )}
                         </div>
                         <div className='ml-6 space-y-1'>
                           {garment.services.map((service, sIndex) => (
                             <div key={sIndex} className='text-sm text-muted-foreground'>
-                              • {service.service.name}
-                              {service.quantity > 1 && ` (×${service.quantity})`}
+                              &bull; {service.service.name}
+                              {service.quantity > 1 && ` (\u00d7${service.quantity})`}
                             </div>
                           ))}
                         </div>
@@ -206,7 +244,7 @@ export default function TrackOrderPage() {
                 {/* Contact */}
                 <div className='mt-6 pt-6 border-t border-border text-center'>
                   <p className='text-sm text-muted-foreground'>
-                    Des questions? Contactez-nous au{' '}
+                    {t('contactUs')}{' '}
                     <a href={`tel:${SHOP_PHONE.replace(/-/g, '')}`} className='text-primary-600 font-medium hover:underline'>
                       {SHOP_PHONE}
                     </a>

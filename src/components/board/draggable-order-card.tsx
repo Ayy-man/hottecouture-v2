@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
+import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { RushOrderCard } from '@/components/rush-orders/rush-indicator';
 
@@ -24,6 +25,10 @@ export function DraggableOrderCard({
   onSelectForMove,
   isMobile = false,
 }: DraggableOrderCardProps) {
+  const t = useTranslations('board.card');
+  const ta = useTranslations('board.actions');
+  const ts = useTranslations('board.status');
+  const locale = useLocale();
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: order.id });
 
@@ -34,8 +39,8 @@ export function DraggableOrderCard({
     const itemAssignments = (order.garments || [])
       .flatMap((g: any) =>
         (g.services || []).map((s: any) => ({
-          garmentType: g.type || 'Garment',
-          serviceName: s.service?.name || s.custom_service_name || 'Service',
+          garmentType: g.type || t('garmentPrefix'),
+          serviceName: s.service?.name || s.custom_service_name || t('serviceFallback'),
           assigneeName: s.assigned_seamstress_name,
           assigneeId: s.assigned_seamstress_id,
           assigneeColor: s.assigned_seamstress_color,
@@ -135,7 +140,7 @@ export function DraggableOrderCard({
                 #{order.order_number}
               </h4>
               <span className='text-xs sm:text-sm text-muted-foreground font-medium truncate max-w-[120px]'>
-                {order.client_name || 'Unknown Client'}
+                {order.client_name || t('unknownClient')}
               </span>
               {order.type && (
                 <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${
@@ -143,13 +148,13 @@ export function DraggableOrderCard({
                     ? 'bg-blue-100 text-blue-700'
                     : 'bg-purple-100 text-purple-700'
                 }`}>
-                  {order.type === 'alteration' ? 'Alt' : 'Sur m.'}
+                  {order.type === 'alteration' ? t('alterationAbbr') : t('customAbbr')}
                 </span>
               )}
               {isUpdating && (
                 <div className='flex items-center gap-1'>
                   <div className='w-1.5 h-1.5 ipad:w-2 ipad:h-2 bg-blue-500 rounded-full animate-pulse'></div>
-                  <span className='text-xs text-blue-600'>Updating...</span>
+                  <span className='text-xs text-blue-600'>{ts('updating')}</span>
                 </div>
               )}
             </div>
@@ -157,12 +162,12 @@ export function DraggableOrderCard({
 
           <p className='text-xs text-muted-foreground mb-0.5 ipad:mb-1 lg:mb-1'>
             {order.garments?.map((g: any) => g.type).join(', ') ||
-              'No garments'}
+              t('noGarments')}
           </p>
 
           {order.due_date && (
             <p className='text-xs text-muted-foreground mb-0.5 ipad:mb-1 lg:mb-1'>
-              Due: {new Date(order.due_date).toLocaleDateString()}
+              {t('duePrefix')} {new Date(order.due_date).toLocaleDateString(locale)}
             </p>
           )}
 
@@ -194,10 +199,10 @@ export function DraggableOrderCard({
               {hasUnassigned && (
                 <div
                   className='flex items-center gap-1 text-amber-600'
-                  title={unassignedItems.map((item: any) => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+                  title={unassignedItems.map((item: any) => `${order.client_name || t('unknownClient')}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
                 >
                   <span className='w-1.5 h-1.5 rounded-full bg-amber-400' />
-                  <span>Unassigned ({unassignedItems.length})</span>
+                  <span>{t('unassignedCount', { count: unassignedItems.length })}</span>
                 </div>
               )}
             </div>
@@ -207,9 +212,9 @@ export function DraggableOrderCard({
           {!hasItemLevelAssignees && (
             <p
               className='text-xs text-amber-600 mb-1'
-              title={unassignedItems.map((item: any) => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+              title={unassignedItems.map((item: any) => `${order.client_name || t('unknownClient')}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
             >
-              Unassigned ({unassignedItems.length})
+              {t('unassignedCount', { count: unassignedItems.length })}
             </p>
           )}
 
@@ -226,7 +231,7 @@ export function DraggableOrderCard({
                 onClick();
               }}
             >
-              Voir détails
+              {ta('viewDetails')}
             </Button>
           </div>
         </div>
@@ -242,7 +247,7 @@ export function DraggableOrderCard({
               )}
               <h4 className='font-semibold text-xs'>#{order.order_number}</h4>
               <span className='text-xs text-muted-foreground font-medium truncate max-w-[80px]'>
-                {order.client_name || 'Unknown Client'}
+                {order.client_name || t('unknownClient')}
               </span>
               {order.type && (
                 <span className={`px-1 py-0.5 text-[10px] font-medium rounded-full ${
@@ -250,7 +255,7 @@ export function DraggableOrderCard({
                     ? 'bg-blue-100 text-blue-700'
                     : 'bg-purple-100 text-purple-700'
                 }`}>
-                  {order.type === 'alteration' ? 'Alt' : 'Sur m.'}
+                  {order.type === 'alteration' ? t('alterationAbbr') : t('customAbbr')}
                 </span>
               )}
               {isUpdating && (
@@ -261,13 +266,13 @@ export function DraggableOrderCard({
 
           <p className='text-xs text-muted-foreground mb-1 truncate'>
             {order.garments?.map((g: any) => g.type).join(', ') ||
-              'No garments'}
+              t('noGarments')}
           </p>
 
           {order.due_date && (
             <p className='text-xs text-muted-foreground mb-1'>
-              Due:{' '}
-              {new Date(order.due_date).toLocaleDateString('en-US', {
+              {t('duePrefix')}{' '}
+              {new Date(order.due_date).toLocaleDateString(locale, {
                 month: 'short',
                 day: 'numeric',
               })}
@@ -300,15 +305,15 @@ export function DraggableOrderCard({
                 </div>
               ))}
               {uniqueAssignees.length > 2 && (
-                <span className='text-muted-foreground'>+{uniqueAssignees.length - 2} more</span>
+                <span className='text-muted-foreground'>{t('moreAssignees', { count: uniqueAssignees.length - 2 })}</span>
               )}
               {hasUnassigned && (
                 <div
                   className='flex items-center gap-1 text-amber-600'
-                  title={unassignedItems.map((item: any) => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+                  title={unassignedItems.map((item: any) => `${order.client_name || t('unknownClient')}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
                 >
                   <span className='w-1 h-1 rounded-full bg-amber-400' />
-                  <span>Unassigned ({unassignedItems.length})</span>
+                  <span>{t('unassignedCount', { count: unassignedItems.length })}</span>
                 </div>
               )}
             </div>
@@ -317,9 +322,9 @@ export function DraggableOrderCard({
           {!hasItemLevelAssignees && (
             <p
               className='text-[10px] text-amber-600 mb-1'
-              title={unassignedItems.map((item: any) => `${order.client_name || 'Client'}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
+              title={unassignedItems.map((item: any) => `${order.client_name || t('unknownClient')}: ${item.garmentType} — ${item.serviceName}`).join('\n')}
             >
-              Unassigned ({unassignedItems.length})
+              {t('unassignedCount', { count: unassignedItems.length })}
             </p>
           )}
 
@@ -336,7 +341,7 @@ export function DraggableOrderCard({
                 onClick();
               }}
             >
-              Détails
+              {t('details')}
             </Button>
           </div>
         </div>

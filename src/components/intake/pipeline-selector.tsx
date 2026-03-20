@@ -14,6 +14,7 @@ import {
   getPipelineConfig,
   calculateEstimatedCompletion,
 } from '@/lib/workflow/pipeline-system';
+import { useTranslations } from 'next-intl';
 
 interface PipelineSelectorProps {
   selectedPipeline: OrderType;
@@ -28,28 +29,23 @@ export function PipelineSelector({
   onNext,
   onPrev,
 }: PipelineSelectorProps) {
+  const t = useTranslations('intake.pipeline');
+  const tc = useTranslations('common');
+
   const pipelines = [
     {
       type: 'alteration' as OrderType,
       config: getPipelineConfig('alteration'),
       icon: Scissors,
-      features: [
-        'Standard alterations',
-        'Quick turnaround',
-        'Fixed pricing',
-        'Quality guarantee',
-      ],
+      featuresKey: 'alterationFeatures' as const,
+      price: '$15+',
     },
     {
       type: 'custom' as OrderType,
       config: getPipelineConfig('custom'),
       icon: Sparkles,
-      features: [
-        'Custom design work',
-        'Personal consultation',
-        'Unique creations',
-        'Premium materials',
-      ],
+      featuresKey: 'customFeatures' as const,
+      price: 'Gratuit',
     },
   ];
 
@@ -87,19 +83,19 @@ export function PipelineSelector({
                   d='M15 19l-7-7 7-7'
                 />
               </svg>
-              Back
+              {tc('back')}
             </Button>
           )}
         </div>
         <h2 className='text-lg font-semibold text-foreground'>
-          Choose Your Service Type
+          {t('title')}
         </h2>
         <Button
           onClick={onNext}
           className='text-primary-600 hover:text-primary-800 p-0'
           variant='ghost'
         >
-          Next
+          {tc('next')}
           <svg
             xmlns='http://www.w3.org/2000/svg'
             className='h-6 w-6 ml-1'
@@ -122,14 +118,15 @@ export function PipelineSelector({
         <div className='max-w-4xl mx-auto space-y-4'>
           <div className='text-center mb-6'>
             <p className='text-sm text-muted-foreground'>
-              Select the type of work you need done
+              {t('description')}
             </p>
           </div>
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-            {pipelines.map(({ type, config, icon: Icon, features }) => {
+            {pipelines.map(({ type, config, icon: Icon, featuresKey, price }) => {
               const isSelected = selectedPipeline === type;
               const estimate = getEstimatedTime(type);
+              const features = t.raw(featuresKey) as string[];
 
               return (
                 <Card
@@ -169,18 +166,18 @@ export function PipelineSelector({
                     <div className='bg-muted/50 rounded-lg p-2'>
                       <div className='flex items-center justify-between mb-1'>
                         <span className='text-xs font-medium text-muted-foreground'>
-                          Estimated Time
+                          {t('estimatedTime')}
                         </span>
                       </div>
                       <div className='flex items-center space-x-2'>
                         <div className='flex items-center text-xs'>
                           <Clock className='w-3 h-3 mr-1 text-muted-foreground' />
                           <span className='font-medium'>
-                            {estimate.days} days
+                            {t('days', { count: estimate.days })}
                           </span>
                         </div>
                         <div className='text-xs text-muted-foreground'>
-                          ~{estimate.hours} hours
+                          {t('hours', { count: estimate.hours })}
                         </div>
                       </div>
                     </div>
@@ -188,7 +185,7 @@ export function PipelineSelector({
                     {/* Pricing Info */}
                     <div className='text-center'>
                       <div className='text-sm font-bold text-primary'>
-                        {type === 'alteration' ? '$15+' : 'Gratuit'}
+                        {price}
                       </div>
                     </div>
 
@@ -196,11 +193,11 @@ export function PipelineSelector({
                     <div className='flex items-center justify-center'>
                       {isSelected ? (
                         <div className='w-full py-1.5 px-3 bg-gradient-to-r from-primary-500 to-accent-clay text-white font-semibold rounded-lg text-center shadow-lg text-xs'>
-                          ✓ Selected
+                          ✓ {t('selected')}
                         </div>
                       ) : (
                         <div className='w-full py-1.5 px-3 bg-muted text-muted-foreground font-medium rounded-lg text-center border border-border text-xs'>
-                          Select This Option
+                          {t('selectOption')}
                         </div>
                       )}
                     </div>
@@ -214,7 +211,7 @@ export function PipelineSelector({
           <Card>
             <CardHeader className='pb-2'>
               <CardTitle className='text-center text-base'>
-                Pipeline Comparison
+                {t('comparison')}
               </CardTitle>
             </CardHeader>
             <CardContent className='pt-0'>
@@ -227,13 +224,13 @@ export function PipelineSelector({
                     </div>
                     <div className='space-y-1 text-xs'>
                       <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Timeline:</span>
+                        <span className='text-muted-foreground'>{t('timeline')}</span>
                         <span className='font-medium'>
-                          {config.estimatedDays} days
+                          {t('days', { count: config.estimatedDays })}
                         </span>
                       </div>
                       <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Assignee:</span>
+                        <span className='text-muted-foreground'>{t('assignee')}</span>
                         <span className='font-medium capitalize'>
                           {config.defaultAssignee}
                         </span>

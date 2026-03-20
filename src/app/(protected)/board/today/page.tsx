@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Printer, Clock, GripVertical } from 'lucide-react';
 import Link from 'next/link';
 import { format, addDays, isToday, isTomorrow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
 import {
   DndContext,
   closestCenter,
@@ -52,6 +53,10 @@ interface TaskOrder {
 }
 
 function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
+  const t = useTranslations('board.today');
+  const locale = useLocale();
+  const dateFnsLocale = locale === 'fr' ? fr : enUS;
+
   const {
     attributes,
     listeners,
@@ -73,9 +78,9 @@ function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
 
   const formatDueDate = (date: string) => {
     const d = new Date(date);
-    if (isToday(d)) return "Aujourd'hui";
-    if (isTomorrow(d)) return 'Demain';
-    return format(d, 'd MMM', { locale: fr });
+    if (isToday(d)) return t('today');
+    if (isTomorrow(d)) return t('tomorrow');
+    return format(d, 'd MMM', { locale: dateFnsLocale });
   };
 
 
@@ -111,14 +116,14 @@ function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
           <div className="text-sm text-muted-foreground">
             {task.garments.map((g, i) => (
               <div key={i} className="ml-4">
-                └─ {g.type}: {g.services.map(s => s.service?.name || 'Service').join(', ')}
+                └─ {g.type}: {g.services.map(s => s.service?.name || t('serviceFallback')).join(', ')}
               </div>
             ))}
           </div>
           
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
-            <span>Est: {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}min</span>
+            <span>{t('estLabel')}{Math.floor(totalMinutes / 60)}{t('timeH')} {totalMinutes % 60}{t('timeM')}</span>
             {task.assigned_to && (
               <span className="ml-2 px-2 py-0.5 bg-blue-50 text-blue-700 rounded">
                 {task.assigned_to}
@@ -132,6 +137,11 @@ function SortableTask({ task, index }: { task: TaskOrder; index: number }) {
 }
 
 export default function TodayTasksPage() {
+  const t = useTranslations('board.today');
+  const tc = useTranslations('common');
+  const locale = useLocale();
+  const dateFnsLocale = locale === 'fr' ? fr : enUS;
+
   const [orders, setOrders] = useState<TaskOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -235,7 +245,7 @@ export default function TodayTasksPage() {
     return (
       <AuthGuard>
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-          <LoadingLogo size="lg" text="Chargement..." />
+          <LoadingLogo size="lg" text={tc('loading')} />
         </div>
       </AuthGuard>
     );
@@ -250,13 +260,13 @@ export default function TodayTasksPage() {
               <Link href="/board">
                 <Button variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Retour
+                  {tc('back')}
                 </Button>
               </Link>
               <div>
-                <h1 className="text-xl font-semibold">📋 Travail du jour</h1>
+                <h1 className="text-xl font-semibold">{t('title')}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(), "EEEE d MMMM", { locale: fr })}
+                  {format(new Date(), "EEEE d MMMM", { locale: dateFnsLocale })}
                 </p>
               </div>
             </div>
@@ -267,7 +277,7 @@ export default function TodayTasksPage() {
                 onChange={(e) => setFilter(e.target.value)}
                 className="text-sm border rounded-lg px-3 py-2"
               >
-                <option value="all">Tous</option>
+                <option value="all">{t('all')}</option>
                 {staff.map(s => (
                   <option key={s.id} value={s.name}>{s.name}</option>
                 ))}
@@ -279,7 +289,7 @@ export default function TodayTasksPage() {
                 onClick={() => window.open('/print/tasks', '_blank')}
               >
                 <Printer className="h-4 w-4 mr-2" />
-                Imprimer la liste
+                {t('printList')}
               </Button>
             </div>
           </div>
@@ -288,15 +298,15 @@ export default function TodayTasksPage() {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto p-4 pb-24 md:pb-4">
           <div className="print-header hidden print:block mb-4">
-            <h1 className="text-2xl font-bold">Travail du jour</h1>
-            <p>{format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}</p>
-            {filter !== 'all' && <p>Assigné à: {filter}</p>}
+            <h1 className="text-2xl font-bold">{t('title')}</h1>
+            <p>{format(new Date(), "EEEE d MMMM yyyy", { locale: dateFnsLocale })}</p>
+            {filter !== 'all' && <p>{t('assignedTo')} {filter}</p>}
           </div>
 
           {filteredOrders.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                Aucune tâche pour les 3 prochains jours
+                {t('noTasks')}
               </CardContent>
             </Card>
           ) : (
@@ -317,12 +327,12 @@ export default function TodayTasksPage() {
           )}
 
           <div className="mt-6 p-4 bg-white rounded-lg border text-center">
-            <div className="text-sm text-muted-foreground">Temps total estimé</div>
+            <div className="text-sm text-muted-foreground">{t('totalEstimatedTime')}</div>
             <div className="text-2xl font-bold text-foreground">
-              {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}min
+              {Math.floor(totalMinutes / 60)}{t('timeH')} {totalMinutes % 60}{t('timeM')}
             </div>
             <div className="text-sm text-muted-foreground mt-1">
-              {filteredOrders.length} commande{filteredOrders.length !== 1 ? 's' : ''}
+              {filteredOrders.length} {filteredOrders.length !== 1 ? t('orderPlural') : t('orderSingular')}
             </div>
           </div>
           </div>

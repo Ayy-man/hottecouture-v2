@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -30,20 +31,15 @@ interface GarmentTypeRow {
   display_order: number;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  womens: 'Vetements femmes',
-  mens: 'Vetements hommes',
-  outerwear: 'Manteaux',
-  formal: 'Tenue de soiree',
-  activewear: 'Vetements sport',
-  home: 'Sur mesure',
-  outdoor: 'Exterieur',
-  other: 'Autre',
-  alteration: 'Retouches',
-  custom: 'Personnalise',
-};
+const CATEGORY_KEYS = [
+  'womens', 'mens', 'outerwear', 'formal', 'activewear',
+  'home', 'outdoor', 'other', 'alteration', 'custom',
+] as const;
 
 export default function GarmentTypesAdminPage() {
+  const t = useTranslations('admin.garmentTypes');
+  const tc = useTranslations('common');
+  const ta = useTranslations('admin.common');
   const [garmentTypes, setGarmentTypes] = useState<GarmentTypeRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,10 +79,10 @@ export default function GarmentTypesAdminPage() {
         setGarmentTypes(types);
         setError(null);
       } else {
-        setError(data.error || 'Erreur lors du chargement');
+        setError(data.error || t('errors.loadFailed'));
       }
     } catch (err) {
-      setError('Erreur lors du chargement des types de vetement');
+      setError(t('errors.loadFailed'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -140,12 +136,12 @@ export default function GarmentTypesAdminPage() {
         setEditingId(null);
         setEditName('');
         setEditEmoji('');
-        showSuccess('Type modifie');
+        showSuccess(t('editSuccess'));
       } else {
-        alert(data.error || 'Erreur lors de la modification');
+        alert(data.error || t('errors.editFailed'));
       }
     } catch (err) {
-      alert('Erreur lors de la modification');
+      alert(t('errors.editFailed'));
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -170,7 +166,7 @@ export default function GarmentTypesAdminPage() {
         setDeleteConfirmId(typeId);
       }
     } catch (err) {
-      console.error('Erreur lors de la verification:', err);
+      console.error('Delete check error:', err);
     }
   };
 
@@ -187,12 +183,12 @@ export default function GarmentTypesAdminPage() {
 
       if (data.success) {
         setGarmentTypes(prev => prev.filter(t => t.id !== deleteConfirmId));
-        showSuccess('Type supprime');
+        showSuccess(t('deleteSuccess'));
       } else {
-        alert(data.error || 'Erreur lors de la suppression');
+        alert(data.error || t('errors.deleteFailed'));
       }
     } catch (err) {
-      alert('Erreur lors de la suppression');
+      alert(t('errors.deleteFailed'));
       console.error(err);
     } finally {
       setDeleteConfirmId(null);
@@ -239,7 +235,7 @@ export default function GarmentTypesAdminPage() {
         })
       );
     } catch (err) {
-      console.error('Erreur lors du reordonnancement:', err);
+      console.error('Reorder error:', err);
     }
   };
 
@@ -282,7 +278,7 @@ export default function GarmentTypesAdminPage() {
         })
       );
     } catch (err) {
-      console.error('Erreur lors du reordonnancement:', err);
+      console.error('Reorder error:', err);
     }
   };
 
@@ -291,7 +287,7 @@ export default function GarmentTypesAdminPage() {
       <div className="min-h-screen bg-muted/50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-primary-500" />
-          <p className="text-muted-foreground">Chargement...</p>
+          <p className="text-muted-foreground">{tc('loading')}</p>
         </div>
       </div>
     );
@@ -302,7 +298,7 @@ export default function GarmentTypesAdminPage() {
       <div className="min-h-screen bg-muted/50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={loadGarmentTypes}>Reessayer</Button>
+          <Button onClick={loadGarmentTypes}>{ta('retry')}</Button>
         </div>
       </div>
     );
@@ -315,10 +311,10 @@ export default function GarmentTypesAdminPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-center mb-2">
-              Gestion des Types de Vetement
+              {t('title')}
             </h1>
             <p className="text-center text-muted-foreground">
-              Modifier, supprimer et reorganiser les types de vetement
+              {t('description')}
             </p>
           </div>
 
@@ -334,9 +330,9 @@ export default function GarmentTypesAdminPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Types de vetement</CardTitle>
+                  <CardTitle>{t('cardTitle')}</CardTitle>
                   <CardDescription>
-                    {sortedTypes.length} type(s) actif(s)
+                    {t('activeCount', { count: sortedTypes.length })}
                   </CardDescription>
                 </div>
                 <Button
@@ -348,7 +344,7 @@ export default function GarmentTypesAdminPage() {
                   <RefreshCw
                     className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`}
                   />
-                  Actualiser
+                  {ta('refresh')}
                 </Button>
               </div>
             </CardHeader>
@@ -356,7 +352,7 @@ export default function GarmentTypesAdminPage() {
               {sortedTypes.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <p className="text-4xl mb-4">👔</p>
-                  <p>Aucun type de vetement</p>
+                  <p>{t('empty')}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -389,7 +385,7 @@ export default function GarmentTypesAdminPage() {
                             onClick={() => handleSaveEdit(type.id)}
                             disabled={!editName.trim() || isSubmitting}
                             className="p-2 text-green-600 hover:text-green-700 disabled:opacity-50"
-                            title="Enregistrer"
+                            title={ta('save')}
                           >
                             {isSubmitting ? (
                               <Loader2 className="w-5 h-5 animate-spin" />
@@ -414,7 +410,7 @@ export default function GarmentTypesAdminPage() {
                           <button
                             onClick={handleCancelEdit}
                             className="p-2 text-muted-foreground/70 hover:text-muted-foreground"
-                            title="Annuler"
+                            title={tc('cancel')}
                           >
                             <svg
                               className="w-5 h-5"
@@ -440,7 +436,7 @@ export default function GarmentTypesAdminPage() {
                               onClick={() => handleMoveUp(type)}
                               disabled={index === 0}
                               className="p-1 text-muted-foreground/70 hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed"
-                              title="Monter"
+                              title={ta('moveUp')}
                             >
                               <ChevronUp className="w-4 h-4" />
                             </button>
@@ -448,7 +444,7 @@ export default function GarmentTypesAdminPage() {
                               onClick={() => handleMoveDown(type)}
                               disabled={index === sortedTypes.length - 1}
                               className="p-1 text-muted-foreground/70 hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed"
-                              title="Descendre"
+                              title={ta('moveDown')}
                             >
                               <ChevronDown className="w-4 h-4" />
                             </button>
@@ -461,8 +457,9 @@ export default function GarmentTypesAdminPage() {
                               <span className="font-medium">{type.name}</span>
                               <span className="text-muted-foreground text-sm ml-2">
                                 (
-                                {CATEGORY_LABELS[type.category] ||
-                                  type.category}
+                                {CATEGORY_KEYS.includes(type.category as typeof CATEGORY_KEYS[number])
+                                  ? t(`categories.${type.category as typeof CATEGORY_KEYS[number]}`)
+                                  : type.category}
                                 )
                               </span>
                             </div>
@@ -473,14 +470,14 @@ export default function GarmentTypesAdminPage() {
                             <button
                               onClick={() => handleStartEdit(type)}
                               className="p-2 text-muted-foreground/70 hover:text-primary-600 transition-colors"
-                              title="Modifier"
+                              title={tc('edit')}
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleCheckDelete(type.id)}
                               className="p-2 text-muted-foreground/70 hover:text-red-600 transition-colors"
-                              title="Supprimer"
+                              title={tc('delete')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -500,7 +497,7 @@ export default function GarmentTypesAdminPage() {
               href="/"
               className="text-primary-600 hover:text-primary-700 hover:underline"
             >
-              ← Retour a l'accueil
+              {ta('backToHome')}
             </a>
           </div>
         </div>
@@ -511,19 +508,17 @@ export default function GarmentTypesAdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">
-              Supprimer ce type de vetement ?
+              {t('deleteConfirmTitle')}
             </h3>
             {deleteUsageCount !== null && (
               <p className="text-sm text-muted-foreground mb-4">
                 {deleteUsageCount > 0 ? (
                   <span className="text-red-600 font-semibold">
-                    Ce type est utilise dans {deleteUsageCount} commande(s).
-                    Impossible de supprimer.
+                    {t('deleteInUse', { count: deleteUsageCount })}
                   </span>
                 ) : (
                   <span className="text-green-600">
-                    Ce type n'est utilise dans aucune commande. Suppression
-                    possible.
+                    {t('deleteNotInUse')}
                   </span>
                 )}
               </p>
@@ -537,7 +532,7 @@ export default function GarmentTypesAdminPage() {
                 variant="outline"
                 className="flex-1"
               >
-                Annuler
+                {tc('cancel')}
               </Button>
               <Button
                 onClick={handleDelete}
@@ -545,7 +540,7 @@ export default function GarmentTypesAdminPage() {
                 variant="destructive"
                 className="flex-1"
               >
-                Supprimer
+                {tc('delete')}
               </Button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -40,6 +41,8 @@ interface ImportResult {
 }
 
 export default function PricingManagementPage() {
+  const t = useTranslations('admin.pricing');
+  const tc = useTranslations('common');
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [csvData, setCsvData] = useState('');
@@ -109,11 +112,11 @@ export default function PricingManagementPage() {
         await fetchServicesList();
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to update service');
+        alert(data.error || t('errors.updateFailed'));
       }
     } catch (error) {
       console.error('Error updating service:', error);
-      alert('Failed to update service');
+      alert(t('errors.updateFailed'));
     }
   };
 
@@ -137,7 +140,7 @@ export default function PricingManagementPage() {
       const usageRes = await fetch(`/api/admin/services?id=${serviceId}&usage=true`);
       const usageData = await usageRes.json();
       if (!usageData.canDelete) {
-        alert(`Ce service est utilise dans ${usageData.usageCount} commande(s). Retirez-le des commandes avant de supprimer.`);
+        alert(t('errors.serviceInUse', { count: usageData.usageCount }));
         return;
       }
       const response = await fetch(`/api/admin/services?id=${serviceId}`, { method: 'DELETE' });
@@ -145,11 +148,11 @@ export default function PricingManagementPage() {
         await fetchServicesList();
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to delete service');
+        alert(data.error || t('errors.deleteFailed'));
       }
     } catch (error) {
       console.error('Error deleting service:', error);
-      alert('Failed to delete service');
+      alert(t('errors.deleteFailed'));
     } finally {
       setDeletingService(null);
     }
@@ -218,10 +221,10 @@ export default function PricingManagementPage() {
         <div className='container mx-auto px-4 py-8 max-w-4xl'>
         <div className='mb-8'>
           <h1 className='text-3xl font-bold text-center mb-2'>
-            Pricing Management
+            {t('title')}
           </h1>
           <p className='text-center text-muted-foreground'>
-            Import and manage your service pricing from Excel/CSV files
+            {t('description')}
           </p>
         </div>
 
@@ -229,17 +232,17 @@ export default function PricingManagementPage() {
           {/* Import Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Import Pricing Data</CardTitle>
+              <CardTitle>{t('importTitle')}</CardTitle>
               <CardDescription>
-                Import your pricing from Excel/CSV files or use sample data
+                {t('importDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-6'>
               {/* Sample Data Import */}
               <div className='space-y-4'>
-                <h3 className='text-lg font-semibold'>Quick Start</h3>
+                <h3 className='text-lg font-semibold'>{t('quickStart')}</h3>
                 <p className='text-sm text-muted-foreground'>
-                  Import sample pricing data to get started quickly
+                  {t('quickStartDescription')}
                 </p>
                 <Button
                   onClick={() => handleImport('sample')}
@@ -251,18 +254,18 @@ export default function PricingManagementPage() {
                   ) : (
                     <Upload className='w-4 h-4 mr-2' />
                   )}
-                  Import Sample Data
+                  {t('importSampleData')}
                 </Button>
               </div>
 
               {/* CSV Import */}
               <div className='space-y-4'>
-                <h3 className='text-lg font-semibold'>Import from CSV</h3>
+                <h3 className='text-lg font-semibold'>{t('importFromCsv')}</h3>
                 <div className='space-y-2'>
-                  <Label htmlFor='csv-data'>CSV Data</Label>
+                  <Label htmlFor='csv-data'>{t('csvData')}</Label>
                   <Textarea
                     id='csv-data'
-                    placeholder='Paste your CSV data here...'
+                    placeholder={t('csvPlaceholder')}
                     value={csvData}
                     onChange={e => setCsvData(e.target.value)}
                     rows={6}
@@ -277,7 +280,7 @@ export default function PricingManagementPage() {
                     onChange={e => setReplaceExisting(e.target.checked)}
                   />
                   <Label htmlFor='replace-existing' className='text-sm'>
-                    Replace existing pricing data
+                    {t('replaceExisting')}
                   </Label>
                 </div>
                 <div className='flex space-x-2'>
@@ -291,7 +294,7 @@ export default function PricingManagementPage() {
                     ) : (
                       <Upload className='w-4 h-4 mr-2' />
                     )}
-                    Import CSV
+                    {t('importCsv')}
                   </Button>
                   <Button
                     onClick={downloadSampleCSV}
@@ -299,7 +302,7 @@ export default function PricingManagementPage() {
                     className='flex-1'
                   >
                     <Download className='w-4 h-4 mr-2' />
-                    Download Template
+                    {t('downloadTemplate')}
                   </Button>
                 </div>
               </div>
@@ -309,18 +312,18 @@ export default function PricingManagementPage() {
           {/* Results Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Import Results</CardTitle>
+              <CardTitle>{t('resultsTitle')}</CardTitle>
               <CardDescription>
-                View the results of your pricing import
+                {t('resultsDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {!importResult ? (
                 <div className='text-center py-8 text-muted-foreground'>
                   <Upload className='w-12 h-12 mx-auto mb-4 text-muted-foreground/50' />
-                  <p>No import results yet</p>
+                  <p>{t('noResults')}</p>
                   <p className='text-sm'>
-                    Import pricing data to see results here
+                    {t('noResultsHint')}
                   </p>
                 </div>
               ) : (
@@ -338,8 +341,8 @@ export default function PricingManagementPage() {
                       }`}
                     >
                       {importResult.success
-                        ? 'Import Successful'
-                        : 'Import Failed'}
+                        ? t('importSuccess')
+                        : t('importFailed')}
                     </span>
                   </div>
 
@@ -350,14 +353,14 @@ export default function PricingManagementPage() {
                         {importResult.imported}
                       </div>
                       <div className='text-sm text-green-600'>
-                        Items Imported
+                        {t('itemsImported')}
                       </div>
                     </div>
                     <div className='text-center p-3 bg-red-50 rounded-lg'>
                       <div className='text-2xl font-bold text-red-700'>
                         {importResult.errors.length}
                       </div>
-                      <div className='text-sm text-red-600'>Errors</div>
+                      <div className='text-sm text-red-600'>{t('errorsLabel')}</div>
                     </div>
                   </div>
 
@@ -366,7 +369,7 @@ export default function PricingManagementPage() {
                     <div className='space-y-2'>
                       <h4 className='font-semibold text-red-700 flex items-center'>
                         <XCircle className='w-4 h-4 mr-2' />
-                        Errors
+                        {t('errorsLabel')}
                       </h4>
                       <div className='space-y-1 max-h-32 overflow-y-auto'>
                         {importResult.errors.map((error, index) => (
@@ -386,7 +389,7 @@ export default function PricingManagementPage() {
                     <div className='space-y-2'>
                       <h4 className='font-semibold text-yellow-700 flex items-center'>
                         <AlertCircle className='w-4 h-4 mr-2' />
-                        Warnings
+                        {t('warnings')}
                       </h4>
                       <div className='space-y-1 max-h-32 overflow-y-auto'>
                         {importResult.warnings.map((warning, index) => (
@@ -409,16 +412,16 @@ export default function PricingManagementPage() {
         {/* Instructions */}
         <Card className='mt-6'>
           <CardHeader>
-            <CardTitle>How to Import Your Pricing</CardTitle>
+            <CardTitle>{t('howToImport')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className='space-y-4'>
               <div>
                 <h3 className='font-semibold mb-2'>
-                  1. Prepare Your Excel/CSV File
+                  {t('step1Title')}
                 </h3>
                 <p className='text-sm text-muted-foreground mb-2'>
-                  Your file should have these columns (in order):
+                  {t('step1Description')}
                 </p>
                 <div className='grid grid-cols-2 md:grid-cols-4 gap-2 text-sm'>
                   <Badge variant='outline'>Name</Badge>
@@ -432,9 +435,9 @@ export default function PricingManagementPage() {
               </div>
 
               <div>
-                <h3 className='font-semibold mb-2'>2. Categories</h3>
+                <h3 className='font-semibold mb-2'>{t('step2Title')}</h3>
                 <p className='text-sm text-muted-foreground mb-2'>
-                  Use these standard categories:
+                  {t('step2Description')}
                 </p>
                 <div className='flex flex-wrap gap-2 text-sm'>
                   <Badge>hemming</Badge>
@@ -448,10 +451,9 @@ export default function PricingManagementPage() {
               </div>
 
               <div>
-                <h3 className='font-semibold mb-2'>3. Price Format</h3>
+                <h3 className='font-semibold mb-2'>{t('step3Title')}</h3>
                 <p className='text-sm text-muted-foreground'>
-                  Enter prices in dollars (e.g., 15.00 for $15.00). The system
-                  will automatically convert to cents.
+                  {t('step3Description')}
                 </p>
               </div>
             </div>
@@ -461,28 +463,28 @@ export default function PricingManagementPage() {
         {/* Service Management Table */}
         <Card className='mt-6'>
           <CardHeader>
-            <CardTitle>Services</CardTitle>
-            <CardDescription>Gerer les services et les prix</CardDescription>
+            <CardTitle>{t('services')}</CardTitle>
+            <CardDescription>{t('servicesDescription')}</CardDescription>
           </CardHeader>
           <CardContent>
             {loadingServices ? (
               <div className='text-center py-8 text-muted-foreground'>
                 <RefreshCw className='w-8 h-8 mx-auto mb-2 animate-spin' />
-                <p>Chargement des services...</p>
+                <p>{t('loadingServices')}</p>
               </div>
             ) : servicesList.length === 0 ? (
               <div className='text-center py-8 text-muted-foreground'>
-                <p>Aucun service trouve. Importez des donnees ci-dessus.</p>
+                <p>{t('noServices')}</p>
               </div>
             ) : (
               <div className='overflow-x-auto'>
                 <table className='w-full text-sm'>
                   <thead>
                     <tr className='border-b border-border'>
-                      <th className='text-left py-2 px-3 font-medium'>Nom</th>
-                      <th className='text-left py-2 px-3 font-medium'>Categorie</th>
-                      <th className='text-right py-2 px-3 font-medium'>Prix</th>
-                      <th className='text-right py-2 px-3 font-medium'>Minutes</th>
+                      <th className='text-left py-2 px-3 font-medium'>{t('table.name')}</th>
+                      <th className='text-left py-2 px-3 font-medium'>{t('table.category')}</th>
+                      <th className='text-right py-2 px-3 font-medium'>{t('table.price')}</th>
+                      <th className='text-right py-2 px-3 font-medium'>{t('table.minutes')}</th>
                       <th className='w-10 py-2 px-3'></th>
                     </tr>
                   </thead>
@@ -551,11 +553,11 @@ export default function PricingManagementPage() {
                                 <DropdownMenuContent align='end'>
                                   <DropdownMenuItem onClick={() => handleStartEdit(service)}>
                                     <Edit className='w-4 h-4 mr-2' />
-                                    Modifier
+                                    {tc('edit')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleExportService(service)}>
                                     <DownloadIcon className='w-4 h-4 mr-2' />
-                                    Exporter
+                                    {t('export')}
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
@@ -564,7 +566,7 @@ export default function PricingManagementPage() {
                                     disabled={deletingService === service.id}
                                   >
                                     <Trash2 className='w-4 h-4 mr-2' />
-                                    Supprimer
+                                    {tc('delete')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>

@@ -11,6 +11,7 @@ import {
 import { IntakeResponse } from '@/lib/dto';
 import { formatCurrency } from '@/lib/pricing/client';
 import { HLogo } from '@/components/ui/h-logo';
+import { useTranslations } from 'next-intl';
 
 interface OrderSummaryProps {
   order: IntakeResponse | null;
@@ -23,12 +24,14 @@ export function OrderSummary({
   onPrintLabels,
   onNewOrder,
 }: OrderSummaryProps) {
-  // const t = useTranslations('intake.submit')
+  const t = useTranslations('intake.submit');
+  const tp = useTranslations('intake.pricing');
+  const tb = useTranslations('board.columns');
 
   if (!order) {
     return (
       <div className='text-center py-8'>
-        <div className='text-lg text-muted-foreground'>Aucune donnée de commande disponible</div>
+        <div className='text-lg text-muted-foreground'>{t('noOrderData')}</div>
       </div>
     );
   }
@@ -42,10 +45,10 @@ export function OrderSummary({
             <HLogo size='sm' variant='round' />
           </div>
           <h2 className='text-lg font-semibold text-foreground'>
-            Confirmation de commande
+            {t('confirmationTitle')}
           </h2>
           <p className='text-sm text-muted-foreground'>
-            Votre commande a été créée avec succès
+            {t('orderCreatedMessage', { orderNumber: order.orderNumber })}
           </p>
         </div>
       </div>
@@ -73,10 +76,10 @@ export function OrderSummary({
                   </svg>
                 </div>
                 <h2 className='text-xl font-bold text-green-800 mb-2'>
-                  Commande créée avec succès !
+                  {t('success')}
                 </h2>
                 <p className='text-sm text-green-600'>
-                  La commande #{order.orderNumber} a été créée avec succès
+                  {t('orderCreatedMessage', { orderNumber: order.orderNumber })}
                 </p>
               </div>
             </CardContent>
@@ -85,51 +88,51 @@ export function OrderSummary({
           {/* Order Details */}
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-lg'>Détails de la commande</CardTitle>
+              <CardTitle className='text-lg'>{t('orderDetails')}</CardTitle>
               <CardDescription className='text-sm'>
-                Commande #{order.orderNumber} - {new Date().toLocaleDateString()}
+                {t('orderDateLine', { orderNumber: order.orderNumber, date: new Date().toLocaleDateString() })}
               </CardDescription>
             </CardHeader>
             <CardContent className='pt-0'>
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <div>
                   <h3 className='font-medium text-sm mb-2'>
-                    Informations de la commande
+                    {t('orderInfo')}
                   </h3>
                   <div className='space-y-1'>
                     <div className='flex justify-between'>
                       <span className='text-xs text-muted-foreground'>
-                        Numéro de commande :
+                        {t('orderNumber')}
                       </span>
                       <span className='text-xs font-medium'>
                         #{order.orderNumber}
                       </span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-muted-foreground'>Identifiant :</span>
+                      <span className='text-xs text-muted-foreground'>{t('orderId')}</span>
                       <span className='font-mono text-xs'>{order.orderId}</span>
                     </div>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-muted-foreground'>Statut :</span>
+                      <span className='text-xs text-muted-foreground'>{t('status')}</span>
                       <span className='px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs'>
-                        En attente
+                        {tb('pending')}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className='font-medium text-sm mb-2'>Résumé des prix</h3>
+                  <h3 className='font-medium text-sm mb-2'>{t('priceSummary')}</h3>
                   <div className='space-y-1'>
                     <div className='flex justify-between'>
-                      <span className='text-xs text-muted-foreground'>Sous-total :</span>
+                      <span className='text-xs text-muted-foreground'>{tp('subtotal')}</span>
                       <span className='text-xs font-medium'>
                         {formatCurrency(order.totals.subtotal_cents)}
                       </span>
                     </div>
                     {order.totals.rush_fee_cents > 0 && (
                       <div className='flex justify-between'>
-                        <span className='text-xs text-muted-foreground'>Frais express :</span>
+                        <span className='text-xs text-muted-foreground'>{tp('rushFee')}</span>
                         <span className='text-xs font-medium'>
                           {formatCurrency(order.totals.rush_fee_cents)}
                         </span>
@@ -140,7 +143,7 @@ export function OrderSummary({
                       <>
                         <div className='flex justify-between'>
                           <span className='text-xs text-muted-foreground'>
-                            TPS (taxe fédérale)
+                            {t('tps')}
                           </span>
                           <span className='text-xs font-medium'>
                             {formatCurrency(order.totals.tps_cents)}
@@ -148,7 +151,7 @@ export function OrderSummary({
                         </div>
                         <div className='flex justify-between'>
                           <span className='text-xs text-muted-foreground'>
-                            TVQ (taxe provinciale)
+                            {t('tvq')}
                           </span>
                           <span className='text-xs font-medium'>
                             {formatCurrency(order.totals.tvq_cents)}
@@ -157,14 +160,14 @@ export function OrderSummary({
                       </>
                     ) : (
                       <div className='flex justify-between'>
-                        <span className='text-xs text-muted-foreground'>Taxe :</span>
+                        <span className='text-xs text-muted-foreground'>{tp('tax')}</span>
                         <span className='text-xs font-medium'>
                           {formatCurrency(order.totals.tax_cents)}
                         </span>
                       </div>
                     )}
                     <div className='flex justify-between text-sm font-bold border-t pt-1'>
-                      <span>Total :</span>
+                      <span>{tp('total')}</span>
                       <span className='text-primary'>
                         {formatCurrency(order.totals.total_cents)}
                       </span>
@@ -179,20 +182,20 @@ export function OrderSummary({
           {order.qrcode && (
             <Card>
               <CardHeader className='pb-3'>
-                <CardTitle className='text-lg'>Code QR de la commande</CardTitle>
+                <CardTitle className='text-lg'>{t('qrCodeTitle')}</CardTitle>
                 <CardDescription className='text-sm'>
-                  Utilisez ce code QR pour suivre la commande
+                  {t('qrCodeDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='pt-0'>
                 <div className='text-center'>
                   <img
                     src={order.qrcode}
-                    alt='Code QR de la commande'
+                    alt={t('qrCodeAlt')}
                     className='w-24 h-24 mx-auto border border-border rounded'
                   />
                   <p className='text-xs text-muted-foreground mt-2'>
-                    Commande #{order.orderNumber}
+                    #{order.orderNumber}
                   </p>
                 </div>
               </CardContent>
@@ -205,21 +208,21 @@ export function OrderSummary({
               onClick={onPrintLabels}
               className='flex-1 py-2 text-sm btn-press bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation'
             >
-              Imprimer les étiquettes
+              {t('printLabels')}
             </Button>
             <Button
               onClick={onNewOrder}
               variant='outline'
               className='flex-1 py-2 text-sm btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border touch-manipulation'
             >
-              Nouvelle commande
+              {t('newOrder')}
             </Button>
           </div>
 
           {/* Next Steps */}
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-lg'>Prochaines étapes</CardTitle>
+              <CardTitle className='text-lg'>{t('nextSteps')}</CardTitle>
             </CardHeader>
             <CardContent className='pt-0'>
               <div className='space-y-2'>
@@ -228,9 +231,9 @@ export function OrderSummary({
                     1
                   </div>
                   <div>
-                    <h4 className='font-medium text-sm'>Imprimer les étiquettes</h4>
+                    <h4 className='font-medium text-sm'>{t('printLabels')}</h4>
                     <p className='text-xs text-muted-foreground'>
-                      Imprimez les étiquettes pour chaque vêtement afin de les suivre tout au long du processus
+                      {t('printLabelsDescription')}
                     </p>
                   </div>
                 </div>
@@ -239,9 +242,9 @@ export function OrderSummary({
                     2
                   </div>
                   <div>
-                    <h4 className='font-medium text-sm'>Commencer le travail</h4>
+                    <h4 className='font-medium text-sm'>{t('startWork')}</h4>
                     <p className='text-xs text-muted-foreground'>
-                      Commencez à travailler sur les vêtements selon les services sélectionnés
+                      {t('startWorkDescription')}
                     </p>
                   </div>
                 </div>
@@ -250,9 +253,9 @@ export function OrderSummary({
                     3
                   </div>
                   <div>
-                    <h4 className='font-medium text-sm'>Mettre à jour le statut</h4>
+                    <h4 className='font-medium text-sm'>{t('updateStatus')}</h4>
                     <p className='text-xs text-muted-foreground'>
-                      Mettez à jour le statut de la commande au fur et à mesure de l&apos;avancement
+                      {t('updateStatusDescription')}
                     </p>
                   </div>
                 </div>

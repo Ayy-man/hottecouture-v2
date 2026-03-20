@@ -370,7 +370,8 @@ export function generateLabelSheetSVG(
       x,
       y,
       labelWidth,
-      labelHeight
+      labelHeight,
+      data.language
     )
   })
 
@@ -391,9 +392,11 @@ function generateSingleLabelSVG(
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
+  language: 'fr' | 'en' = 'fr'
 ): string {
-  const createdDate = format(new Date(createdAt), 'MMM dd, yyyy')
+  const locale = language === 'fr' ? fr : enUS
+  const createdDate = format(new Date(createdAt), 'MMM dd, yyyy', { locale })
   
   return `
     <g transform="translate(${x}, ${y})">

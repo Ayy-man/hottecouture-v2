@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -90,6 +91,19 @@ export function GarmentServicesStep({
   // Props reserved for future use
   void _client;
   void _onChangeCustomer;
+
+  // ===========================================================================
+  // i18n Translation Hooks
+  // ===========================================================================
+  const t = useTranslations('intake.garmentServices');
+  const tg = useTranslations('intake.garments');
+  const ts = useTranslations('intake.services');
+  const te = useTranslations('intake.errors');
+  const tc = useTranslations('common');
+  const tm = useTranslations('intake.manage');
+  const tv = useTranslations('intake.view');
+  const ta = useTranslations('intake.assignment');
+
   // ===========================================================================
   // State: Garment Configuration (from garments-step.tsx)
   // ===========================================================================
@@ -157,9 +171,9 @@ export function GarmentServicesStep({
 
   // BUG-002 fix: Helper to get seamstress name from ID (avoids showing UUID)
   const getSeamstressName = (id: string | null): string => {
-    if (!id) return 'Assigner';
+    if (!id) return ta('assign');
     const found = staff.find(s => s.id === id);
-    return found ? found.name : 'Assigner';
+    return found ? found.name : ta('assign');
   };
 
   // ===========================================================================
@@ -218,14 +232,14 @@ export function GarmentServicesStep({
       });
       if (response.ok) {
         await loadGarmentTypes();
-        toast.success('Type mis à jour');
+        toast.success(tg('typeUpdated'));
       } else {
         const result = await response.json();
-        toast.error(result.error || 'Échec de la mise à jour');
+        toast.error(result.error || te('updateFailed'));
       }
     } catch (error) {
       console.error('Error updating garment type:', error);
-      toast.error('Échec de la mise à jour');
+      toast.error(te('updateFailed'));
     }
     setEditingTypeId(null);
     setEditTypeName('');
@@ -246,13 +260,13 @@ export function GarmentServicesStep({
       const result = await response.json();
       if (response.ok) {
         await loadGarmentTypes();
-        toast.success('Type supprimé');
+        toast.success(tg('typeDeleted'));
       } else {
-        toast.error(result.error || result.message || 'Impossible de supprimer ce type');
+        toast.error(result.error || result.message || tg('cannotDeleteType'));
       }
     } catch (error) {
       console.error('Error deleting garment type:', error);
-      toast.error('Échec de la suppression');
+      toast.error(te('deleteFailed'));
     }
   };
 
@@ -301,14 +315,14 @@ export function GarmentServicesStep({
       });
       if (response.ok) {
         await fetchServices();
-        toast.success('Service mis à jour');
+        toast.success(ts('serviceUpdated'));
       } else {
         const result = await response.json();
-        toast.error(result.error || 'Échec de la mise à jour');
+        toast.error(result.error || te('updateFailed'));
       }
     } catch (error) {
       console.error('Error updating service:', error);
-      toast.error('Échec de la mise à jour');
+      toast.error(te('updateFailed'));
     }
     setEditingServiceId(null);
     setEditServiceName('');
@@ -329,13 +343,13 @@ export function GarmentServicesStep({
       const result = await response.json();
       if (response.ok) {
         await fetchServices();
-        toast.success('Service supprimé');
+        toast.success(ts('serviceDeleted'));
       } else {
-        toast.error(result.error || 'Impossible de supprimer ce service');
+        toast.error(result.error || ts('cannotDeleteService'));
       }
     } catch (error) {
       console.error('Error deleting service:', error);
-      toast.error('Échec de la suppression');
+      toast.error(te('deleteFailed'));
     }
   };
 
@@ -486,7 +500,7 @@ export function GarmentServicesStep({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Échec de la création du type de vêtement personnalisé');
+        alert(result.error || tg('customTypeCreateFailed'));
         return;
       }
 
@@ -505,7 +519,7 @@ export function GarmentServicesStep({
       setShowAddCustomForm(false);
     } catch (error) {
       console.error('Error creating custom type:', error);
-      alert('Échec de la création du type de vêtement personnalisé');
+      alert(tg('customTypeCreateFailed'));
     }
   };
 
@@ -565,7 +579,7 @@ export function GarmentServicesStep({
           setCurrentGarment(prev => ({ ...prev, photo_path: result.path }));
         } else {
           console.error('Photo upload failed');
-          alert('Échec du téléchargement de la photo. Veuillez réessayer.');
+          alert(tg('photoUploadFailed'));
         }
         setUploadingPhoto(false);
       };
@@ -677,7 +691,7 @@ export function GarmentServicesStep({
     const priceCents = Math.round(priceDollars * 100);
 
     if (priceCents <= 0) {
-      alert('Le prix doit être supérieur à 0');
+      alert(te('priceRequired'));
       return;
     }
 
@@ -686,7 +700,7 @@ export function GarmentServicesStep({
       s => (s.serviceName || '').toLowerCase() === name.toLowerCase()
     );
     if (isDuplicate) {
-      alert(`Le service "${name}" existe déjà dans cet article`);
+      alert(te('duplicateService', { name }));
       return;
     }
 
@@ -734,7 +748,7 @@ export function GarmentServicesStep({
     onUpdate([...data, newGarment]);
 
     // Show success feedback
-    toast.success('Article ajouté à la commande');
+    toast.success(tg('addedToOrder'));
 
     // Reset for next garment
     setCurrentGarment({
@@ -778,15 +792,15 @@ export function GarmentServicesStep({
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Retour
+            {tc('back')}
           </Button>
-          <h2 className="text-lg font-semibold text-foreground">Ajouter un article</h2>
-          <Button disabled className="opacity-50">Suivant</Button>
+          <h2 className="text-lg font-semibold text-foreground">{t('title')}</h2>
+          <Button disabled className="opacity-50">{tc('next')}</Button>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Chargement...</p>
+            <p className="text-muted-foreground">{tc('loading')}</p>
           </div>
         </div>
       </div>
@@ -809,13 +823,13 @@ export function GarmentServicesStep({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Retour
+          {tc('back')}
         </Button>
 
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-foreground">Ajouter un article</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('title')}</h2>
           <p className="text-xs text-muted-foreground">
-            {data.length} article{data.length !== 1 ? 's' : ''} dans la commande
+            {t('itemCount', { count: data.length })}
           </p>
         </div>
 
@@ -824,7 +838,7 @@ export function GarmentServicesStep({
           disabled={!canProceedToNext}
           className="bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white disabled:opacity-50"
         >
-          Suivant
+          {tc('next')}
         </Button>
       </div>
 
@@ -836,7 +850,7 @@ export function GarmentServicesStep({
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center gap-2">
                 <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                  1. Type de vetement
+                  {tg('garmentTypeHeading')}
                 </h3>
                 <button
                   type="button"
@@ -847,16 +861,16 @@ export function GarmentServicesStep({
                     }
                   }}
                   className={`px-2 py-1 rounded transition-colors flex items-center gap-1 text-xs ${garmentManageMode ? 'text-primary-600 bg-primary-50 font-medium' : 'text-muted-foreground hover:text-primary-600 hover:bg-muted/50'}`}
-                  title={garmentManageMode ? 'Terminer la gestion' : 'Gérer les types'}
+                  title={garmentManageMode ? tm('done') : tm('types')}
                 >
                   <Pencil className="w-3.5 h-3.5" />
-                  <span>{garmentManageMode ? 'OK' : 'Gérer'}</span>
+                  <span>{garmentManageMode ? tm('done') : tm('manage')}</span>
                 </button>
               </div>
 
               {/* Garment Type Dropdown */}
               <div className="garment-type-dropdown">
-                <label className="block text-sm font-medium mb-1">Type de vetement *</label>
+                <label className="block text-sm font-medium mb-1">{tg('typeRequired')}</label>
                 <div className="relative">
                   <button
                     type="button"
@@ -865,8 +879,8 @@ export function GarmentServicesStep({
                   >
                     <span className="truncate">
                       {currentGarment.garment_type_id
-                        ? `${garmentTypes.find(gt => gt.id === currentGarment.garment_type_id)?.icon || ''} ${currentGarment.type || 'Choisir un type...'}`
-                        : 'Choisir un type de vetement...'}
+                        ? `${garmentTypes.find(gt => gt.id === currentGarment.garment_type_id)?.icon || ''} ${currentGarment.type || tg('chooseType')}`
+                        : tg('chooseGarmentType')}
                     </span>
                     <svg
                       className={`w-5 h-5 text-muted-foreground transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
@@ -936,7 +950,7 @@ export function GarmentServicesStep({
                                         type="button"
                                         onClick={() => handleStartEditType(type)}
                                         className="p-1.5 text-muted-foreground hover:text-primary-600 rounded touch-manipulation"
-                                        title="Modifier"
+                                        title={tc('edit')}
                                       >
                                         <Pencil className="w-3.5 h-3.5" />
                                       </button>
@@ -944,7 +958,7 @@ export function GarmentServicesStep({
                                         type="button"
                                         onClick={() => handleDeleteType(type.id)}
                                         className="p-1.5 text-muted-foreground hover:text-red-600 rounded touch-manipulation"
-                                        title="Supprimer"
+                                        title={tc('delete')}
                                       >
                                         <Trash2 className="w-3.5 h-3.5" />
                                       </button>
@@ -981,7 +995,7 @@ export function GarmentServicesStep({
                                 type='text'
                                 value={customTypeName}
                                 onChange={e => setCustomTypeName(e.target.value)}
-                                placeholder='Nom du type personnalise...'
+                                placeholder={tg('customTypePlaceholder')}
                                 className='flex-1 px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                                 autoFocus
                                 onKeyDown={e => {
@@ -999,10 +1013,10 @@ export function GarmentServicesStep({
                               onChange={e => setCustomTypeCategory(e.target.value)}
                               className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                             >
-                              <option value='other'>Autre</option>
-                              <option value='alteration'>Retouches</option>
-                              <option value='custom'>Sur mesure</option>
-                              <option value='outdoor'>Exterieur</option>
+                              <option value='other'>{tg('categoryOther')}</option>
+                              <option value='alteration'>{tg('categoryAlteration')}</option>
+                              <option value='custom'>{tg('categoryCustom')}</option>
+                              <option value='outdoor'>{tg('categoryOutdoor')}</option>
                             </select>
                             <div className='flex gap-2'>
                               <button
@@ -1013,14 +1027,14 @@ export function GarmentServicesStep({
                                 }}
                                 className='flex-1 px-3 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                               >
-                                Annuler
+                                {tc('cancel')}
                               </button>
                               <button
                                 onClick={handleCreateCustomType}
                                 disabled={!customTypeName.trim()}
                                 className='flex-1 px-3 py-2 bg-primary-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50'
                               >
-                                Creer
+                                {tc('create')}
                               </button>
                             </div>
                           </div>
@@ -1031,7 +1045,7 @@ export function GarmentServicesStep({
                             className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-muted/50 flex items-center gap-2 min-h-[44px] touch-manipulation'
                           >
                             <span>+</span>
-                            <span>Ajouter un type personnalise...</span>
+                            <span>{tg('addCustomType')}</span>
                           </button>
                         )}
                       </div>
@@ -1042,7 +1056,7 @@ export function GarmentServicesStep({
 
               {/* Photo Capture */}
               <div>
-                <label className="block text-sm font-medium mb-1">Photo (optionnel)</label>
+                <label className="block text-sm font-medium mb-1">{tg('photoOptional')}</label>
                 <input
                   ref={fileInputRef}
                   type="file"

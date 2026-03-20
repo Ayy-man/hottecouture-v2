@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useStaffSession } from './staff-session-provider';
 import { StaffPinInput } from './staff-pin-input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import { User, Loader2 } from 'lucide-react';
 export function StaffPinModal() {
   // We no longer need to fetch the staff list since we log in by PIN directly
   const { isAuthenticated, isLoading: sessionLoading, loginByPin } = useStaffSession();
+  const t = useTranslations('staff');
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,10 +26,10 @@ export function StaffPinModal() {
     try {
       const success = await loginByPin(pin);
       if (!success) {
-        setError('NIP incorrect. Veuillez réessayer.');
+        setError(t('incorrectPin'));
       }
     } catch {
-      setError('Erreur de connexion. Veuillez réessayer.');
+      setError(t('connectionError'));
     } finally {
       setVerifying(false);
     }
@@ -41,13 +43,13 @@ export function StaffPinModal() {
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
               <User className="w-6 h-6" />
             </div>
-            Connexion du personnel
+            {t('loginTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             <p className="text-center text-sm text-muted-foreground">
-              Entrez votre NIP à 4 chiffres pour vous connecter
+              {t('enterPin')}
             </p>
 
             <StaffPinInput
@@ -59,7 +61,7 @@ export function StaffPinModal() {
             {verifying && (
               <div className="flex justify-center items-center gap-2 text-sm text-primary">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Vérification...</span>
+                <span>{t('verifying')}</span>
               </div>
             )}
           </div>

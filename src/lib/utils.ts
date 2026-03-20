@@ -5,16 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDate(date: Date | string | number) {
-  return new Intl.DateTimeFormat('en-US', {
+export function formatDate(date: Date | string | number, locale: string = 'fr-CA') {
+  return new Intl.DateTimeFormat(locale, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   }).format(new Date(date))
 }
 
-export function formatDateTime(date: Date | string | number) {
-  return new Intl.DateTimeFormat('en-US', {
+export function formatDateTime(date: Date | string | number, locale: string = 'fr-CA') {
+  return new Intl.DateTimeFormat(locale, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -23,31 +23,38 @@ export function formatDateTime(date: Date | string | number) {
   }).format(new Date(date))
 }
 
-export function formatRelativeTime(date: Date | string | number) {
+export function formatRelativeTime(date: Date | string | number, locale: string = 'fr') {
   const now = new Date()
   const targetDate = new Date(date)
   const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000)
+  const isFr = locale === 'fr' || locale.startsWith('fr')
 
   if (diffInSeconds < 60) {
-    return 'just now'
+    return isFr ? "à l'instant" : 'just now'
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60)
   if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`
+    return isFr
+      ? `il y a ${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'}`
+      : `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60)
   if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`
+    return isFr
+      ? `il y a ${diffInHours} heure${diffInHours === 1 ? '' : 's'}`
+      : `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`
   }
 
   const diffInDays = Math.floor(diffInHours / 24)
   if (diffInDays < 7) {
-    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`
+    return isFr
+      ? `il y a ${diffInDays} jour${diffInDays === 1 ? '' : 's'}`
+      : `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`
   }
 
-  return formatDate(date)
+  return formatDate(date, isFr ? 'fr-CA' : 'en-US')
 }
 
 export function slugify(text: string): string {

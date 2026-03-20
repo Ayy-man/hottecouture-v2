@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,21 +21,20 @@ interface MeasurementTemplate {
   is_active: boolean;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  body: 'Corps',
-  curtain: 'Rideaux',
-  upholstery: 'Rembourrage',
-  bedding: 'Literie',
-};
+const CATEGORY_KEYS = ['body', 'curtain', 'upholstery', 'bedding'] as const;
 
 const CATEGORY_ICONS: Record<string, string> = {
-  body: '👤',
-  curtain: '🪟',
-  upholstery: '🛋️',
-  bedding: '🛏️',
+  body: '\u{1F464}',
+  curtain: '\u{1FA9F}',
+  upholstery: '\u{1F6CB}\uFE0F',
+  bedding: '\u{1F6CF}\uFE0F',
 };
 
 export default function MeasurementTemplatesPage() {
+  const t = useTranslations('admin.measurements');
+  const tc = useTranslations('common');
+  const ta = useTranslations('admin.common');
+
   const [templates, setTemplates] = useState<MeasurementTemplate[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('body');
@@ -56,6 +56,13 @@ export default function MeasurementTemplatesPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteUsageCount, setDeleteUsageCount] = useState<number | null>(null);
 
+  const getCategoryLabel = (cat: string): string => {
+    if (CATEGORY_KEYS.includes(cat as (typeof CATEGORY_KEYS)[number])) {
+      return t(`categories.${cat}` as 'categories.body' | 'categories.curtain' | 'categories.upholstery' | 'categories.bedding');
+    }
+    return cat;
+  };
+
   const loadTemplates = async () => {
     try {
       setLoading(true);
@@ -68,10 +75,10 @@ export default function MeasurementTemplatesPage() {
         setTemplates(data.templates || []);
         setCategories(data.categories || []);
       } else {
-        setError(data.error || 'Failed to load templates');
+        setError(data.error || t('errors.loadFailed'));
       }
     } catch (err) {
-      setError('Failed to load measurement templates');
+      setError(t('errors.loadFailed'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -80,10 +87,11 @@ export default function MeasurementTemplatesPage() {
 
   useEffect(() => {
     loadTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredTemplates = templates
-    .filter(t => t.category === activeCategory)
+    .filter(tmpl => tmpl.category === activeCategory)
     .sort((a, b) => a.display_order - b.display_order);
 
   const handleAddTemplate = async () => {
@@ -109,10 +117,10 @@ export default function MeasurementTemplatesPage() {
         setNewUnit('cm');
         setShowAddForm(false);
       } else {
-        alert(data.error || 'Failed to create template');
+        alert(data.error || t('errors.createFailed'));
       }
     } catch (err) {
-      alert('Failed to create template');
+      alert(t('errors.createFailed'));
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -144,16 +152,16 @@ export default function MeasurementTemplatesPage() {
 
       if (data.success) {
         setTemplates(prev =>
-          prev.map(t => (t.id === editingId ? data.template : t))
+          prev.map(tmpl => (tmpl.id === editingId ? data.template : tmpl))
         );
         setEditingId(null);
         setEditName('');
         setEditUnit('');
       } else {
-        alert(data.error || 'Failed to update template');
+        alert(data.error || t('errors.updateFailed'));
       }
     } catch (err) {
-      alert('Failed to update template');
+      alert(t('errors.updateFailed'));
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -194,12 +202,12 @@ export default function MeasurementTemplatesPage() {
       const data = await response.json();
 
       if (data.success) {
-        setTemplates(prev => prev.filter(t => t.id !== deleteConfirmId));
+        setTemplates(prev => prev.filter(tmpl => tmpl.id !== deleteConfirmId));
       } else {
-        alert(data.error || 'Failed to delete template');
+        alert(data.error || t('errors.deleteFailed'));
       }
     } catch (err) {
-      alert('Failed to delete template');
+      alert(t('errors.deleteFailed'));
       console.error(err);
     } finally {
       setDeleteConfirmId(null);
@@ -208,7 +216,7 @@ export default function MeasurementTemplatesPage() {
   };
 
   const handleMoveUp = async (template: MeasurementTemplate) => {
-    const currentIndex = filteredTemplates.findIndex(t => t.id === template.id);
+    const currentIndex = filteredTemplates.findIndex(tmpl => tmpl.id === template.id);
     if (currentIndex <= 0) return;
 
     const prevTemplate = filteredTemplates[currentIndex - 1];
@@ -237,14 +245,14 @@ export default function MeasurementTemplatesPage() {
 
       // Update local state
       setTemplates(prev =>
-        prev.map(t => {
-          if (t.id === template.id) {
-            return { ...t, display_order: prevTemplate.display_order };
+        prev.map(tmpl => {
+          if (tmpl.id === template.id) {
+            return { ...tmpl, display_order: prevTemplate.display_order };
           }
-          if (t.id === prevTemplate.id) {
-            return { ...t, display_order: template.display_order };
+          if (tmpl.id === prevTemplate.id) {
+            return { ...tmpl, display_order: template.display_order };
           }
-          return t;
+          return tmpl;
         })
       );
     } catch (err) {
@@ -253,7 +261,7 @@ export default function MeasurementTemplatesPage() {
   };
 
   const handleMoveDown = async (template: MeasurementTemplate) => {
-    const currentIndex = filteredTemplates.findIndex(t => t.id === template.id);
+    const currentIndex = filteredTemplates.findIndex(tmpl => tmpl.id === template.id);
     if (currentIndex >= filteredTemplates.length - 1) return;
 
     const nextTemplate = filteredTemplates[currentIndex + 1];
@@ -282,14 +290,14 @@ export default function MeasurementTemplatesPage() {
 
       // Update local state
       setTemplates(prev =>
-        prev.map(t => {
-          if (t.id === template.id) {
-            return { ...t, display_order: nextTemplate.display_order };
+        prev.map(tmpl => {
+          if (tmpl.id === template.id) {
+            return { ...tmpl, display_order: nextTemplate.display_order };
           }
-          if (t.id === nextTemplate.id) {
-            return { ...t, display_order: template.display_order };
+          if (tmpl.id === nextTemplate.id) {
+            return { ...tmpl, display_order: template.display_order };
           }
-          return t;
+          return tmpl;
         })
       );
     } catch (err) {
@@ -302,7 +310,7 @@ export default function MeasurementTemplatesPage() {
       <div className='min-h-screen bg-muted/50 flex items-center justify-center'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4'></div>
-          <p className='text-muted-foreground'>Chargement...</p>
+          <p className='text-muted-foreground'>{tc('loading')}</p>
         </div>
       </div>
     );
@@ -313,7 +321,7 @@ export default function MeasurementTemplatesPage() {
       <div className='min-h-screen bg-muted/50 flex items-center justify-center'>
         <div className='text-center'>
           <p className='text-red-600 mb-4'>{error}</p>
-          <Button onClick={loadTemplates}>Réessayer</Button>
+          <Button onClick={loadTemplates}>{ta('retry')}</Button>
         </div>
       </div>
     );
@@ -325,10 +333,10 @@ export default function MeasurementTemplatesPage() {
         <div className='container mx-auto px-4 py-8 max-w-4xl'>
         <div className='mb-8'>
           <h1 className='text-3xl font-bold text-center mb-2'>
-            Gestion des Mesures
+            {t('title')}
           </h1>
           <p className='text-center text-muted-foreground'>
-            Gérez les champs de mesure disponibles pour chaque catégorie
+            {t('description')}
           </p>
         </div>
 
@@ -344,8 +352,8 @@ export default function MeasurementTemplatesPage() {
                   : 'bg-white text-foreground hover:bg-accent border border-border'
               }`}
             >
-              <span>{CATEGORY_ICONS[cat] || '📏'}</span>
-              <span>{CATEGORY_LABELS[cat] || cat}</span>
+              <span>{CATEGORY_ICONS[cat] || '\u{1F4CF}'}</span>
+              <span>{getCategoryLabel(cat)}</span>
               <span
                 className={`text-xs px-2 py-0.5 rounded-full ${
                   activeCategory === cat
@@ -353,7 +361,7 @@ export default function MeasurementTemplatesPage() {
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
-                {templates.filter(t => t.category === cat).length}
+                {templates.filter(tmpl => tmpl.category === cat).length}
               </span>
             </button>
           ))}
@@ -365,11 +373,11 @@ export default function MeasurementTemplatesPage() {
             <div className='flex items-center justify-between'>
               <div>
                 <CardTitle className='flex items-center gap-2'>
-                  <span>{CATEGORY_ICONS[activeCategory] || '📏'}</span>
-                  {CATEGORY_LABELS[activeCategory] || activeCategory}
+                  <span>{CATEGORY_ICONS[activeCategory] || '\u{1F4CF}'}</span>
+                  {getCategoryLabel(activeCategory)}
                 </CardTitle>
                 <CardDescription>
-                  {filteredTemplates.length} champ(s) de mesure
+                  {t('fieldCount', { count: filteredTemplates.length })}
                 </CardDescription>
               </div>
               {!showAddForm && (
@@ -377,7 +385,7 @@ export default function MeasurementTemplatesPage() {
                   onClick={() => setShowAddForm(true)}
                   className='bg-primary-500 hover:bg-primary-600'
                 >
-                  + Ajouter
+                  {t('addField')}
                 </Button>
               )}
             </div>
@@ -386,17 +394,17 @@ export default function MeasurementTemplatesPage() {
             {/* Add Form */}
             {showAddForm && (
               <div className='mb-6 p-4 bg-primary-50 rounded-lg border-2 border-primary-200'>
-                <h3 className='font-semibold mb-3'>Nouveau champ de mesure</h3>
+                <h3 className='font-semibold mb-3'>{t('newField')}</h3>
                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3'>
                   <div>
                     <label className='block text-sm font-medium mb-1'>
-                      Nom (français) *
+                      {t('nameFrLabel')}
                     </label>
                     <input
                       type='text'
                       value={newName}
                       onChange={e => setNewName(e.target.value)}
-                      placeholder='ex: Tour de biceps'
+                      placeholder={t('namePlaceholder')}
                       className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500'
                       autoFocus
                       onKeyDown={e => {
@@ -410,7 +418,7 @@ export default function MeasurementTemplatesPage() {
                     />
                   </div>
                   <div>
-                    <label className='block text-sm font-medium mb-1'>Unité</label>
+                    <label className='block text-sm font-medium mb-1'>{t('unit')}</label>
                     <input
                       type='text'
                       value={newUnit}
@@ -430,14 +438,14 @@ export default function MeasurementTemplatesPage() {
                     variant='outline'
                     disabled={isSubmitting}
                   >
-                    Annuler
+                    {tc('cancel')}
                   </Button>
                   <Button
                     onClick={handleAddTemplate}
                     disabled={!newName.trim() || isSubmitting}
                     className='bg-primary-500 hover:bg-primary-600'
                   >
-                    {isSubmitting ? 'Création...' : 'Créer'}
+                    {isSubmitting ? t('creating') : t('create')}
                   </Button>
                 </div>
               </div>
@@ -446,10 +454,10 @@ export default function MeasurementTemplatesPage() {
             {/* Templates List */}
             {filteredTemplates.length === 0 ? (
               <div className='text-center py-12 text-muted-foreground'>
-                <p className='text-4xl mb-4'>📏</p>
-                <p>Aucun champ de mesure dans cette catégorie</p>
+                <p className='text-4xl mb-4'>{'\u{1F4CF}'}</p>
+                <p>{t('emptyCategory')}</p>
                 <p className='text-sm mt-2'>
-                  Cliquez sur "Ajouter" pour créer un nouveau champ
+                  {t('emptyCategoryHint')}
                 </p>
               </div>
             ) : (
@@ -465,7 +473,7 @@ export default function MeasurementTemplatesPage() {
                         onClick={() => handleMoveUp(template)}
                         disabled={index === 0}
                         className='p-1 text-muted-foreground/70 hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed'
-                        title='Monter'
+                        title={ta('moveUp')}
                       >
                         <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 15l7-7 7 7' />
@@ -475,7 +483,7 @@ export default function MeasurementTemplatesPage() {
                         onClick={() => handleMoveDown(template)}
                         disabled={index === filteredTemplates.length - 1}
                         className='p-1 text-muted-foreground/70 hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed'
-                        title='Descendre'
+                        title={ta('moveDown')}
                       >
                         <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
@@ -508,7 +516,7 @@ export default function MeasurementTemplatesPage() {
                           onClick={handleSaveEdit}
                           disabled={!editName.trim() || isSubmitting}
                           className='p-2 text-green-600 hover:text-green-700 disabled:opacity-50'
-                          title='Enregistrer'
+                          title={ta('save')}
                         >
                           <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
@@ -517,7 +525,7 @@ export default function MeasurementTemplatesPage() {
                         <button
                           onClick={handleCancelEdit}
                           className='p-2 text-muted-foreground/70 hover:text-muted-foreground'
-                          title='Annuler'
+                          title={tc('cancel')}
                         >
                           <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
@@ -536,7 +544,7 @@ export default function MeasurementTemplatesPage() {
                           <button
                             onClick={() => handleStartEdit(template)}
                             className='p-2 text-muted-foreground/70 hover:text-primary-600 transition-colors'
-                            title='Modifier'
+                            title={tc('edit')}
                           >
                             <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
@@ -545,7 +553,7 @@ export default function MeasurementTemplatesPage() {
                           <button
                             onClick={() => handleCheckDelete(template.id)}
                             className='p-2 text-muted-foreground/70 hover:text-red-600 transition-colors'
-                            title='Supprimer'
+                            title={tc('delete')}
                           >
                             <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
@@ -566,18 +574,17 @@ export default function MeasurementTemplatesPage() {
           <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
             <div className='bg-white rounded-lg p-6 max-w-md w-full mx-4'>
               <h3 className='text-lg font-semibold mb-4'>
-                Supprimer ce champ de mesure ?
+                {t('deleteConfirmTitle')}
               </h3>
               {deleteUsageCount !== null && (
                 <p className='text-sm text-muted-foreground mb-4'>
                   {deleteUsageCount > 0 ? (
                     <span className='text-red-600 font-semibold'>
-                      Ce champ est utilisé par {deleteUsageCount} mesure(s).
-                      Impossible de supprimer.
+                      {t('deleteInUse', { count: deleteUsageCount })}
                     </span>
                   ) : (
                     <span className='text-green-600'>
-                      Ce champ n'est utilisé par aucune mesure. Suppression possible.
+                      {t('deleteNotInUse')}
                     </span>
                   )}
                 </p>
@@ -591,7 +598,7 @@ export default function MeasurementTemplatesPage() {
                   variant='outline'
                   className='flex-1'
                 >
-                  Annuler
+                  {tc('cancel')}
                 </Button>
                 <Button
                   onClick={handleDelete}
@@ -599,7 +606,7 @@ export default function MeasurementTemplatesPage() {
                   variant='destructive'
                   className='flex-1'
                 >
-                  Supprimer
+                  {tc('delete')}
                 </Button>
               </div>
             </div>
@@ -612,7 +619,7 @@ export default function MeasurementTemplatesPage() {
             href='/'
             className='text-primary-600 hover:text-primary-700 hover:underline'
           >
-            ← Retour à l'accueil
+            {ta('backToHome')}
           </a>
         </div>
         </div>

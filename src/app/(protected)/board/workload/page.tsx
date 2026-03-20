@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import {
@@ -109,6 +110,7 @@ function calculateEstimatedHours(order: Order): number {
 }
 
 export default function WorkloadPage() {
+  const t = useTranslations('board.workload');
   const toast = useToast();
   const { currentStaff } = useStaffSession();
 
@@ -138,14 +140,14 @@ export default function WorkloadPage() {
         setOrders(result.orders || []);
       } catch (err) {
         console.error('Error fetching orders:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+        setError(err instanceof Error ? err.message : t('fetchFailed'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, []);
+  }, [t]);
 
   const handleUpdateFeature = async (feature: GanttFeature) => {
     const orderId = feature.id;
@@ -161,7 +163,7 @@ export default function WorkloadPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update due date');
+        throw new Error(t('dueDateFailed'));
       }
 
       setOrders(prev => prev.map(o =>
@@ -171,7 +173,7 @@ export default function WorkloadPage() {
       ));
     } catch (err) {
       console.error('Error updating order due date:', err);
-      toast.error('Erreur lors de la mise à jour de la date');
+      toast.error(t('dateUpdateError'));
     } finally {
       setUpdatingOrder(null);
     }
@@ -211,7 +213,7 @@ export default function WorkloadPage() {
     // Add "Unassigned" bucket
     workloads['unassigned'] = {
       seamstressId: null,
-      name: 'Unassigned',
+      name: t('unassigned'),
       totalHours: 0,
       items: [],
       orders: [],
@@ -230,7 +232,7 @@ export default function WorkloadPage() {
         for (const service of services) {
           // Use assigned_seamstress_id (UUID) for grouping
           const seamstressId = service.assigned_seamstress_id;
-          const seamstressName = service.assigned_seamstress_name || (seamstressId ? staffIdToName[seamstressId] : null) || 'Unassigned';
+          const seamstressName = service.assigned_seamstress_name || (seamstressId ? staffIdToName[seamstressId] : null) || t('unassigned');
           const workloadKey = seamstressId || 'unassigned';
 
           // Ensure workload exists (for dynamically discovered staff)
@@ -254,9 +256,9 @@ export default function WorkloadPage() {
             garmentServiceId: service.garment_service_id,
             orderId: order.id,
             orderNumber: order.order_number,
-            clientName: order.client_name || 'Unknown Client',
-            garmentType: garment.type || 'Unknown',
-            serviceName: service.service_name || 'Service',
+            clientName: order.client_name || t('unknownClient'),
+            garmentType: garment.type || t('unknownType'),
+            serviceName: service.service_name || t('serviceFallback'),
             estimatedMinutes,
             ...(order.due_date && { dueDate: order.due_date }),
             seamstressId: seamstressId || null,
@@ -289,7 +291,7 @@ export default function WorkloadPage() {
     }
 
     return workloads;
-  }, [activeOrders, staffMembers, staffIdToName]);
+  }, [activeOrders, staffMembers, staffIdToName, t]);
 
   const ganttFeatures = useMemo((): GanttFeature[] => {
     const features: GanttFeature[] = [];
@@ -313,7 +315,8 @@ export default function WorkloadPage() {
       const statusColor = STATUS_COLORS[order.status] ?? STATUS_COLORS.pending ?? '#f59e0b';
 
       // Check item-level (garment_service) assignees first, then garment-level, then order-level
-      let ownerName = 'Unassigned';
+      const unassignedLabel = t('unassigned');
+      let ownerName = unassignedLabel;
       // First try item-level assignment
       for (const garment of order.garments || []) {
         for (const service of garment.services || []) {
@@ -322,19 +325,19 @@ export default function WorkloadPage() {
             break;
           }
         }
-        if (ownerName !== 'Unassigned') break;
+        if (ownerName !== unassignedLabel) break;
       }
       // Fallback to old garment-level assignee or order-level
-      if (ownerName === 'Unassigned') {
+      if (ownerName === unassignedLabel) {
         const garmentAssignees = order.garments
           ?.map(g => g.assignee)
           .filter((a): a is string => !!a) || [];
-        ownerName = garmentAssignees[0] || order.assigned_to || 'Unassigned';
+        ownerName = garmentAssignees[0] || order.assigned_to || unassignedLabel;
       }
 
       features.push({
         id: order.id,
-        name: `#${order.order_number} ${order.client_name || 'Order'}`,
+        name: `#${order.order_number} ${order.client_name || t('orderFallback')}`,
         startAt: startOfDay(startDate),
         endAt: endOfDay(endDate),
         status: {
@@ -354,12 +357,12 @@ export default function WorkloadPage() {
     }
 
     return features;
-  }, [activeOrders, isSeamstress, currentStaff]);
+  }, [activeOrders, isSeamstress, currentStaff, t]);
 
   const todayMarker: GanttMarker = {
     id: 'today',
     date: new Date(),
-    label: 'Today',
+    label: t('todayMarker'),
     className: 'bg-red-500',
   };
 
@@ -416,7 +419,7 @@ export default function WorkloadPage() {
   // Handle "Assign to Me" (CAL-03)
   const handleAssignToMe = async (garmentServiceId: string) => {
     if (!currentStaff?.staffId) {
-      toast.error('Please sign in as staff first');
+      toast.error(t('signInFirst'));
       return;
     }
 
@@ -430,15 +433,15 @@ export default function WorkloadPage() {
       });
 
       if (response.ok) {
-        toast.success('Task assigned to you');
+        toast.success(t('taskAssigned'));
         // Refresh the page to show updated assignments
         window.location.reload();
       } else {
-        throw new Error('Failed to assign');
+        throw new Error(t('assignFailed2'));
       }
     } catch (err) {
       console.error('Error assigning item:', err);
-      toast.error('Failed to assign task');
+      toast.error(t('assignFailed'));
     } finally {
       setAssigningItem(null);
     }
@@ -451,12 +454,12 @@ export default function WorkloadPage() {
       const data = await response.json();
       if (data.csv) {
         triggerDownload(data.csv, data.filename || `${seamstressName}-tasks.csv`);
-        toast.success(`Exported tasks for ${seamstressName}`);
+        toast.success(t('exportedTasks', { name: seamstressName }));
       } else {
-        toast.error(data.error || 'Export failed');
+        toast.error(data.error || t('exportFailed'));
       }
     } catch (error) {
-      toast.error('Export failed: Network error');
+      toast.error(t('exportNetworkError'));
       console.error('Export error:', error);
     }
   };
@@ -476,7 +479,7 @@ export default function WorkloadPage() {
     return (
       <AuthGuard>
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-          <LoadingLogo size="lg" text="Loading workload..." />
+          <LoadingLogo size="lg" text={t('loading')} />
         </div>
       </AuthGuard>
     );
@@ -486,7 +489,7 @@ export default function WorkloadPage() {
     return (
       <AuthGuard>
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-          <div className="text-red-500">Error: {error}</div>
+          <div className="text-red-500">{t('errorMessage', { error })}</div>
         </div>
       </AuthGuard>
     );
@@ -502,17 +505,17 @@ export default function WorkloadPage() {
               <Link href="/board">
                 <Button variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Board
+                  {t('backToBoard')}
                 </Button>
               </Link>
               <h1 className="text-xl font-semibold flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Workload Scheduler
+                {t('title')}
               </h1>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" />
-              {HOURS_PER_DAY}h/day capacity
+              {t('dailyCapacity', { hours: HOURS_PER_DAY })}
             </div>
           </div>
         </header>
@@ -524,7 +527,7 @@ export default function WorkloadPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    Weekly Capacity
+                    {t('weeklyCapacity')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex items-center justify-center py-4">
@@ -564,7 +567,7 @@ export default function WorkloadPage() {
                       />
                       <div className="text-right">
                         <div className="text-2xl font-bold">{itemCount}</div>
-                        <div className="text-xs text-muted-foreground">items</div>
+                        <div className="text-xs text-muted-foreground">{t('items')}</div>
                         <div className="text-sm">{workload.totalHours.toFixed(1)}h</div>
                       </div>
                     </div>
@@ -575,7 +578,7 @@ export default function WorkloadPage() {
                       className="w-full flex items-center justify-center gap-2 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-colors border border-primary-200 hover:border-primary-300"
                     >
                       <Download className="h-4 w-4" />
-                      <span>Exporter Liste de Projet</span>
+                      <span>{t('exportProjectList')}</span>
                     </button>
                     )}
                   </CardContent>
@@ -588,14 +591,14 @@ export default function WorkloadPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-amber-700 flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4" />
-                    Unassigned
+                    {t('unassigned')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-amber-700">
                     {sortedUnassignedItems.length}
                   </div>
-                  <div className="text-xs text-amber-600 mb-3">items need assignment (sorted by due date)</div>
+                  <div className="text-xs text-amber-600 mb-3">{t('needsAssignment')}</div>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {sortedUnassignedItems.slice(0, 8).map(item => (
                       <Tooltip key={item.garmentServiceId}>
@@ -614,7 +617,7 @@ export default function WorkloadPage() {
                               </span>
                               {item.dueDate && (
                                 <span className="text-amber-600 text-[10px]">
-                                  Due: {format(new Date(item.dueDate), 'MMM d')}
+                                  {t('duePrefixDate', { date: format(new Date(item.dueDate), 'MMM d') })}
                                 </span>
                               )}
                             </div>
@@ -626,7 +629,7 @@ export default function WorkloadPage() {
                                   className="h-8 sm:h-6 min-h-[44px] sm:min-h-0 px-1.5 text-xs sm:text-[10px] text-amber-700 hover:bg-amber-100"
                                   onClick={() => handleAssignToMe(item.garmentServiceId)}
                                   disabled={assigningItem === item.garmentServiceId}
-                                  title="Assign to me"
+                                  title={t('assignToMeTitle')}
                                   role="button"
                                 >
                                   <UserPlus className="h-3 w-3" />
@@ -653,7 +656,7 @@ export default function WorkloadPage() {
                                 }}
                                 disabled={assigningItem === item.garmentServiceId}
                               >
-                                <option value="">Assign...</option>
+                                <option value="">{t('assignPlaceholder')}</option>
                                 {staffMembers.map(s => (
                                   <option key={s.id} value={s.id}>{s.name}</option>
                                 ))}
@@ -665,15 +668,15 @@ export default function WorkloadPage() {
                           <div className="space-y-1">
                             <div className="font-semibold">{item.clientName}</div>
                             <div className="text-xs">{item.serviceName} — {item.garmentType}</div>
-                            <div className="text-xs text-muted-foreground">Commande #{item.orderNumber}</div>
+                            <div className="text-xs text-muted-foreground">{t('orderNumber', { number: item.orderNumber })}</div>
                             {item.estimatedMinutes != null && (
                               <div className="text-xs text-muted-foreground">
-                                Temps estimé: {item.estimatedMinutes} min
+                                {t('estimatedTime', { minutes: item.estimatedMinutes })}
                               </div>
                             )}
                             {item.dueDate && (
                               <div className="text-xs text-amber-600">
-                                Échéance: {format(new Date(item.dueDate), 'dd MMM yyyy')}
+                                {t('deadline', { date: format(new Date(item.dueDate), 'dd MMM yyyy') })}
                               </div>
                             )}
                           </div>
@@ -682,7 +685,7 @@ export default function WorkloadPage() {
                     ))}
                     {sortedUnassignedItems.length > 8 && (
                       <div className="text-xs text-amber-600 pt-1">
-                        +{sortedUnassignedItems.length - 8} more items
+                        {t('moreItems', { count: sortedUnassignedItems.length - 8 })}
                       </div>
                     )}
                   </div>
@@ -696,19 +699,19 @@ export default function WorkloadPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-red-700 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
-                  Capacity Warnings
+                  {t('capacityWarnings')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
                   {overloadedDays.slice(0, 5).map((issue, idx) => (
                     <div key={idx} className="text-sm text-red-600">
-                      {issue.seamstress}: {format(new Date(issue.date), 'MMM d')} - {issue.hours.toFixed(1)}h scheduled ({(issue.hours - HOURS_PER_DAY).toFixed(1)}h over)
+                      {t('capacityWarningLine', { seamstress: issue.seamstress, date: format(new Date(issue.date), 'MMM d'), hours: issue.hours.toFixed(1), overHours: (issue.hours - HOURS_PER_DAY).toFixed(1) })}
                     </div>
                   ))}
                   {overloadedDays.length > 5 && (
                     <div className="text-sm text-red-500">
-                      +{overloadedDays.length - 5} more warnings
+                      {t('moreWarnings', { count: overloadedDays.length - 5 })}
                     </div>
                   )}
                 </div>
@@ -718,7 +721,7 @@ export default function WorkloadPage() {
 
           <Card className="flex-1">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Order Timeline</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('orderTimeline')}</CardTitle>
               </CardHeader>
               <CardContent className="h-[250px] md:h-[400px] overflow-auto">
                 {ganttFeatures.length > 0 ? (
@@ -735,7 +738,7 @@ export default function WorkloadPage() {
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
-                    No active orders with due dates to display
+                    {t('noActiveOrders')}
                   </div>
                 )}
               </CardContent>
@@ -744,7 +747,7 @@ export default function WorkloadPage() {
           {updatingOrder && (
             <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Mise à jour...
+              {t('updating')}
             </div>
           )}
         </div>

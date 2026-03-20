@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -49,23 +50,19 @@ interface StaffMember {
   created_at: string;
 }
 
-const ROLE_OPTIONS = [
-  { value: 'seamstress', label: 'Couturière' },
-  { value: 'manager', label: 'Gestionnaire' },
-  { value: 'admin', label: 'Administrateur' },
-];
+const ROLE_KEYS = ['seamstress', 'manager', 'admin'] as const;
 
 const COLOR_OPTIONS = [
-  { value: '#6366f1', label: 'Indigo' },
-  { value: '#8b5cf6', label: 'Violet' },
-  { value: '#ec4899', label: 'Rose' },
-  { value: '#f43f5e', label: 'Rouge' },
-  { value: '#f97316', label: 'Orange' },
-  { value: '#eab308', label: 'Jaune' },
-  { value: '#22c55e', label: 'Vert' },
-  { value: '#14b8a6', label: 'Turquoise' },
-  { value: '#0ea5e9', label: 'Bleu' },
-  { value: '#6b7280', label: 'Gris' },
+  { value: '#6366f1', key: 'indigo' },
+  { value: '#8b5cf6', key: 'violet' },
+  { value: '#ec4899', key: 'rose' },
+  { value: '#f43f5e', key: 'red' },
+  { value: '#f97316', key: 'orange' },
+  { value: '#eab308', key: 'yellow' },
+  { value: '#22c55e', key: 'green' },
+  { value: '#14b8a6', key: 'turquoise' },
+  { value: '#0ea5e9', key: 'blue' },
+  { value: '#6b7280', key: 'grey' },
 ];
 
 const DEFAULT_FORM = {
@@ -79,6 +76,9 @@ const DEFAULT_FORM = {
 };
 
 export default function TeamManagementPage() {
+  const t = useTranslations('admin.team');
+  const tc = useTranslations('common');
+
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -102,13 +102,13 @@ export default function TeamManagementPage() {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch staff');
+        throw new Error(data.error || t('errors.fetchFailed'));
       }
 
       setStaff(data.staff);
     } catch (err) {
       console.error('Failed to fetch staff:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch staff');
+      setError(err instanceof Error ? err.message : t('errors.fetchFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -148,16 +148,16 @@ export default function TeamManagementPage() {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to add staff member');
+        throw new Error(data.error || t('errors.addFailed'));
       }
 
       setFormData(DEFAULT_FORM);
       setIsAdding(false);
-      showSuccess(`${data.staff.name} ajouté avec succès!`);
+      showSuccess(t('addedSuccess', { name: data.staff.name }));
       await fetchStaff();
     } catch (err) {
       console.error('Failed to add staff:', err);
-      setError(err instanceof Error ? err.message : 'Failed to add staff member');
+      setError(err instanceof Error ? err.message : t('errors.addFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -188,16 +188,16 @@ export default function TeamManagementPage() {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to update staff member');
+        throw new Error(data.error || t('errors.updateFailed'));
       }
 
       setFormData(DEFAULT_FORM);
       setEditingId(null);
-      showSuccess('Membre mis à jour avec succès!');
+      showSuccess(t('updatedSuccess'));
       await fetchStaff();
     } catch (err) {
       console.error('Failed to update staff:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update staff member');
+      setError(err instanceof Error ? err.message : t('errors.updateFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -217,23 +217,23 @@ export default function TeamManagementPage() {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to update staff member');
+        throw new Error(data.error || t('errors.updateFailed'));
       }
 
       setStaff(prev =>
         prev.map(s => (s.id === id ? { ...s, is_active: !currentActive } : s))
       );
-      showSuccess(currentActive ? 'Membre archivé' : 'Membre réactivé');
+      showSuccess(currentActive ? t('archived') : t('reactivated'));
     } catch (err) {
       console.error('Failed to toggle staff status:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update staff member');
+      setError(err instanceof Error ? err.message : t('errors.updateFailed'));
     } finally {
       setTogglingId(null);
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer "${name}" définitivement? Cette action est irréversible.`)) {
+    if (!confirm(t('deleteConfirm', { name }))) {
       return;
     }
 
@@ -248,14 +248,14 @@ export default function TeamManagementPage() {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to delete staff member');
+        throw new Error(data.error || t('errors.deleteFailed'));
       }
 
       setStaff(prev => prev.filter(s => s.id !== id));
-      showSuccess(`${name} supprimé`);
+      showSuccess(t('deletedSuccess', { name }));
     } catch (err) {
       console.error('Failed to delete staff:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete staff member');
+      setError(err instanceof Error ? err.message : t('errors.deleteFailed'));
     } finally {
       setDeletingId(null);
     }
@@ -295,19 +295,19 @@ export default function TeamManagementPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name" className="flex items-center gap-1">
-            <Users className="h-3 w-3" /> Nom *
+            <Users className="h-3 w-3" /> {t('nameLabel')}
           </Label>
           <Input
             id="name"
             value={formData.name}
             onChange={e => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Nom complet"
+            placeholder={t('namePlaceholder')}
             required
             minLength={2}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="role">Rôle</Label>
+          <Label htmlFor="role">{t('role')}</Label>
           <Select
             value={formData.role}
             onValueChange={value => setFormData({ ...formData, role: value })}
@@ -316,9 +316,9 @@ export default function TeamManagementPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {ROLE_OPTIONS.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+              {ROLE_KEYS.map(key => (
+                <SelectItem key={key} value={key}>
+                  {t(`roles.${key}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -326,7 +326,7 @@ export default function TeamManagementPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="email" className="flex items-center gap-1">
-            <Mail className="h-3 w-3" /> Courriel
+            <Mail className="h-3 w-3" /> {t('email')}
           </Label>
           <Input
             id="email"
@@ -338,7 +338,7 @@ export default function TeamManagementPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="phone" className="flex items-center gap-1">
-            <Phone className="h-3 w-3" /> Téléphone
+            <Phone className="h-3 w-3" /> {t('phone')}
           </Label>
           <Input
             id="phone"
@@ -350,7 +350,7 @@ export default function TeamManagementPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="pin" className="flex items-center gap-1">
-            <Lock className="h-3 w-3" /> NIP (4 chiffres) {!isEdit && '*'}
+            <Lock className="h-3 w-3" /> {t('pinLabel')} {!isEdit && '*'}
           </Label>
           <Input
             id="pin"
@@ -363,13 +363,13 @@ export default function TeamManagementPage() {
               const val = e.target.value.replace(/\D/g, '').slice(0, 4);
               setFormData({ ...formData, pin: val });
             }}
-            placeholder={isEdit ? 'Laisser vide pour ne pas changer' : '1234'}
+            placeholder={isEdit ? t('pinPlaceholderEdit') : t('pinPlaceholderNew')}
             required={!isEdit}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="color" className="flex items-center gap-1">
-            <Palette className="h-3 w-3" /> Couleur
+            <Palette className="h-3 w-3" /> {t('color')}
           </Label>
           <Select
             value={formData.color}
@@ -392,7 +392,7 @@ export default function TeamManagementPage() {
                       className="w-4 h-4 rounded-full"
                       style={{ backgroundColor: opt.value }}
                     />
-                    {opt.label}
+                    {t(`colors.${opt.key}`)}
                   </div>
                 </SelectItem>
               ))}
@@ -401,7 +401,7 @@ export default function TeamManagementPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="capacity" className="flex items-center gap-1">
-            <Clock className="h-3 w-3" /> Capacité (h/sem)
+            <Clock className="h-3 w-3" /> {t('capacityLabel')}
           </Label>
           <Input
             id="capacity"
@@ -417,7 +417,7 @@ export default function TeamManagementPage() {
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" size="sm" onClick={cancelEdit}>
-          <X className="h-4 w-4 mr-1" /> Annuler
+          <X className="h-4 w-4 mr-1" /> {tc('cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={isSaving || !formData.name.trim()}>
           {isSaving ? (
@@ -425,7 +425,7 @@ export default function TeamManagementPage() {
           ) : (
             <Save className="h-4 w-4 mr-1" />
           )}
-          {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+          {isSaving ? t('saving') : tc('save')}
         </Button>
       </div>
     </form>
@@ -437,7 +437,7 @@ export default function TeamManagementPage() {
     if (isEditing) {
       return (
         <div key={member.id} className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-medium mb-3">Modifier {member.name}</h4>
+          <h4 className="font-medium mb-3">{t('editMember', { name: member.name })}</h4>
           {renderForm(true)}
         </div>
       );
@@ -459,11 +459,11 @@ export default function TeamManagementPage() {
             <div className="font-medium flex items-center gap-2">
               {member.name}
               <Badge className={isActive ? 'bg-green-500 hover:bg-green-600' : ''} variant={isActive ? 'default' : 'secondary'}>
-                {isActive ? 'Actif' : 'Archivé'}
+                {isActive ? t('active') : t('inactive')}
               </Badge>
             </div>
             <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span>{ROLE_OPTIONS.find(r => r.value === member.role)?.label || 'Couturière'}</span>
+              <span>{t(`roles.${member.role || 'seamstress'}`)}</span>
               {member.email && (
                 <span className="flex items-center gap-1">
                   <Mail className="h-3 w-3" /> {member.email}
@@ -485,7 +485,7 @@ export default function TeamManagementPage() {
             variant="ghost"
             size="sm"
             onClick={() => startEdit(member)}
-            title="Modifier"
+            title={tc('edit')}
             disabled={togglingId === member.id || deletingId === member.id}
           >
             <Pencil className="h-4 w-4" />
@@ -494,7 +494,7 @@ export default function TeamManagementPage() {
             variant="ghost"
             size="sm"
             onClick={() => handleToggleActive(member.id, member.is_active)}
-            title={isActive ? 'Archiver' : 'Réactiver'}
+            title={isActive ? t('archive') : t('reactivate')}
             disabled={togglingId === member.id || deletingId === member.id}
           >
             {togglingId === member.id ? (
@@ -510,7 +510,7 @@ export default function TeamManagementPage() {
               variant="ghost"
               size="sm"
               onClick={() => handleDelete(member.id, member.name)}
-              title="Supprimer"
+              title={tc('delete')}
               disabled={deletingId === member.id || togglingId === member.id}
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
@@ -532,10 +532,10 @@ export default function TeamManagementPage() {
         <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-center mb-2">
-            Gestion de l&apos;équipe
+            {t('title')}
           </h1>
           <p className="text-center text-muted-foreground">
-            Gérer les couturières et les membres de l&apos;équipe
+            {t('description')}
           </p>
         </div>
 
@@ -559,16 +559,16 @@ export default function TeamManagementPage() {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <UserPlus className="w-5 h-5" />
-                    {isAdding ? 'Nouveau membre' : 'Ajouter un membre'}
+                    {isAdding ? t('newMember') : t('addMember')}
                   </CardTitle>
                   <CardDescription>
-                    {isAdding ? 'Remplissez les informations du nouveau membre' : 'Cliquez pour ajouter un nouveau membre à l\'équipe'}
+                    {isAdding ? t('newMemberDescription') : t('addMemberDescription')}
                   </CardDescription>
                 </div>
                 {!isAdding && !editingId && (
                   <Button onClick={startAdd}>
                     <UserPlus className="w-4 h-4 mr-2" />
-                    Ajouter
+                    {tc('add')}
                   </Button>
                 )}
               </div>
@@ -587,10 +587,10 @@ export default function TeamManagementPage() {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="w-5 h-5" />
-                    Membres de l&apos;équipe
+                    {t('membersTitle')}
                   </CardTitle>
                   <CardDescription>
-                    {staff.length} total ({activeStaff.length} actifs, {inactiveStaff.length} archivés)
+                    {t('memberCount', { total: staff.length, active: activeStaff.length, archived: inactiveStaff.length })}
                   </CardDescription>
                 </div>
                 <Button
@@ -611,15 +611,15 @@ export default function TeamManagementPage() {
               ) : staff.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <p>Aucun membre dans l&apos;équipe</p>
-                  <p className="text-sm">Ajoutez votre premier membre avec le bouton ci-dessus</p>
+                  <p>{t('noMembers')}</p>
+                  <p className="text-sm">{t('noMembersHint')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {/* Active Members */}
                   {activeStaff.length > 0 && (
                     <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-muted-foreground">Membres actifs</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">{t('activeMembers')}</h3>
                       {activeStaff.map(renderMemberRow)}
                     </div>
                   )}
@@ -627,7 +627,7 @@ export default function TeamManagementPage() {
                   {/* Inactive Members */}
                   {inactiveStaff.length > 0 && (
                     <div className="space-y-2 mt-6">
-                      <h3 className="text-sm font-medium text-muted-foreground">Membres archivés</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">{t('archivedMembers')}</h3>
                       {inactiveStaff.map(renderMemberRow)}
                     </div>
                   )}

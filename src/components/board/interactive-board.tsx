@@ -15,33 +15,11 @@ import {
 import { DroppableColumn } from './droppable-column';
 import { OrderDetailModal } from './order-detail-modal';
 import { useIsMobile } from '@/lib/hooks/useIsMobile';
+import { useTranslations } from 'next-intl';
 
 import { RushOrderCard } from '@/components/rush-orders/rush-indicator';
 
-const COLUMNS = [
-  {
-    id: 'pending',
-    title: 'Pending',
-    description: 'New orders awaiting assignment',
-  },
-  {
-    id: 'working',
-    title: 'Working',
-    description: 'Orders currently in progress',
-  },
-  { id: 'done', title: 'Done', description: 'Completed work awaiting review' },
-  { id: 'ready', title: 'Ready', description: 'Ready for pickup or delivery' },
-  {
-    id: 'delivered',
-    title: 'Delivered',
-    description: 'Completed and delivered',
-  },
-  {
-    id: 'cancelled',
-    title: 'Cancelled',
-    description: 'Cancelled orders',
-  },
-];
+const COLUMN_IDS = ['pending', 'working', 'done', 'ready', 'delivered', 'cancelled'] as const;
 
 interface InteractiveBoardProps {
   orders: any[];
@@ -55,6 +33,7 @@ export function InteractiveBoard({
   updatingOrders = new Set(),
   initialOrderNumber,
 }: InteractiveBoardProps & { initialOrderNumber?: string | null }) {
+  const t = useTranslations('board');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeOrder, setActiveOrder] = useState<any>(null);
@@ -63,6 +42,12 @@ export function InteractiveBoard({
   const [selectedOrderForMove, setSelectedOrderForMove] = useState<string | null>(null);
 
   const isMobile = useIsMobile();
+
+  const COLUMNS = COLUMN_IDS.map(id => ({
+    id,
+    title: t(`columns.${id}`),
+    description: t(`columns.${id}Description`),
+  }));
 
   console.log('🎯 InteractiveBoard: Received orders count:', orders.length);
 
@@ -303,29 +288,29 @@ export function InteractiveBoard({
                   </div>
 
                   <p className='text-xs sm:text-sm text-muted-foreground mb-1'>
-                    {activeOrder.client_name || 'Unknown Client'}
+                    {activeOrder.client_name || t('card.unknownClient')}
                   </p>
 
                   <p className='text-xs text-muted-foreground mb-1'>
                     {activeOrder.garments?.map((g: any) => g.type).join(', ') ||
-                      'No garments'}
+                      t('card.noGarments')}
                   </p>
 
                   {activeOrder.due_date && (
                     <p className='text-xs text-muted-foreground mb-1'>
-                      Due: {new Date(activeOrder.due_date).toLocaleDateString()}
+                      {t('card.dueDate')}: {new Date(activeOrder.due_date).toLocaleDateString()}
                     </p>
                   )}
 
                   {activeOrder.rack_position && (
                     <p className='text-xs text-blue-600 font-medium'>
-                      Rack: {activeOrder.rack_position}
+                      {t('card.rackPosition')}: {activeOrder.rack_position}
                     </p>
                   )}
 
                   <div className='mt-2 pt-2 border-t border-border'>
                     <div className='w-full text-xs sm:text-sm py-1 sm:py-2 text-center text-blue-600 font-medium'>
-                      Moving to new stage...
+                      {t('status.updating')}
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 
 interface SmsConfirmationModalProps {
@@ -17,6 +18,8 @@ export function SmsConfirmationModal({
   onConfirm,
   onCancel,
 }: SmsConfirmationModalProps) {
+  const t = useTranslations('board.sms');
+
   if (!isOpen) return null;
 
   return (
@@ -43,14 +46,16 @@ export function SmsConfirmationModal({
             </svg>
           </div>
           <h3 className='text-lg font-semibold text-foreground mb-2'>
-            Envoyer la notification de ramassage?
+            {t('sendPickupNotification')}
           </h3>
           <p className='text-sm text-muted-foreground'>
-            Commande <span className='font-semibold'>#{orderNumber}</span> pour{' '}
-            <span className='font-semibold'>{clientName}</span> est prête.
+            {t('orderReady', {
+              orderNumber: String(orderNumber),
+              clientName,
+            })}
           </p>
           <p className='text-sm text-muted-foreground mt-2'>
-            Ceci enverra un SMS pour aviser le client que sa commande est prête à récupérer.
+            {t('smsDescription')}
           </p>
         </div>
 
@@ -60,13 +65,13 @@ export function SmsConfirmationModal({
             variant='outline'
             className='flex-1'
           >
-            Passer le SMS
+            {t('skipSms')}
           </Button>
           <Button
             onClick={onConfirm}
             className='flex-1 bg-purple-600 hover:bg-purple-700 text-white'
           >
-            Envoyer SMS
+            {t('sendSms')}
           </Button>
         </div>
       </div>

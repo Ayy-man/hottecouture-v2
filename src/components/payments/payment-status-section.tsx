@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { calculateDepositCents } from '@/lib/payments/deposit-calculator';
 
@@ -22,6 +23,7 @@ interface PaymentStatusSectionProps {
 }
 
 export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSectionProps) {
+  const t = useTranslations('payments');
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastSentUrl, setLastSentUrl] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
   const formatCurrency = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-CA', {
+    return new Date(dateString).toLocaleDateString(undefined, {
       day: 'numeric',
       month: 'short',
     });
@@ -69,7 +71,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout');
+        throw new Error(data.error || t('failed'));
       }
 
       // Set URL first and copy to clipboard for "link only" mode
@@ -92,7 +94,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       // Calling it now causes re-renders that lose the URL state
     } catch (err) {
       console.error('Payment request error:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi');
+      setError(err instanceof Error ? err.message : t('failed'));
     } finally {
       setLoading(null);
     }
@@ -116,13 +118,13 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to record payment');
+        throw new Error(data.error || t('failed'));
       }
 
       onPaymentUpdate?.();
     } catch (err) {
       console.error('Cash payment error:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement');
+      setError(err instanceof Error ? err.message : t('failed'));
     } finally {
       setLoading(null);
     }
@@ -147,16 +149,15 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
     return (
       <div className="rounded-lg border border-green-200 bg-green-50 p-4">
         <div className="flex items-center gap-2 text-green-700 mb-2">
-          <span className="text-xl">✅</span>
-          <span className="font-semibold text-lg">Payé</span>
+          <span className="font-semibold text-lg">{t('paid')}</span>
         </div>
         <div className="text-sm text-green-600 space-y-1">
           <div>{formatCurrency(order.total_cents)}</div>
           {order.paid_at && (
-            <div>Payé le {formatDate(order.paid_at)}</div>
+            <div>{t('paidOn', { date: formatDate(order.paid_at) })}</div>
           )}
           {order.payment_method && (
-            <div className="capitalize">Via {order.payment_method}</div>
+            <div className="capitalize">{t('via', { method: order.payment_method })}</div>
           )}
         </div>
       </div>
@@ -166,40 +167,40 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
   return (
     <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
       <h3 className="font-semibold text-foreground flex items-center gap-2">
-        💳 Paiement
+        {t('title')}
         {order.payment_status === 'pending' && (
-          <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">En attente</span>
+          <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">{t('pending')}</span>
         )}
         {order.payment_status === 'deposit_pending' && (
-          <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">Dépôt en attente</span>
+          <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">{t('depositPending')}</span>
         )}
         {order.payment_status === 'deposit_paid' && (
-          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Dépôt reçu</span>
+          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{t('depositReceived')}</span>
         )}
       </h3>
 
       {/* Totals */}
       <div className="space-y-2 text-sm border-b border-border pb-3">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Total:</span>
+          <span className="text-muted-foreground">{t('total')}</span>
           <span className="font-medium">{formatCurrency(order.total_cents)}</span>
         </div>
 
         {isCustomOrder && (
           <>
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Dépôt (50%):</span>
+              <span className="text-muted-foreground">{t('deposit50')}</span>
               <div className="flex items-center gap-2">
                 <span className={depositPaid ? 'text-green-600 font-medium' : 'text-amber-600'}>
                   {formatCurrency(depositAmount)}
                 </span>
                 {depositPaid && (
-                  <span className="text-green-600 text-xs">✓ {formatDate(order.deposit_paid_at!)}</span>
+                  <span className="text-green-600 text-xs">{formatDate(order.deposit_paid_at!)}</span>
                 )}
               </div>
             </div>
             <div className="flex justify-between pt-2 border-t border-border">
-              <span className="text-muted-foreground font-medium">Solde dû:</span>
+              <span className="text-muted-foreground font-medium">{t('balanceDue')}</span>
               <span className="font-semibold text-foreground">
                 {formatCurrency(depositPaid ? balanceDue : order.total_cents - depositAmount)}
               </span>
@@ -209,7 +210,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
 
         {!isCustomOrder && (
           <div className="flex justify-between pt-2 border-t border-border">
-            <span className="text-muted-foreground font-medium">À payer:</span>
+            <span className="text-muted-foreground font-medium">{t('toPay')}</span>
             <span className="font-semibold text-foreground">
               {formatCurrency(order.balance_due_cents || order.total_cents)}
             </span>
@@ -221,10 +222,10 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       {depositRequired && (
         <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
           <p className="text-sm text-amber-800 font-medium">
-            ⚠️ Dépôt requis
+            {t('depositRequired')}
           </p>
           <p className="text-xs text-amber-700 mt-1">
-            Un dépôt de 50% ({formatCurrency(depositAmount)}) est requis avant de commencer le travail.
+            {t('depositRequiredMessage', { amount: formatCurrency(depositAmount) })}
           </p>
         </div>
       )}
@@ -240,7 +241,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       {lastSentUrl && (
         <div className="rounded-md bg-green-50 border border-green-200 p-3 space-y-2">
           <p className="text-sm text-green-700 font-medium">
-            {smsSent ? '✓ Lien envoyé par SMS!' : linkCopied ? '✓ Lien copié!' : '✓ Lien créé!'}
+            {smsSent ? t('linkSentSms') : linkCopied ? t('linkCopied') : t('linkCreated')}
           </p>
           <div className="flex gap-2">
             <input
@@ -258,7 +259,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
               }}
               className="text-xs"
             >
-              {linkCopied ? '✓ Copié' : 'Copier'}
+              {linkCopied ? t('copied') : t('copy')}
             </Button>
           </div>
         </div>
@@ -276,10 +277,10 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
             >
               {loading === 'deposit' ? (
                 <span className="flex items-center gap-2">
-                  <span className="animate-spin">⏳</span> Envoi en cours...
+                  {t('sending')}
                 </span>
               ) : (
-                '📱 Envoyer demande de dépôt (SMS)'
+                t('sendDepositSms')
               )}
             </Button>
             <div className="flex gap-2">
@@ -289,7 +290,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
                 disabled={loading !== null}
                 className="flex-1 text-sm"
               >
-                🔗 Lien seulement
+                {t('linkOnly')}
               </Button>
               <Button
                 variant="outline"
@@ -297,7 +298,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
                 disabled={loading !== null}
                 className="flex-1 text-sm"
               >
-                {loading === 'cash-deposit' ? '...' : '💵 Comptant'}
+                {loading === 'cash-deposit' ? '...' : t('cash')}
               </Button>
             </div>
           </>
@@ -313,10 +314,10 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
             >
               {loading === 'balance' || loading === 'full' ? (
                 <span className="flex items-center gap-2">
-                  <span className="animate-spin">⏳</span> Envoi en cours...
+                  {t('sending')}
                 </span>
               ) : (
-                `📱 Envoyer lien de paiement (${formatCurrency(isCustomOrder ? balanceDue : order.balance_due_cents || order.total_cents)})`
+                t('sendPaymentLink', { amount: formatCurrency(isCustomOrder ? balanceDue : order.balance_due_cents || order.total_cents) })
               )}
             </Button>
             <div className="flex gap-2">
@@ -326,7 +327,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
                 disabled={loading !== null}
                 className="flex-1 text-sm"
               >
-                🔗 Lien seulement
+                {t('linkOnly')}
               </Button>
               <Button
                 variant="outline"
@@ -334,7 +335,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
                 disabled={loading !== null}
                 className="flex-1 text-sm"
               >
-                {loading === 'cash-balance' || loading === 'cash-full' ? '...' : '💵 Comptant'}
+                {loading === 'cash-balance' || loading === 'cash-full' ? '...' : t('cash')}
               </Button>
             </div>
           </>
@@ -345,8 +346,7 @@ export function PaymentStatusSection({ order, onPaymentUpdate }: PaymentStatusSe
       {depositPaid && !fullyPaid && (
         <div className="text-xs text-muted-foreground pt-2 border-t border-border">
           <div className="flex items-center gap-1">
-            <span>✓</span>
-            <span>Dépôt de {formatCurrency(depositAmount)} reçu le {formatDate(order.deposit_paid_at!)}</span>
+            <span>{t('depositOf', { amount: formatCurrency(depositAmount), date: formatDate(order.deposit_paid_at!) })}</span>
             {order.deposit_payment_method && (
               <span className="text-muted-foreground/70">({order.deposit_payment_method})</span>
             )}

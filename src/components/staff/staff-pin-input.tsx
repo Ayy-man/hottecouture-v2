@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Delete } from 'lucide-react';
 
@@ -11,6 +12,7 @@ interface StaffPinInputProps {
 }
 
 export function StaffPinInput({ onComplete, disabled, error }: StaffPinInputProps) {
+  const t = useTranslations('staff');
   const [pin, setPin] = useState('');
 
   // Auto-submit when 4 digits entered
@@ -89,7 +91,7 @@ export function StaffPinInput({ onComplete, disabled, error }: StaffPinInputProp
           disabled={disabled || pin.length === 0}
           className="h-14 text-sm hover:bg-accent"
         >
-          Effacer
+          {t('clear')}
         </Button>
         <Button
           type="button"

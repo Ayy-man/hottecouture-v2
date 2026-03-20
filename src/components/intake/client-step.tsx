@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { ClientCreate, MeasurementsData } from '@/lib/dto';
@@ -39,6 +40,10 @@ export function ClientStep({
   onNext,
   onPrev,
 }: ClientStepProps) {
+  const t = useTranslations('intake.client');
+  const tc = useTranslations('common');
+  const ts = useTranslations('intake.steps');
+  const te = useTranslations('intake.errors');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ClientCreate[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -219,27 +224,27 @@ export function ClientStep({
       return null; // No error if empty
     }
     if (!/^\+?[\d\s\-\(\)]+$/.test(phone.trim())) {
-      return 'Invalid phone number format';
+      return te('invalidPhone');
     }
     return null;
   };
 
   const validateMobilePhone = (mobile: string): string | null => {
     if (!mobile.trim()) {
-      return 'Le numéro mobile/SMS est requis';
+      return t('phone') + ' ' + tc('required').toLowerCase();
     }
     if (!/^\+?[\d\s\-\(\)]+$/.test(mobile.trim())) {
-      return 'Invalid phone number format';
+      return te('invalidPhone');
     }
     return null;
   };
 
   const validateEmail = (email: string): string | null => {
     if (!email || !email.trim()) {
-      return 'Email requis'; // Email is required for GHL sync
+      return te('required'); // Email is required for GHL sync
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      return 'Format email invalide';
+      return te('invalidEmail');
     }
     return null;
   };
@@ -341,11 +346,11 @@ export function ClientStep({
     const newErrors: Partial<ClientCreate> = {};
 
     if (!formData.first_name.trim()) {
-      newErrors.first_name = 'Prénom requis';
+      newErrors.first_name = te('required');
     }
 
     if (!formData.last_name.trim()) {
-      newErrors.last_name = 'Nom requis';
+      newErrors.last_name = te('required');
     }
 
     // Phone (landline) is optional - only validate format if provided
@@ -383,7 +388,7 @@ export function ClientStep({
         await createClientInDB();
       } catch (err) {
         console.error('Error creating client:', err);
-        setErrors({ first_name: 'Échec de création. Réessayez.' });
+        setErrors({ first_name: te('createClientFailed') });
         setIsCreating(false);
       }
     }
@@ -412,7 +417,7 @@ export function ClientStep({
         if (error) {
           console.error('Error creating client:', error);
           setErrors({
-            first_name: 'Failed to create client. Please try again.',
+            first_name: te('createClientFailed'),
           });
           return;
         }
@@ -435,7 +440,7 @@ export function ClientStep({
         // Don't auto-advance for new clients - let them add measurements first
       } catch (err) {
         console.error('Error creating client:', err);
-        setErrors({ first_name: 'Échec de création. Réessayez.' });
+        setErrors({ first_name: te('createClientFailed') });
       } finally {
         setIsCreating(false);
       }
@@ -493,8 +498,8 @@ export function ClientStep({
               <div className='w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3'>
                 <span className='text-2xl'>⚠️</span>
               </div>
-              <h3 className='text-lg font-bold text-foreground'>Client existant trouvé!</h3>
-              <p className='text-sm text-muted-foreground mt-1'>Un client avec ce numéro de téléphone existe déjà.</p>
+              <h3 className='text-lg font-bold text-foreground'>{t('duplicateFound')}</h3>
+              <p className='text-sm text-muted-foreground mt-1'>{t('duplicateMessage')}</p>
             </div>
             
             <div className='bg-muted/50 rounded-lg p-4 mb-4'>
@@ -512,14 +517,14 @@ export function ClientStep({
                 onClick={handleUseExistingClient}
                 className='flex-1 bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold'
               >
-                Utiliser ce client
+                {t('useExisting')}
               </Button>
               <Button
                 variant='outline'
                 onClick={handleCreateAnyway}
                 className='flex-1 border-border text-muted-foreground'
               >
-                Créer nouveau
+                {t('createAnyway')}
               </Button>
             </div>
           </div>
@@ -548,17 +553,17 @@ export function ClientStep({
                   d='M15 19l-7-7 7-7'
                 />
               </svg>
-              <span className='font-medium'>Retour</span>
+              <span className='font-medium'>{tc('back')}</span>
             </Button>
           )}
         </div>
 
         <div className='flex-1 text-center'>
           <h2 className='text-lg font-semibold text-foreground'>
-            Information Client
+            {ts('client')}
           </h2>
           <p className='text-sm text-muted-foreground'>
-            Rechercher un client existant ou en créer un nouveau
+            {t('searchDescription')}
           </p>
         </div>
 
@@ -567,7 +572,7 @@ export function ClientStep({
             onClick={onNext}
             className='bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white px-6 py-2 rounded-lg font-medium transition-all duration-200'
           >
-            Suivant
+            {tc('next')}
           </Button>
         )}
       </div>
@@ -585,14 +590,14 @@ export function ClientStep({
                       htmlFor='search'
                       className='block text-sm font-medium mb-1'
                     >
-                      Rechercher Client
+                      {t('search')}
                     </label>
                     <input
                       id='search'
                       type='text'
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      placeholder='Entrer téléphone ou courriel'
+                      placeholder={t('searchPlaceholder')}
                       className='w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm touch-manipulation'
                     />
                   </div>
@@ -600,13 +605,13 @@ export function ClientStep({
                   {isSearching && (
                     <div className='text-center py-2'>
                       <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500 mx-auto'></div>
-                      <p className='mt-1 text-xs text-muted-foreground'>Recherche...</p>
+                      <p className='mt-1 text-xs text-muted-foreground'>{t('searching')}</p>
                     </div>
                   )}
 
                   {searchResults.length > 0 && (
                     <div className='space-y-1'>
-                      <h3 className='font-medium text-sm'>Résultats</h3>
+                      <h3 className='font-medium text-sm'>{t('results')}</h3>
                       {searchResults.map((client, index) => (
                         <div
                           key={client.first_name + client.last_name + index}
@@ -622,20 +627,20 @@ export function ClientStep({
                               e.stopPropagation();
                               toggleReveal(client.phone + client.email);
                             }}
-                            title='Tap to reveal/hide'
+                            title={t('tapToReveal')}
                           >
                             {revealedClients.has(client.phone + client.email)
                               ? `${client.phone} • ${client.email}`
                               : `${maskPhone(client.phone || '')} • ${maskEmail(client.email || '')}`}
                           </div>
                           <div className='text-xs text-muted-foreground mt-1'>
-                            Preferred:{' '}
+                            {t('preferred')}:{' '}
                             {client.preferred_contact === 'email'
-                              ? '📧 Email'
+                              ? `📧 ${t('contactEmail')}`
                               : client.preferred_contact === 'phone'
-                              ? '📞 Téléphone'
-                              : '💬 SMS'}{' '}
-                            • Newsletter: {client.newsletter_consent ? '✅' : '❌'}
+                              ? `📞 ${t('contactPhone')}`
+                              : `💬 ${t('contactSms')}`}{' '}
+                            • {t('newsletter')}: {client.newsletter_consent ? '✅' : '❌'}
                           </div>
                         </div>
                       ))}
@@ -650,7 +655,7 @@ export function ClientStep({
                   onClick={() => setShowCreateForm(true)}
                   className='w-full btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-primary-500 text-sm py-2'
                 >
-                  Créer Nouveau Client
+                  {t('createNew')}
                 </Button>
               ) : (
                 <form onSubmit={handleCreateClient} className='space-y-3'>
@@ -662,7 +667,7 @@ export function ClientStep({
                     <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
                     </svg>
-                    Retour à la recherche
+                    {t('backToSearch')}
                   </button>
                   <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                     <div>
@@ -670,7 +675,7 @@ export function ClientStep({
                         htmlFor='firstName'
                         className='block text-xs font-medium mb-1'
                       >
-                        Prénom *
+                        {t('firstName')} *
                       </label>
                       <input
                         id='firstName'
@@ -699,7 +704,7 @@ export function ClientStep({
                         htmlFor='lastName'
                         className='block text-xs font-medium mb-1'
                       >
-                        Nom *
+                        {t('lastName')} *
                       </label>
                       <input
                         id='lastName'
@@ -731,7 +736,7 @@ export function ClientStep({
                         htmlFor='mobile_phone'
                         className='block text-xs font-medium mb-1'
                       >
-                        Mobile/SMS *
+                        {t('mobileSms')}
                       </label>
                       <input
                         id='mobile_phone'
@@ -754,7 +759,7 @@ export function ClientStep({
                         htmlFor='email'
                         className='block text-xs font-medium mb-1'
                       >
-                        Email *
+                        {t('email')}
                       </label>
                       <input
                         id='email'
@@ -781,7 +786,7 @@ export function ClientStep({
                       htmlFor='phone'
                       className='block text-xs font-medium mb-1'
                     >
-                      Téléphone fixe (optionnel)
+                      {t('landlineOptional')}
                     </label>
                     <input
                       id='phone'
@@ -806,7 +811,7 @@ export function ClientStep({
                         htmlFor='language'
                         className='block text-xs font-medium mb-1'
                       >
-                        Language
+                        {t('language')}
                       </label>
                       <select
                         id='language'
@@ -828,7 +833,7 @@ export function ClientStep({
                         htmlFor='preferredContact'
                         className='block text-xs font-medium mb-1'
                       >
-                        Contact Préféré
+                        {t('preferredContact')}
                       </label>
                       <select
                         id='preferredContact'
@@ -846,7 +851,7 @@ export function ClientStep({
                       >
                         <option value='email'>📧 Email</option>
                         <option value='sms'>💬 SMS</option>
-                        <option value='phone'>📞 Téléphone</option>
+                        <option value='phone'>📞 {t('contactPhone')}</option>
                       </select>
                     </div>
                   </div>
@@ -868,7 +873,7 @@ export function ClientStep({
                       htmlFor='newsletterConsent'
                       className='text-xs font-medium text-muted-foreground'
                     >
-                      Abonner à l'infolettre
+                      {t('newsletterConsent')}
                     </label>
                   </div>
 
@@ -878,7 +883,7 @@ export function ClientStep({
                       className='flex-1 btn-press bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm py-2'
                       disabled={isCreating}
                     >
-                      {isCreating ? 'Création...' : 'Créer Client'}
+                      {isCreating ? t('creating') : t('createClient')}
                     </Button>
                     <Button
                       type='button'
@@ -887,7 +892,7 @@ export function ClientStep({
                       className='flex-1 btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border text-sm py-2'
                       disabled={isCreating}
                     >
-                      Annuler
+                      {tc('cancel')}
                     </Button>
                   </div>
                 </form>
@@ -904,23 +909,23 @@ export function ClientStep({
                     <p
                       className='text-xs text-green-600 cursor-pointer hover:text-green-800'
                       onClick={() => toggleReveal('selected-' + data.phone)}
-                      title='Tap to reveal/hide'
+                      title={t('tapToReveal')}
                     >
                       {revealedClients.has('selected-' + data.phone)
                         ? `${data.phone} • ${data.email}`
                         : `${maskPhone(data.phone || '')} • ${maskEmail(data.email || '')}`}
                     </p>
                     <div className='text-xs text-green-600 mt-1'>
-                      Contact:{' '}
+                      {t('contact')}:{' '}
                       {data.preferred_contact === 'email'
-                        ? '📧 Courriel'
+                        ? `📧 ${t('contactEmail')}`
                         : data.preferred_contact === 'phone'
-                        ? '📞 Téléphone'
-                        : '💬 SMS'}{' '}
-                      • Infolettre:{' '}
+                        ? `📞 ${t('contactPhone')}`
+                        : `💬 ${t('contactSms')}`}{' '}
+                      • {t('newsletter')}:{' '}
                       {data.newsletter_consent
-                        ? '✅ Abonné'
-                        : '❌ Non abonné'}
+                        ? `✅ ${t('subscribed')}`
+                        : `❌ ${t('notSubscribed')}`}
                     </div>
                   </div>
                   <Button
@@ -934,7 +939,7 @@ export function ClientStep({
                     }}
                     className='btn-press bg-gradient-to-r from-muted to-muted/80 hover:from-muted/80 hover:to-muted/60 text-muted-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-border text-xs px-2 py-1'
                   >
-                    Changer Client
+                    {t('changeClient')}
                   </Button>
                 </div>
               </div>
@@ -946,7 +951,7 @@ export function ClientStep({
                   onClick={() => setShowMeasurements(!showMeasurements)}
                   className='w-full px-3 py-2 flex items-center justify-between bg-muted/50 hover:bg-muted transition-colors'
                 >
-                  <span className='text-sm font-medium text-muted-foreground'>📏 Mesures du client</span>
+                  <span className='text-sm font-medium text-muted-foreground'>📏 {t('measurements')}</span>
                   <svg
                     className={`w-4 h-4 text-muted-foreground transition-transform ${showMeasurements ? 'rotate-180' : ''}`}
                     fill='none'
@@ -960,11 +965,11 @@ export function ClientStep({
                 {showMeasurements && (
                   <div className='p-3 space-y-3'>
                     <div className='flex items-center justify-between'>
-                      <p className='text-xs text-muted-foreground'>Pour projets sur mesure (optionnel)</p>
+                      <p className='text-xs text-muted-foreground'>{t('measurementsDescription')}</p>
                       {(isLoadingMeasurements || isLoadingTemplates) && (
                         <div className='flex items-center gap-1 text-xs text-primary-600'>
                           <div className='animate-spin w-3 h-3 border border-primary-500 border-t-transparent rounded-full'></div>
-                          Chargement...
+                          {tc('loading')}
                         </div>
                       )}
                     </div>
@@ -990,7 +995,7 @@ export function ClientStep({
                     {/* Custom per-order measurements */}
                     {customMeasurements.length > 0 && (
                       <div className='border-t border-border pt-2'>
-                        <p className='text-xs text-muted-foreground mb-2'>Mesures personnalisées</p>
+                        <p className='text-xs text-muted-foreground mb-2'>{t('customMeasurements')}</p>
                         <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
                           {customMeasurements.map((custom, index) => (
                             <div key={index} className='relative'>
@@ -1030,13 +1035,13 @@ export function ClientStep({
                     {/* Add custom measurement */}
                     {showAddCustom ? (
                       <div className='border-t border-border pt-2'>
-                        <p className='text-xs text-muted-foreground mb-2'>Ajouter une mesure personnalisée</p>
+                        <p className='text-xs text-muted-foreground mb-2'>{t('addCustomMeasurement')}</p>
                         <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
                           <input
                             type='text'
                             value={newCustomName}
                             onChange={e => setNewCustomName(e.target.value)}
-                            placeholder='Nom (ex: Biceps)'
+                            placeholder={t('customNamePlaceholder')}
                             className='w-full px-2 py-1 text-sm border border-border rounded focus:ring-1 focus:ring-primary-500'
                             autoFocus
                             onKeyDown={e => {
@@ -1051,7 +1056,7 @@ export function ClientStep({
                             type='number'
                             value={newCustomValue}
                             onChange={e => setNewCustomValue(e.target.value)}
-                            placeholder='Valeur (cm)'
+                            placeholder={t('customValuePlaceholder')}
                             className='w-full px-2 py-1 text-sm border border-border rounded focus:ring-1 focus:ring-primary-500'
                             onKeyDown={e => {
                               if (e.key === 'Enter' && newCustomName.trim()) {
@@ -1075,7 +1080,7 @@ export function ClientStep({
                             }}
                             className='text-xs text-muted-foreground hover:text-muted-foreground'
                           >
-                            Annuler
+                            {tc('cancel')}
                           </button>
                           <button
                             type='button'
@@ -1092,7 +1097,7 @@ export function ClientStep({
                             disabled={!newCustomName.trim()}
                             className='text-xs text-primary-600 hover:text-primary-700 disabled:text-muted-foreground/70'
                           >
-                            Ajouter
+                            {tc('add')}
                           </button>
                         </div>
                       </div>
@@ -1105,7 +1110,7 @@ export function ClientStep({
                         <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
                         </svg>
-                        Ajouter une mesure personnalisée
+                        {t('addCustomMeasurement')}
                       </button>
                     )}
 

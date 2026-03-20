@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Card,
   CardContent,
@@ -46,6 +47,7 @@ export function PaymentForm({
   onPaymentError,
   className = '',
 }: PaymentFormProps) {
+  const t = useTranslations('payments');
   const [selectedMethod, setSelectedMethod] = useState<string>('');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const [paymentAmount, setPaymentAmount] = useState<number>(
@@ -94,7 +96,7 @@ export function PaymentForm({
       !selectedMethodData ||
       !selectedProviderData
     ) {
-      setError('Veuillez sélectionner un mode de paiement et un fournisseur');
+      setError(t('selectMethod'));
       return;
     }
 
@@ -122,14 +124,14 @@ export function PaymentForm({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Échec du paiement');
+        throw new Error(errorData.error || t('failed'));
       }
 
       const { paymentIntentId } = await response.json();
       onPaymentComplete(paymentIntentId);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Échec du paiement';
+        err instanceof Error ? err.message : t('failed');
       setError(errorMessage);
       onPaymentError(errorMessage);
     } finally {
@@ -162,37 +164,37 @@ export function PaymentForm({
       {/* Payment Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>Sommaire du paiement</CardTitle>
+          <CardTitle>{t('summary')}</CardTitle>
           <CardDescription>
-            Vérifiez le total de votre commande et les options de paiement
+            {t('summaryDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className='space-y-3'>
             <div className='flex justify-between'>
-              <span>Sous-total :</span>
+              <span>{t('subtotal')}</span>
               <span>{formatPaymentAmount(summary.subtotal)}</span>
             </div>
             {summary.tax > 0 && (
               <div className='flex justify-between'>
-                <span>Taxe :</span>
+                <span>{t('tax')}</span>
                 <span>{formatPaymentAmount(summary.tax)}</span>
               </div>
             )}
             {summary.rushFee > 0 && (
               <div className='flex justify-between text-primary-900'>
-                <span>Frais express :</span>
+                <span>{t('rushFee')}</span>
                 <span>{formatPaymentAmount(summary.rushFee)}</span>
               </div>
             )}
             <div className='border-t pt-2'>
               <div className='flex justify-between font-bold text-lg'>
-                <span>Total :</span>
+                <span>{t('total')}</span>
                 <span>{formatPaymentAmount(summary.totalAmount)}</span>
               </div>
             </div>
             <div className='text-sm text-muted-foreground'>
-              Dépôt requis : {formatPaymentAmount(summary.depositAmount)} (
+              {t('depositRequiredLabel')} {formatPaymentAmount(summary.depositAmount)} (
               {DEFAULT_PAYMENT_CONFIG.depositPercentage}%)
             </div>
           </div>
@@ -202,9 +204,9 @@ export function PaymentForm({
       {/* Payment Provider Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>Fournisseur de paiement</CardTitle>
+          <CardTitle>{t('providerTitle')}</CardTitle>
           <CardDescription>
-            Choisissez comment traiter le paiement
+            {t('providerDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -237,8 +239,8 @@ export function PaymentForm({
       {/* Payment Method Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>Mode de paiement</CardTitle>
-          <CardDescription>Comment souhaitez-vous payer?</CardDescription>
+          <CardTitle>{t('methodTitle')}</CardTitle>
+          <CardDescription>{t('methodDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -263,7 +265,7 @@ export function PaymentForm({
                       </p>
                       {method.processingFee > 0 && (
                         <Badge variant='outline' className='text-xs'>
-                          {method.processingFee}% frais
+                          {method.processingFee}% {t('fees')}
                         </Badge>
                       )}
                     </div>
@@ -277,8 +279,8 @@ export function PaymentForm({
       {/* Payment Amount */}
       <Card>
         <CardHeader>
-          <CardTitle>Montant du paiement</CardTitle>
-          <CardDescription>Choisissez le montant à payer maintenant</CardDescription>
+          <CardTitle>{t('amountTitle')}</CardTitle>
+          <CardDescription>{t('amountDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
@@ -293,7 +295,7 @@ export function PaymentForm({
                 className='h-16'
               >
                 <div className='text-center'>
-                  <div className='font-bold'>Dépôt seulement</div>
+                  <div className='font-bold'>{t('depositOnly')}</div>
                   <div className='text-sm'>
                     {formatPaymentAmount(summary.depositAmount)}
                   </div>
@@ -307,7 +309,7 @@ export function PaymentForm({
                 className='h-16'
               >
                 <div className='text-center'>
-                  <div className='font-bold'>Payer au complet</div>
+                  <div className='font-bold'>{t('payFull')}</div>
                   <div className='text-sm'>
                     {formatPaymentAmount(summary.totalAmount)}
                   </div>
@@ -316,7 +318,7 @@ export function PaymentForm({
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='custom-amount'>Montant personnalisé</Label>
+              <Label htmlFor='custom-amount'>{t('customAmount')}</Label>
               <Input
                 id='custom-amount'
                 type='text'
@@ -344,7 +346,7 @@ export function PaymentForm({
                   // Select all text on focus for easy replacement
                   e.target.select();
                 }}
-                placeholder='Entrer le montant'
+                placeholder={t('enterAmount')}
                 className='text-right'
               />
             </div>
@@ -356,27 +358,27 @@ export function PaymentForm({
       {paymentFees && (
         <Card>
           <CardHeader>
-            <CardTitle>Frais de paiement</CardTitle>
+            <CardTitle>{t('feesTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className='space-y-2'>
               <div className='flex justify-between'>
-                <span>Montant du paiement :</span>
+                <span>{t('paymentAmount')}</span>
                 <span>{formatPaymentAmount(paymentFees.subtotal)}</span>
               </div>
               <div className='flex justify-between'>
-                <span>Taxe :</span>
+                <span>{t('tax')}</span>
                 <span>{formatPaymentAmount(paymentFees.tax)}</span>
               </div>
               {paymentFees.processingFee > 0 && (
                 <div className='flex justify-between'>
-                  <span>Frais de traitement :</span>
+                  <span>{t('processingFee')}</span>
                   <span>{formatPaymentAmount(paymentFees.processingFee)}</span>
                 </div>
               )}
               <div className='border-t pt-2'>
                 <div className='flex justify-between font-bold'>
-                  <span>Total à payer :</span>
+                  <span>{t('totalToPay')}</span>
                   <span>{formatPaymentAmount(paymentFees.total)}</span>
                 </div>
               </div>
@@ -402,10 +404,10 @@ export function PaymentForm({
         {isProcessing ? (
           <div className='flex items-center space-x-2'>
             <Loader2 className='w-5 h-5 animate-spin' />
-            <span>Traitement du paiement...</span>
+            <span>{t('processing')}</span>
           </div>
         ) : (
-          `Payer ${formatPaymentAmount(paymentFees?.total || paymentAmount)}`
+          t('pay', { amount: formatPaymentAmount(paymentFees?.total || paymentAmount) })
         )}
       </Button>
     </div>

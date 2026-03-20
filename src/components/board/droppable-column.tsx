@@ -2,6 +2,7 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import { DraggableOrderCard } from './draggable-order-card';
+import { useTranslations } from 'next-intl';
 
 interface DroppableColumnProps {
   column: {
@@ -30,6 +31,7 @@ export function DroppableColumn({
   isMobile = false,
   onSelectForMove,
 }: DroppableColumnProps) {
+  const t = useTranslations('board');
   const { isOver, setNodeRef } = useDroppable({
     id: column.id,
   });
@@ -68,7 +70,7 @@ export function DroppableColumn({
         <div className='absolute inset-0 bg-blue-100 bg-opacity-40 rounded-lg border-2 border-dashed border-blue-400 animate-pulse z-10'>
           <div className='absolute inset-0 flex items-center justify-center'>
             <div className='bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium animate-bounce'>
-              Drop here to move to {column.title}
+              {t('actions.dropToMove', { column: column.title })}
             </div>
           </div>
         </div>
@@ -84,7 +86,7 @@ export function DroppableColumn({
               : 'bg-blue-50 border-b border-blue-300 text-blue-600'
           }`}
         >
-          {selectedOrderInThisColumn ? 'Selected card is here' : 'Tap to move here'}
+          {selectedOrderInThisColumn ? t('actions.selectedCardHere') : t('actions.tapToMoveHere')}
         </div>
       )}
 
@@ -93,7 +95,7 @@ export function DroppableColumn({
         <div className='flex items-center justify-between'>
           <h3 className='text-sm font-semibold'>{column.title}</h3>
           <span className='text-xs text-zinc-500'>
-            {orders.length} {orders.length === 1 ? 'order' : 'orders'}
+            {orders.length} {orders.length === 1 ? t('card.orderSingular') : t('card.orderPlural')}
           </span>
         </div>
       </div>
@@ -117,10 +119,10 @@ export function DroppableColumn({
           <div
             className={`py-8 text-center transition-colors duration-200 ${isOver ? 'text-blue-500' : 'text-muted-foreground/70'}`}
           >
-            <p className='text-xs'>No orders</p>
+            <p className='text-xs'>{t('card.noOrders')}</p>
             {isOver && (
               <p className='text-xs text-blue-600 font-medium mt-1 animate-bounce'>
-                Drop here
+                {t('actions.dropHere')}
               </p>
             )}
           </div>
