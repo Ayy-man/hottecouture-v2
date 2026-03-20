@@ -34,14 +34,6 @@ export interface GarmentType {
   is_custom?: boolean;
 }
 
-interface Category {
-  id: string;
-  key: string;
-  name: string;
-  icon: string;
-  display_order: number;
-  is_active: boolean;
-}
 
 export interface GarmentService {
   serviceId: string;
