@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Service } from '@/lib/types/database';
 import { formatCurrency } from '@/lib/pricing/calcTotal';
 import { nanoid } from 'nanoid';
-import { Search, Trash2, Plus } from 'lucide-react';
+import { Search, Trash2, Plus, ChevronRight, Pencil } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 import type { Garment, GarmentService } from './alteration-step';
 
@@ -36,6 +36,72 @@ interface AddedAccessory {
   serviceIndex: number;
 }
 
+interface AccessoryCategory {
+  key: string;
+  label: string;
+  services: Service[];
+}
+
+// ============================================================================
+// Category grouping function
+// ============================================================================
+
+function categorizeAccessories(services: Service[]): AccessoryCategory[] {
+  const categories: Record<string, Service[]> = {};
+  const ORDER = [
+    'zips', 'tissus', 'elastiques', 'cordes', 'velcros',
+    'rideaux', 'fils', 'aiguilles', 'divers'
+  ];
+  const LABELS: Record<string, string> = {
+    zips: 'Fermetures eclair / Zips',
+    tissus: 'Tissus',
+    elastiques: 'Elastiques',
+    cordes: 'Cordes / Courroies',
+    velcros: 'Velcros',
+    rideaux: 'Rideaux',
+    fils: 'Fils',
+    aiguilles: 'Aiguilles',
+    divers: 'Divers',
+  };
+
+  // Initialize all categories
+  for (const key of ORDER) {
+    categories[key] = [];
+  }
+
+  for (const svc of services) {
+    const name = svc.name.toLowerCase();
+    if (/fermeture|zip|zipper|glissi[eè]re/i.test(name)) {
+      categories.zips!.push(svc);
+    } else if (/tissu|fabric|toile|feutre|doublure/i.test(name)) {
+      categories.tissus!.push(svc);
+    } else if (/[eé]lastique|elastic/i.test(name)) {
+      categories.elastiques!.push(svc);
+    } else if (/corde|courroie|sangle|ruban|biais/i.test(name)) {
+      categories.cordes!.push(svc);
+    } else if (/velcro/i.test(name)) {
+      categories.velcros!.push(svc);
+    } else if (/rideau|curtain/i.test(name)) {
+      categories.rideaux!.push(svc);
+    } else if (/\bfil\b|fils|thread|bobine/i.test(name)) {
+      categories.fils!.push(svc);
+    } else if (/aiguille|needle|epingle/i.test(name)) {
+      categories.aiguilles!.push(svc);
+    } else {
+      categories.divers!.push(svc);
+    }
+  }
+
+  // Return only non-empty categories in ORDER
+  return ORDER
+    .filter(key => (categories[key]?.length ?? 0) > 0)
+    .map(key => ({
+      key,
+      label: LABELS[key] ?? key,
+      services: categories[key]!,
+    }));
+}
+
 // ============================================================================
 // Component
 // ============================================================================
@@ -55,6 +121,13 @@ export function AccessoriesStep({
   const [pendingQty, setPendingQty] = useState<Record<string, number>>({});
   // Track per-unit price edits per service before adding
   const [pendingPrice, setPendingPrice] = useState<Record<string, number>>({});
+  // Accordion expanded sections
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  // Manage mode state
+  const [manageMode, setManageMode] = useState(false);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [editServiceName, setEditServiceName] = useState('');
+  const [editServicePrice, setEditServicePrice] = useState('');
   const toast = useToast();
 
   const supabase = createClient();
@@ -101,6 +174,11 @@ export function AccessoriesStep({
     return services.filter(s => s.name.toLowerCase().includes(search));
   }, [services, searchTerm]);
 
+  const groupedCategories = useMemo(
+    () => categorizeAccessories(filteredServices),
+    [filteredServices]
+  );
+
   // Collect all accessory services currently in formData for display
   const addedAccessories: AddedAccessory[] = useMemo(() => {
     const result: AddedAccessory[] = [];
@@ -123,6 +201,114 @@ export function AccessoriesStep({
     });
     return result;
   }, [data, services]);
+
+  // ===========================================================================
+  // Search auto-expand effect
+  // ===========================================================================
+
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      // Expand all sections that have matching results
+      const matchingKeys = new Set(groupedCategories.map(c => c.key));
+      setExpandedSections(matchingKeys);
+    } else {
+      // Clear search = collapse all
+      setExpandedSections(new Set());
+    }
+  }, [searchTerm, groupedCategories]);
+
+  // ===========================================================================
+  // Accordion handlers
+  // ===========================================================================
+
+  const toggleSection = (key: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  // ===========================================================================
+  // Manage mode handlers
+  // ===========================================================================
+
+  const handleStartEditService = (service: Service) => {
+    setEditingServiceId(service.id);
+    setEditServiceName(service.name);
+    setEditServicePrice((service.base_price_cents / 100).toFixed(2));
+  };
+
+  const handleSaveEditService = async () => {
+    if (!editingServiceId || !editServiceName.trim() || !editServicePrice.trim()) return;
+    const price = parseFloat(editServicePrice);
+    if (isNaN(price) || price <= 0) return;
+
+    try {
+      const response = await fetch('/api/admin/services', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingServiceId,
+          name: editServiceName.trim(),
+          price: price,
+        }),
+      });
+      if (response.ok) {
+        // Re-fetch services to reflect changes
+        const { data: fetchedServices } = await supabase
+          .from('service')
+          .select('*')
+          .eq('is_active', true)
+          .in('category', ['accessories', 'accessory'])
+          .order('display_order')
+          .order('name');
+        setServices(fetchedServices || []);
+        toast.success('Service modifie');
+      } else {
+        const result = await response.json();
+        toast.error(result.error || 'Erreur de mise a jour');
+      }
+    } catch (error) {
+      console.error('Error updating service:', error);
+      toast.error('Erreur de mise a jour');
+    }
+    setEditingServiceId(null);
+    setEditServiceName('');
+    setEditServicePrice('');
+  };
+
+  const handleCancelEditService = () => {
+    setEditingServiceId(null);
+    setEditServiceName('');
+    setEditServicePrice('');
+  };
+
+  const handleDeleteService = async (serviceId: string) => {
+    try {
+      const response = await fetch(`/api/admin/services?id=${serviceId}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (response.ok) {
+        const { data: fetchedServices } = await supabase
+          .from('service')
+          .select('*')
+          .eq('is_active', true)
+          .in('category', ['accessories', 'accessory'])
+          .order('display_order')
+          .order('name');
+        setServices(fetchedServices || []);
+        toast.success('Service supprime');
+      } else {
+        toast.error(result.error || result.message || 'Impossible de supprimer');
+      }
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      toast.error('Erreur de suppression');
+    }
+  };
 
   // ===========================================================================
   // Handlers
@@ -290,9 +476,27 @@ export function AccessoriesStep({
           {/* Section 1: Accessory Service Selection */}
           <Card>
             <CardContent className="p-4 space-y-4">
-              <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                Produits et accessoires
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                  Produits et accessoires
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setManageMode(!manageMode);
+                    if (manageMode) handleCancelEditService();
+                  }}
+                  className={`px-2 py-1 rounded transition-colors flex items-center gap-1 text-xs ${
+                    manageMode
+                      ? 'text-primary-600 bg-primary-50 font-medium'
+                      : 'text-muted-foreground hover:text-primary-600 hover:bg-muted/50'
+                  }`}
+                  title={manageMode ? 'Terminer' : 'Gerer'}
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>{manageMode ? 'OK' : 'Gerer'}</span>
+                </button>
+              </div>
 
               {/* Search */}
               <div className="relative">
@@ -306,70 +510,169 @@ export function AccessoriesStep({
                 />
               </div>
 
-              {/* Service List */}
-              {filteredServices.length === 0 ? (
+              {/* Service List — Accordion */}
+              {groupedCategories.length === 0 ? (
                 <p className="text-center text-sm text-muted-foreground py-6">
                   Aucun accessoire trouve
                 </p>
               ) : (
-                <div className="space-y-2">
-                  {filteredServices.map(service => (
-                    <div
-                      key={service.id}
-                      className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-muted/50 rounded-lg"
-                    >
-                      {/* Service Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{service.name}</p>
-                        <p className="text-xs text-primary-600 font-medium">
-                          {formatCurrency(pendingPrice[service.id] ?? service.base_price_cents)}
-                          {service.unit ? ` / ${service.unit}` : ' / unite'}
-                        </p>
-                      </div>
+                <div className="space-y-1">
+                  {groupedCategories.map(category => {
+                    const isExpanded = expandedSections.has(category.key);
+                    return (
+                      <div key={category.key} className="border border-border rounded-lg overflow-hidden">
+                        {/* Section Header (always visible) */}
+                        <button
+                          type="button"
+                          onClick={() => toggleSection(category.key)}
+                          className="w-full flex items-center justify-between px-3 py-2.5 bg-muted/50 hover:bg-muted transition-colors min-h-[44px] touch-manipulation"
+                        >
+                          <div className="flex items-center gap-2">
+                            <ChevronRight
+                              className={`w-4 h-4 text-muted-foreground transition-transform ${
+                                isExpanded ? 'rotate-90' : ''
+                              }`}
+                            />
+                            <span className="text-sm font-medium">{category.label}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground bg-background px-2 py-0.5 rounded-full">
+                            {category.services.length}
+                          </span>
+                        </button>
 
-                      {/* Price Input (per unit - editable before adding) */}
-                      <div className="flex items-center gap-2">
-                        <label className="text-xs text-muted-foreground whitespace-nowrap">
-                          Prix/{service.unit ?? 'unite'}:
-                        </label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          min="0"
-                          step="0.01"
-                          value={((pendingPrice[service.id] ?? service.base_price_cents) / 100).toFixed(2)}
-                          onChange={e => handlePriceChange(service.id, Math.round(parseFloat(e.target.value || '0') * 100))}
-                          className="w-20 text-center border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500"
-                        />
-                      </div>
+                        {/* Section Content (collapsible) */}
+                        {isExpanded && (
+                          <div className="divide-y divide-border">
+                            {category.services.map(service => (
+                              <div key={service.id}>
+                                {editingServiceId === service.id ? (
+                                  <div className="p-3 space-y-2 bg-white border-2 border-primary-500 rounded-lg">
+                                    <input
+                                      type="text"
+                                      value={editServiceName}
+                                      onChange={e => setEditServiceName(e.target.value)}
+                                      className="w-full px-2 py-1.5 border border-border rounded text-sm"
+                                      autoFocus
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') handleSaveEditService();
+                                        if (e.key === 'Escape') handleCancelEditService();
+                                      }}
+                                    />
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-muted-foreground">$</span>
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={editServicePrice}
+                                        onChange={e => setEditServicePrice(e.target.value)}
+                                        className="w-24 px-2 py-1.5 border border-border rounded text-sm"
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter') handleSaveEditService();
+                                          if (e.key === 'Escape') handleCancelEditService();
+                                        }}
+                                      />
+                                      <div className="flex gap-1 ml-auto">
+                                        <button
+                                          type="button"
+                                          onClick={handleSaveEditService}
+                                          className="px-2 py-1 bg-primary-500 text-white rounded text-xs min-h-[36px] touch-manipulation"
+                                        >
+                                          OK
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={handleCancelEditService}
+                                          className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs min-h-[36px] touch-manipulation"
+                                        >
+                                          X
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-muted/50">
+                                    {/* Service Info */}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate">{service.name}</p>
+                                      <p className="text-xs text-primary-600 font-medium">
+                                        {formatCurrency(pendingPrice[service.id] ?? service.base_price_cents)}
+                                        {service.unit ? ` / ${service.unit}` : ' / unite'}
+                                      </p>
+                                    </div>
 
-                      {/* Quantity Input (decimal) */}
-                      <div className="flex items-center gap-2">
-                        <label className="text-xs text-muted-foreground whitespace-nowrap">
-                          {service.unit ?? 'Qte'}:
-                        </label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          min="0.25"
-                          step="0.25"
-                          value={getQtyForService(service.id)}
-                          onChange={e => handleQtyChange(service.id, parseFloat(e.target.value) || 0.25)}
-                          className="w-20 text-center border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500"
-                        />
-                      </div>
+                                    {/* Price Input (per unit - editable before adding) */}
+                                    <div className="flex items-center gap-2">
+                                      <label className="text-xs text-muted-foreground whitespace-nowrap">
+                                        Prix/{service.unit ?? 'unite'}:
+                                      </label>
+                                      <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        min="0"
+                                        step="0.01"
+                                        value={((pendingPrice[service.id] ?? service.base_price_cents) / 100).toFixed(2)}
+                                        onChange={e => handlePriceChange(service.id, Math.round(parseFloat(e.target.value || '0') * 100))}
+                                        className="w-20 text-center border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500"
+                                      />
+                                    </div>
 
-                      {/* Add Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleAddAccessory(service)}
-                        className="flex items-center gap-1 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm min-h-[44px] touch-manipulation transition-colors whitespace-nowrap"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Ajouter
-                      </button>
-                    </div>
-                  ))}
+                                    {/* Quantity Input (decimal) */}
+                                    <div className="flex items-center gap-2">
+                                      <label className="text-xs text-muted-foreground whitespace-nowrap">
+                                        {service.unit ?? 'Qte'}:
+                                      </label>
+                                      <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        min="0.25"
+                                        step="0.25"
+                                        value={getQtyForService(service.id)}
+                                        onChange={e => handleQtyChange(service.id, parseFloat(e.target.value) || 0.25)}
+                                        className="w-20 text-center border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500"
+                                      />
+                                    </div>
+
+                                    {/* Add Button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddAccessory(service)}
+                                      className="flex items-center gap-1 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm min-h-[44px] touch-manipulation transition-colors whitespace-nowrap"
+                                    >
+                                      <Plus className="w-4 h-4" />
+                                      Ajouter
+                                    </button>
+
+                                    {/* Manage mode edit/delete buttons */}
+                                    {manageMode && (
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleStartEditService(service)}
+                                          className="p-1.5 text-muted-foreground hover:text-primary-600 rounded touch-manipulation"
+                                          title="Modifier"
+                                        >
+                                          <Pencil className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteService(service.id)}
+                                          className="p-1.5 text-muted-foreground hover:text-red-600 rounded touch-manipulation"
+                                          title="Supprimer"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
