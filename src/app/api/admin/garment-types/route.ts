@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
-// Maximum number of custom garment types allowed
-const MAX_CUSTOM_TYPES = 10;
-
 /**
  * GET - Get usage count for a garment type
  */
@@ -62,69 +59,6 @@ export async function POST(request: NextRequest) {
     if (!name || !name.trim()) {
       return NextResponse.json(
         { error: 'Garment type name is required' },
-        { status: 400 }
-      );
-    }
-
-    // Check current count of custom types
-    // First check if is_custom column exists by trying a simple query
-    let customCount = 0;
-    try {
-      const { count, error: countError } = await (
-        supabase.from('garment_type') as any
-      )
-        .select('id', { count: 'exact', head: true })
-        .eq('is_custom', true)
-        .eq('is_active', true);
-
-      if (countError) {
-        // If column doesn't exist, check the error code
-        if (
-          countError.code === '42703' ||
-          countError.message?.includes('column') ||
-          countError.message?.includes('is_custom')
-        ) {
-          console.error(
-            'is_custom column does not exist. Please run migration 0008_add_custom_garment_type_support.sql'
-          );
-          return NextResponse.json(
-            {
-              error: 'Database migration required',
-              details:
-                'The is_custom column does not exist. Please run the migration: supabase/migrations/0008_add_custom_garment_type_support.sql',
-              migrationFile: '0008_add_custom_garment_type_support.sql',
-            },
-            { status: 500 }
-          );
-        }
-        console.error('Error counting custom types:', countError);
-        return NextResponse.json(
-          {
-            error: 'Failed to check custom types limit',
-            details: countError.message,
-          },
-          { status: 500 }
-        );
-      }
-      customCount = count || 0;
-    } catch (error) {
-      console.error('Unexpected error counting custom types:', error);
-      return NextResponse.json(
-        {
-          error: 'Failed to check custom types limit',
-          details: error instanceof Error ? error.message : 'Unknown error',
-        },
-        { status: 500 }
-      );
-    }
-
-    if (customCount >= MAX_CUSTOM_TYPES) {
-      return NextResponse.json(
-        {
-          error: `Maximum limit of ${MAX_CUSTOM_TYPES} custom garment types reached`,
-          limit: MAX_CUSTOM_TYPES,
-          current: customCount || 0,
-        },
         { status: 400 }
       );
     }
