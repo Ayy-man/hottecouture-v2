@@ -14,7 +14,7 @@ import { PaymentStatusSection } from '@/components/payments/payment-status-secti
 import { HoldToArchiveButton } from '@/components/ui/hold-and-release-button';
 import { useToast } from '@/components/ui/toast';
 import { CollapsibleNotes } from '@/components/ui/collapsible-notes';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, Pencil, Trash2, Plus, X } from 'lucide-react';
 import { useStaffSession } from '@/components/staff';
 
 interface OrderDetailModalProps {
@@ -57,6 +57,19 @@ export function OrderDetailModal({
   const [editingServicePrice, setEditingServicePrice] = useState<string | null>(null);
   const [editServicePriceCents, setEditServicePriceCents] = useState(0);
   const [savingServicePrice, setSavingServicePrice] = useState<string | null>(null);
+
+  // Order editing state
+  const [editMode, setEditMode] = useState(false);
+  const [availableGarmentTypes, setAvailableGarmentTypes] = useState<any[]>([]);
+  const [availableServices, setAvailableServices] = useState<any[]>([]);
+  const [showAddGarment, setShowAddGarment] = useState(false);
+  const [addingGarment, setAddingGarment] = useState(false);
+  const [addingServiceForGarment, setAddingServiceForGarment] = useState<string | null>(null);
+  const [deletingGarment, setDeletingGarment] = useState<string | null>(null);
+  const [deletingService, setDeletingService] = useState<string | null>(null);
+  const [editingQuantity, setEditingQuantity] = useState<string | null>(null);
+  const [editQuantityValue, setEditQuantityValue] = useState<number>(1);
+  const [savingQuantity, setSavingQuantity] = useState<string | null>(null);
 
   // Privacy masking functions (standardized format)
   const maskPhone = (phone: string): string => {
@@ -210,6 +223,11 @@ export function OrderDetailModal({
       setEditingServicePrice(null);
       setEditServicePriceCents(0);
       setSavingServicePrice(null);
+      // Reset edit mode
+      setEditMode(false);
+      setShowAddGarment(false);
+      setAddingServiceForGarment(null);
+      setEditingQuantity(null);
     }
   }, [isOpen]);
 
@@ -413,6 +431,212 @@ export function OrderDetailModal({
     }
   };
 
+  // Fetch garment types and services when entering edit mode
+  const enterEditMode = async () => {
+    setEditMode(true);
+    try {
+      const [gtRes, svcRes] = await Promise.all([
+        fetch('/api/garment-types'),
+        fetch('/api/services'),
+      ]);
+      if (gtRes.ok) {
+        const gtData = await gtRes.json();
+        setAvailableGarmentTypes(gtData.garmentTypes || []);
+      }
+      if (svcRes.ok) {
+        const svcData = await svcRes.json();
+        setAvailableServices(svcData.services || []);
+      }
+    } catch (err) {
+      console.error('Error fetching edit data:', err);
+    }
+  };
+
+  const exitEditMode = () => {
+    setEditMode(false);
+    setShowAddGarment(false);
+    setAddingServiceForGarment(null);
+    setEditingQuantity(null);
+  };
+
+  // Update local order state with new totals from API response
+  const updateOrderTotals = (orderData: any) => {
+    if (detailedOrder && orderData) {
+      setDetailedOrder((prev: any) => ({
+        ...prev,
+        subtotal_cents: orderData.subtotal_cents,
+        tax_cents: orderData.tax_cents,
+        total_cents: orderData.total_cents,
+      }));
+    }
+  };
+
+  const handleAddGarment = async (garmentTypeId: string) => {
+    if (!order?.id) return;
+    setAddingGarment(true);
+    try {
+      const response = await fetch(`/api/order/${order.id}/garments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ garment_type_id: garmentTypeId }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to add garment');
+      }
+      const result = await response.json();
+      if (detailedOrder) {
+        setDetailedOrder({
+          ...detailedOrder,
+          garments: [...(detailedOrder.garments || []), result.garment],
+        });
+      }
+      setShowAddGarment(false);
+      toast.success('Garment added');
+    } catch (err) {
+      console.error('Error adding garment:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to add garment');
+    } finally {
+      setAddingGarment(false);
+    }
+  };
+
+  const handleDeleteGarment = async (garmentId: string) => {
+    if (!confirm('Remove this garment and all its services?')) return;
+    setDeletingGarment(garmentId);
+    try {
+      const response = await fetch(`/api/garment/${garmentId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to delete garment');
+      }
+      const result = await response.json();
+      if (detailedOrder) {
+        setDetailedOrder({
+          ...detailedOrder,
+          garments: detailedOrder.garments.filter((g: any) => g.id !== garmentId),
+        });
+        updateOrderTotals(result.order);
+      }
+      toast.success('Garment removed');
+    } catch (err) {
+      console.error('Error deleting garment:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to delete garment');
+    } finally {
+      setDeletingGarment(null);
+    }
+  };
+
+  const handleAddService = async (garmentId: string, serviceId: string) => {
+    try {
+      const service = availableServices.find((s: any) => s.id === serviceId);
+      const response = await fetch(`/api/garment/${garmentId}/services`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: serviceId,
+          quantity: 1,
+          price_cents: service?.base_price_cents || 0,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to add service');
+      }
+      const result = await response.json();
+      if (detailedOrder) {
+        const updatedGarments = detailedOrder.garments.map((g: any) =>
+          g.id === garmentId
+            ? { ...g, services: [...(g.services || []), result.garment_service] }
+            : g
+        );
+        setDetailedOrder({
+          ...detailedOrder,
+          garments: updatedGarments,
+        });
+        updateOrderTotals(result.order);
+      }
+      setAddingServiceForGarment(null);
+      toast.success('Service added');
+    } catch (err) {
+      console.error('Error adding service:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to add service');
+    }
+  };
+
+  const handleDeleteService = async (garmentId: string, serviceId: string) => {
+    setDeletingService(serviceId);
+    try {
+      const response = await fetch(`/api/garment-service/${serviceId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to delete service');
+      }
+      const result = await response.json();
+      if (detailedOrder) {
+        const updatedGarments = detailedOrder.garments.map((g: any) =>
+          g.id === garmentId
+            ? { ...g, services: g.services.filter((s: any) => s.id !== serviceId) }
+            : g
+        );
+        setDetailedOrder({
+          ...detailedOrder,
+          garments: updatedGarments,
+        });
+        updateOrderTotals(result.order);
+      }
+      toast.success('Service removed');
+    } catch (err) {
+      console.error('Error deleting service:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to delete service');
+    } finally {
+      setDeletingService(null);
+    }
+  };
+
+  const handleSaveQuantity = async (garmentId: string, serviceId: string) => {
+    setSavingQuantity(serviceId);
+    try {
+      const response = await fetch(`/api/garment-service/${serviceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: editQuantityValue }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to update quantity');
+      }
+      const result = await response.json();
+      if (detailedOrder) {
+        const updatedGarments = detailedOrder.garments.map((g: any) =>
+          g.id === garmentId
+            ? {
+                ...g,
+                services: g.services.map((s: any) =>
+                  s.id === serviceId ? { ...s, quantity: editQuantityValue } : s
+                ),
+              }
+            : g
+        );
+        setDetailedOrder({
+          ...detailedOrder,
+          garments: updatedGarments,
+        });
+        updateOrderTotals(result.order);
+      }
+      setEditingQuantity(null);
+    } catch (err) {
+      console.error('Error saving quantity:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to update quantity');
+    } finally {
+      setSavingQuantity(null);
+    }
+  };
+
   // Helper to get the effective price for a service
   const getServicePriceInfo = (service: any) => {
     const finalPrice = service.final_price_cents;
@@ -487,13 +711,34 @@ export function OrderDetailModal({
                 {displayOrder.client_name || 'Unknown Client'}
               </p>
             </div>
-            <Button
-              variant='outline'
-              onClick={onClose}
-              className='w-full sm:w-auto'
-            >
-              ✕ Close
-            </Button>
+            <div className='flex gap-2 w-full sm:w-auto'>
+              {!isSeamstress && !editMode && (
+                <Button
+                  variant='outline'
+                  onClick={enterEditMode}
+                  className='flex-1 sm:flex-initial'
+                >
+                  <Pencil className='w-4 h-4 mr-1' />
+                  Edit Order
+                </Button>
+              )}
+              {editMode && (
+                <Button
+                  variant='outline'
+                  onClick={exitEditMode}
+                  className='flex-1 sm:flex-initial border-green-500 text-green-700 hover:bg-green-50'
+                >
+                  Done Editing
+                </Button>
+              )}
+              <Button
+                variant='outline'
+                onClick={onClose}
+                className='flex-1 sm:flex-initial'
+              >
+                ✕ Close
+              </Button>
+            </div>
           </div>
 
           {/* Loading skeleton — prevents flash of financial data for seamstresses during hydration */}
@@ -748,9 +993,23 @@ export function OrderDetailModal({
                             </span>
                           )}
                         </div>
-                        <span className='text-sm text-muted-foreground'>
-                          Label: {garment.label_code}
-                        </span>
+                        <div className='flex items-center gap-2'>
+                          <span className='text-sm text-muted-foreground'>
+                            Label: {garment.label_code}
+                          </span>
+                          {editMode && (
+                            <Button
+                              size='sm'
+                              variant='ghost'
+                              onClick={() => handleDeleteGarment(garment.id)}
+                              disabled={deletingGarment === garment.id}
+                              className='text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0'
+                              title='Remove garment'
+                            >
+                              {deletingGarment === garment.id ? '...' : <Trash2 className='w-4 h-4' />}
+                            </Button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Garment Photos */}
@@ -970,9 +1229,63 @@ export function OrderDetailModal({
                                       )}
                                     </div>
                                     <div className='flex items-center gap-2 flex-wrap sm:text-right text-sm sm:min-w-[140px]'>
-                                      <div className='text-muted-foreground'>
-                                        Qty: {service.quantity}
-                                      </div>
+                                      {/* Delete service button in edit mode */}
+                                      {editMode && (
+                                        <Button
+                                          size='sm'
+                                          variant='ghost'
+                                          onClick={() => handleDeleteService(garment.id, service.id)}
+                                          disabled={deletingService === service.id}
+                                          className='text-red-500 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0'
+                                          title='Remove service'
+                                        >
+                                          {deletingService === service.id ? '...' : <X className='w-3 h-3' />}
+                                        </Button>
+                                      )}
+
+                                      {/* Quantity - editable in edit mode */}
+                                      {editMode && editingQuantity === service.id ? (
+                                        <div className='flex items-center gap-1'>
+                                          <input
+                                            type='number'
+                                            min='1'
+                                            value={editQuantityValue}
+                                            onChange={(e) => setEditQuantityValue(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className='w-14 px-1 py-0.5 text-xs border border-blue-300 rounded focus:ring-1 focus:ring-blue-500'
+                                            disabled={savingQuantity === service.id}
+                                          />
+                                          <Button
+                                            size='sm'
+                                            onClick={() => handleSaveQuantity(garment.id, service.id)}
+                                            disabled={savingQuantity === service.id}
+                                            className='bg-blue-600 hover:bg-blue-700 text-xs h-6 px-2'
+                                          >
+                                            {savingQuantity === service.id ? '...' : 'OK'}
+                                          </Button>
+                                          <Button
+                                            size='sm'
+                                            variant='ghost'
+                                            onClick={() => setEditingQuantity(null)}
+                                            className='text-xs h-6 px-1'
+                                          >
+                                            <X className='w-3 h-3' />
+                                          </Button>
+                                        </div>
+                                      ) : editMode ? (
+                                        <button
+                                          onClick={() => {
+                                            setEditingQuantity(service.id);
+                                            setEditQuantityValue(service.quantity || 1);
+                                          }}
+                                          className='text-muted-foreground hover:text-blue-600 cursor-pointer underline decoration-dotted'
+                                        >
+                                          Qty: {service.quantity}
+                                        </button>
+                                      ) : (
+                                        <div className='text-muted-foreground'>
+                                          Qty: {service.quantity}
+                                        </div>
+                                      )}
 
                                       {/* Estimated Price (readonly) — hidden for seamstresses */}
                                       {!isSeamstress && (
@@ -1059,6 +1372,53 @@ export function OrderDetailModal({
                         </div>
                       )}
 
+                      {/* Add Service button in edit mode */}
+                      {editMode && (
+                        <div className='mt-2 pt-2 border-t border-border'>
+                          {addingServiceForGarment === garment.id ? (
+                            <div className='space-y-2'>
+                              <label className='block text-xs font-medium text-muted-foreground'>
+                                Select a service to add:
+                              </label>
+                              <select
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    handleAddService(garment.id, e.target.value);
+                                  }
+                                }}
+                                className='w-full px-3 py-2 text-sm border border-border rounded-md focus:ring-2 focus:ring-blue-500'
+                                defaultValue=''
+                              >
+                                <option value='' disabled>Choose a service...</option>
+                                {availableServices.map((svc: any) => (
+                                  <option key={svc.id} value={svc.id}>
+                                    {svc.name} {svc.category ? `(${svc.category})` : ''} - ${(svc.base_price_cents / 100).toFixed(2)}
+                                  </option>
+                                ))}
+                              </select>
+                              <Button
+                                size='sm'
+                                variant='ghost'
+                                onClick={() => setAddingServiceForGarment(null)}
+                                className='text-xs'
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size='sm'
+                              variant='outline'
+                              onClick={() => setAddingServiceForGarment(garment.id)}
+                              className='text-xs text-blue-600 border-blue-300 hover:bg-blue-50'
+                            >
+                              <Plus className='w-3 h-3 mr-1' />
+                              Add Service
+                            </Button>
+                          )}
+                        </div>
+                      )}
+
                       {/* Garment Task Summary */}
                       <div className='mt-4 pt-3 border-t border-border'>
                         <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2'>
@@ -1084,6 +1444,55 @@ export function OrderDetailModal({
                       </div>
                     </div>
                   ))}
+
+                  {/* Add Garment button in edit mode */}
+                  {editMode && (
+                    <div className='mt-3'>
+                      {showAddGarment ? (
+                        <div className='border border-dashed border-blue-300 rounded-lg p-3 bg-blue-50/50'>
+                          <label className='block text-sm font-medium text-muted-foreground mb-2'>
+                            Select garment type:
+                          </label>
+                          <select
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                handleAddGarment(e.target.value);
+                              }
+                            }}
+                            className='w-full px-3 py-2 text-sm border border-border rounded-md focus:ring-2 focus:ring-blue-500 mb-2'
+                            defaultValue=''
+                            disabled={addingGarment}
+                          >
+                            <option value='' disabled>Choose a garment type...</option>
+                            {availableGarmentTypes.map((gt: any) => (
+                              <option key={gt.id} value={gt.id}>
+                                {gt.icon ? `${gt.icon} ` : ''}{gt.name} ({gt.category})
+                              </option>
+                            ))}
+                          </select>
+                          <Button
+                            size='sm'
+                            variant='ghost'
+                            onClick={() => setShowAddGarment(false)}
+                            disabled={addingGarment}
+                            className='text-xs'
+                          >
+                            Cancel
+                          </Button>
+                          {addingGarment && <span className='text-xs text-muted-foreground ml-2'>Adding...</span>}
+                        </div>
+                      ) : (
+                        <Button
+                          variant='outline'
+                          onClick={() => setShowAddGarment(true)}
+                          className='w-full border-dashed border-blue-300 text-blue-600 hover:bg-blue-50'
+                        >
+                          <Plus className='w-4 h-4 mr-2' />
+                          Add Item
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
