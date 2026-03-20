@@ -76,10 +76,11 @@ export function AlterationStep({
   onUpdate,
   onNext,
   onPrev,
-  orderType = 'alteration',
+  orderType: _orderType = 'alteration',
   client: _client,
   onChangeCustomer: _onChangeCustomer,
 }: AlterationStepProps) {
+  void _orderType;
   void _client;
   void _onChangeCustomer;
 
