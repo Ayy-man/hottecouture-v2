@@ -680,6 +680,16 @@ Plans:
 - [ ] 29-01-PLAN.md — Install emoji-mart, create EmojiPicker component, update categories API for icon override
 - [ ] 29-02-PLAN.md — Wire EmojiPicker into category create/edit forms and garment type create form
 
+### Phase 30: Accessories UX Overhaul — Category Grouping & Service Recategorization
+
+**Goal:** Redesign AccessoriesStep from flat 90+ item list into collapsible accordion grouped by product type, with search auto-expand and manage mode for inline edit/delete of catalog items.
+**Requirements**: ACC-UX-01 (accordion grouping), ACC-UX-02 (search integration), ACC-UX-03 (manage mode)
+**Depends on:** Phase 29
+**Plans:** 1 plan
+
+Plans:
+- [ ] 30-01-PLAN.md — Accordion grouping, search auto-expand, manage mode for AccessoriesStep
+
 ---
 
 ## Suggested Schedule
