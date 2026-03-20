@@ -106,6 +106,8 @@ function OrderHistoryContent() {
         return 'bg-yellow-100 text-yellow-800';
       case 'delivered':
         return 'bg-purple-100 text-purple-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -123,6 +125,8 @@ function OrderHistoryContent() {
         return 'Ready';
       case 'delivered':
         return 'Delivered';
+      case 'cancelled':
+        return 'Cancelled';
       default:
         return status;
     }
@@ -254,10 +258,12 @@ function OrderHistoryContent() {
                     <p className='text-sm text-muted-foreground'>Total Value</p>
                     <p className='text-2xl font-bold'>
                       {formatCurrency(
-                        orders.reduce(
-                          (sum, order) => sum + order.total_cents,
-                          0
-                        )
+                        orders
+                          .filter(order => order.status !== 'cancelled')
+                          .reduce(
+                            (sum, order) => sum + order.total_cents,
+                            0
+                          )
                       )}
                     </p>
                   </div>

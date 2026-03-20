@@ -107,13 +107,16 @@ export async function getOrderMetrics(): Promise<OrderMetrics> {
 
   if (error) throw error
 
-  const statusCounts = orders?.reduce((acc: any, order: any) => {
+  // Exclude cancelled orders from metrics
+  const activeOrders = orders?.filter((o: any) => o.status !== 'cancelled') || []
+
+  const statusCounts = activeOrders.reduce((acc: any, order: any) => {
     acc[order.status] = (acc[order.status] || 0) + 1
     return acc
-  }, {} as Record<string, number>) || {}
+  }, {} as Record<string, number>)
 
   // Calculate average turnaround time
-  const deliveredOrders = orders?.filter((o: any) => o.status === 'delivered' && o.created_at && o.delivered_at) || []
+  const deliveredOrders = activeOrders.filter((o: any) => o.status === 'delivered' && o.created_at && o.delivered_at)
   const turnaroundTimes = deliveredOrders.map((order: any) => {
     const created = new Date(order.created_at!)
     const delivered = new Date(order.delivered_at!)
@@ -133,7 +136,7 @@ export async function getOrderMetrics(): Promise<OrderMetrics> {
     : 0
 
   return {
-    total: orders?.length || 0,
+    total: activeOrders.length,
     pending: statusCounts.pending || 0,
     working: statusCounts.working || 0,
     done: statusCounts.done || 0,
@@ -180,13 +183,16 @@ export async function getCustomerMetrics(): Promise<CustomerMetrics> {
     (client.order?.length || 0) > 1
   ).length || 0
 
-  // Calculate top customers by revenue
-  const topCustomers = clients?.map((client: any) => ({
-    id: client.id,
-    name: `${client.first_name} ${client.last_name}`,
-    orderCount: client.order?.length || 0,
-    totalSpent: client.order?.reduce((sum: number, order: any) => sum + (order.total || 0), 0) || 0
-  }))
+  // Calculate top customers by revenue (excluding cancelled orders)
+  const topCustomers = clients?.map((client: any) => {
+    const nonCancelledOrders = client.order?.filter((o: any) => o.status !== 'cancelled') || []
+    return {
+      id: client.id,
+      name: `${client.first_name} ${client.last_name}`,
+      orderCount: nonCancelledOrders.length,
+      totalSpent: nonCancelledOrders.reduce((sum: number, order: any) => sum + (order.total || 0), 0),
+    }
+  })
   .sort((a: any, b: any) => b.totalSpent - a.totalSpent)
   .slice(0, 10) || []
 

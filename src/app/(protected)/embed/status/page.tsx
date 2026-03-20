@@ -16,6 +16,7 @@ const STATUS_COLORS: Record<string, string> = {
   done: '#22C55E',
   ready: '#A855F7',
   delivered: '#6B7280',
+  cancelled: '#EF4444',
 };
 
 export default function EmbeddableStatusPage() {

@@ -123,7 +123,8 @@
       "working": "En Cours",
       "done": "Terminé",
       "ready": "Prêt",
-      "delivered": "Livré"
+      "delivered": "Livré",
+      "cancelled": "Annulé"
     },
     "filters": {
       "rush": "Commandes Urgentes",
@@ -187,7 +188,8 @@
         "done": "Terminé",
         "ready": "Prêt",
         "delivered": "Livré",
-        "archived": "Archivé"
+        "archived": "Archivé",
+        "cancelled": "Annulé"
       },
       "stages": {
         "pending": "En Attente",

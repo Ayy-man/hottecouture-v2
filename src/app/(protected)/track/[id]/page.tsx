@@ -34,6 +34,7 @@ const statusLabels: Record<string, { label: string; color: string; icon: React.R
   in_progress: { label: 'En cours', color: 'bg-purple-100 text-purple-800', icon: <Package className='w-4 h-4' /> },
   ready: { label: 'Prêt à ramasser', color: 'bg-green-100 text-green-800', icon: <CheckCircle2 className='w-4 h-4' /> },
   delivered: { label: 'Livré', color: 'bg-gray-100 text-gray-800', icon: <CheckCircle2 className='w-4 h-4' /> },
+  cancelled: { label: 'Annulé', color: 'bg-red-100 text-red-800', icon: <Clock className='w-4 h-4' /> },
 };
 
 export default function TrackOrderPage() {
