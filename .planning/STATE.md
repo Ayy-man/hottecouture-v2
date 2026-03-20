@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-03-18T15:08:37.232Z"
+status: executing
+stopped_at: Completed 30-01-PLAN.md
+last_updated: "2026-03-20T15:33:22.002Z"
 progress:
-  total_phases: 39
-  completed_phases: 26
-  total_plans: 61
-  completed_plans: 53
+  total_phases: 40
+  completed_phases: 27
+  total_plans: 62
+  completed_plans: 54
 ---
 
 # Project State
@@ -23,7 +23,7 @@ See: `.planning/PROJECT.md` (updated 2026-03-04)
 See: `.planning/ROADMAP-M2.md` for current milestone roadmap
 
 **Core value:** Seamstresses can take orders on iPad/iPhone, assign items to team members, adjust prices, and print task lists.
-**Current focus:** Milestone 2 — Production Launch (11 phases: original 4 bug fixes + 7 new from Mar 13 client brief)
+**Current focus:** Phase 30 — accessories-ux-overhaul-category-grouping-service-recategorization
 
 ## Current Status
 
@@ -132,6 +132,7 @@ WAVE 10 (Access Control) ⏳ IN PROGRESS
 ## Feb 3 UAT Context
 
 Client's consulting team (AUTOMATO Solutions) compiled a comparative analysis:
+
 - 8/15 original items confirmed working (53%)
 - 3 items "claimed fixed" but unverified on real devices
 - 3 items not addressed (item assignment, chronometer, unified workflow)
@@ -139,6 +140,7 @@ Client's consulting team (AUTOMATO Solutions) compiled a comparative analysis:
 - 12 new items discovered during Feb 3 review
 
 Key concerns from client:
+
 - Item-level assignment not working in demo (critical)
 - Price editing regression (was working, now broken)
 - Label printer incompatible format
@@ -217,6 +219,7 @@ Key concerns from client:
 | Original calculation preservation | 23-03 | Store original calculation in separate state (originalCalculation) for reset functionality. Reset button needs to restore exact original values, not recalculate from current data. |
 | French calendar locale | 23-03 | Use date-fns fr locale for calendar display with PPP format. Shows dates like '14 février 2026' matching primary French UI. More user-friendly than native HTML5 input. |
 | Tomorrow as minimum date | 23-03 | Disable dates before tomorrow in calendar picker. Same business logic as previous getMinDate() - orders cannot be due today or in the past. |
+
 - [Phase 24-02]: Gantt drag handles: w-2 (8px) → w-4 (16px) with transparent default (bg-black/0) and hover darkening
 - [Phase 24-02]: French tooltip labels: Commande #, Temps estimé, Échéance for workload items
 - [Phase 25-01]: Dual print hiding strategy: Tailwind print:hidden classes for explicit component control, global @media print rules as safety net
@@ -266,6 +269,8 @@ Key concerns from client:
 - [Phase 08-02]: Welcome SMS placed inside ghlSyncResult.success block — contactId guaranteed in scope, no extra findOrCreateContact call
 - [Phase 08-02]: shouldSendNotification variable retained in stage/route.ts but removed from ready condition — avoids DTO schema change
 - [Phase 08-02]: Server-side auto-fire pattern: notifications triggered in stage handler, board page calls executeOrderUpdate directly with sendNotification:false for all statuses
+- [Phase 30]: Client-side categorization via regex patterns on service names — no DB schema change needed
+- [Phase 30]: All sections collapsed by default (empty Set) — browse-first UX for Audrey on iPad
 
 ## Milestone 2 Progress
 
@@ -283,6 +288,7 @@ Key concerns from client:
 **Phase 6 — Next after Wave 2.** Order Form Restructure (MKT-116) — depends on Phase 5 which is now unblocked.
 
 **Design decisions (Feb 22):**
+
 - Board: seamstresses see only orders with items assigned to them
 - Order detail: seamstresses see ALL garments/tasks (full job context) but NO pricing, NO payments, NO client contact info
 - Calendar: only their tasks + unassigned pool
@@ -300,6 +306,7 @@ Key concerns from client:
 **Phase 13 — Fixed.** Re-enabled total price modifier in pricing-step.tsx. The "Modifier" button and edit/save/reset UI were commented out in commit c059ecf. Restored state variables (isEditingTotal, editTotalValue), added totalOverrideCents/onTotalOverrideChange back to destructured props, shows override vs calculated price.
 
 **Phase 14 — Implemented.** Added mandatory time estimate field:
+
 - `estimatedMinutes` field added to GarmentService interface
 - Time input (minutes) with red border validation on each service row
 - "Le temps estime est requis" validation message
@@ -308,6 +315,7 @@ Key concerns from client:
 - estimatedMinutes preserved through assignment step data flow
 
 **Files modified:**
+
 - `src/components/intake/pricing-step.tsx` — Re-enabled total modifier
 - `src/components/intake/garment-services-step.tsx` — Added time field + validation
 - `src/app/intake/page.tsx` — Added estimatedMinutes to type + preserved in assignment handler
@@ -318,6 +326,7 @@ Key concerns from client:
 ## Wave 5 Progress (Feb 4)
 
 **Phase 15 — Complete.** Fixed label printing format for individual label printer:
+
 - Changed from 2-column letter-page grid to individual 4" x 2" labels
 - Each label is one "page" (break-after: page) for label printer
 - Horizontal layout: QR code left, all content right
@@ -327,10 +336,12 @@ Key concerns from client:
 - Requires testing with physical label printer to verify dimensions and print quality
 
 **Files modified:**
+
 - `src/lib/config/production.ts` — Added labelWidth and labelHeight config
 - `src/app/labels/[orderId]/page.tsx` — Rewrote layout for individual labels
 
 **Phase 16 — Complete.** Fixed assignment dropdown viewport collision:
+
 - Added viewport collision detection to SelectContent positioning logic
 - Dropdown opens above trigger when insufficient space below
 - Dropdown opens below trigger when insufficient space above
@@ -340,9 +351,11 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `src/components/ui/select.tsx` — Added viewport-aware positioning logic
 
 **Phase 17 — Complete.** Updated contact field validation for N8N workflows:
+
 - Mobile/SMS and email now mandatory for new client creation
 - Phone (landline) changed from required to optional
 - Added "Phone (Landline)" as third preferred contact option
@@ -356,12 +369,14 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `supabase/migrations/0038_update_preferred_contact_and_fields.sql` — CHECK constraint update
 - `src/lib/dto.ts` — Updated clientCreateSchema validation rules
 - `src/components/intake/client-step.tsx` — Form UI, validation, field management
 - `src/app/api/intake/route.ts` — API client insert with mobile_phone and preferred_contact
 
 **Phase 18 — Complete.** Enhanced modal UX with keyboard and backdrop interactions:
+
 - Added ESC key handler to OrderDetailModal using useEffect with keydown listener
 - Added backdrop click handler with e.target === e.currentTarget check
 - Workload page now opens OrderDetailModal inline instead of navigating to /board
@@ -371,10 +386,12 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `src/components/board/order-detail-modal.tsx` — ESC key handler and backdrop click
 - `src/app/board/workload/page.tsx` — Inline modal rendering with state management
 
 **Phase 19 — Complete.** Added toast success feedback to garment-services workflow:
+
 - Imported useToast hook from @/components/ui/toast
 - Added toast.success call in handleAddToOrder after onUpdate
 - Shows "Article ajouté à la commande" message to users
@@ -384,9 +401,11 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `src/components/intake/garment-services-step.tsx` — Added toast feedback
 
 **Phase 20 — Complete.** Removed dead Stripe payment code and added fallback URL logging:
+
 - Removed unused payment session handling from route.ts (order creation)
 - Removed dead Stripe webhook handler (commented out code)
 - Added fallback URL logging if env vars missing (prevents blank redirects)
@@ -394,11 +413,13 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `src/app/api/intake/route.ts` — Removed Stripe session code, added fallback logging
 
 ## Wave 6 Progress (Feb 4)
 
 **Phase 21 Plan 01 — Complete.** Fixed layout overflow issues on 15 pages:
+
 - Replaced h-screen and min-h-screen with h-full flex flex-col overflow-hidden pattern
 - Fixed content clipping in root layout's overflow-hidden grid cell
 - All pages now properly fill grid cell and scroll correctly
@@ -408,6 +429,7 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `src/app/page.tsx` — h-screen → h-full
 - `src/app/board/workload/page.tsx` — h-screen → h-full
 - `src/app/board/today/page.tsx` — min-h-screen → h-full pattern
@@ -425,6 +447,7 @@ Key concerns from client:
 - `src/app/dashboard/analytics/page.tsx` — min-h-screen → h-full pattern
 
 **Phase 21 Plan 02 — Complete.** Fixed mobile service row overflow in intake and order detail:
+
 - GarmentServicesStep service rows: Restructured to two-row mobile layout (flex-col → sm:flex-row)
 - Row 1: Service name + qty controls | Row 2: Price + time + assignment + remove
 - OrderDetailModal: Added responsive modal width (max-w-full sm:max-w-6xl)
@@ -436,10 +459,12 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `src/components/intake/garment-services-step.tsx` — Two-row mobile service layout
 - `src/components/board/order-detail-modal.tsx` — Responsive modal width and service rows
 
 **Phase 21 Plan 04 — Complete.** Fixed 7 remaining responsive issues across 7 pages:
+
 - Workload unassigned buttons: 44px touch targets (H1) with min-h-[44px] sm:min-h-0
 - Workload member select: 120px → 160px width (H2) for full name display
 - Board export button: bottom-20 md:bottom-8 positioning (H3) prevents nav overlap
@@ -452,6 +477,7 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `src/app/board/workload/page.tsx` — Touch targets and select width
 - `src/app/board/page.tsx` — Export button position
 - `src/app/calendar/page.tsx` — Date range width and text
@@ -461,6 +487,7 @@ Key concerns from client:
 - `src/components/intake/pricing-step.tsx` — Input width
 
 **Phase 21 Plan 03 — Complete.** Added touch device support to interactive components:
+
 - Kanban board DnD: Added TouchSensor alongside PointerSensor with 250ms delay and 5px tolerance
 - Prevents scroll-vs-drag conflicts on touch devices
 - Gantt chart bars: Added touch event handlers (onTouchStart, onTouchMove, onTouchEnd) to all drag handles
@@ -473,6 +500,7 @@ Key concerns from client:
 - TypeScript compiles clean
 
 **Files modified:**
+
 - `src/components/board/interactive-board.tsx` — TouchSensor for kanban DnD
 - `src/components/ui/gantt.tsx` — Touch handlers and long-press context menu
 
@@ -481,21 +509,25 @@ Key concerns from client:
 **Phase 22 — Complete.** Closed all audit gaps (4 bugs + 3 features):
 
 **Plan 22-01 — Board scroll fix + chatbot hide + French headers:**
+
 - Board page: h-screen → h-full, overflow-hidden → overflow-y-auto
 - 4 English strings replaced with French (Tableau de Production, Nouvelle Commande, Charge de Travail, Commandes Archivees)
 - GlobalChatWrapper wrapped in hidden div on all devices
 
 **Plan 22-02 — Service table with three-dot menu:**
+
 - Admin pricing page: full service listing table below import section
 - Each row has DropdownMenu with Modifier (inline edit), Exporter (CSV), Supprimer (soft delete with usage check)
 - Services refresh after successful import
 
 **Plan 22-03 — Custom garment type creation:**
+
 - "Ajouter un type personnalise..." button in garment type dropdown
 - Inline form with name input, category selector (8 French options), Create/Cancel buttons
 - Creates via /api/admin/garment-types, auto-selects, 10-type limit enforced
 
 **Files modified:**
+
 - `src/app/board/page.tsx` — Scroll fix + French headers
 - `src/app/layout.tsx` — Hide chatbot
 - `src/app/admin/pricing/page.tsx` — Service table + 3-dot menu
@@ -512,6 +544,7 @@ Fixed 4 cascading build failures after adding all source files to git:
 5. **Select `exactOptionalPropertyTypes` conflict** — Select value prop typed as `string?` but received `string | undefined`. Added explicit undefined to union type.
 
 **Files modified:**
+
 - `src/app/labels/[orderId]/page.tsx` — Removed extra closing div
 - `src/app/intake/page.tsx` — Added mobile_phone to client type
 - `src/components/ui/dialog.tsx` — Created new file
@@ -537,9 +570,9 @@ Fixed 4 cascading build failures after adding all source files to git:
 
 ## Session Continuity
 
-- **Last session:** 2026-03-18T15:08:37.229Z
-- **Status:** Ready to plan
-- **Stopped at:** Completed 08-02-PLAN.md
+- **Last session:** 2026-03-20T15:33:21.999Z
+- **Status:** Executing Phase 30
+- **Stopped at:** Completed 30-01-PLAN.md
 - **Next:** Wave 2 parallel phases (2, 3, 4) — French templates, garment type admin, emoji picker touch
 - **Resume file:** None
 

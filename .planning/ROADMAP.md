@@ -685,7 +685,7 @@ Plans:
 **Goal:** Redesign AccessoriesStep from flat 90+ item list into collapsible accordion grouped by product type, with search auto-expand and manage mode for inline edit/delete of catalog items.
 **Requirements**: ACC-UX-01 (accordion grouping), ACC-UX-02 (search integration), ACC-UX-03 (manage mode)
 **Depends on:** Phase 29
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 30-01-PLAN.md — Accordion grouping, search auto-expand, manage mode for AccessoriesStep
