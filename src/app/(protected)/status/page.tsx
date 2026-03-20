@@ -129,6 +129,8 @@ export default function OrderStatusPage() {
         return 'bg-yellow-100 text-yellow-800';
       case 'delivered':
         return 'bg-primary-200 text-primary-900';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-muted text-foreground';
     }
@@ -146,6 +148,8 @@ export default function OrderStatusPage() {
         return 'Prêt';
       case 'delivered':
         return 'Livré';
+      case 'cancelled':
+        return 'Annulé';
       default:
         return status;
     }

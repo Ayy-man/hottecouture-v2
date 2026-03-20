@@ -431,13 +431,16 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
 
       if (!orders) return JSON.stringify({ error: 'Database query failed' });
 
+      // Exclude cancelled orders from stats and revenue
+      const activeOrders = orders.filter((o: any) => o.status !== 'cancelled');
+
       const counts: Record<string, number> = {};
-      orders.forEach((o: any) => {
+      activeOrders.forEach((o: any) => {
         counts[o.status] = (counts[o.status] || 0) + 1;
       });
 
       const today = new Date().toISOString().split('T')[0];
-      const todayRevenue = orders
+      const todayRevenue = activeOrders
         .filter((o: any) => o.created_at?.startsWith(today))
         .reduce((sum: number, o: any) => sum + (o.total_cents || 0), 0);
 
@@ -449,7 +452,7 @@ async function executeToolCall(name: string, args: Record<string, any>, supabase
           ready: counts['ready'] || 0,
           delivered: counts['delivered'] || 0
         },
-        total_active: orders.length,
+        total_active: activeOrders.length,
         today_revenue: `$${(todayRevenue / 100).toFixed(2)}`
       });
     }

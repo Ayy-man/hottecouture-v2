@@ -187,19 +187,21 @@ export class ClientService {
     // Get order history
     const { data: orders, error: ordersError } = await supabase
       .from('order')
-      .select('id, total_cents, created_at, completed_at, type')
+      .select('id, total_cents, created_at, completed_at, type, status')
       .eq('client_id', clientId);
 
     if (ordersError) {
       throw new Error(`Failed to get client orders: ${ordersError.message}`);
     }
 
-    const totalOrders = orders?.length || 0;
+    // Exclude cancelled orders from revenue calculations
+    const nonCancelledOrders = orders?.filter((o: any) => o.status !== 'cancelled') || [];
+    const totalOrders = nonCancelledOrders.length;
     const totalSpent =
-      orders?.reduce(
+      nonCancelledOrders.reduce(
         (sum: number, order: any) => sum + (order.total_cents || 0),
         0
-      ) || 0;
+      );
     const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
 
     const firstOrderDate =

@@ -609,7 +609,8 @@ export type Database = {
         | 'done'
         | 'ready'
         | 'delivered'
-        | 'archived';
+        | 'archived'
+        | 'cancelled';
       order_type: 'alteration' | 'custom';
       preferred_contact: 'sms' | 'email' | 'phone';
       price_list_type: 'alteration' | 'custom';

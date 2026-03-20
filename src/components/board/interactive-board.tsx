@@ -36,6 +36,11 @@ const COLUMNS = [
     title: 'Delivered',
     description: 'Completed and delivered',
   },
+  {
+    id: 'cancelled',
+    title: 'Cancelled',
+    description: 'Cancelled orders',
+  },
 ];
 
 interface InteractiveBoardProps {
@@ -133,6 +138,8 @@ export function InteractiveBoard({
       case 'delivered':
       case 'archived': // Auto-archived orders appear in delivered column
         return 'delivered';
+      case 'cancelled':
+        return 'cancelled';
       default:
         return 'pending';
     }
@@ -171,6 +178,7 @@ export function InteractiveBoard({
       done: 'done', // Fixed: was 'completed', should be 'done'
       ready: 'ready',
       delivered: 'delivered',
+      cancelled: 'cancelled',
     };
 
     const mappedStatus = statusMap[newStatus];
@@ -227,6 +235,7 @@ export function InteractiveBoard({
       done: 'done',
       ready: 'ready',
       delivered: 'delivered',
+      cancelled: 'cancelled',
     };
 
     const mappedStatus = statusMap[columnId];
@@ -257,7 +266,7 @@ export function InteractiveBoard({
       >
         {/* Board content - Horizontally scrollable on mobile, grid on desktop */}
         <div className='h-full min-h-0 overflow-x-auto overflow-y-auto'>
-          <div className='flex md:grid md:grid-cols-5 gap-2 md:gap-2 lg:gap-4 min-w-max md:min-w-0 md:w-full'>
+          <div className='flex md:grid md:grid-cols-6 gap-2 md:gap-2 lg:gap-4 min-w-max md:min-w-0 md:w-full'>
             {COLUMNS.map(column => (
               <DroppableColumn
                 key={column.id}

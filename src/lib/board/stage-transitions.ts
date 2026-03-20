@@ -141,12 +141,13 @@ export function canOrderMoveToStatus(order: OrderWithTasks, targetStatus: OrderS
   
   // Define valid order status transitions
   const validOrderTransitions: Record<OrderStatus, OrderStatus[]> = {
-    pending: ['working', 'archived'],
-    working: ['done', 'pending', 'archived'],
-    done: ['ready', 'working', 'archived'],
-    ready: ['delivered', 'done', 'archived'],
+    pending: ['working', 'cancelled', 'archived'],
+    working: ['done', 'pending', 'cancelled', 'archived'],
+    done: ['ready', 'working', 'cancelled', 'archived'],
+    ready: ['delivered', 'done', 'cancelled', 'archived'],
     delivered: ['ready', 'archived'],
-    archived: ['pending', 'working', 'done', 'ready', 'delivered'], // Allow full unarchiving (same as delivered)
+    archived: ['pending', 'working', 'done', 'ready', 'delivered'],
+    cancelled: ['pending'], // Allow reopening a cancelled order
   }
 
   return validOrderTransitions[currentStatus]?.includes(targetStatus) ?? false
@@ -163,6 +164,7 @@ export function getMinimumStageForOrderStatus(status: OrderStatus): TaskStage {
     ready: 'ready',
     delivered: 'delivered',
     archived: 'pending', // Archived orders can have any stage
+    cancelled: 'pending', // Cancelled orders retain their task stages
   }
 
   return statusToStage[status]

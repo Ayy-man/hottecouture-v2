@@ -122,6 +122,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
       done: 'bg-green-100 text-green-800',
       ready: 'bg-purple-100 text-purple-800',
       delivered: 'bg-gray-100 text-gray-800',
+      cancelled: 'bg-red-100 text-red-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };

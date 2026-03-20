@@ -30,6 +30,7 @@ const STATUS_COLORS: Record<string, string> = {
   done: '#10b981',
   ready: '#8b5cf6',
   delivered: '#6b7280',
+  cancelled: '#ef4444',
 };
 
 interface ServiceItem {
