@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -84,6 +85,15 @@ export function AlterationStep({
   void _client;
   void _onChangeCustomer;
 
+  const t = useTranslations('intake.alteration');
+  const tg = useTranslations('intake.garments');
+  const ts = useTranslations('intake.services');
+  const te = useTranslations('intake.errors');
+  const tm = useTranslations('intake.manage');
+  const tv = useTranslations('intake.view');
+  const ta = useTranslations('intake.assignment');
+  const tc = useTranslations('common');
+
   // ===========================================================================
   // State: Garment Configuration
   // ===========================================================================
@@ -148,9 +158,9 @@ export function AlterationStep({
 
   // Helper to get seamstress name from ID
   const getSeamstressName = (id: string | null): string => {
-    if (!id) return 'Assigner';
+    if (!id) return ta('assign');
     const found = staff.find(s => s.id === id);
-    return found ? found.name : 'Assigner';
+    return found ? found.name : ta('assign');
   };
 
   // ===========================================================================
@@ -208,14 +218,14 @@ export function AlterationStep({
       });
       if (response.ok) {
         await loadGarmentTypes();
-        toast.success('Type mis a jour');
+        toast.success(tg('typeUpdated'));
       } else {
         const result = await response.json();
-        toast.error(result.error || 'Echec de la mise a jour');
+        toast.error(result.error || te('updateFailed'));
       }
     } catch (error) {
       console.error('Error updating garment type:', error);
-      toast.error('Echec de la mise a jour');
+      toast.error(te('updateFailed'));
     }
     setEditingTypeId(null);
     setEditTypeName('');
@@ -236,13 +246,13 @@ export function AlterationStep({
       const result = await response.json();
       if (response.ok) {
         await loadGarmentTypes();
-        toast.success('Type supprime');
+        toast.success(tg('typeDeleted'));
       } else {
-        toast.error(result.error || result.message || 'Impossible de supprimer ce type');
+        toast.error(result.error || result.message || tg('cannotDeleteType'));
       }
     } catch (error) {
       console.error('Error deleting garment type:', error);
-      toast.error('Echec de la suppression');
+      toast.error(te('deleteFailed'));
     }
   };
 
@@ -291,14 +301,14 @@ export function AlterationStep({
       });
       if (response.ok) {
         await fetchServices();
-        toast.success('Service mis a jour');
+        toast.success(ts('serviceUpdated'));
       } else {
         const result = await response.json();
-        toast.error(result.error || 'Echec de la mise a jour');
+        toast.error(result.error || te('updateFailed'));
       }
     } catch (error) {
       console.error('Error updating service:', error);
-      toast.error('Echec de la mise a jour');
+      toast.error(te('updateFailed'));
     }
     setEditingServiceId(null);
     setEditServiceName('');
@@ -319,13 +329,13 @@ export function AlterationStep({
       const result = await response.json();
       if (response.ok) {
         await fetchServices();
-        toast.success('Service supprime');
+        toast.success(ts('serviceDeleted'));
       } else {
-        toast.error(result.error || 'Impossible de supprimer ce service');
+        toast.error(result.error || ts('cannotDeleteService'));
       }
     } catch (error) {
       console.error('Error deleting service:', error);
-      toast.error('Echec de la suppression');
+      toast.error(te('deleteFailed'));
     }
   };
 
@@ -393,7 +403,7 @@ export function AlterationStep({
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || 'Echec de la creation du type de vetement personnalise');
+        alert(result.error || tg('customTypeCreateFailed'));
         return;
       }
 
@@ -409,7 +419,7 @@ export function AlterationStep({
       setShowAddCustomForm(false);
     } catch (error) {
       console.error('Error creating custom type:', error);
-      alert('Echec de la creation du type de vetement personnalise');
+      alert(tg('customTypeCreateFailed'));
     }
   };
 
@@ -466,7 +476,7 @@ export function AlterationStep({
           setCurrentGarment(prev => ({ ...prev, photo_path: result.path }));
         } else {
           console.error('Photo upload failed');
-          alert('Echec du telechargement de la photo. Veuillez reessayer.');
+          alert(tg('photoUploadFailed'));
         }
         setUploadingPhoto(false);
       };
@@ -576,7 +586,7 @@ export function AlterationStep({
     const priceCents = Math.round(priceDollars * 100);
 
     if (priceCents <= 0) {
-      alert('Le prix doit etre superieur a 0');
+      alert(te('priceRequired'));
       return;
     }
 
@@ -584,7 +594,7 @@ export function AlterationStep({
       s => (s.serviceName || '').toLowerCase() === name.toLowerCase()
     );
     if (isDuplicate) {
-      alert(`Le service "${name}" existe deja dans cet article`);
+      alert(te('duplicateService', { name }));
       return;
     }
 
@@ -629,7 +639,7 @@ export function AlterationStep({
 
     onUpdate([...data, newGarment]);
 
-    toast.success('Article ajoute a la commande');
+    toast.success(tg('addedToOrder'));
 
     setCurrentGarment({
       type: '',
@@ -673,15 +683,15 @@ export function AlterationStep({
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Retour
+            {tc('back')}
           </Button>
-          <h2 className="text-lg font-semibold text-foreground">Retouches</h2>
-          <Button disabled className="opacity-50">Suivant</Button>
+          <h2 className="text-lg font-semibold text-foreground">{t('title')}</h2>
+          <Button disabled className="opacity-50">{tc('next')}</Button>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Chargement...</p>
+            <p className="text-muted-foreground">{tc('loading')}</p>
           </div>
         </div>
       </div>
@@ -704,13 +714,13 @@ export function AlterationStep({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Retour
+          {tc('back')}
         </Button>
 
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-foreground">Retouches</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('title')}</h2>
           <p className="text-xs text-muted-foreground">
-            {data.length} article{data.length !== 1 ? 's' : ''} dans la commande
+            {t('itemCount', { count: data.length })}
           </p>
         </div>
 
@@ -719,7 +729,7 @@ export function AlterationStep({
           disabled={!canProceedToNext}
           className="bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white disabled:opacity-50"
         >
-          {data.length > 0 ? 'Suivant' : 'Passer aux accessoires'}
+          {data.length > 0 ? tc('next') : t('skipToAccessories')}
         </Button>
       </div>
 
@@ -730,7 +740,7 @@ export function AlterationStep({
           {/* Empty state hint */}
           {data.length === 0 && !currentGarment.garment_type_id && (
             <div className="text-center py-3 text-sm text-muted-foreground bg-muted/30 rounded-lg">
-              Aucune retouche ajoutee. Vous pouvez passer aux accessoires.
+              {t('emptyState')}
             </div>
           )}
 
@@ -739,7 +749,7 @@ export function AlterationStep({
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center gap-2">
                 <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                  1. Type de vetement
+                  {t('garmentTypeHeading')}
                 </h3>
                 <button
                   type="button"
@@ -750,16 +760,16 @@ export function AlterationStep({
                     }
                   }}
                   className={`px-2 py-1 rounded transition-colors flex items-center gap-1 text-xs ${garmentManageMode ? 'text-primary-600 bg-primary-50 font-medium' : 'text-muted-foreground hover:text-primary-600 hover:bg-muted/50'}`}
-                  title={garmentManageMode ? 'Terminer la gestion' : 'Gerer les types'}
+                  title={garmentManageMode ? tm('done') : tm('types')}
                 >
                   <Pencil className="w-3.5 h-3.5" />
-                  <span>{garmentManageMode ? 'OK' : 'Gerer'}</span>
+                  <span>{garmentManageMode ? 'OK' : tm('manage')}</span>
                 </button>
               </div>
 
               {/* Garment Type Dropdown */}
               <div className="garment-type-dropdown">
-                <label className="block text-sm font-medium mb-1">Type de vetement *</label>
+                <label className="block text-sm font-medium mb-1">{tg('typeRequired')}</label>
                 <div className="relative">
                   <button
                     type="button"
@@ -768,8 +778,8 @@ export function AlterationStep({
                   >
                     <span className="truncate">
                       {currentGarment.garment_type_id
-                        ? `${garmentTypes.find(gt => gt.id === currentGarment.garment_type_id)?.icon || ''} ${currentGarment.type || 'Choisir un type...'}`
-                        : 'Choisir un type de vetement...'}
+                        ? `${garmentTypes.find(gt => gt.id === currentGarment.garment_type_id)?.icon || ''} ${currentGarment.type || tg('chooseType')}`
+                        : tg('chooseGarmentType')}
                     </span>
                     <svg
                       className={`w-5 h-5 text-muted-foreground transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
@@ -839,7 +849,7 @@ export function AlterationStep({
                                         type="button"
                                         onClick={() => handleStartEditType(type)}
                                         className="p-1.5 text-muted-foreground hover:text-primary-600 rounded touch-manipulation"
-                                        title="Modifier"
+                                        title={tc('edit')}
                                       >
                                         <Pencil className="w-3.5 h-3.5" />
                                       </button>
@@ -847,7 +857,7 @@ export function AlterationStep({
                                         type="button"
                                         onClick={() => handleDeleteType(type.id)}
                                         className="p-1.5 text-muted-foreground hover:text-red-600 rounded touch-manipulation"
-                                        title="Supprimer"
+                                        title={tc('delete')}
                                       >
                                         <Trash2 className="w-3.5 h-3.5" />
                                       </button>
@@ -884,7 +894,7 @@ export function AlterationStep({
                                 type='text'
                                 value={customTypeName}
                                 onChange={e => setCustomTypeName(e.target.value)}
-                                placeholder='Nom du type personnalise...'
+                                placeholder={tg('customTypePlaceholder')}
                                 className='flex-1 px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                                 autoFocus
                                 onKeyDown={e => {
@@ -902,10 +912,10 @@ export function AlterationStep({
                               onChange={e => setCustomTypeCategory(e.target.value)}
                               className='w-full px-3 py-2 border border-border rounded text-sm min-h-[44px]'
                             >
-                              <option value='other'>Autre</option>
-                              <option value='alteration'>Retouches</option>
-                              <option value='custom'>Sur mesure</option>
-                              <option value='outdoor'>Exterieur</option>
+                              <option value='other'>{tg('categoryOther')}</option>
+                              <option value='alteration'>{tg('categoryAlteration')}</option>
+                              <option value='custom'>{tg('categoryCustom')}</option>
+                              <option value='outdoor'>{tg('categoryOutdoor')}</option>
                             </select>
                             <div className='flex gap-2'>
                               <button
@@ -916,14 +926,14 @@ export function AlterationStep({
                                 }}
                                 className='flex-1 px-3 py-2 bg-muted text-muted-foreground rounded text-sm min-h-[44px] touch-manipulation'
                               >
-                                Annuler
+                                {tc('cancel')}
                               </button>
                               <button
                                 onClick={handleCreateCustomType}
                                 disabled={!customTypeName.trim()}
                                 className='flex-1 px-3 py-2 bg-primary-500 text-white rounded text-sm min-h-[44px] touch-manipulation disabled:opacity-50'
                               >
-                                Creer
+                                {tc('create')}
                               </button>
                             </div>
                           </div>
@@ -934,7 +944,7 @@ export function AlterationStep({
                             className='w-full px-3 py-3 text-left text-sm text-primary-600 hover:bg-muted/50 flex items-center gap-2 min-h-[44px] touch-manipulation'
                           >
                             <span>+</span>
-                            <span>Ajouter un type personnalise...</span>
+                            <span>{tg('addCustomType')}</span>
                           </button>
                         )}
                       </div>
@@ -945,7 +955,7 @@ export function AlterationStep({
 
               {/* Photo Capture */}
               <div>
-                <label className="block text-sm font-medium mb-1">Photo (optionnel)</label>
+                <label className="block text-sm font-medium mb-1">{tg('photoOptional')}</label>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -958,7 +968,7 @@ export function AlterationStep({
                   <div className="relative inline-block">
                     <img
                       src={photoPreview}
-                      alt="Apercu"
+                      alt={tg('preview')}
                       className="w-20 h-20 object-cover rounded-lg border border-border"
                     />
                     <button
@@ -982,20 +992,20 @@ export function AlterationStep({
                     className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-primary-400 hover:text-primary-600 transition-colors min-h-[44px]"
                   >
                     <Camera className="w-5 h-5" />
-                    <span className="text-sm">Prendre une photo</span>
+                    <span className="text-sm">{tg('takePhoto')}</span>
                   </button>
                 )}
               </div>
 
               {/* Notes Field */}
               <div>
-                <label className="block text-sm font-medium mb-1">Notes (optionnel)</label>
+                <label className="block text-sm font-medium mb-1">{tg('notesOptional')}</label>
                 <textarea
                   value={currentGarment.notes || ''}
                   onChange={e => setCurrentGarment(prev => ({ ...prev, notes: e.target.value }))}
                   rows={2}
                   className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                  placeholder="Instructions speciales, notes sur les dommages, etc."
+                  placeholder={tg('notesPlaceholder')}
                 />
               </div>
             </CardContent>
@@ -1007,7 +1017,7 @@ export function AlterationStep({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                    2. Retouches
+                    {t('servicesHeading')}
                   </h3>
                   <button
                     type="button"
@@ -1018,7 +1028,7 @@ export function AlterationStep({
                       }
                     }}
                     className={`p-1 rounded transition-colors ${manageMode ? 'text-primary-600 bg-primary-50' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}
-                    title={manageMode ? 'Terminer la gestion' : 'Gerer les services'}
+                    title={manageMode ? tm('doneServices') : tm('services')}
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
@@ -1032,7 +1042,7 @@ export function AlterationStep({
                     className={`gap-2 h-8 ${viewMode === 'grid' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <LayoutGrid className="w-4 h-4" />
-                    <span className="hidden sm:inline">Grille</span>
+                    <span className="hidden sm:inline">{tv('grid')}</span>
                   </Button>
                   <Button
                     variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -1041,7 +1051,7 @@ export function AlterationStep({
                     className={`gap-2 h-8 ${viewMode === 'list' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <List className="w-4 h-4" />
-                    <span className="hidden sm:inline">Liste</span>
+                    <span className="hidden sm:inline">{tv('list')}</span>
                   </Button>
                 </div>
               </div>
@@ -1053,14 +1063,14 @@ export function AlterationStep({
                   type="text"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="Rechercher un service..."
+                  placeholder={ts('searchPlaceholder')}
                   className="w-full pl-10 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
               {/* Service List - Grid or List View */}
               {viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {filteredServices.map(service => (
                     <div key={service.id} className="relative">
                       {editingServiceId === service.id ? (
@@ -1158,7 +1168,7 @@ export function AlterationStep({
                   )}
                 </div>
               ) : (
-                <div className="bg-card rounded-lg shadow overflow-hidden max-h-[200px] overflow-y-auto">
+                <div className="bg-card rounded-lg shadow overflow-hidden">
                   <table className="min-w-full divide-y divide-border">
                     <thead className="bg-muted sticky top-0 z-10">
                       <tr>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
@@ -45,6 +46,8 @@ export function AccessoriesStep({
   onNext,
   onPrev,
 }: AccessoriesStepProps) {
+  const t = useTranslations('intake.accessories');
+  const tc = useTranslations('common');
   const [services, setServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -309,7 +312,7 @@ export function AccessoriesStep({
                   Aucun accessoire trouve
                 </p>
               ) : (
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                <div className="space-y-2">
                   {filteredServices.map(service => (
                     <div
                       key={service.id}
