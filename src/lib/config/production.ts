@@ -21,8 +21,8 @@ export const PRINT_TASKS_CONFIG = {
 };
 
 export const LABEL_CONFIG = {
-  copyCount: 2,
-  showCopyIndicator: true,
+  copyCount: 1,
+  showCopyIndicator: false,
   copyIndicatorFormat: (current: number, total: number) => `${current} de ${total}`,
   // Label printer paper size (4" x 2" is standard for most label printers)
   labelWidth: '4in',
