@@ -204,7 +204,6 @@ async function handleOrderStage(
 
   // Get client and notification settings
   const client = (order as any).client;
-  const shouldSendNotification = validatedData.sendNotification === true;
 
   // Trigger order-status webhook for integrations (Agent B: QuickBooks, etc.)
   if (newStage === 'ready' || newStage === 'delivered') {
