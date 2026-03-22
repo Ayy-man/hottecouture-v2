@@ -679,7 +679,17 @@
       "timeSaveFailed": "Échec de la sauvegarde du temps",
       "timeEstimateFailed": "Échec de la sauvegarde de l'estimation",
       "staffFallback": "Personnel",
-      "notesLabel": "Notes :"
+      "notesLabel": "Notes :",
+      "garmentAdded": "Vêtement ajouté",
+      "garmentRemoved": "Vêtement retiré",
+      "addGarmentFailed": "Échec de l'ajout du vêtement",
+      "deleteGarmentFailed": "Échec de la suppression du vêtement",
+      "deleteGarmentConfirm": "Retirer ce vêtement et tous ses services?",
+      "serviceAdded": "Service ajouté",
+      "serviceRemoved": "Service retiré",
+      "addServiceFailed": "Échec de l'ajout du service",
+      "deleteServiceFailed": "Échec de la suppression du service",
+      "updateQuantityFailed": "Échec de la mise à jour de la quantité"
     }
   },
   "status": {

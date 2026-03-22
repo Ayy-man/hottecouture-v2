@@ -679,7 +679,17 @@
       "timeSaveFailed": "Failed to save actual time",
       "timeEstimateFailed": "Failed to save time estimate",
       "staffFallback": "Staff",
-      "notesLabel": "Notes:"
+      "notesLabel": "Notes:",
+      "garmentAdded": "Garment added",
+      "garmentRemoved": "Garment removed",
+      "addGarmentFailed": "Failed to add garment",
+      "deleteGarmentFailed": "Failed to delete garment",
+      "deleteGarmentConfirm": "Remove this garment and all its services?",
+      "serviceAdded": "Service added",
+      "serviceRemoved": "Service removed",
+      "addServiceFailed": "Failed to add service",
+      "deleteServiceFailed": "Failed to delete service",
+      "updateQuantityFailed": "Failed to update quantity"
     }
   },
   "status": {

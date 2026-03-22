@@ -489,7 +489,7 @@ export function OrderDetailModal({
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Failed to add garment');
+        throw new Error(err.error || t('addGarmentFailed'));
       }
       const result = await response.json();
       if (detailedOrder) {
@@ -499,17 +499,17 @@ export function OrderDetailModal({
         });
       }
       setShowAddGarment(false);
-      toast.success('Garment added');
+      toast.success(t('garmentAdded'));
     } catch (err) {
       console.error('Error adding garment:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to add garment');
+      toast.error(err instanceof Error ? err.message : t('addGarmentFailed'));
     } finally {
       setAddingGarment(false);
     }
   };
 
   const handleDeleteGarment = async (garmentId: string) => {
-    if (!confirm('Remove this garment and all its services?')) return;
+    if (!confirm(t('deleteGarmentConfirm'))) return;
     setDeletingGarment(garmentId);
     try {
       const response = await fetch(`/api/garment/${garmentId}`, {
@@ -517,7 +517,7 @@ export function OrderDetailModal({
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Failed to delete garment');
+        throw new Error(err.error || t('deleteGarmentFailed'));
       }
       const result = await response.json();
       if (detailedOrder) {
@@ -527,10 +527,10 @@ export function OrderDetailModal({
         });
         updateOrderTotals(result.order);
       }
-      toast.success('Garment removed');
+      toast.success(t('garmentRemoved'));
     } catch (err) {
       console.error('Error deleting garment:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to delete garment');
+      toast.error(err instanceof Error ? err.message : t('deleteGarmentFailed'));
     } finally {
       setDeletingGarment(null);
     }
@@ -550,7 +550,7 @@ export function OrderDetailModal({
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Failed to add service');
+        throw new Error(err.error || t('addServiceFailed'));
       }
       const result = await response.json();
       if (detailedOrder) {
@@ -566,10 +566,10 @@ export function OrderDetailModal({
         updateOrderTotals(result.order);
       }
       setAddingServiceForGarment(null);
-      toast.success('Service added');
+      toast.success(t('serviceAdded'));
     } catch (err) {
       console.error('Error adding service:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to add service');
+      toast.error(err instanceof Error ? err.message : t('addServiceFailed'));
     }
   };
 
@@ -581,7 +581,7 @@ export function OrderDetailModal({
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Failed to delete service');
+        throw new Error(err.error || t('deleteServiceFailed'));
       }
       const result = await response.json();
       if (detailedOrder) {
@@ -596,10 +596,10 @@ export function OrderDetailModal({
         });
         updateOrderTotals(result.order);
       }
-      toast.success('Service removed');
+      toast.success(t('serviceRemoved'));
     } catch (err) {
       console.error('Error deleting service:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to delete service');
+      toast.error(err instanceof Error ? err.message : t('deleteServiceFailed'));
     } finally {
       setDeletingService(null);
     }
@@ -615,7 +615,7 @@ export function OrderDetailModal({
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Failed to update quantity');
+        throw new Error(err.error || t('updateQuantityFailed'));
       }
       const result = await response.json();
       if (detailedOrder) {
@@ -638,7 +638,7 @@ export function OrderDetailModal({
       setEditingQuantity(null);
     } catch (err) {
       console.error('Error saving quantity:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to update quantity');
+      toast.error(err instanceof Error ? err.message : t('updateQuantityFailed'));
     } finally {
       setSavingQuantity(null);
     }

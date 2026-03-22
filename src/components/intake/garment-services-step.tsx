@@ -1069,7 +1069,7 @@ export function GarmentServicesStep({
                   <div className="relative inline-block">
                     <img
                       src={photoPreview}
-                      alt="Apercu"
+                      alt={tg('preview')}
                       className="w-20 h-20 object-cover rounded-lg border border-border"
                     />
                     <button
@@ -1093,20 +1093,20 @@ export function GarmentServicesStep({
                     className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-primary-400 hover:text-primary-600 transition-colors min-h-[44px]"
                   >
                     <Camera className="w-5 h-5" />
-                    <span className="text-sm">Prendre une photo</span>
+                    <span className="text-sm">{tg('takePhoto')}</span>
                   </button>
                 )}
               </div>
 
               {/* Notes Field */}
               <div>
-                <label className="block text-sm font-medium mb-1">Notes (optionnel)</label>
+                <label className="block text-sm font-medium mb-1">{tg('notesOptional')}</label>
                 <textarea
                   value={currentGarment.notes || ''}
                   onChange={e => setCurrentGarment(prev => ({ ...prev, notes: e.target.value }))}
                   rows={2}
                   className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                  placeholder="Instructions speciales, notes sur les dommages, etc."
+                  placeholder={tg('notesPlaceholder')}
                 />
               </div>
             </CardContent>
@@ -1118,7 +1118,7 @@ export function GarmentServicesStep({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                    2. Services
+                    {t('servicesHeading')}
                   </h3>
                   <button
                     type="button"
@@ -1129,7 +1129,7 @@ export function GarmentServicesStep({
                       }
                     }}
                     className={`p-1 rounded transition-colors ${manageMode ? 'text-primary-600 bg-primary-50' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}
-                    title={manageMode ? 'Terminer la gestion' : 'Gérer les services'}
+                    title={manageMode ? tm('doneServices') : tm('services')}
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
@@ -1143,7 +1143,7 @@ export function GarmentServicesStep({
                     className={`gap-2 h-8 ${viewMode === 'grid' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <LayoutGrid className="w-4 h-4" />
-                    <span className="hidden sm:inline">Grille</span>
+                    <span className="hidden sm:inline">{tv('grid')}</span>
                   </Button>
                   <Button
                     variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -1152,7 +1152,7 @@ export function GarmentServicesStep({
                     className={`gap-2 h-8 ${viewMode === 'list' ? 'shadow-sm ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <List className="w-4 h-4" />
-                    <span className="hidden sm:inline">Liste</span>
+                    <span className="hidden sm:inline">{tv('list')}</span>
                   </Button>
                 </div>
               </div>
@@ -1181,7 +1181,7 @@ export function GarmentServicesStep({
                   type="text"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="Rechercher un service..."
+                  placeholder={ts('searchPlaceholder')}
                   className="w-full pl-10 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
@@ -1265,7 +1265,7 @@ export function GarmentServicesStep({
                                     handleDeleteService(service.id);
                                   }}
                                   className="p-1 text-muted-foreground/60 hover:text-red-500 transition-colors"
-                                  title="Supprimer"
+                                  title={tc('delete')}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -1273,7 +1273,7 @@ export function GarmentServicesStep({
                             </div>
                           </div>
                           {manageMode && (
-                            <p className="text-[10px] text-muted-foreground mt-1">Cliquer pour modifier</p>
+                            <p className="text-[10px] text-muted-foreground mt-1">{ts('clickToEdit')}</p>
                           )}
                         </button>
                       )}
@@ -1281,7 +1281,7 @@ export function GarmentServicesStep({
                   ))}
                   {getServicesByCategory(activeTab).length === 0 && (
                     <p className="col-span-2 text-center text-sm text-muted-foreground py-4">
-                      Aucun service trouvé
+                      {ts('notFound')}
                     </p>
                   )}
                 </div>
@@ -1291,16 +1291,16 @@ export function GarmentServicesStep({
                     <thead className="bg-muted sticky top-0 z-10">
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Service
+                          {ts('service')}
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Prix
+                          {ts('price')}
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Temps
+                          {ts('timeMin')}
                         </th>
                         <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Action
+                          {ts('action')}
                         </th>
                       </tr>
                     </thead>
@@ -1308,7 +1308,7 @@ export function GarmentServicesStep({
                       {getServicesByCategory(activeTab).length === 0 ? (
                         <tr>
                           <td colSpan={4} className="text-center py-4 text-sm text-muted-foreground">
-                            Aucun service trouve
+                            {ts('notFound')}
                           </td>
                         </tr>
                       ) : (
@@ -1339,7 +1339,7 @@ export function GarmentServicesStep({
                                       type="button"
                                       onClick={() => handleStartEditService(service)}
                                       className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-primary-600 rounded-md transition-colors"
-                                      title="Modifier"
+                                      title={tc('edit')}
                                     >
                                       <Pencil className="w-3.5 h-3.5" />
                                     </button>
@@ -1347,7 +1347,7 @@ export function GarmentServicesStep({
                                       type="button"
                                       onClick={() => handleDeleteService(service.id)}
                                       className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-red-500 rounded-md transition-colors"
-                                      title="Supprimer"
+                                      title={tc('delete')}
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -1358,7 +1358,7 @@ export function GarmentServicesStep({
                                   onClick={() => addServiceToCurrentGarment(service)}
                                   className="h-8 px-3 text-xs font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-md transition-colors min-w-[70px]"
                                 >
-                                  Ajouter
+                                  {tc('add')}
                                 </button>
                               </div>
                             </td>
@@ -1378,7 +1378,7 @@ export function GarmentServicesStep({
                       type="text"
                       value={customServiceName}
                       onChange={e => setCustomServiceName(e.target.value)}
-                      placeholder="Nom du service..."
+                      placeholder={ts('customServicePlaceholder')}
                       className="w-full px-3 py-2 border border-border rounded-lg text-sm min-h-[44px] focus:ring-2 focus:ring-primary-500"
                       autoFocus
                       onKeyDown={e => {
@@ -1399,7 +1399,7 @@ export function GarmentServicesStep({
                           const value = e.target.value.replace(/[^0-9.]/g, '');
                           setCustomServicePriceValue(value);
                         }}
-                        placeholder="Prix"
+                        placeholder={ts('pricePlaceholder')}
                         className="w-24 px-3 py-2 border border-border rounded-lg text-sm min-h-[44px] focus:ring-2 focus:ring-primary-500"
                         onKeyDown={e => {
                           if (e.key === 'Enter') handleAddCustomService();
@@ -1421,7 +1421,7 @@ export function GarmentServicesStep({
                         }}
                         className="flex-1 px-3 py-2 bg-muted text-muted-foreground rounded-lg text-sm min-h-[44px] touch-manipulation"
                       >
-                        Annuler
+                        {tc('cancel')}
                       </button>
                       <button
                         type="button"
@@ -1429,7 +1429,7 @@ export function GarmentServicesStep({
                         disabled={!customServiceName.trim() || !customServicePriceValue}
                         className="flex-1 px-3 py-2 bg-primary-500 text-white rounded-lg text-sm min-h-[44px] touch-manipulation disabled:opacity-50"
                       >
-                        Ajouter
+                        {tc('add')}
                       </button>
                     </div>
                   </div>
@@ -1440,7 +1440,7 @@ export function GarmentServicesStep({
                     className="w-full px-3 py-2 text-sm text-primary-600 hover:bg-muted/50 rounded-lg flex items-center gap-2 min-h-[44px] touch-manipulation"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>Ajouter un service personnalisé...</span>
+                    <span>{ts('addCustomService')}</span>
                   </button>
                 )}
               </div>
@@ -1453,10 +1453,10 @@ export function GarmentServicesStep({
               <CardContent className="p-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                    3. Services selectionnes
+                    {t('selectedServicesHeading')}
                   </h3>
                   <span className="text-sm font-medium">
-                    Sous-total: {formatCurrency(currentGarmentSubtotal)}
+                    {t('subtotalLabel')} {formatCurrency(currentGarmentSubtotal)}
                   </span>
                 </div>
 
@@ -1469,7 +1469,7 @@ export function GarmentServicesStep({
                       {/* Row 1: Service name + qty controls */}
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {/* Service Name */}
-                        <span className="flex-1 text-sm font-medium truncate min-w-0">{svc.serviceName || 'Service'}</span>
+                        <span className="flex-1 text-sm font-medium truncate min-w-0">{svc.serviceName || ts('service')}</span>
 
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-1">
@@ -1533,14 +1533,14 @@ export function GarmentServicesStep({
                                 setEditPriceValue(((svc.customPriceCents || 0) / 100).toFixed(2));
                               }}
                               className="flex items-center gap-1 text-sm font-medium text-primary-600 hover:underline cursor-pointer group"
-                              title="Cliquer pour modifier le prix"
+                              title={ts('clickToEditPrice')}
                             >
                               {formatCurrency(svc.customPriceCents || 0)}
                               <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </button>
                           )}
                           <span className="text-xs text-muted-foreground">
-                            Total: {formatCurrency((svc.customPriceCents || 0) * svc.qty)}
+                            {t('totalLabel')} {formatCurrency((svc.customPriceCents || 0) * svc.qty)}
                           </span>
                         </div>
 
@@ -1569,7 +1569,7 @@ export function GarmentServicesStep({
                               <span className="truncate">{getSeamstressName(svc.assignedSeamstressId ?? null)}</span>
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Non assigne</SelectItem>
+                              <SelectItem value="">{ta('unassigned')}</SelectItem>
                               {staff.map(s => (
                                 <SelectItem key={s.id} value={s.id}>
                                   {s.name}
@@ -1596,7 +1596,7 @@ export function GarmentServicesStep({
                 {/* Time validation message */}
                 {currentGarment.services && currentGarment.services.length > 0 && !allServicesHaveTime && (
                   <p className="text-xs text-red-500">
-                    Le temps estime est requis pour chaque service (planification)
+                    {t('timeRequired')}
                   </p>
                 )}
 
@@ -1606,7 +1606,7 @@ export function GarmentServicesStep({
                   disabled={!canAddToOrder}
                   className="w-full bg-gradient-to-r from-primary-500 to-accent-clay hover:from-primary-600 hover:to-accent-clay text-white disabled:opacity-50"
                 >
-                  Ajouter a la commande
+                  {t('addToOrder')}
                 </Button>
               </CardContent>
             </Card>
@@ -1617,7 +1617,7 @@ export function GarmentServicesStep({
             <Card>
               <CardContent className="p-4 space-y-3">
                 <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                  Articles dans la commande ({data.length})
+                  {t('orderItemsHeading', { count: data.length })}
                 </h3>
 
                 <div className="space-y-2">
@@ -1639,7 +1639,7 @@ export function GarmentServicesStep({
                           {garment.type}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {garment.services.length} service{garment.services.length !== 1 ? 's' : ''} -{' '}
+                          {t('serviceCount', { count: garment.services.length })} -{' '}
                           {formatCurrency(
                             garment.services.reduce(
                               (sum, s) => sum + (s.customPriceCents || 0) * s.qty,
