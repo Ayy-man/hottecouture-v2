@@ -77,6 +77,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // MKT-116: Cross-category validation — accessories must not have time estimates,
+    // alteration services must not be flagged as accessories
+    for (const garment of garments) {
+      for (const service of garment.services || []) {
+        // Accessory flagged with time estimation = likely misplaced in alteration section
+        if (service.isAccessory && service.estimatedMinutes && service.estimatedMinutes > 0) {
+          console.warn(`⚠️ Intake API: Accessory service "${service.serviceName || service.serviceId}" has estimated time — should not appear in alterations`);
+          return NextResponse.json(
+            { error: `Les accessoires ne doivent pas avoir de temps estimé. Service: ${service.serviceName || service.serviceId}` },
+            { status: 400 }
+          );
+        }
+        // Non-accessory service without time AND without the accessory flag = normal, handled above
+        // Non-accessory with isAccessory explicitly false but in accessories section would
+        // already fail the time validation above since estimatedMinutes would be 0/missing
+      }
+    }
+
     // 1. Create or find client
     let clientId: string;
 

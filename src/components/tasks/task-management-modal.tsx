@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Edit2, Save, X, Clock, User, CheckCircle, SaveAll } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useStaff } from '@/lib/hooks/useStaff';
 import { useToast } from '@/components/ui/toast';
 
@@ -66,6 +67,8 @@ export function TaskManagementModal({
   const [hasChanges, setHasChanges] = useState(false);
   const { staff } = useStaff();
   const toast = useToast();
+  const t = useTranslations('tasks');
+  const tc = useTranslations('common');
 
   useEffect(() => {
     if (isOpen && orderId) {
@@ -385,11 +388,11 @@ export function TaskManagementModal({
       {/* Footer with Save & Close */}
       <div className="flex justify-end gap-2 pt-4 border-t mt-4">
         <Button variant="outline" onClick={onClose}>
-          Cancel
+          {tc('cancel')}
         </Button>
         <Button onClick={handleSaveAndClose}>
           <SaveAll className="w-4 h-4 mr-1" />
-          Save & Close
+          {t('saveAndClose')}
         </Button>
       </div>
     </Modal>
