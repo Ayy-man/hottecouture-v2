@@ -8,6 +8,7 @@ import {
   createText2PayInvoice,
   sendSMS,
   centsToDollars,
+  getPublicUrl,
   type AppClient,
   type GHLInvoice,
   type GHLInvoiceItem,
@@ -357,7 +358,7 @@ export async function POST(request: NextRequest) {
     let smsSent = false;
     if (sendSms && ghlContactId && client.phone) {
       const amountDisplay = `$${centsToDollars(amountCents)}`;
-      const trackingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://hottecouture.ca'}/portal?order=${orderNumber}`;
+      const trackingUrl = `${getPublicUrl()}/portal?order=${orderNumber}`;
       const smsMessage = `Bonjour ${client.first_name || ''},\n\nVotre ${type === 'deposit' ? 'dépôt' : 'paiement'} de ${amountDisplay} pour la commande #${orderNumber} est prêt.\n\nPayez ici: ${invoiceUrl}\n\nSuivez votre commande: ${trackingUrl}\n\nMerci,\nHotte Design & Couture`;
 
       console.log(`📱 Sending SMS to contact ${ghlContactId}...`);

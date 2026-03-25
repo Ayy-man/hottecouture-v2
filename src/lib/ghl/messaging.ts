@@ -21,6 +21,18 @@ import { addTags, removeTags } from './tags';
 import { findOrCreateContact } from './contacts';
 
 // ============================================================================
+// Public-facing URL helper
+// ============================================================================
+
+/**
+ * Returns the production-facing app URL for customer-visible links (SMS, email).
+ * Falls back to the production domain so customers never see a staging URL.
+ */
+export function getPublicUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://hottecouture.ca';
+}
+
+// ============================================================================
 // Message Templates
 // ============================================================================
 
@@ -294,7 +306,7 @@ export async function sendDepositRequest(
       orderNumber: order.order_number,
       deposit: parseFloat(centsToDollars(order.deposit_cents)),
       paymentUrl: checkoutUrl,
-      trackingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/track/${order.id}`,
+      trackingUrl: `${getPublicUrl()}/track/${order.id}`,
     },
     tagsToAdd: ['depot_en_attente'],
     tagsToRemove: [],
@@ -332,7 +344,7 @@ export async function sendReadyPickup(
       orderNumber: order.order_number,
       balance: parseFloat(centsToDollars(balanceCents)),
       paymentUrl: checkoutUrl,
-      trackingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/track/${order.id}`,
+      trackingUrl: `${getPublicUrl()}/track/${order.id}`,
     },
     tagsToAdd,
     tagsToRemove,
@@ -432,7 +444,7 @@ export async function sendWelcomeSms(
   client: Pick<AppClient, 'first_name' | 'language'>,
   orderNumber: number
 ): Promise<GHLResult<{ messageSent: boolean }>> {
-  const trackingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://hottecouture.ca'}/portal?order=${orderNumber}`;
+  const trackingUrl = `${getPublicUrl()}/portal?order=${orderNumber}`;
   const message = buildMessage('ORDER_CREATED', client.language, {
     firstName: client.first_name,
     orderNumber,
