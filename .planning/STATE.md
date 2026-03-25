@@ -558,6 +558,7 @@ Fixed 4 cascading build failures after adding all source files to git:
 | 001 | Reliable mobile kanban (tap-to-move) | 2026-02-08 | 5959112 | [001-reliable-mobile-kanban](./quick/001-reliable-mobile-kanban/) |
 | 002 | Fix order submission failure (ship blocker) | 2026-03-01 | fc58bff | [2-bug-1-order-submission-failure-ship-bloc](./quick/2-bug-1-order-submission-failure-ship-bloc/) |
 | 260322-sh4 | Fix remaining platform update brief gaps (MKT-117, MKT-118, MKT-71, MKT-116) | 2026-03-22 | f39b010 | [260322-sh4-fix-remaining-platform-update-brief-gaps](./quick/260322-sh4-fix-remaining-platform-update-brief-gaps/) |
+| 260325-q1g | Plan remaining MKT-116 MKT-71 MKT-117 related fixes | 2026-03-25 | fa9c663 | [260325-q1g-plan-remaining-mkt-116-mkt-71-mkt-117-re](./quick/260325-q1g-plan-remaining-mkt-116-mkt-71-mkt-117-re/) |
 
 ### Roadmap Evolution
 
