@@ -16,7 +16,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   if (isLoading) {
     return (
       <div className='min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center'>
-        <LoadingLogo size='xl' text='Authenticating...' />
+        <LoadingLogo size='xl' text='Authentification...' />
       </div>
     );
   }

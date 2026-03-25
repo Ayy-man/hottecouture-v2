@@ -266,7 +266,7 @@ export default function IntakePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || errorData.message || errorData.details || 'Failed to submit order');
+        throw new Error(errorData.error || errorData.message || errorData.details || 'Echec de soumission de la commande');
       }
 
       const result: IntakeResponse = await response.json();
@@ -278,7 +278,7 @@ export default function IntakePage() {
         window.open(`/labels/${result.orderId}`, '_blank');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit order');
+      setError(err instanceof Error ? err.message : 'Echec de soumission de la commande');
     } finally {
       setIsSubmitting(false);
     }

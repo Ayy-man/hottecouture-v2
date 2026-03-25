@@ -1396,7 +1396,7 @@ export function OrderDetailModal({
                                 className='w-full px-3 py-2 text-sm border border-border rounded-md focus:ring-2 focus:ring-blue-500'
                                 defaultValue=''
                               >
-                                <option value='' disabled>Choose a service...</option>
+                                <option value='' disabled>{t('chooseService')}</option>
                                 {availableServices.map((svc: any) => (
                                   <option key={svc.id} value={svc.id}>
                                     {svc.name} {svc.category ? `(${svc.category})` : ''} - ${(svc.base_price_cents / 100).toFixed(2)}
@@ -1409,7 +1409,7 @@ export function OrderDetailModal({
                                 onClick={() => setAddingServiceForGarment(null)}
                                 className='text-xs'
                               >
-                                Cancel
+                                {tc('cancel')}
                               </Button>
                             </div>
                           ) : (
@@ -1420,7 +1420,7 @@ export function OrderDetailModal({
                               className='text-xs text-blue-600 border-blue-300 hover:bg-blue-50'
                             >
                               <Plus className='w-3 h-3 mr-1' />
-                              Add Service
+                              {t('addService')}
                             </Button>
                           )}
                         </div>
@@ -1458,7 +1458,7 @@ export function OrderDetailModal({
                       {showAddGarment ? (
                         <div className='border border-dashed border-blue-300 rounded-lg p-3 bg-blue-50/50'>
                           <label className='block text-sm font-medium text-muted-foreground mb-2'>
-                            Select garment type:
+                            {t('selectGarmentType')}
                           </label>
                           <select
                             onChange={(e) => {
@@ -1470,7 +1470,7 @@ export function OrderDetailModal({
                             defaultValue=''
                             disabled={addingGarment}
                           >
-                            <option value='' disabled>Choose a garment type...</option>
+                            <option value='' disabled>{t('chooseGarmentType')}</option>
                             {availableGarmentTypes.map((gt: any) => (
                               <option key={gt.id} value={gt.id}>
                                 {gt.icon ? `${gt.icon} ` : ''}{gt.name} ({gt.category})
@@ -1484,9 +1484,9 @@ export function OrderDetailModal({
                             disabled={addingGarment}
                             className='text-xs'
                           >
-                            Cancel
+                            {tc('cancel')}
                           </Button>
-                          {addingGarment && <span className='text-xs text-muted-foreground ml-2'>Adding...</span>}
+                          {addingGarment && <span className='text-xs text-muted-foreground ml-2'>{t('adding')}</span>}
                         </div>
                       ) : (
                         <Button
@@ -1495,7 +1495,7 @@ export function OrderDetailModal({
                           className='w-full border-dashed border-blue-300 text-blue-600 hover:bg-blue-50'
                         >
                           <Plus className='w-4 h-4 mr-2' />
-                          Add Item
+                          {t('addItem')}
                         </Button>
                       )}
                     </div>

@@ -168,6 +168,7 @@
       "preview": "Preview",
       "notesOptional": "Notes (optional)",
       "notesPlaceholder": "Special instructions, damage notes, etc.",
+      "moveToSection": "Move to section",
       "typeUpdated": "Type updated",
       "typeDeleted": "Type deleted",
       "cannotDeleteType": "Cannot delete this type",
@@ -705,7 +706,13 @@
       "serviceRemoved": "Service removed",
       "addServiceFailed": "Failed to add service",
       "deleteServiceFailed": "Failed to delete service",
-      "updateQuantityFailed": "Failed to update quantity"
+      "updateQuantityFailed": "Failed to update quantity",
+      "chooseService": "Choose a service...",
+      "chooseGarmentType": "Choose a garment type...",
+      "selectGarmentType": "Select garment type:",
+      "addService": "Add Service",
+      "addItem": "Add Item",
+      "adding": "Adding..."
     }
   },
   "status": {
@@ -888,6 +895,7 @@
       "deleteNotInUse": "This type is not used in any orders. Safe to delete.",
       "editSuccess": "Type updated",
       "deleteSuccess": "Type deleted",
+      "sectionLabel": "Section:",
       "errors": {
         "loadFailed": "Failed to load garment types",
         "editFailed": "Failed to update type",

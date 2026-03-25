@@ -59,12 +59,12 @@ export default function ArchivedOrdersPage() {
       if (response.ok) {
         setOrders(data.orders || []);
       } else {
-        throw new Error(data.error || 'Failed to fetch archived orders');
+        throw new Error(data.error || 'Echec du chargement des commandes archivees');
       }
     } catch (err) {
       console.error('Error fetching archived orders:', err);
       setError(
-        err instanceof Error ? err.message : 'Failed to fetch archived orders'
+        err instanceof Error ? err.message : 'Echec du chargement des commandes archivees'
       );
     } finally {
       setLoading(false);

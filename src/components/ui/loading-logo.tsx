@@ -95,7 +95,7 @@ export function LoadingLogo({
 }
 
 // Full Screen Loading Overlay
-export function FullScreenLoading({ text = 'Loading...' }: { text?: string }) {
+export function FullScreenLoading({ text = 'Chargement...' }: { text?: string }) {
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-white/95 backdrop-blur-sm'>
       <div className='text-center'>
@@ -111,7 +111,7 @@ export function FullScreenLoading({ text = 'Loading...' }: { text?: string }) {
 }
 
 // Inline Loading Spinner
-export function InlineLoading({ text = 'Loading...' }: { text?: string }) {
+export function InlineLoading({ text = 'Chargement...' }: { text?: string }) {
   return (
     <div className='flex items-center justify-center py-8'>
       <LoadingLogo size='md' text={text} />

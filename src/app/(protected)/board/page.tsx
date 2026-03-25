@@ -142,7 +142,7 @@ export default function BoardPage() {
         }, 100);
       } catch (err) {
         console.error('❌ Error fetching orders:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+        setError(err instanceof Error ? err.message : 'Echec du chargement des commandes');
         setLoading(false);
       }
     };

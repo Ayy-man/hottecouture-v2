@@ -426,7 +426,7 @@ export default function PricingManagementPage() {
                 <div className='grid grid-cols-2 md:grid-cols-4 gap-2 text-sm'>
                   <Badge variant='outline'>Name</Badge>
                   <Badge variant='outline'>Category</Badge>
-                  <Badge variant='outline'>Price</Badge>
+                  <Badge variant='outline'>Prix</Badge>
                   <Badge variant='outline'>Description</Badge>
                   <Badge variant='outline'>Minutes</Badge>
                   <Badge variant='outline'>IsCustom</Badge>

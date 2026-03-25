@@ -83,7 +83,7 @@ export default function CalendarPage() {
         setOrders(result.orders || []);
       } catch (err) {
         console.error('Error fetching orders:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+        setError(err instanceof Error ? err.message : 'Echec du chargement des commandes');
       } finally {
         setLoading(false);
       }
@@ -169,7 +169,7 @@ export default function CalendarPage() {
 
   const handleAssignToMe = async (garmentServiceId: string) => {
     if (!currentStaff?.staffId) {
-      toast.error('Please sign in as staff first');
+      toast.error('Veuillez d\'abord vous connecter en tant que membre de l\'equipe');
       return;
     }
 
@@ -183,7 +183,7 @@ export default function CalendarPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to assign task');
+        throw new Error('Echec de l\'attribution de la tache');
       }
 
       // Update local state
@@ -202,10 +202,10 @@ export default function CalendarPage() {
         };
       }));
 
-      toast.success('Task assigned to you');
+      toast.success('Tache attribuee avec succes');
     } catch (err) {
       console.error('Error assigning task:', err);
-      toast.error('Failed to assign task');
+      toast.error('Echec de l\'attribution de la tache');
     } finally {
       setAssigningItem(null);
     }
@@ -215,7 +215,7 @@ export default function CalendarPage() {
     return (
       <AuthGuard>
         <div className="flex items-center justify-center h-full bg-background">
-          <LoadingLogo size="lg" text="Loading calendar..." />
+          <LoadingLogo size="lg" text="Chargement du calendrier..." />
         </div>
       </AuthGuard>
     );
@@ -239,7 +239,7 @@ export default function CalendarPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold flex items-center gap-2">
               <CalendarIcon className="h-5 w-5" />
-              Task Calendar
+              Calendrier des Taches
             </h1>
             <div className="flex items-center gap-2">
               <Button
@@ -271,7 +271,7 @@ export default function CalendarPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-amber-700 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
-                  Unassigned Tasks ({unassignedTasks.length})
+                  Taches non attribuees ({unassignedTasks.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -292,7 +292,7 @@ export default function CalendarPage() {
                             <>
                               <span>•</span>
                               <span className={isBefore(parseISO(task.dueDate), new Date()) ? 'text-red-600 font-medium' : ''}>
-                                Due: {format(parseISO(task.dueDate), 'MMM d')}
+                                Echeance: {format(parseISO(task.dueDate), 'MMM d')}
                               </span>
                             </>
                           )}
@@ -307,7 +307,7 @@ export default function CalendarPage() {
                           disabled={assigningItem === task.garmentServiceId}
                         >
                           <UserPlus className="h-3 w-3 mr-1" />
-                          {assigningItem === task.garmentServiceId ? '...' : 'Assign to Me'}
+                          {assigningItem === task.garmentServiceId ? '...' : 'M\'attribuer'}
                         </Button>
                       )}
                     </div>
@@ -323,7 +323,7 @@ export default function CalendarPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-red-700 flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  Overdue ({overdueTasks.length})
+                  En retard ({overdueTasks.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -340,7 +340,7 @@ export default function CalendarPage() {
                           <Badge variant="outline" className="text-xs">{task.seamstressName}</Badge>
                         </div>
                         <div className="text-xs text-red-600">
-                          Due: {format(parseISO(task.dueDate!), 'MMM d')}
+                          Echeance: {format(parseISO(task.dueDate!), 'MMM d')}
                         </div>
                       </div>
                     </div>
@@ -355,13 +355,13 @@ export default function CalendarPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                This Week ({weekTasks.length} tasks)
+                Cette semaine ({weekTasks.length} taches)
               </CardTitle>
             </CardHeader>
             <CardContent>
               {weekTasks.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
-                  No tasks due this week
+                  Aucune tache prevue cette semaine
                 </div>
               ) : (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -377,7 +377,7 @@ export default function CalendarPage() {
                           {task.seamstressId ? (
                             <Badge variant="secondary" className="text-xs">{task.seamstressName}</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">Unassigned</Badge>
+                            <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">Non attribue</Badge>
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground flex items-center gap-2">
@@ -387,7 +387,7 @@ export default function CalendarPage() {
                           {task.dueDate && (
                             <>
                               <span>•</span>
-                              <span>Due: {format(parseISO(task.dueDate), 'EEE, MMM d')}</span>
+                              <span>Echeance: {format(parseISO(task.dueDate), 'EEE, MMM d')}</span>
                             </>
                           )}
                         </div>

@@ -168,6 +168,7 @@
       "preview": "Aperçu",
       "notesOptional": "Notes (optionnel)",
       "notesPlaceholder": "Instructions spéciales, notes sur les dommages, etc.",
+      "moveToSection": "Déplacer vers",
       "typeUpdated": "Type mis à jour",
       "typeDeleted": "Type supprimé",
       "cannotDeleteType": "Impossible de supprimer ce type",
@@ -705,7 +706,13 @@
       "serviceRemoved": "Service retiré",
       "addServiceFailed": "Échec de l'ajout du service",
       "deleteServiceFailed": "Échec de la suppression du service",
-      "updateQuantityFailed": "Échec de la mise à jour de la quantité"
+      "updateQuantityFailed": "Échec de la mise à jour de la quantité",
+      "chooseService": "Choisir un service...",
+      "chooseGarmentType": "Choisir un type de vetement...",
+      "selectGarmentType": "Selectionner un type de vetement :",
+      "addService": "Ajouter un service",
+      "addItem": "Ajouter un article",
+      "adding": "Ajout en cours..."
     }
   },
   "status": {
@@ -881,13 +888,14 @@
         "outdoor": "Extérieur",
         "other": "Autre",
         "alteration": "Retouches",
-        "custom": "Personnalisé"
+        "custom": "Sur mesure"
       },
       "deleteConfirmTitle": "Supprimer ce type de vêtement ?",
       "deleteInUse": "Ce type est utilisé dans {count} commande(s). Impossible de supprimer.",
       "deleteNotInUse": "Ce type n'est utilisé dans aucune commande. Suppression possible.",
       "editSuccess": "Type modifié",
       "deleteSuccess": "Type supprimé",
+      "sectionLabel": "Section :",
       "errors": {
         "loadFailed": "Erreur lors du chargement des types de vêtement",
         "editFailed": "Erreur lors de la modification",
