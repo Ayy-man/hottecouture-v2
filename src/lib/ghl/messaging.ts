@@ -163,7 +163,7 @@ export async function sendEmail(
  */
 function buildMessage(
   action: MessagingAction,
-  language: 'fr' | 'en',
+  _language: 'fr' | 'en',
   data: MessageData
 ): string {
   const template = MESSAGE_TEMPLATES[action];
