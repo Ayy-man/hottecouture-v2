@@ -161,7 +161,7 @@ export default function CustomerPortalPage() {
           {/* Header */}
           <div className='text-center mb-8 animate-fade-in-up'>
             <h1 className='text-3xl font-bold bg-gradient-to-r from-primary-800 to-primary-500 bg-clip-text text-transparent'>
-              Hotte Couture
+              Hotte Design &amp; Couture
             </h1>
             <p className='text-lg text-muted-foreground mt-1'>{t('title')}</p>
             <p className='text-sm text-muted-foreground'>{t('subtitle')}</p>

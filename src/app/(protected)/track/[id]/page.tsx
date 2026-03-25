@@ -125,7 +125,7 @@ export default function TrackOrderPage() {
           <div className='text-center mb-8'>
             <Link href='/' className='inline-block mb-4'>
               <h1 className='text-3xl font-bold bg-gradient-to-r from-primary-400 to-primary-900 bg-clip-text text-transparent'>
-                Hotte Couture
+                Hotte Design &amp; Couture
               </h1>
             </Link>
             <p className='text-muted-foreground'>{t('subtitle')}</p>
