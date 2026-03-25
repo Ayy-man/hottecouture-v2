@@ -144,6 +144,16 @@ export async function POST(request: NextRequest) {
 
       if (existingClient) {
         clientId = (existingClient as any).id;
+        // Update language and contact preferences for existing clients
+        if (client.language || client.preferred_contact) {
+          await supabase
+            .from('client')
+            .update({
+              ...(client.language && { language: client.language }),
+              ...(client.preferred_contact && { preferred_contact: client.preferred_contact }),
+            } as any)
+            .eq('id', clientId);
+        }
       } else {
         // Create new client
         const { data: newClient, error: clientError } = await supabase
