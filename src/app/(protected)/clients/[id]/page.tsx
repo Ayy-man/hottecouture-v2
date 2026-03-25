@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, Phone, Smartphone, Mail, Package, Ruler, Calendar, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 interface Client {
   id: string;
@@ -59,6 +60,8 @@ function maskEmail(email: string): string {
 }
 
 export default function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = useTranslations('clients');
+  const tCommon = useTranslations('common');
   const { id: clientId } = use(params);
   const [client, setClient] = useState<Client | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -78,7 +81,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
 
       // Fetch client info
       const clientRes = await fetch(`/api/clients/${clientId}`);
-      if (!clientRes.ok) throw new Error('Failed to load client');
+      if (!clientRes.ok) throw new Error(t('detail.errorLoading'));
       const clientData = await clientRes.json();
       setClient(clientData);
 
@@ -97,7 +100,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
       }
     } catch (err) {
       console.error('Error loading client:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load client');
+      setError(err instanceof Error ? err.message : t('detail.errorLoading'));
     } finally {
       setLoading(false);
     }
@@ -133,7 +136,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-            <p className="text-lg text-muted-foreground">Chargement...</p>
+            <p className="text-lg text-muted-foreground">{tCommon('loading')}</p>
           </div>
         </div>
       </div>
@@ -144,10 +147,10 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 p-8">
         <div className="text-center">
-          <div className="text-red-500 text-lg mb-4">Erreur</div>
-          <p className="text-muted-foreground mb-4">{error || 'Client non trouvé'}</p>
+          <div className="text-red-500 text-lg mb-4">{tCommon('error')}</div>
+          <p className="text-muted-foreground mb-4">{error || t('detail.notFound')}</p>
           <Link href="/clients">
-            <Button>Retour aux clients</Button>
+            <Button>{t('detail.backToClients')}</Button>
           </Link>
         </div>
       </div>
@@ -155,9 +158,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   }
 
   const tabs = [
-    { key: 'info' as TabType, label: 'Informations', icon: User },
-    { key: 'orders' as TabType, label: 'Commandes', icon: Package },
-    { key: 'measurements' as TabType, label: 'Mesures', icon: Ruler },
+    { key: 'info' as TabType, label: t('detail.tabs.info'), icon: User },
+    { key: 'orders' as TabType, label: t('detail.tabs.orders'), icon: Package },
+    { key: 'measurements' as TabType, label: t('detail.tabs.measurements'), icon: Ruler },
   ];
 
   return (
@@ -170,7 +173,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
             <Link href="/clients">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour
+                {tCommon('back')}
               </Button>
             </Link>
             <div>
@@ -178,7 +181,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                 {client.first_name} {client.last_name}
               </h1>
               <p className="text-muted-foreground">
-                Client depuis {formatDate(client.created_at)}
+                {t('clientSince', { date: formatDate(client.created_at) })}
               </p>
             </div>
           </div>
@@ -208,13 +211,13 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
             {activeTab === 'info' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold">Coordonnées</h2>
+                  <h2 className="text-xl font-semibold">{t('detail.contactInfo')}</h2>
                   <button
                     onClick={() => setRevealed(!revealed)}
                     className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-800"
                   >
                     {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    {revealed ? 'Masquer' : 'Afficher'}
+                    {revealed ? t('detail.hide') : t('detail.show')}
                   </button>
                 </div>
 
@@ -223,7 +226,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                     <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
                       <Phone className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Téléphone</p>
+                        <p className="text-sm text-muted-foreground">{t('detail.phone')}</p>
                         <p className="font-mono">{revealed ? client.phone : maskPhone(client.phone)}</p>
                       </div>
                     </div>
@@ -232,7 +235,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                     <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
                       <Mail className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Courriel</p>
+                        <p className="text-sm text-muted-foreground">{t('detail.email')}</p>
                         <p className="font-mono">{revealed ? client.email : maskEmail(client.email)}</p>
                       </div>
                     </div>
@@ -241,7 +244,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                     <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
                       <Smartphone className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Mobile/SMS</p>
+                        <p className="text-sm text-muted-foreground">{t('detail.mobile')}</p>
                         <p className="font-mono">{revealed ? client.mobile_phone : maskPhone(client.mobile_phone)}</p>
                       </div>
                     </div>
@@ -250,16 +253,16 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Langue</p>
-                    <p className="font-medium">{client.language === 'en' ? 'English' : 'Français'}</p>
+                    <p className="text-sm text-muted-foreground">{t('detail.language')}</p>
+                    <p className="font-medium">{client.language === 'en' ? t('detail.languageEn') : t('detail.languageFr')}</p>
                   </div>
                   <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Contact préféré</p>
-                    <p className="font-medium">{client.preferred_contact === 'email' ? '📧 Courriel' : '💬 SMS'}</p>
+                    <p className="text-sm text-muted-foreground">{t('detail.preferredContact')}</p>
+                    <p className="font-medium">{client.preferred_contact === 'email' ? t('detail.contactEmail') : t('detail.contactSms')}</p>
                   </div>
                   <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Infolettre</p>
-                    <p className="font-medium">{client.newsletter_consent ? '✅ Abonné' : '❌ Non abonné'}</p>
+                    <p className="text-sm text-muted-foreground">{t('detail.newsletter')}</p>
+                    <p className="font-medium">{client.newsletter_consent ? t('detail.subscribed') : t('detail.notSubscribed')}</p>
                   </div>
                 </div>
               </div>
@@ -267,11 +270,11 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
 
             {activeTab === 'orders' && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold mb-4">Historique des commandes</h2>
+                <h2 className="text-xl font-semibold mb-4">{t('detail.orderHistory')}</h2>
                 {orders.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Aucune commande</p>
+                    <p>{t('detail.noOrders')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -279,7 +282,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                       <div key={order.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-accent transition-colors">
                         <div className="flex items-center gap-4">
                           <div>
-                            <p className="font-semibold">Commande #{order.order_number}</p>
+                            <p className="font-semibold">{t('detail.orderNumber', { number: order.order_number })}</p>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Calendar className="w-3 h-3" />
                               {formatDate(order.created_at)}
@@ -289,13 +292,13 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                             {order.status}
                           </Badge>
                           <Badge variant="outline">
-                            {order.type === 'custom' ? 'Sur mesure' : 'Retouche'}
+                            {order.type === 'custom' ? t('detail.orderTypeCustom') : t('detail.orderTypeAlteration')}
                           </Badge>
                         </div>
                         <div className="text-right">
                           <p className="font-semibold">{formatCurrency(order.total_cents)}</p>
                           {order.due_date && (
-                            <p className="text-sm text-muted-foreground">Prévu: {formatDate(order.due_date)}</p>
+                            <p className="text-sm text-muted-foreground">{t('detail.dueDate', { date: formatDate(order.due_date) })}</p>
                           )}
                         </div>
                       </div>
@@ -307,20 +310,20 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
 
             {activeTab === 'measurements' && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold mb-4">Mesures du client</h2>
+                <h2 className="text-xl font-semibold mb-4">{t('detail.clientMeasurements')}</h2>
                 {Object.keys(measurements).length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Ruler className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Aucune mesure enregistrée</p>
-                    <p className="text-sm mt-2">Les mesures seront ajoutées lors de la création d&apos;une commande</p>
+                    <p>{t('detail.noMeasurements')}</p>
+                    <p className="text-sm mt-2">{t('detail.measurementsHint')}</p>
                   </div>
                 ) : (
                   Object.entries(measurements).map(([category, items]) => (
                     <div key={category} className="space-y-3">
                       <h3 className="font-medium text-foreground capitalize">
-                        {category === 'body' ? 'Mesures corporelles' :
-                         category === 'curtain' ? 'Rideaux' :
-                         category === 'upholstery' ? 'Rembourrage' : category}
+                        {category === 'body' ? t('detail.measurementCategories.body') :
+                         category === 'curtain' ? t('detail.measurementCategories.curtain') :
+                         category === 'upholstery' ? t('detail.measurementCategories.upholstery') : category}
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {items.map((m: Measurement) => (

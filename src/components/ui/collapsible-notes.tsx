@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface CollapsibleNotesProps {
   /** The notes text */
   notes: string | null | undefined;
   /** Called when Edit button clicked */
   onEdit?: () => void;
-  /** Header text (default: "Notes") */
+  /** Header text (defaults to translated "Notes") */
   label?: string;
   /** Initial expanded state (default: false) */
   defaultExpanded?: boolean;
@@ -25,11 +26,13 @@ interface CollapsibleNotesProps {
 export function CollapsibleNotes({
   notes,
   onEdit,
-  label = 'Notes',
+  label,
   defaultExpanded = false,
   maxHeight = '80px',
 }: CollapsibleNotesProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const t = useTranslations('common');
+  const resolvedLabel = label ?? t('notes');
   const hasNotes = !!notes && notes.trim().length > 0;
 
   return (
@@ -56,7 +59,7 @@ export function CollapsibleNotes({
               d='M19 9l-7 7-7-7'
             />
           </svg>
-          {label}
+          {resolvedLabel}
           {/* Content indicator dot when collapsed with content */}
           {!isExpanded && hasNotes && (
             <span className='w-1.5 h-1.5 bg-primary-500 rounded-full' />
@@ -79,7 +82,7 @@ export function CollapsibleNotes({
             }}
             className='text-xs text-primary-600 hover:text-primary-700 px-2 py-1 -my-1 cursor-pointer'
           >
-            Edit
+            {t('edit')}
           </span>
         )}
       </button>
@@ -92,7 +95,7 @@ export function CollapsibleNotes({
           {hasNotes ? (
             <p className='whitespace-pre-wrap'>{notes}</p>
           ) : (
-            <p className='italic'>No notes</p>
+            <p className='italic'>{t('noNotes')}</p>
           )}
         </div>
       )}

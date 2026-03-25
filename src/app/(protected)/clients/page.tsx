@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Search, User, Phone, Mail, Package, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useStaffSession } from '@/components/staff'
+import { useTranslations } from 'next-intl'
 
 interface Client {
   id: string
@@ -38,6 +39,8 @@ function maskEmail(email: string): string {
 }
 
 export default function ClientsPage() {
+  const t = useTranslations('clients')
+  const tCommon = useTranslations('common')
   const { currentStaff, isLoading } = useStaffSession()
   const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
@@ -81,11 +84,11 @@ export default function ClientsPage() {
         const data = await response.json()
         setClients(data.clients || [])
       } else {
-        throw new Error('Failed to load clients')
+        throw new Error(t('errorLoading'))
       }
     } catch (err) {
       console.error('Error loading clients:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load clients')
+      setError(err instanceof Error ? err.message : t('errorLoading'))
     } finally {
       setLoading(false)
     }
@@ -93,7 +96,7 @@ export default function ClientsPage() {
 
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('fr-CA', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -119,7 +122,7 @@ export default function ClientsPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-lg text-muted-foreground">Loading clients...</p>
+            <p className="text-lg text-muted-foreground">{tCommon('loading')}</p>
           </div>
         </div>
       </div>
@@ -130,10 +133,10 @@ export default function ClientsPage() {
     return (
       <div className="p-8">
         <div className="text-center">
-          <div className="text-red-500 text-lg mb-4">Error loading clients</div>
+          <div className="text-red-500 text-lg mb-4">{t('errorLoading')}</div>
           <p className="text-muted-foreground mb-4">{error}</p>
           <Link href="/board">
-            <Button>Back to Board</Button>
+            <Button>{t('backToBoard')}</Button>
           </Link>
         </div>
       </div>
@@ -150,15 +153,15 @@ export default function ClientsPage() {
           <Link href="/board">
             <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Board
+              {t('backToBoard')}
             </Button>
           </Link>
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-              Client Directory
+              {t('directory')}
             </h1>
             <p className="text-muted-foreground">
-              Search and view order history for any client
+              {t('directoryDescription')}
             </p>
           </div>
         </div>
@@ -167,7 +170,7 @@ export default function ClientsPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4" />
           <Input
-            placeholder="Search clients by name, phone, or email..."
+            placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -181,11 +184,11 @@ export default function ClientsPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <User className="w-12 h-12 text-muted-foreground/70 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No clients found</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">{t('noClientsFound')}</h3>
               <p className="text-muted-foreground">
-                {searchTerm 
-                  ? 'Try adjusting your search criteria.'
-                  : 'No clients have been added yet.'
+                {searchTerm
+                  ? t('adjustSearch')
+                  : t('noClientsYet')
                 }
               </p>
             </CardContent>
@@ -201,7 +204,7 @@ export default function ClientsPage() {
                         {client.first_name} {client.last_name}
                       </h3>
                       <Badge variant="outline">
-                        Client since {formatDate(client.created_at)}
+                        {t('clientSince', { date: formatDate(client.created_at) })}
                       </Badge>
                     </div>
                     
@@ -215,12 +218,12 @@ export default function ClientsPage() {
                             {revealedClients.has(client.id) ? (
                               <>
                                 <EyeOff className="w-3 h-3" />
-                                Hide Contact Info
+                                {t('hideContactInfo')}
                               </>
                             ) : (
                               <>
                                 <Eye className="w-3 h-3" />
-                                Show Contact Info
+                                {t('showContactInfo')}
                               </>
                             )}
                           </button>
@@ -249,13 +252,13 @@ export default function ClientsPage() {
                     <Link href={`/clients/${client.id}`}>
                       <Button className="w-full sm:w-auto">
                         <User className="w-4 h-4 mr-2" />
-                        Voir détails
+                        {t('viewDetails')}
                       </Button>
                     </Link>
                     <Link href={`/orders/history?clientId=${client.id}`}>
                       <Button variant="outline" className="w-full sm:w-auto">
                         <Package className="w-4 h-4 mr-2" />
-                        Commandes
+                        {t('orders')}
                       </Button>
                     </Link>
                   </div>

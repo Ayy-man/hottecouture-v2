@@ -44,13 +44,7 @@ interface TaskManagementModalProps {
   onSaveAndClose?: () => void; // Optional: callback for save & close behavior
 }
 
-const STAGE_OPTIONS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'working', label: 'Working' },
-  { value: 'done', label: 'Done' },
-  { value: 'ready', label: 'Ready' },
-  { value: 'delivered', label: 'Delivered' },
-];
+const STAGE_VALUES = ['pending', 'working', 'done', 'ready', 'delivered'] as const;
 
 export function TaskManagementModal({
   orderId,
@@ -69,6 +63,7 @@ export function TaskManagementModal({
   const toast = useToast();
   const t = useTranslations('tasks');
   const tc = useTranslations('common');
+  const tStage = useTranslations('board.columns');
 
   useEffect(() => {
     if (isOpen && orderId) {
@@ -138,7 +133,7 @@ export function TaskManagementModal({
 
   const handleSaveAndClose = () => {
     if (hasChanges) {
-      toast.success('Tasks saved successfully');
+      toast.success(t('tasksSaved'));
     }
     setHasChanges(false);
     if (onSaveAndClose) {
@@ -184,12 +179,12 @@ export function TaskManagementModal({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Manage Tasks" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('manageTitle')} size="lg">
       <div className="space-y-4 max-h-[70vh] overflow-y-auto">
         {/* Task count header */}
         <div className="flex justify-between items-center pb-4 border-b">
           <p className="text-sm text-muted-foreground">
-            {tasks.length} task(s) found
+            {tasks.length} {t('tasksFound')}
           </p>
         </div>
 
@@ -200,7 +195,7 @@ export function TaskManagementModal({
         ) : Object.keys(tasksByGarment).length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">
-              No services for this order. Add services during order intake.
+              {t('noServices')}
             </p>
           </div>
         ) : (
@@ -223,7 +218,7 @@ export function TaskManagementModal({
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-medium text-muted-foreground mb-1">
-                            Stage
+                            {t('stage')}
                           </label>
                           <Select
                             value={editForm.stage || ''}
@@ -235,9 +230,9 @@ export function TaskManagementModal({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {STAGE_OPTIONS.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
+                              {STAGE_VALUES.map((value) => (
+                                <SelectItem key={value} value={value}>
+                                  {tStage(value)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -246,7 +241,7 @@ export function TaskManagementModal({
 
                         <div>
                           <label className="block text-xs font-medium text-muted-foreground mb-1">
-                            Assignee
+                            {t('assignee')}
                           </label>
                           <Select
                             value={editForm.assignee || ''}
@@ -255,7 +250,7 @@ export function TaskManagementModal({
                             }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Unassigned" />
+                              <SelectValue placeholder={t('unassigned')} />
                             </SelectTrigger>
                             <SelectContent>
                               {staff.map((member) => (
@@ -269,7 +264,7 @@ export function TaskManagementModal({
 
                         <div>
                           <label className="block text-xs font-medium text-muted-foreground mb-1">
-                            Planned (min)
+                            {t('plannedMinutes')}
                           </label>
                           <Input
                             type="number"
@@ -286,7 +281,7 @@ export function TaskManagementModal({
 
                         <div>
                           <label className="block text-xs font-medium text-muted-foreground mb-1">
-                            Actual (min)
+                            {t('actualMinutes')}
                           </label>
                           <Input
                             type="number"
@@ -305,7 +300,7 @@ export function TaskManagementModal({
 
                       <div>
                         <label className="block text-xs font-medium text-muted-foreground mb-1">
-                          Notes
+                          {t('notes')}
                         </label>
                         <Textarea
                           value={editForm.notes || ''}
@@ -323,11 +318,11 @@ export function TaskManagementModal({
                           disabled={saving}
                         >
                           <Save className="w-4 h-4 mr-1" />
-                          {saving ? 'Saving...' : 'Save'}
+                          {saving ? t('saving') : tc('save')}
                         </Button>
                         <Button size="sm" variant="outline" onClick={handleCancelEdit}>
                           <X className="w-4 h-4 mr-1" />
-                          Cancel
+                          {tc('cancel')}
                         </Button>
                       </div>
                     </div>
@@ -337,19 +332,19 @@ export function TaskManagementModal({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 flex-1">
                           <Badge className={`text-xs ${getStageColor(task.stage)}`}>
-                            {task.stage}
+                            {tStage(task.stage)}
                           </Badge>
                           <div className="flex-1">
                             <p className="font-medium text-sm">{task.operation}</p>
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {formatMinutes(task.planned_minutes)} planned
+                                {formatMinutes(task.planned_minutes)} {t('planned')}
                               </span>
                               {task.actual_minutes > 0 && (
                                 <span className="flex items-center gap-1">
                                   <CheckCircle className="w-3 h-3" />
-                                  {formatMinutes(task.actual_minutes)} actual
+                                  {formatMinutes(task.actual_minutes)} {t('actual')}
                                 </span>
                               )}
                               {task.assignee && (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ interface ArchivedOrder {
 export default function ArchivedOrdersPage() {
   const { currentStaff, isLoading } = useStaffSession();
   const router = useRouter();
+  const t = useTranslations('archived');
   const [orders, setOrders] = useState<ArchivedOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,11 +98,11 @@ export default function ArchivedOrdersPage() {
         setSelectedOrders([]);
       } else {
         console.error('❌ Unarchive failed:', result);
-        alert(`Unarchive failed: ${result.error}`);
+        alert(`${t('unarchiveFailed')} ${result.error}`);
       }
     } catch (error) {
       console.error('❌ Unarchive error:', error);
-      alert('Failed to unarchive orders. Please try again.');
+      alert(t('unarchiveError'));
     } finally {
       setIsUnarchiving(false);
     }
@@ -139,7 +141,7 @@ export default function ArchivedOrdersPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('fr-CA', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -155,7 +157,7 @@ export default function ArchivedOrdersPage() {
               <div className='text-center'>
                 <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4'></div>
                 <p className='text-lg text-muted-foreground'>
-                  Loading archived orders...
+                  {t('loading')}
                 </p>
               </div>
             </div>
@@ -172,11 +174,11 @@ export default function ArchivedOrdersPage() {
           <div className='container mx-auto px-4 py-8'>
             <div className='bg-red-50 border border-red-200 rounded-lg p-6'>
               <h2 className='text-xl font-semibold text-red-800 mb-2'>
-                Error Loading Archived Orders
+                {t('errorTitle')}
               </h2>
               <p className='text-red-600 mb-4'>{error}</p>
               <Button onClick={fetchArchivedOrders} variant='outline'>
-                Try Again
+                {t('tryAgain')}
               </Button>
             </div>
           </div>
@@ -193,10 +195,10 @@ export default function ArchivedOrdersPage() {
           {/* Header */}
           <div className='mb-6 text-center'>
             <h1 className='text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2'>
-              Archived Orders
+              {t('title')}
             </h1>
             <p className='text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto'>
-              View and manage archived orders - {orders.length} total archived
+              {t('subtitle', { count: orders.length })}
             </p>
           </div>
 
@@ -207,7 +209,7 @@ export default function ArchivedOrdersPage() {
                 <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 w-4 h-4' />
                 <input
                   type='text'
-                  placeholder='Search orders...'
+                  placeholder={t('searchPlaceholder')}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className='pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
@@ -222,8 +224,8 @@ export default function ArchivedOrdersPage() {
                   className='btn-press'
                 >
                   {selectedOrders.length === filteredOrders.length
-                    ? 'Deselect All'
-                    : 'Select All'}
+                    ? t('deselectAll')
+                    : t('selectAll')}
                 </Button>
               )}
             </div>
@@ -240,7 +242,7 @@ export default function ArchivedOrdersPage() {
                   ) : (
                     <RotateCcw className='w-4 h-4 mr-2' />
                   )}
-                  Unarchive Selected ({selectedOrders.length})
+                  {t('unarchiveSelected', { count: selectedOrders.length })}
                 </Button>
               )}
 
@@ -251,7 +253,7 @@ export default function ArchivedOrdersPage() {
               >
                 <Link href='/board'>
                   <ArrowLeft className='w-4 h-4 mr-2' />
-                  Back to Board
+                  {t('backToBoard')}
                 </Link>
               </Button>
             </div>
@@ -263,13 +265,13 @@ export default function ArchivedOrdersPage() {
               <Archive className='w-16 h-16 text-muted-foreground/70 mx-auto mb-4' />
               <h3 className='text-xl font-semibold text-muted-foreground mb-2'>
                 {searchTerm
-                  ? 'No orders match your search'
-                  : 'No archived orders'}
+                  ? t('noMatchingOrders')
+                  : t('noArchivedOrders')}
               </h3>
               <p className='text-muted-foreground'>
                 {searchTerm
-                  ? 'Try adjusting your search terms'
-                  : 'Orders will appear here after being archived'}
+                  ? t('adjustSearchTerms')
+                  : t('ordersWillAppear')}
               </p>
             </div>
           ) : (
@@ -299,7 +301,7 @@ export default function ArchivedOrdersPage() {
                         </h4>
                         {order.rush && (
                           <Badge variant='destructive' className='text-xs'>
-                            Rush
+                            {t('rush')}
                           </Badge>
                         )}
                       </div>
@@ -315,22 +317,22 @@ export default function ArchivedOrdersPage() {
 
                       <p className='text-sm text-muted-foreground'>
                         {order.garments.map(g => g.type).join(', ') ||
-                          'No garments'}
+                          t('noGarments')}
                       </p>
 
                       <p className='text-sm text-muted-foreground'>
-                        Total: {formatCurrency(order.total_cents)}
+                        {t('totalLabel')} {formatCurrency(order.total_cents)}
                       </p>
 
                       {order.rack_position && (
                         <p className='text-sm text-blue-600 font-medium'>
-                          Rack: {order.rack_position}
+                          {t('rackLabel')} {order.rack_position}
                         </p>
                       )}
                     </div>
 
                     <div className='border-t pt-2 text-xs text-muted-foreground'>
-                      <p>Created: {formatDate(order.created_at)}</p>
+                      <p>{t('createdLabel')} {formatDate(order.created_at)}</p>
                     </div>
                   </CardContent>
                 </Card>

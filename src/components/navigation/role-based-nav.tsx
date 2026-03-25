@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { UserRole } from '@/lib/auth/roles';
+import { useTranslations } from 'next-intl';
 
 interface NavigationItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: string;
   show: boolean;
@@ -236,49 +237,49 @@ const getIconComponent = (iconName: string) => {
 
 const navigationItems: NavigationItem[] = [
   {
-    label: 'Dashboard',
+    labelKey: 'dashboard',
     href: '/dashboard',
     icon: 'dashboard',
     show: true,
   },
   {
-    label: 'Clients',
+    labelKey: 'clients',
     href: '/clients',
     icon: 'users',
     show: true,
   },
   {
-    label: 'Orders',
+    labelKey: 'orders',
     href: '/orders',
     icon: 'shopping-bag',
     show: true,
   },
   {
-    label: 'Garments',
+    labelKey: 'garments',
     href: '/garments',
     icon: 'shirt',
     show: true,
   },
   {
-    label: 'Tasks',
+    labelKey: 'tasks',
     href: '/tasks',
     icon: 'checklist',
     show: true,
   },
   {
-    label: 'Services',
+    labelKey: 'services',
     href: '/services',
     icon: 'settings',
     show: true,
   },
   {
-    label: 'Reports',
+    labelKey: 'reports',
     href: '/reports',
     icon: 'chart-bar',
     show: false, // Will be filtered by role
   },
   {
-    label: 'Settings',
+    labelKey: 'settings',
     href: '/settings',
     icon: 'cog',
     show: false, // Will be filtered by role
@@ -292,13 +293,14 @@ const getRoleBasedItems = (role: UserRole): NavigationItem[] => {
     .map(item => ({
       ...item,
       show:
-        item.show || (isOwner && ['Reports', 'Settings'].includes(item.label)),
+        item.show || (isOwner && ['reports', 'settings'].includes(item.labelKey)),
     }))
     .filter(item => item.show);
 };
 
 export function RoleBasedNav({ userRole, className }: RoleBasedNavProps) {
   const pathname = usePathname();
+  const t = useTranslations('navigation');
 
   // Memoize navigation items based on user role
   const items = useMemo(() => getRoleBasedItems(userRole), [userRole]);
@@ -323,7 +325,7 @@ export function RoleBasedNav({ userRole, className }: RoleBasedNavProps) {
             <span className='mr-3 flex-shrink-0'>
               {getIconComponent(item.icon)}
             </span>
-            <span className='flex-1'>{item.label}</span>
+            <span className='flex-1'>{t(item.labelKey)}</span>
             {item.badge && (
               <span className='ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary'>
                 {item.badge}

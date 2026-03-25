@@ -10,13 +10,7 @@ interface OrderListViewProps {
   updatingOrders: Set<string>;
 }
 
-const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'working', label: 'Working' },
-  { value: 'done', label: 'Done' },
-  { value: 'ready', label: 'Ready' },
-  { value: 'delivered', label: 'Delivered' },
-];
+const STATUS_VALUES = ['pending', 'working', 'done', 'ready', 'delivered'] as const;
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -117,9 +111,9 @@ export function OrderListView({
                 disabled={updatingOrders.has(order.id)}
                 className={`w-full px-3 py-2 rounded text-sm border ${STATUS_COLORS[order.status] || ''} cursor-pointer touch-target`}
               >
-                {STATUS_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>
-                    {tc(opt.value as any)}
+                {STATUS_VALUES.map(status => (
+                  <option key={status} value={status}>
+                    {tc(status)}
                   </option>
                 ))}
               </select>
@@ -196,9 +190,9 @@ export function OrderListView({
                     disabled={updatingOrders.has(order.id)}
                     className={`px-2 py-1 rounded text-sm border ${STATUS_COLORS[order.status] || ''} cursor-pointer`}
                   >
-                    {STATUS_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>
-                        {tc(opt.value as any)}
+                    {STATUS_VALUES.map(status => (
+                      <option key={status} value={status}>
+                        {tc(status)}
                       </option>
                     ))}
                   </select>

@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 function SignInContent() {
   const [email, setEmail] = useState('');
@@ -21,6 +22,8 @@ function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '/dashboard';
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
 
   const supabase = createClient();
 
@@ -41,10 +44,10 @@ function SignInContent() {
         setMessage(error.message);
       } else {
         setIsEmailSent(true);
-        setMessage('Check your email for the sign-in link!');
+        setMessage(t('checkEmail'));
       }
     } catch (error) {
-      setMessage('An unexpected error occurred. Please try again.');
+      setMessage(t('signInError'));
     } finally {
       setIsLoading(false);
     }
@@ -61,16 +64,16 @@ function SignInContent() {
         <div className='mx-auto max-w-md'>
           <Card>
             <CardHeader className='text-center'>
-              <CardTitle>Check your email</CardTitle>
+              <CardTitle>{t('checkEmail')}</CardTitle>
               <CardDescription>
-                We've sent you a sign-in link at {email}
+                {t('checkEmailSent', { email })}
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
               <div className='text-center text-sm text-muted-foreground'>
-                <p>Click the link in your email to sign in.</p>
+                <p>{t('clickLink')}</p>
                 <p className='mt-2'>
-                  Didn't receive the email? Check your spam folder or{' '}
+                  {t('didntReceive')}{' '}
                   <button
                     onClick={() => {
                       setIsEmailSent(false);
@@ -78,7 +81,7 @@ function SignInContent() {
                     }}
                     className='text-primary hover:underline'
                   >
-                    try again
+                    {t('tryAgain')}
                   </button>
                   .
                 </p>
@@ -88,7 +91,7 @@ function SignInContent() {
                 variant='outline'
                 className='w-full'
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
             </CardContent>
           </Card>
@@ -102,9 +105,9 @@ function SignInContent() {
       <div className='mx-auto max-w-md'>
         <Card>
           <CardHeader className='text-center'>
-            <CardTitle>Sign in to Hotte Couture</CardTitle>
+            <CardTitle>{t('signInTitle')}</CardTitle>
             <CardDescription>
-              Enter your email address to receive a sign-in link
+              {t('signInDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -114,7 +117,7 @@ function SignInContent() {
                   htmlFor='email'
                   className='block text-sm font-medium mb-2'
                 >
-                  Email address
+                  {t('email')}
                 </label>
                 <input
                   id='email'
@@ -123,14 +126,14 @@ function SignInContent() {
                   onChange={e => setEmail(e.target.value)}
                   required
                   className='w-full px-3 py-2 border border-input rounded-md bg-background text-text placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
-                  placeholder='Enter your email'
+                  placeholder={t('emailPlaceholder')}
                 />
               </div>
 
               {message && (
                 <div
                   className={`text-sm ${
-                    message.includes('Check your email')
+                    isEmailSent
                       ? 'text-green-600'
                       : 'text-destructive'
                   }`}
@@ -144,19 +147,19 @@ function SignInContent() {
                 disabled={isLoading || !email}
                 className='w-full'
               >
-                {isLoading ? 'Sending...' : 'Send sign-in link'}
+                {isLoading ? t('sending') : t('sendLink')}
               </Button>
             </form>
 
             <div className='mt-6 text-center text-sm text-muted-foreground'>
               <p>
-                By signing in, you agree to our{' '}
+                {t('termsAgreement')}{' '}
                 <a href='/terms' className='text-primary hover:underline'>
-                  Terms of Service
+                  {t('termsOfService')}
                 </a>{' '}
-                and{' '}
+                {t('and')}{' '}
                 <a href='/privacy' className='text-primary hover:underline'>
-                  Privacy Policy
+                  {t('privacyPolicy')}
                 </a>
                 .
               </p>
@@ -177,7 +180,7 @@ export default function SignInPage() {
             <Card>
               <CardContent className='p-6 text-center'>
                 <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4'></div>
-                <p className='text-muted-foreground'>Loading...</p>
+                <p className='text-muted-foreground'></p>
               </CardContent>
             </Card>
           </div>

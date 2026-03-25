@@ -5,14 +5,15 @@ import Link from 'next/link';
 import { Home, ClipboardList, Users, Calendar, MessageCircle, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStaffSession } from '@/components/staff';
+import { useTranslations } from 'next-intl';
 
 const navItems = [
-  { href: '/board', icon: Home, label: 'Board' },
-  { href: '/intake', icon: ClipboardList, label: 'Intake' },
-  { href: '/clients', icon: Users, label: 'Clients' },
-  { href: '/calendar', icon: Calendar, label: 'Calendar' },
-  { href: '/chat', icon: MessageCircle, label: 'Chat' },
-  { href: '/admin/team', icon: UserCog, label: 'Team' },
+  { href: '/board', icon: Home, labelKey: 'board' as const },
+  { href: '/intake', icon: ClipboardList, labelKey: 'intake' as const },
+  { href: '/clients', icon: Users, labelKey: 'clients' as const },
+  { href: '/calendar', icon: Calendar, labelKey: 'calendar' as const },
+  { href: '/chat', icon: MessageCircle, labelKey: 'chat' as const },
+  { href: '/admin/team', icon: UserCog, labelKey: 'team' as const },
 ];
 
 // Paths accessible to seamstress role (Board + Calendar only)
@@ -21,6 +22,7 @@ const SEAMSTRESS_NAV = ['/board', '/calendar'];
 export function MobileBottomNav() {
   const pathname = usePathname();
   const { currentStaff } = useStaffSession();
+  const t = useTranslations('navigation');
   const isSeamstress = currentStaff?.staffRole === 'seamstress';
 
   // Filter nav items based on role. When currentStaff is null (not logged in),
@@ -47,7 +49,7 @@ export function MobileBottomNav() {
               )}
             >
               <item.icon className={cn("w-6 h-6 mb-1", isActive && "text-primary-600")} />
-              <span>{item.label}</span>
+              <span>{t(item.labelKey)}</span>
             </Link>
           );
         })}

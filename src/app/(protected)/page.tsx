@@ -11,8 +11,10 @@ import {
 import { ProtectedPage } from '@/components/auth/protected-page';
 import { createHapticButtonProps } from '@/lib/utils/haptic-feedback';
 import { MuralBackground } from '@/components/ui/mural-background';
+import { useTranslations } from 'next-intl';
 
 export default function HomePage() {
+  const t = useTranslations('home');
   const isMockMode =
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-supabase');
@@ -41,11 +43,10 @@ export default function HomePage() {
                 </div>
                 <div className='ml-4'>
                   <h3 className='text-lg font-semibold text-amber-900'>
-                    Development Mode
+                    {t('developmentMode')}
                   </h3>
                   <p className='text-amber-800 mt-1'>
-                    Running in mock mode without Supabase. All features are
-                    simulated for testing.
+                    {t('developmentModeDescription')}
                   </p>
                 </div>
               </div>
@@ -74,10 +75,10 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <CardTitle className='text-2xl font-bold text-foreground mb-3'>
-                  Create New Order
+                  {t('createNewOrder')}
                 </CardTitle>
                 <CardDescription className='text-muted-foreground text-base leading-relaxed'>
-                  Register a new client and start an alteration order
+                  {t('createNewOrderDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='px-8 pb-8 pt-2'>
@@ -86,7 +87,7 @@ export default function HomePage() {
                   {...createHapticButtonProps('medium')}
                   className='w-full h-12 bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-[transform,box-shadow,background-color] duration-300 btn-press'
                 >
-                  <a href='/intake'>Start New Order</a>
+                  <a href='/intake'>{t('startNewOrder')}</a>
                 </Button>
               </CardContent>
             </Card>
@@ -111,10 +112,10 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <CardTitle className='text-2xl font-bold text-foreground mb-3'>
-                  Kanban Board
+                  {t('kanbanBoard')}
                 </CardTitle>
                 <CardDescription className='text-muted-foreground text-base leading-relaxed'>
-                  Move orders through pipeline stages with drag-and-drop
+                  {t('kanbanBoardDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='px-8 pb-8 pt-2'>
@@ -123,7 +124,7 @@ export default function HomePage() {
                   {...createHapticButtonProps('light')}
                   className='w-full h-12 bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-[transform,box-shadow,background-color] duration-300 btn-press'
                 >
-                  <a href='/board'>View Board</a>
+                  <a href='/board'>{t('viewBoard')}</a>
                 </Button>
               </CardContent>
             </Card>
@@ -148,10 +149,10 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <CardTitle className='text-2xl font-bold text-foreground mb-3'>
-                  Order Status
+                  {t('orderStatus')}
                 </CardTitle>
                 <CardDescription className='text-muted-foreground text-base leading-relaxed'>
-                  Look up any order by number and see real-time progress
+                  {t('orderStatusDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='px-8 pb-8 pt-2'>
@@ -160,7 +161,7 @@ export default function HomePage() {
                   {...createHapticButtonProps('medium')}
                   className='w-full h-12 bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-[transform,box-shadow,background-color] duration-300 btn-press'
                 >
-                  <a href='/status'>Check Status</a>
+                  <a href='/status'>{t('checkStatus')}</a>
                 </Button>
               </CardContent>
             </Card>
@@ -185,10 +186,10 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <CardTitle className='text-2xl font-bold text-foreground mb-3'>
-                  Customer Portal
+                  {t('customerPortal')}
                 </CardTitle>
                 <CardDescription className='text-muted-foreground text-base leading-relaxed'>
-                  Public tracking page where clients check their order status
+                  {t('customerPortalDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='px-8 pb-8 pt-2'>
@@ -197,7 +198,7 @@ export default function HomePage() {
                   {...createHapticButtonProps('medium')}
                   className='w-full h-12 bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-600 hover:to-primary-800 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-[transform,box-shadow,background-color] duration-300 btn-press'
                 >
-                  <a href='/portal' target='_blank'>Open Portal</a>
+                  <a href='/portal' target='_blank'>{t('openPortal')}</a>
                 </Button>
               </CardContent>
             </Card>
@@ -223,11 +224,10 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <h3 className='text-2xl font-bold text-white mb-4'>
-                  Ready to Test
+                  {t('readyToTest')}
                 </h3>
                 <p className='text-muted-foreground mb-6 text-lg max-w-2xl mx-auto'>
-                  The application is running in development mode. You can test
-                  all features without Supabase:
+                  {t('readyToTestDescription')}
                 </p>
                 <div className='grid md:grid-cols-2 gap-4 max-w-4xl mx-auto'>
                   <div className='flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20'>
@@ -245,7 +245,7 @@ export default function HomePage() {
                       </svg>
                     </div>
                     <span className='text-white font-medium'>
-                      Order intake form with mock data
+                      {t('mockFeatureIntake')}
                     </span>
                   </div>
                   <div className='flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20'>
@@ -263,7 +263,7 @@ export default function HomePage() {
                       </svg>
                     </div>
                     <span className='text-white font-medium'>
-                      Kanban board with drag & drop
+                      {t('mockFeatureKanban')}
                     </span>
                   </div>
                   <div className='flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20'>
@@ -281,7 +281,7 @@ export default function HomePage() {
                       </svg>
                     </div>
                     <span className='text-white font-medium'>
-                      Order status lookup
+                      {t('mockFeatureStatus')}
                     </span>
                   </div>
                   <div className='flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20'>
@@ -299,7 +299,7 @@ export default function HomePage() {
                       </svg>
                     </div>
                     <span className='text-white font-medium'>
-                      Label generation (simulated)
+                      {t('mockFeatureLabels')}
                     </span>
                   </div>
                   <div className='flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 md:col-span-2'>
@@ -317,13 +317,12 @@ export default function HomePage() {
                       </svg>
                     </div>
                     <span className='text-white font-medium'>
-                      Multi-language support
+                      {t('mockFeatureI18n')}
                     </span>
                   </div>
                 </div>
                 <p className='text-muted-foreground text-sm mt-6 max-w-2xl mx-auto'>
-                  When you get Supabase access, just update the environment
-                  variables and the app will automatically switch to real mode.
+                  {t('readyToTestFooter')}
                 </p>
               </div>
             </div>

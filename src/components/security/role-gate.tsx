@@ -3,6 +3,7 @@
 import { ReactNode } from 'react'
 import { UserRole } from '@/lib/auth/roles'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslations } from 'next-intl'
 
 interface RoleGateProps {
   children: ReactNode
@@ -19,6 +20,7 @@ export function RoleGate({
   fallback,
   showAccessDenied = true,
 }: RoleGateProps) {
+  const t = useTranslations('auth')
   const hasAccess = allowedRoles.includes(userRole)
 
   if (hasAccess) {
@@ -36,17 +38,17 @@ export function RoleGate({
   return (
     <Card className="border-destructive">
       <CardHeader>
-        <CardTitle className="text-destructive">Access Denied</CardTitle>
+        <CardTitle className="text-destructive">{t('accessDenied')}</CardTitle>
         <CardDescription>
-          You don't have permission to access this content.
+          {t('noPermission')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
-          Required roles: {allowedRoles.join(', ')}
+          {t('requiredRoles', { roles: allowedRoles.join(', ') })}
         </p>
         <p className="text-sm text-muted-foreground">
-          Your role: {userRole}
+          {t('yourRole', { role: userRole })}
         </p>
       </CardContent>
     </Card>
@@ -68,6 +70,7 @@ export function PermissionGate({
   fallback,
   showAccessDenied = true,
 }: PermissionGateProps) {
+  const t = useTranslations('auth')
   const hasPermission = userPermissions[permission] === true
 
   if (hasPermission) {
@@ -85,14 +88,14 @@ export function PermissionGate({
   return (
     <Card className="border-destructive">
       <CardHeader>
-        <CardTitle className="text-destructive">Access Denied</CardTitle>
+        <CardTitle className="text-destructive">{t('accessDenied')}</CardTitle>
         <CardDescription>
-          You don't have permission to access this content.
+          {t('noPermission')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
-          Required permission: {permission}
+          {t('requiredPermission', { permission })}
         </p>
       </CardContent>
     </Card>

@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { NavigationProvider } from '@/components/navigation/navigation-provider';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { HLogo } from '@/components/ui/h-logo';
@@ -11,11 +12,12 @@ import { MobileBottomNav } from '@/components/navigation/mobile-bottom-nav';
 import { GlobalChatWrapper } from '@/components/chat/global-chat-wrapper';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const t = await getTranslations('navigation');
   return (
     <ToastProvider>
       <AuthProvider>
@@ -32,7 +34,7 @@ export default function ProtectedLayout({
                     href='/'
                     className='text-sm font-medium transition-colors hover:text-primary'
                   >
-                    Home
+                    {t('home')}
                   </a>
                   <LanguageToggle />
                   <StaffIndicator />

@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from './auth-provider'
 import { LogOut, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 export function AuthButton() {
   const { user, isLoading, signOut } = useAuth()
   const router = useRouter()
+  const t = useTranslations('auth')
 
   const handleSignOut = async () => {
     await signOut()
@@ -23,7 +25,7 @@ export function AuthButton() {
   if (!user) {
     return (
       <Button asChild variant="outline" size="sm">
-        <a href="/login">Sign In</a>
+        <a href="/login">{t('signIn')}</a>
       </Button>
     )
   }
@@ -44,7 +46,7 @@ export function AuthButton() {
         className="flex items-center gap-1"
       >
         <LogOut className="w-4 h-4" />
-        Sign Out
+        {t('signOut')}
       </Button>
     </div>
   )
