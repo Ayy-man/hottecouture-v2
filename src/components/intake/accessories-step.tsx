@@ -316,10 +316,10 @@ export function AccessoriesStep({
   // Handlers
   // ===========================================================================
 
-  const getQtyForService = (serviceId: string) => pendingQty[serviceId] ?? 0.25;
+  const getQtyForService = (serviceId: string) => pendingQty[serviceId] ?? 1;
 
   const handleQtyChange = (serviceId: string, qty: number) => {
-    setPendingQty(prev => ({ ...prev, [serviceId]: Math.max(0.25, qty) }));
+    setPendingQty(prev => ({ ...prev, [serviceId]: Math.max(0.25, qty) }));  // min 0.25 for fractional units
   };
 
   const handlePriceChange = (serviceId: string, priceCents: number) => {
@@ -381,7 +381,7 @@ export function AccessoriesStep({
     toast.success(t('addedToast', { name: service.name }));
 
     // Reset qty and price for this service
-    setPendingQty(prev => ({ ...prev, [service.id]: 0.25 }));
+    setPendingQty(prev => ({ ...prev, [service.id]: 1 }));
     setPendingPrice(prev => ({ ...prev, [service.id]: service.base_price_cents }));
   };
 
@@ -603,6 +603,22 @@ export function AccessoriesStep({
                                       </p>
                                     </div>
 
+                                    {/* Quantity Input (decimal) — quantity before price per invoice convention */}
+                                    <div className="flex items-center gap-2">
+                                      <label className="text-xs text-muted-foreground whitespace-nowrap">
+                                        {service.unit ?? t('qty')}:
+                                      </label>
+                                      <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        min="0.25"
+                                        step="0.25"
+                                        value={getQtyForService(service.id)}
+                                        onChange={e => handleQtyChange(service.id, parseFloat(e.target.value) || 1)}
+                                        className="w-20 text-center border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500"
+                                      />
+                                    </div>
+
                                     {/* Price Input (per unit - editable before adding) */}
                                     <div className="flex items-center gap-2">
                                       <label className="text-xs text-muted-foreground whitespace-nowrap">
@@ -615,22 +631,6 @@ export function AccessoriesStep({
                                         step="0.01"
                                         value={((pendingPrice[service.id] ?? service.base_price_cents) / 100).toFixed(2)}
                                         onChange={e => handlePriceChange(service.id, Math.round(parseFloat(e.target.value || '0') * 100))}
-                                        className="w-20 text-center border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500"
-                                      />
-                                    </div>
-
-                                    {/* Quantity Input (decimal) */}
-                                    <div className="flex items-center gap-2">
-                                      <label className="text-xs text-muted-foreground whitespace-nowrap">
-                                        {service.unit ?? t('qty')}:
-                                      </label>
-                                      <input
-                                        type="number"
-                                        inputMode="decimal"
-                                        min="0.25"
-                                        step="0.25"
-                                        value={getQtyForService(service.id)}
-                                        onChange={e => handleQtyChange(service.id, parseFloat(e.target.value) || 0.25)}
                                         className="w-20 text-center border border-border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary-500"
                                       />
                                     </div>
