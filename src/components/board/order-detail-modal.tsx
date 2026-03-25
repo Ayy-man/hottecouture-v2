@@ -10,6 +10,7 @@ import { GarmentTaskSummary } from '@/components/tasks/garment-task-summary';
 import { TaskManagementModal } from '@/components/tasks/task-management-modal';
 import { LoadingLogo } from '@/components/ui/loading-logo';
 import { RACK_CONFIG } from '@/lib/config/production';
+import { RackGridPicker } from '@/components/board/rack-grid-picker';
 import { PaymentStatusSection } from '@/components/payments/payment-status-section';
 import { HoldToArchiveButton } from '@/components/ui/hold-and-release-button';
 import { useToast } from '@/components/ui/toast';
@@ -49,9 +50,6 @@ export function OrderDetailModal({
   const [editingTimeHours, setEditingTimeHours] = useState<number>(0);
   const [editingTimeMinutes, setEditingTimeMinutes] = useState<number>(0);
   const [savingTime, setSavingTime] = useState<string | null>(null);
-  const [rackPosition, setRackPosition] = useState<string>('');
-  const [customRackPosition, setCustomRackPosition] = useState<string>('');
-  const [savingRack, setSavingRack] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedGarmentForTasks, setSelectedGarmentForTasks] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
@@ -192,22 +190,6 @@ export function OrderDetailModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  useEffect(() => {
-    if (detailedOrder?.rack_position) {
-      const isPreset = RACK_CONFIG.positions.includes(detailedOrder.rack_position);
-      if (isPreset) {
-        setRackPosition(detailedOrder.rack_position);
-        setCustomRackPosition('');
-      } else {
-        setRackPosition('other');
-        setCustomRackPosition(detailedOrder.rack_position);
-      }
-    } else {
-      setRackPosition('');
-      setCustomRackPosition('');
-    }
-  }, [detailedOrder?.rack_position]);
-
   // Refresh order details when the order status changes
   useEffect(() => {
     if (isOpen && order?.id && order?.status) {
@@ -224,8 +206,6 @@ export function OrderDetailModal({
       setEditingTimeHours(0);
       setEditingTimeMinutes(0);
       setSavingTime(null);
-      setRackPosition('');
-      setCustomRackPosition('');
       // Reset item-level price editing
       setEditingServicePrice(null);
       setEditServicePriceCents(0);
@@ -796,81 +776,16 @@ export function OrderDetailModal({
                         <label className='block text-sm font-medium text-muted-foreground'>
                           {t('rackLabel')}
                         </label>
-                        <div className='flex gap-2'>
-                          <select
-                            value={rackPosition}
-                            onChange={async (e) => {
-                              const value = e.target.value;
-                              setRackPosition(value);
-                              if (value !== 'other' && value !== '') {
-                                setCustomRackPosition('');
-                                setSavingRack(true);
-                                try {
-                                  await fetch(`/api/order/${order.id}`, {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ rack_position: value }),
-                                  });
-                                  if (detailedOrder) {
-                                    setDetailedOrder({ ...detailedOrder, rack_position: value });
-                                  }
-                                } catch (err) {
-                                  console.error('Error saving rack position:', err);
-                                } finally {
-                                  setSavingRack(false);
-                                }
-                              }
-                            }}
-                            disabled={savingRack}
-                            className='flex-1 px-3 py-2 border border-border rounded-md text-sm focus:ring-2 focus:ring-blue-500'
-                          >
-                            <option value=''>{t('rackPlaceholder')}</option>
-                            {RACK_CONFIG.positions.map(pos => (
-                              <option key={pos} value={pos}>{pos}</option>
-                            ))}
-                            <option value='other'>{t('rackOther')}</option>
-                          </select>
-                          {rackPosition === 'other' && (
-                            <>
-                              <input
-                                type='text'
-                                value={customRackPosition}
-                                onChange={(e) => setCustomRackPosition(e.target.value)}
-                                placeholder={t('rackPlaceholder')}
-                                className='w-24 px-3 py-2 border border-border rounded-md text-sm focus:ring-2 focus:ring-blue-500'
-                                disabled={savingRack}
-                              />
-                              <Button
-                                size='sm'
-                                onClick={async () => {
-                                  if (!customRackPosition.trim()) return;
-                                  setSavingRack(true);
-                                  try {
-                                    await fetch(`/api/order/${order.id}`, {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ rack_position: customRackPosition.trim() }),
-                                    });
-                                    if (detailedOrder) {
-                                      setDetailedOrder({ ...detailedOrder, rack_position: customRackPosition.trim() });
-                                    }
-                                  } catch (err) {
-                                    console.error('Error saving rack position:', err);
-                                  } finally {
-                                    setSavingRack(false);
-                                  }
-                                }}
-                                disabled={savingRack || !customRackPosition.trim()}
-                                className='bg-blue-600 hover:bg-blue-700 text-white'
-                              >
-                                {savingRack ? '...' : t('ok')}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                        {savingRack && (
-                          <p className='text-xs text-blue-600'>{t('saving')}</p>
-                        )}
+                        <RackGridPicker
+                          orderId={order.id}
+                          orderNumber={order.order_number}
+                          currentPosition={detailedOrder?.rack_position || null}
+                          onPositionChange={(newPosition) => {
+                            if (detailedOrder) {
+                              setDetailedOrder({ ...detailedOrder, rack_position: newPosition });
+                            }
+                          }}
+                        />
                       </div>
                     ) : order.rack_position ? (
                       <div className='flex justify-between'>
