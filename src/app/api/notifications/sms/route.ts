@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       order_id,
       order_number: order.order_number,
       client_name: `${client.first_name} ${client.last_name}`,
-      language: lang,
+      language: 'fr',
     };
 
     const n8nResponse = await fetch(n8nWebhookUrl, {
