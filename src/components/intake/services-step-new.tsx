@@ -31,6 +31,7 @@ interface Garment {
     customServiceName?: string; // Added for custom services
     serviceName?: string; // For display in assignment step
     assignedSeamstressId?: string | null; // Per-item assignment
+    estimatedMinutes?: number;
   }>;
 }
 
@@ -110,6 +111,10 @@ export function ServicesStepNew({
   // Price editing state
   const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
   const [editPriceValue, setEditPriceValue] = useState('');
+
+  // Time estimate editing state
+  const [editingTimeKey, setEditingTimeKey] = useState<string | null>(null);
+  const [editTimeValue, setEditTimeValue] = useState('');
 
   // Zip selection modal states
   const [showZipModal, setShowZipModal] = useState(false);
@@ -570,8 +575,8 @@ export function ServicesStepNew({
       setEditServiceName(service.name);
       setEditServicePrice((service.base_price_cents / 100).toFixed(2));
       setEditServiceCategory(service.category || '');
-      setEditServiceUnit((service as any).unit || '');
-      setEditServiceEstimatedMinutes((service as any).estimated_minutes || 15);
+      setEditServiceUnit(service.unit || '');
+      setEditServiceEstimatedMinutes(service.estimated_minutes || 15);
       setServiceContextMenuId(null);
     }
   };
@@ -718,6 +723,7 @@ export function ServicesStepNew({
         qty: 1,
         customPriceCents: service.base_price_cents,
         serviceName: service.name, // For display in assignment step
+        estimatedMinutes: service.estimated_minutes || 0,
       });
     }
 
@@ -749,6 +755,7 @@ export function ServicesStepNew({
         qty: 1,
         customPriceCents: mainService.base_price_cents,
         serviceName: mainService.name, // For display in assignment step
+        estimatedMinutes: mainService.estimated_minutes || 0,
       });
     }
 
@@ -768,6 +775,7 @@ export function ServicesStepNew({
             qty: 1,
             customPriceCents: zipService.base_price_cents,
             serviceName: zipService.name, // For display in assignment step
+            estimatedMinutes: zipService.estimated_minutes || 0,
           });
         }
       }
@@ -862,6 +870,48 @@ export function ServicesStepNew({
   const handleCancelPriceEdit = () => {
     setEditingPriceKey(null);
     setEditPriceValue('');
+  };
+
+  const updateServiceTime = (
+    garmentIndex: number,
+    serviceId: string,
+    minutes: number
+  ) => {
+    const updatedGarments = [...data];
+    const garment = updatedGarments[garmentIndex];
+    if (!garment) return;
+
+    const serviceIndex = garment.services.findIndex(
+      s => s.serviceId === serviceId
+    );
+
+    if (serviceIndex >= 0) {
+      const service = garment.services[serviceIndex];
+      if (service) {
+        service.estimatedMinutes = minutes;
+        onUpdate(updatedGarments);
+      }
+    }
+  };
+
+  const handleStartTimeEdit = (garmentIndex: number, serviceId: string, currentMinutes: number) => {
+    const key = `${garmentIndex}-${serviceId}`;
+    setEditingTimeKey(key);
+    setEditTimeValue(currentMinutes > 0 ? String(currentMinutes) : '');
+  };
+
+  const handleSaveTimeEdit = (garmentIndex: number, serviceId: string) => {
+    const minutes = parseInt(editTimeValue);
+    if (!isNaN(minutes) && minutes >= 0) {
+      updateServiceTime(garmentIndex, serviceId, minutes);
+    }
+    setEditingTimeKey(null);
+    setEditTimeValue('');
+  };
+
+  const handleCancelTimeEdit = () => {
+    setEditingTimeKey(null);
+    setEditTimeValue('');
   };
 
   if (loading) {
@@ -1571,7 +1621,7 @@ export function ServicesStepNew({
                                 </button>
                               </div>
                               <p className='text-xs text-muted-foreground mb-2'>
-                                {t('fixedPricing')} {(service as any).estimated_minutes ? `· ⏱️ ${(service as any).estimated_minutes} min` : ''}
+                                {t('fixedPricing')} {service.estimated_minutes ? `· ⏱️ ${service.estimated_minutes} min` : ''}
                               </p>
                               <div className='text-right'>
                                 <button
@@ -1583,8 +1633,8 @@ export function ServicesStepNew({
                                   className='text-sm font-bold text-green-600 hover:text-primary-600 hover:underline cursor-pointer inline-flex items-center gap-1 group'
                                 >
                                   {formatCurrency(service.base_price_cents)}
-                                  {(service as any).unit &&
-                                    `/${(service as any).unit}`}
+                                  {service.unit &&
+                                    `/${service.unit}`}
                                   <svg className='w-3 h-3 opacity-40 group-hover:opacity-100 group-active:opacity-100 transition-opacity' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
                                   </svg>
@@ -1921,6 +1971,7 @@ export function ServicesStepNew({
                                   {/* Editable price */}
                                   {editingPriceKey === `${garmentIndex}-${garmentService.serviceId}` ? (
                                     <div className='flex items-center gap-1 mt-1'>
+                                      <span className='text-xs font-medium text-muted-foreground'>{t('price')}:</span>
                                       <span className='text-xs text-muted-foreground'>$</span>
                                       <input
                                         type='number'
@@ -1963,12 +2014,68 @@ export function ServicesStepNew({
                                       )}
                                       className='text-xs text-muted-foreground hover:text-primary-600 hover:underline cursor-pointer flex items-center gap-1 group'
                                     >
+                                      <span className='font-medium'>{t('price')}:</span>{' '}
                                       {formatCurrency(
                                         garmentService.customPriceCents ||
                                         service?.base_price_cents ||
                                         0
                                       )}{' '}
                                       {t('each')}
+                                      <svg className='w-3 h-3 opacity-40 group-hover:opacity-100 group-active:opacity-100 transition-opacity' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
+                                      </svg>
+                                    </button>
+                                  )}
+                                  {/* Editable time estimate */}
+                                  {editingTimeKey === `${garmentIndex}-${garmentService.serviceId}` ? (
+                                    <div className='flex items-center gap-1 mt-1'>
+                                      <span className='text-xs font-medium text-muted-foreground'>{t('timeMin')}:</span>
+                                      <input
+                                        type='number'
+                                        min='0'
+                                        value={editTimeValue}
+                                        onChange={e => setEditTimeValue(e.target.value)}
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter') handleSaveTimeEdit(garmentIndex, garmentService.serviceId);
+                                          if (e.key === 'Escape') handleCancelTimeEdit();
+                                        }}
+                                        placeholder='min'
+                                        className='w-16 px-1 py-0.5 border border-primary-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary-500'
+                                        autoFocus
+                                      />
+                                      <span className='text-xs text-muted-foreground'>min</span>
+                                      <button
+                                        onClick={() => handleSaveTimeEdit(garmentIndex, garmentService.serviceId)}
+                                        className='p-1 text-green-600 hover:text-green-700'
+                                        title={tc('save')}
+                                      >
+                                        <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        onClick={handleCancelTimeEdit}
+                                        className='p-1 text-muted-foreground/70 hover:text-muted-foreground'
+                                        title={tc('cancel')}
+                                      >
+                                        <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleStartTimeEdit(
+                                        garmentIndex,
+                                        garmentService.serviceId,
+                                        garmentService.estimatedMinutes || service?.estimated_minutes || 0
+                                      )}
+                                      className='text-xs text-muted-foreground hover:text-primary-600 hover:underline cursor-pointer flex items-center gap-1 group'
+                                    >
+                                      <span className='font-medium'>{t('timeMin')}:</span>{' '}
+                                      {(garmentService.estimatedMinutes || service?.estimated_minutes || 0) > 0
+                                        ? `${garmentService.estimatedMinutes || service?.estimated_minutes} min`
+                                        : t('clickToEdit')}
                                       <svg className='w-3 h-3 opacity-40 group-hover:opacity-100 group-active:opacity-100 transition-opacity' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
                                       </svg>

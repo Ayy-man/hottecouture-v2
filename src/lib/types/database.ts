@@ -343,6 +343,7 @@ export type Database = {
           is_custom: boolean;
           display_order: number;
           is_active: boolean;
+          estimated_minutes: number | null;
         };
         Insert: {
           id?: string;
@@ -354,6 +355,7 @@ export type Database = {
           is_custom?: boolean;
           display_order?: number;
           is_active?: boolean;
+          estimated_minutes?: number | null;
         };
         Update: {
           id?: string;
@@ -365,6 +367,7 @@ export type Database = {
           is_custom?: boolean;
           display_order?: number;
           is_active?: boolean;
+          estimated_minutes?: number | null;
         };
       };
       category: {
