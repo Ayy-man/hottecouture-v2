@@ -51,7 +51,7 @@ Votre commande #{order_number} est confirmée.`,
 export async function POST(request: NextRequest) {
   try {
     const body: SmsRequest = await request.json();
-    const { template, order_id, language } = body;
+    const { template, order_id } = body;
 
     if (!template || !order_id) {
       return NextResponse.json(
