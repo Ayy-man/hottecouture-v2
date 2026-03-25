@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 30-01-PLAN.md
-last_updated: "2026-03-20T15:33:22.002Z"
+last_updated: "2026-03-25T19:13:11Z"
 progress:
   total_phases: 40
   completed_phases: 27
@@ -16,7 +16,7 @@ progress:
 
 **Project:** Hotte Couture — Production Launch (Milestone 2)
 **Last Updated:** 2026-03-25
-Last activity: 2026-03-25 - Completed quick task 260325-q1g: Remaining MKT-116/MKT-71/MKT-117 (French translations complete, intake form verified)
+Last activity: 2026-03-25 - Completed quick task 260326-0ku: BUG-11 Replace rack position dropdown with visual grid picker (RackGridPicker component + rack-occupancy API)
 
 ## Project Reference
 
