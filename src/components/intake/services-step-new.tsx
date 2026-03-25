@@ -55,7 +55,6 @@ export function ServicesStepNew({
 }: ServicesStepProps) {
   const t = useTranslations('intake.services');
   const tc = useTranslations('common');
-  const tg = useTranslations('intake.garments');
   const te = useTranslations('intake.errors');
 
   const [services, setServices] = useState<Service[]>([]);
