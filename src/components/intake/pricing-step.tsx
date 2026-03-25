@@ -45,8 +45,6 @@ interface PricingStepProps {
   isSubmitting: boolean;
   autoPrint?: boolean;
   onAutoPrintChange?: (enabled: boolean) => void;
-  totalOverrideCents?: number | null;
-  onTotalOverrideChange?: (cents: number | null) => void;
 }
 
 export function PricingStep({
@@ -58,20 +56,12 @@ export function PricingStep({
   isSubmitting,
   autoPrint = true,
   onAutoPrintChange,
-  totalOverrideCents,
-  onTotalOverrideChange,
 }: PricingStepProps) {
   const t = useTranslations('intake.pricing');
   const tc = useTranslations('common');
   const ts = useTranslations('intake.submit');
   const [calculation, setCalculation] = useState<any>(null);
-  const [originalCalculation, setOriginalCalculation] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
-  const [isEditingTotal, setIsEditingTotal] = useState(false);
-  const [editTotalValue, setEditTotalValue] = useState('');
-  const [isEditingRushFee, setIsEditingRushFee] = useState(false);
-  const [editRushFeeValue, setEditRushFeeValue] = useState('');
-  const [customRushFeeCents, setCustomRushFeeCents] = useState<number | null>(null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Fetch services for display names
@@ -129,11 +119,9 @@ export function PricingStep({
       console.log('🔍 PricingStep: calculated subtotal_cents:', subtotal_cents);
 
       const rush_fee_cents = data.rush
-        ? customRushFeeCents !== null
-          ? customRushFeeCents
-          : data.rush_fee_type === 'large'
-            ? 6000
-            : 3000
+        ? data.rush_fee_type === 'large'
+          ? 6000
+          : 3000
         : 0;
 
       // Calculate taxable amount (subtotal + rush fee)
@@ -160,11 +148,8 @@ export function PricingStep({
       };
     };
 
-    calculatePricing().then(calculation => {
-      setCalculation(calculation);
-      setOriginalCalculation(calculation);
-    });
-  }, [data.rush, data.rush_fee_type, garments, services, customRushFeeCents]);
+    calculatePricing().then(setCalculation);
+  }, [data.rush, data.rush_fee_type, garments, services]);
 
   const handleInputChange = (field: keyof OrderData, value: any) => {
     onUpdate({ ...data, [field]: value });
@@ -329,15 +314,11 @@ export function PricingStep({
                                 data.rush_fee_type === 'small' ||
                                 data.rush_fee_type === undefined
                               }
-                              onChange={e => {
-                                handleInputChange('rush_fee_type', e.target.value);
-                                setCustomRushFeeCents(null);
-                              }}
+                              onChange={e => handleInputChange('rush_fee_type', e.target.value)}
                               className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
                               {t('rushSmallLabel')}
-                              {customRushFeeCents !== null && (data.rush_fee_type === 'small' || data.rush_fee_type === undefined) ? ` (${formatCurrency(customRushFeeCents)})` : ''}
                             </span>
                           </label>
                           <label className='flex items-center space-x-2 cursor-pointer'>
@@ -346,15 +327,11 @@ export function PricingStep({
                               name='rush_fee_type'
                               value='large'
                               checked={data.rush_fee_type === 'large'}
-                              onChange={e => {
-                                handleInputChange('rush_fee_type', e.target.value);
-                                setCustomRushFeeCents(null);
-                              }}
+                              onChange={e => handleInputChange('rush_fee_type', e.target.value)}
                               className='w-4 h-4 text-primary border-border focus:ring-primary touch-manipulation'
                             />
                             <span className='text-xs'>
                               {t('rushLargeLabel')}
-                              {customRushFeeCents !== null && data.rush_fee_type === 'large' ? ` (${formatCurrency(customRushFeeCents)})` : ''}
                             </span>
                           </label>
                         </div>
@@ -453,80 +430,11 @@ export function PricingStep({
                   </div>
 
                   {data.rush && (
-                    <div className='flex justify-between items-center'>
+                    <div className='flex justify-between'>
                       <span className='text-sm'>{t('rushFee')}:</span>
-                      {isEditingRushFee ? (
-                        <div className='flex items-center gap-1'>
-                          <span className='text-sm text-muted-foreground'>$</span>
-                          <input
-                            type='text'
-                            inputMode='decimal'
-                            value={editRushFeeValue}
-                            onChange={e => {
-                              const value = e.target.value.replace(/[^0-9.]/g, '');
-                              setEditRushFeeValue(value);
-                            }}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                const dollars = parseFloat(editRushFeeValue) || 0;
-                                const cents = Math.round(dollars * 100);
-                                setCustomRushFeeCents(cents);
-                                setIsEditingRushFee(false);
-                              } else if (e.key === 'Escape') {
-                                setIsEditingRushFee(false);
-                              }
-                            }}
-                            className='w-20 px-2 py-0.5 text-sm font-medium border border-primary rounded focus:ring-2 focus:ring-primary focus:border-transparent'
-                            placeholder='0.00'
-                            autoFocus
-                          />
-                          <Button
-                            type='button'
-                            size='sm'
-                            variant='ghost'
-                            onClick={() => {
-                              const dollars = parseFloat(editRushFeeValue) || 0;
-                              const cents = Math.round(dollars * 100);
-                              setCustomRushFeeCents(cents);
-                              setIsEditingRushFee(false);
-                            }}
-                            className='text-xs px-2 h-7 text-primary'
-                          >
-                            ✓
-                          </Button>
-                          <Button
-                            type='button'
-                            size='sm'
-                            variant='ghost'
-                            onClick={() => {
-                              setCustomRushFeeCents(null);
-                              setIsEditingRushFee(false);
-                            }}
-                            className='text-xs px-2 h-7 text-muted-foreground'
-                          >
-                            ✕
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className='flex items-center gap-1'>
-                          <span className='text-sm font-medium'>
-                            {formatCurrency(calculation.rush_fee_cents)}
-                          </span>
-                          <button
-                            type='button'
-                            onClick={() => {
-                              setEditRushFeeValue((calculation.rush_fee_cents / 100).toFixed(2));
-                              setIsEditingRushFee(true);
-                            }}
-                            className='text-muted-foreground hover:text-primary transition-colors'
-                            title={t('editRushFee')}
-                          >
-                            <svg className='w-3.5 h-3.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
+                      <span className='text-sm font-medium'>
+                        {formatCurrency(calculation.rush_fee_cents)}
+                      </span>
                     </div>
                   )}
 
@@ -545,116 +453,12 @@ export function PricingStep({
                   </div>
 
                   <div className='border-t border-primary/20 pt-2'>
-                    {isEditingTotal ? (
-                      <div className='space-y-2'>
-                        <div className='flex items-center gap-2'>
-                          <span className='text-lg font-bold'>{t('total')}:</span>
-                          <div className='flex items-center gap-1'>
-                            <span className='text-muted-foreground'>$</span>
-                            <input
-                              type='text'
-                              inputMode='decimal'
-                              value={editTotalValue}
-                              onChange={e => {
-                                const value = e.target.value.replace(/[^0-9.]/g, '');
-                                setEditTotalValue(value);
-                              }}
-                              className='w-28 sm:w-24 px-2 py-1 text-lg font-bold border border-primary rounded focus:ring-2 focus:ring-primary focus:border-transparent'
-                              placeholder='0.00'
-                              autoFocus
-                            />
-                          </div>
-                        </div>
-                        <div className='flex gap-2'>
-                          <Button
-                            type='button'
-                            size='sm'
-                            onClick={() => {
-                              const dollars = parseFloat(editTotalValue) || 0;
-                              const cents = Math.round(dollars * 100);
-                              if (cents > 0) {
-                                // Back-calculate tax from overridden total
-                                // Total = taxable * 1.14975 where taxable = subtotal + rush_fee
-                                // TPS = 5%, TVQ = 9.975%, combined tax rate = 14.975%
-                                const taxRate = 1.14975;
-                                const taxableAmount = Math.round(cents / taxRate);
-                                const tps_cents = Math.round(taxableAmount * 0.05);
-                                const tvq_cents = Math.round(taxableAmount * 0.09975);
-                                const tax_cents = tps_cents + tvq_cents;
-                                const rush_fee_cents = data.rush
-                                  ? customRushFeeCents !== null
-                                    ? customRushFeeCents
-                                    : data.rush_fee_type === 'large' ? 6000 : 3000
-                                  : 0;
-                                const subtotal_cents = Math.max(0, taxableAmount - rush_fee_cents);
-
-                                // Update displayed calculation with recalculated values
-                                setCalculation({
-                                  subtotal_cents,
-                                  rush_fee_cents,
-                                  tax_cents,
-                                  tps_cents,
-                                  tvq_cents,
-                                  total_cents: cents,
-                                });
-                                onTotalOverrideChange?.(cents);
-                              } else {
-                                onTotalOverrideChange?.(null);
-                              }
-                              setIsEditingTotal(false);
-                            }}
-                            className='bg-primary text-white text-xs'
-                          >
-                            {tc('save')}
-                          </Button>
-                          <Button
-                            type='button'
-                            size='sm'
-                            variant='outline'
-                            onClick={() => {
-                              if (originalCalculation) {
-                                setCalculation(originalCalculation);
-                              }
-                              onTotalOverrideChange?.(null);
-                              setIsEditingTotal(false);
-                            }}
-                            className='text-xs'
-                          >
-                            {t('reset', { amount: formatCurrency(calculation.total_cents) })}
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className='flex justify-between items-center'>
-                        <span className='text-lg font-bold'>{t('total')}:</span>
-                        <div className='flex items-center gap-2'>
-                          <div className='text-right'>
-                            <span className={`text-xl font-bold ${totalOverrideCents ? 'text-green-700' : 'text-primary'}`}>
-                              {formatCurrency(totalOverrideCents ?? calculation.total_cents)}
-                            </span>
-                            {totalOverrideCents && (
-                              <div className='text-xs text-muted-foreground line-through'>
-                                {formatCurrency(calculation.total_cents)}
-                              </div>
-                            )}
-                          </div>
-                          <Button
-                            type='button'
-                            size='sm'
-                            variant='ghost'
-                            onClick={() => {
-                              setEditTotalValue(
-                                ((totalOverrideCents ?? calculation.total_cents) / 100).toFixed(2)
-                              );
-                              setIsEditingTotal(true);
-                            }}
-                            className='text-xs text-muted-foreground hover:text-primary'
-                          >
-                            {tc('edit')}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                    <div className='flex justify-between items-center'>
+                      <span className='text-lg font-bold'>{t('total')}:</span>
+                      <span className='text-xl font-bold text-primary'>
+                        {formatCurrency(calculation.total_cents)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
