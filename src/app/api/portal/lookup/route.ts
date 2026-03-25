@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServiceRoleClient } from '@/lib/supabase/server'
+
+interface OrderWithGarments {
+  order_number: number
+  status: string
+  due_date: string | null
+  created_at: string
+  client: { phone: string } | { phone: string }[]
+  garment: Array<{ id: string }>
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -13,14 +22,11 @@ export async function GET(request: Request) {
     )
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabase = await createServiceRoleClient()
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabase) {
     return NextResponse.json({ error: 'Configuration error' }, { status: 500 })
   }
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
   try {
     let query = supabase
@@ -41,7 +47,7 @@ export async function GET(request: Request) {
       query = query.eq('order_number', parseInt(orderNumber, 10))
     }
 
-    const { data: orders, error } = await query
+    const { data: orders, error } = await query as { data: OrderWithGarments[] | null; error: unknown }
 
     if (error) {
       console.error('Portal lookup error:', error)
