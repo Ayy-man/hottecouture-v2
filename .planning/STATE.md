@@ -15,8 +15,8 @@ progress:
 # Project State
 
 **Project:** Hotte Couture — Production Launch (Milestone 2)
-**Last Updated:** 2026-03-22
-Last activity: 2026-03-22 - Completed quick task 260322-sh4: Fix remaining platform update brief gaps
+**Last Updated:** 2026-03-25
+Last activity: 2026-03-25 - Completed quick task 260325-q1g: Remaining MKT-116/MKT-71/MKT-117 (French translations complete, intake form verified)
 
 ## Project Reference
 
