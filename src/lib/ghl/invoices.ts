@@ -238,7 +238,7 @@ export async function createInvoice(params: {
       contactDetails,
       // businessDetails is required
       businessDetails: {
-        name: 'Hotte Couture',
+        name: 'Hotte Design & Couture',
       },
       currency: 'CAD',
       items: invoiceItems,

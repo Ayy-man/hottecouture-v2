@@ -27,9 +27,7 @@ import { findOrCreateContact } from './contacts';
 const MESSAGE_TEMPLATES = {
   ORDER_CREATED: {
     fr: (data: MessageData) =>
-      `Bonjour ${data.firstName}, Haute Couture a bien reçu votre commande #${data.orderNumber}. Suivez l'avancement ici : ${data.trackingUrl}`,
-    en: (data: MessageData) =>
-      `Hello ${data.firstName}, Haute Couture has received your order #${data.orderNumber}. Track it here: ${data.trackingUrl}`,
+      `Bonjour ${data.firstName}, Hotte Design & Couture a bien reçu votre commande #${data.orderNumber}. Suivez l'avancement ici : ${data.trackingUrl}`,
   },
 
   DEPOSIT_REQUEST: {
@@ -43,18 +41,7 @@ Payez ici: ${data.paymentUrl}
 Suivez votre commande: ${data.trackingUrl}
 
 Merci,
-Hotte Couture`,
-    en: (data: MessageData) =>
-      `Hello ${data.firstName},
-
-Your order #${data.orderNumber} requires a deposit of $${data.deposit}.
-
-Pay here: ${data.paymentUrl}
-
-Track your order: ${data.trackingUrl}
-
-Thank you,
-Hotte Couture`,
+Hotte Design & Couture`,
   },
 
   READY_PICKUP: {
@@ -70,20 +57,7 @@ Payez ici: ${data.paymentUrl}
 Suivez votre commande: ${data.trackingUrl}
 
 Merci,
-Hotte Couture`,
-    en: (data: MessageData) =>
-      `Hello ${data.firstName},
-
-Your order #${data.orderNumber} is ready!
-
-Balance due: $${data.balance}
-
-Pay here: ${data.paymentUrl}
-
-Track your order: ${data.trackingUrl}
-
-Thank you,
-Hotte Couture`,
+Hotte Design & Couture`,
   },
 
   READY_PICKUP_PAID: {
@@ -95,22 +69,12 @@ Bonne nouvelle! Votre commande #${data.orderNumber} est prête à ramasser.
 Suivez votre commande: ${data.trackingUrl}
 
 Merci,
-Hotte Couture`,
-    en: (data: MessageData) =>
-      `Hello ${data.firstName},
-
-Great news! Your order #${data.orderNumber} is ready for pickup.
-
-Track your order: ${data.trackingUrl}
-
-Thank you,
-Hotte Couture`,
+Hotte Design & Couture`,
   },
 
   // PAYMENT_RECEIVED doesn't send a message - tags only
   PAYMENT_RECEIVED: {
     fr: () => '',
-    en: () => '',
   },
 
   REMINDER_3WEEK: {
@@ -122,16 +86,7 @@ Rappel: Votre commande #${data.orderNumber} est prête depuis 3 semaines.
 Passez la récupérer chez Hotte Design & Couture.
 
 Merci,
-Hotte Couture`,
-    en: (data: MessageData) =>
-      `Hello ${data.firstName},
-
-Reminder: Your order #${data.orderNumber} has been ready for 3 weeks.
-
-Please pick it up at Hotte Design & Couture.
-
-Thank you,
-Hotte Couture`,
+Hotte Design & Couture`,
   },
 
   REMINDER_1MONTH: {
@@ -143,23 +98,11 @@ Dernier rappel: Votre commande #${data.orderNumber} est prête depuis plus d'un 
 Les articles non récupérés seront donnés à une œuvre de charité.
 
 Merci,
-Hotte Couture`,
-    en: (data: MessageData) =>
-      `Hello ${data.firstName},
-
-Final reminder: Your order #${data.orderNumber} has been ready for over a month.
-
-Unclaimed items will be donated to charity.
-
-Thank you,
-Hotte Couture`,
+Hotte Design & Couture`,
   },
 };
 
-const EMAIL_SUBJECTS = {
-  fr: 'Nouvelle mise à jour de Hotte Couture',
-  en: 'Hotte Couture - Order Update',
-};
+const EMAIL_SUBJECT = 'Nouvelle mise à jour de Hotte Design & Couture';
 
 // ============================================================================
 // Core Messaging Functions
@@ -229,7 +172,7 @@ function buildMessage(
     return '';
   }
 
-  return template[language](data);
+  return template.fr(data);
 }
 
 /**
@@ -272,7 +215,7 @@ export async function sendNotification(
   // Send message if there is one (PAYMENT_RECEIVED has no message)
   if (message) {
     if (preferredContact === 'email') {
-      const subject = EMAIL_SUBJECTS[language];
+      const subject = EMAIL_SUBJECT;
       const html = textToHtml(message);
       const emailResult = await sendEmail(contactId, subject, html);
 

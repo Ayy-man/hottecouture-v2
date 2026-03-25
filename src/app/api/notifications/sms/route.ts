@@ -46,22 +46,6 @@ SVP contactez-nous au (819) 717-1424.`,
 Merci! Votre paiement de {amount} a été reçu.
 Votre commande #{order_number} est confirmée.`,
   },
-  en: {
-    ready_for_pickup: `Hi {name}, this is Hotte Design & Couture 🧵
-Your alterations are ready for pickup!
-We're open Monday to Friday, 9am to 5pm.
-See you soon! ☺️`,
-    reminder_3_weeks: `Hi {name}, this is Hotte Design & Couture 🧵
-Just a reminder that your alterations have been ready for 3 weeks.
-We're open Monday to Friday, 9am to 5pm.
-See you soon! ☺️`,
-    reminder_1_month: `Hi {name}, this is Hotte Design & Couture 🧵
-Final reminder: your items will be donated to charity if not claimed within 7 days.
-Please contact us at (819) 717-1424.`,
-    payment_received: `Hi {name}, this is Hotte Design & Couture 🧵
-Thank you! Your payment of {amount} has been received.
-Your order #{order_number} is confirmed.`,
-  },
 };
 
 export async function POST(request: NextRequest) {
@@ -125,8 +109,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const lang = language || client.language || 'fr';
-    let message = TEMPLATES[lang][template];
+    let message = TEMPLATES.fr[template];
     
     message = message
       .replace('{name}', client.first_name)

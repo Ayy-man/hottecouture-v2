@@ -356,12 +356,9 @@ export async function POST(request: NextRequest) {
     // Send SMS with payment link if requested
     let smsSent = false;
     if (sendSms && ghlContactId && client.phone) {
-      const lang = client.language === 'en' ? 'en' : 'fr';
       const amountDisplay = `$${centsToDollars(amountCents)}`;
       const trackingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://hottecouture.ca'}/portal?order=${orderNumber}`;
-      const smsMessage = lang === 'fr'
-        ? `Bonjour ${client.first_name || ''},\n\nVotre ${type === 'deposit' ? 'dépôt' : 'paiement'} de ${amountDisplay} pour la commande #${orderNumber} est prêt.\n\nPayez ici: ${invoiceUrl}\n\nSuivez votre commande: ${trackingUrl}\n\nMerci,\nHotte Couture`
-        : `Hello ${client.first_name || ''},\n\nYour ${type === 'deposit' ? 'deposit' : 'payment'} of ${amountDisplay} for order #${orderNumber} is ready.\n\nPay here: ${invoiceUrl}\n\nTrack your order: ${trackingUrl}\n\nThank you,\nHotte Couture`;
+      const smsMessage = `Bonjour ${client.first_name || ''},\n\nVotre ${type === 'deposit' ? 'dépôt' : 'paiement'} de ${amountDisplay} pour la commande #${orderNumber} est prêt.\n\nPayez ici: ${invoiceUrl}\n\nSuivez votre commande: ${trackingUrl}\n\nMerci,\nHotte Design & Couture`;
 
       console.log(`📱 Sending SMS to contact ${ghlContactId}...`);
       const smsResult = await sendSMS(ghlContactId, smsMessage);
