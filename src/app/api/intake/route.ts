@@ -95,92 +95,105 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1. Create or find client
-    let clientId: string;
-
-    // Try to find existing client by email or phone
-    // Use a single query with OR to reduce race condition window
+    // 1. Resolve client — use existing ID if provided, otherwise find or create
+    let clientId!: string;
     let existingClient = null;
 
-    const orConditions = [];
-    if (client.email) {
-      orConditions.push(`email.eq.${client.email}`);
-    }
-    if (client.phone) {
-      orConditions.push(`phone.eq.${client.phone}`);
-    }
-
-    if (orConditions.length > 0) {
-      const { data: foundClient } = await supabase
+    // If the frontend already created this client, verify the ID and use it directly.
+    // This avoids duplicate clients and wrong-client matches from email/phone lookup.
+    if (client.id) {
+      const { data: clientById } = await supabase
         .from('client')
         .select('id')
-        .or(orConditions.join(','))
-        .limit(1)
+        .eq('id', client.id)
         .maybeSingle();
 
-      if (foundClient) {
-        existingClient = foundClient;
-        console.log('Found existing client:', (foundClient as any).id);
+      if (clientById) {
+        existingClient = clientById;
+        clientId = (clientById as any).id;
+        console.log('Using client ID from frontend:', clientId);
       }
     }
 
-    if (existingClient) {
-      clientId = (existingClient as any).id;
-    } else {
-      // Create new client
-      // Handle potential race condition: if another request creates the same client
-      // between our check and insert, we'll catch the unique constraint error
-      // and retry the lookup
-      const { data: newClient, error: clientError } = await supabase
-        .from('client')
-        .insert({
-          first_name: client.first_name,
-          last_name: client.last_name,
-          email: client.email,
-          phone: client.phone || null,
-          mobile_phone: client.mobile_phone || null,
-          language: client.language || 'fr',
-          preferred_contact: client.preferred_contact || 'sms',
-        } as any)
-        .select('id')
-        .single();
+    // Fallback: find by email/phone or create a new client
+    if (!existingClient) {
+      const orConditions = [];
+      if (client.email) {
+        orConditions.push(`email.eq.${client.email}`);
+      }
+      if (client.phone) {
+        orConditions.push(`phone.eq.${client.phone}`);
+      }
+      if (client.mobile_phone) {
+        orConditions.push(`mobile_phone.eq.${client.mobile_phone}`);
+      }
 
-      if (clientError) {
-        // Check if this is a unique constraint violation (duplicate client created by another request)
-        if (clientError.code === '23505') {
-          // Unique violation - try to find the existing client that was just created
-          console.log('Race condition detected: client was created by another request, retrying lookup');
+      if (orConditions.length > 0) {
+        const { data: foundClient } = await supabase
+          .from('client')
+          .select('id')
+          .or(orConditions.join(','))
+          .limit(1)
+          .maybeSingle();
 
-          const { data: raceClient } = await supabase
-            .from('client')
-            .select('id')
-            .or(orConditions.join(','))
-            .limit(1)
-            .maybeSingle();
+        if (foundClient) {
+          existingClient = foundClient;
+          console.log('Found existing client:', (foundClient as any).id);
+        }
+      }
 
-          if (raceClient) {
-            clientId = (raceClient as any).id;
-            console.log('Found client after race condition:', clientId);
+      if (existingClient) {
+        clientId = (existingClient as any).id;
+      } else {
+        // Create new client
+        const { data: newClient, error: clientError } = await supabase
+          .from('client')
+          .insert({
+            first_name: client.first_name,
+            last_name: client.last_name,
+            email: client.email,
+            phone: client.phone || null,
+            mobile_phone: client.mobile_phone || null,
+            language: client.language || 'fr',
+            preferred_contact: client.preferred_contact || 'sms',
+          } as any)
+          .select('id')
+          .single();
+
+        if (clientError) {
+          // Check if this is a unique constraint violation (race condition)
+          if (clientError.code === '23505' && orConditions.length > 0) {
+            console.log('Race condition detected: client was created by another request, retrying lookup');
+
+            const { data: raceClient } = await supabase
+              .from('client')
+              .select('id')
+              .or(orConditions.join(','))
+              .limit(1)
+              .maybeSingle();
+
+            if (raceClient) {
+              clientId = (raceClient as any).id;
+              console.log('Found client after race condition:', clientId);
+            } else {
+              console.error('Client creation race condition error:', clientError);
+              return NextResponse.json(
+                { error: `Failed to create client: duplicate detected but not found` },
+                { status: 500 }
+              );
+            }
           } else {
-            // Still couldn't find - this shouldn't happen, but fail gracefully
-            console.error('Client creation race condition error:', clientError);
+            console.error('Client creation error:', clientError);
             return NextResponse.json(
-              { error: `Failed to create client: duplicate detected but not found` },
+              { error: `Failed to create client: ${clientError.message}` },
               { status: 500 }
             );
           }
         } else {
-          console.error('Client creation error:', clientError);
-          return NextResponse.json(
-            { error: `Failed to create client: ${clientError.message}` },
-            { status: 500 }
-          );
+          clientId = (newClient as any).id;
+          console.log('Created new client:', clientId);
         }
-      } else {
-        clientId = (newClient as any).id;
-        console.log('Created new client:', clientId);
       }
-      // Note: GHL sync happens after order creation with full order details
     }
 
     // 2. Calculate pricing using proper pricing function

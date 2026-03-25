@@ -25,14 +25,14 @@ export async function POST(
         error: 'Order query failed',
         details: orderError.message,
         orderId,
-      });
+      }, { status: 500 });
     }
 
     if (!order) {
       return NextResponse.json({
         error: 'Order not found',
         orderId,
-      });
+      }, { status: 404 });
     }
 
     // Fetch garments for this order
@@ -50,7 +50,7 @@ export async function POST(
       return NextResponse.json({
         error: 'Failed to fetch garments',
         details: garmentsError.message,
-      });
+      }, { status: 500 });
     }
 
     // Fetch client data
@@ -66,7 +66,7 @@ export async function POST(
       return NextResponse.json({
         error: 'Failed to fetch client data',
         details: clientError.message,
-      });
+      }, { status: 500 });
     }
 
     // Check if order has garments
